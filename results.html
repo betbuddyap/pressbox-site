@@ -409,8 +409,6 @@ function renderWeekly(data) {
               const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
               const typeLabel = b.type === 'O/U' ? 'O/U' : b.type;
               const displayActual = b.actual;
-              const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-              const typeLabel = b.type === 'O/U' ? 'O/U' : b.type;
               return `
                 <tr>
                   <td><div class="pick-team">${b.away_team} @ ${b.home_team}</div></td>
