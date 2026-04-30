@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Results — PressBox Analytics</title>
+<title>How It Works — PressBox Analytics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -38,147 +38,102 @@
   /* ── NAV ── */
   nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
-  .nav-logo { text-decoration: none; }
   .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
   .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--text); }
   .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
 
   /* ── PAGE HEADER ── */
-  .page-header { background: var(--cream); border-bottom: 1px solid var(--border); padding: 48px 0 40px; }
-  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
-  .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .page-header { background: var(--cream); border-bottom: 1px solid var(--border); padding: 64px 0 56px; }
+  .page-header-inner { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
   .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
-  .page-title { font-family: var(--serif); font-size: 40px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; color: var(--text); margin-bottom: 10px; }
+  .page-title { font-family: var(--serif); font-size: 44px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; color: var(--text); margin-bottom: 16px; }
   .page-title em { font-style: italic; color: var(--gold); }
-  .page-sub { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.6; }
+  .page-sub { font-family: var(--sans); font-size: 17px; font-weight: 300; color: var(--text-mid); line-height: 1.7; }
 
-  /* ── CONTROLS ── */
-  .controls { background: var(--cream); border-bottom: 1px solid var(--border); padding: 20px 0; position: sticky; top: 80px; z-index: 90; }
-  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 32px; }
-  .control-group { display: flex; align-items: center; gap: 8px; }
-  .control-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
-  .tab-group { display: flex; gap: 4px; }
-  .tab { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
-  .tab:hover { border-color: var(--text-mid); color: var(--text); }
-  .tab.active { background: var(--ink); color: var(--cream); border-color: var(--ink); font-weight: 600; }
-  .divider { width: 1px; height: 28px; background: var(--border); }
+  /* ── CONTENT ── */
+  .content { max-width: 760px; margin: 0 auto; padding: 72px 32px 96px; }
 
-  /* ── SUMMARY BAR ── */
-  .summary-bar { background: var(--ink); padding: 24px 0; }
-  .summary-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; gap: 0; }
-  .summary-stat { flex: 1; padding: 0 24px; border-right: 1px solid rgba(255,255,255,0.08); }
-  .summary-stat:first-child { padding-left: 0; }
-  .summary-stat:last-child { border-right: none; }
-  .summary-stat-val { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--gold-light); line-height: 1; margin-bottom: 4px; }
-  .summary-stat-lbl { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #AEAE9E; }
-  .summary-stat-val.positive { color: #7BC47F; }
-  .summary-stat-val.neutral { color: #F8F5EE; }
+  /* Section */
+  .section { margin-bottom: 72px; }
+  .section-num { font-family: var(--serif); font-size: 11px; font-weight: 400; color: var(--text-light); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .section-num::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 20px; }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .section-body { font-family: var(--sans); font-size: 16px; font-weight: 300; color: var(--text-mid); line-height: 1.8; }
+  .section-body p + p { margin-top: 16px; }
+  .section-body strong { font-weight: 600; color: var(--text); }
 
-  /* ── RESULTS TABLE ── */
-  .results-section { max-width: var(--max); margin: 0 auto; padding: 40px 32px; }
+  /* Model cards */
+  .model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
+  .model-card { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; }
+  .model-card-accent { border-left: 3px solid var(--gold); }
+  .model-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .model-desc { font-family: var(--sans); font-size: 13px; font-weight: 300; color: var(--text-mid); line-height: 1.6; }
+  .model-tag { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
 
-  /* Weekly A+ table */
-  .week-block { margin-bottom: 40px; }
-  .week-header { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; border-bottom: 2px solid var(--border); margin-bottom: 0; }
-  .week-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); }
-  .week-meta { font-family: var(--sans); font-size: 12px; color: var(--text-light); display: flex; gap: 16px; }
-  .week-meta-item { display: flex; gap: 5px; }
-  .week-meta-val { font-weight: 600; color: var(--text-mid); }
-  .week-meta-val.up { color: #5A9E5E; }
-  .week-meta-val.down { color: #B85A5A; }
+  /* Phase timeline */
+  .phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 28px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .phase-card { padding: 24px 20px; border-right: 1px solid var(--border); }
+  .phase-card:last-child { border-right: none; }
+  .phase-label { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .phase-weeks { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .phase-desc { font-family: var(--sans); font-size: 12px; font-weight: 300; color: var(--text-mid); line-height: 1.6; }
+  .phase-signal { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text-mid); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .phase-signal span { color: var(--gold); }
 
-  .picks-table { width: 100%; border-collapse: collapse; }
-  .picks-table th { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); text-align: left; padding: 10px 12px; background: var(--cream-dark); border-bottom: 1px solid var(--border); }
-  .picks-table td { font-family: var(--sans); font-size: 13px; color: var(--text); padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  .picks-table tr:last-child td { border-bottom: none; }
-  .picks-table tr:hover td { background: rgba(184,146,42,0.04); }
-  .pick-team { font-weight: 600; color: var(--text); }
-  .pick-line { color: var(--text-mid); font-size: 12px; margin-top: 2px; }
-  .badge-type { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 3px 7px; border-radius: 2px; }
-  .badge-spread { background: var(--gold-pale); color: var(--gold); }
-  .badge-ou { background: #E8F0E8; color: #4A7A4A; }
-  .badge-ml { background: #E8EEF5; color: #3A5A8A; }
-  .result-hit { display: flex; align-items: center; gap: 6px; }
-  .result-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .result-dot.win { background: #5A9E5E; }
-  .result-dot.loss { background: #B85A5A; }
-  .result-dot.push { background: var(--text-light); }
-  .pnl-pos { color: #5A9E5E; font-weight: 600; }
-  .pnl-neg { color: #B85A5A; font-weight: 600; }
-  .cum-bankroll { font-family: var(--serif); font-size: 13px; color: var(--text-mid); }
+  /* Tier table */
+  .tier-table { width: 100%; border-collapse: collapse; margin-top: 28px; }
+  .tier-table th { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); text-align: left; padding: 10px 16px; background: var(--cream-dark); border-bottom: 1px solid var(--border); }
+  .tier-table td { font-family: var(--sans); font-size: 13px; color: var(--text-mid); padding: 14px 16px; border-bottom: 1px solid var(--border); line-height: 1.5; vertical-align: top; }
+  .tier-table tr:last-child td { border-bottom: none; }
+  .tier-badge { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; display: inline-block; }
+  .tier-ap { background: var(--gold-pale); color: var(--gold); }
+  .tier-a  { background: var(--cream-mid); color: var(--text-mid); }
+  .tier-b  { background: var(--cream-mid); color: var(--text-light); }
+  .tier-td-name { font-weight: 600; color: var(--text); }
 
-  /* POTW cards */
-  .potw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .potw-card { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .potw-card-header { background: var(--ink); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .potw-week { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #AEAE9E; }
-  .potw-result-badge { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; }
-  .potw-result-badge.win { background: rgba(90,158,94,0.2); color: #7BC47F; }
-  .potw-result-badge.loss { background: rgba(184,90,90,0.15); color: #D4807F; }
-  .potw-card-body { padding: 20px; }
-  .potw-matchup { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .potw-pick { font-family: var(--sans); font-size: 13px; color: var(--gold); font-weight: 600; margin-bottom: 12px; }
-  .potw-stats { display: flex; gap: 16px; margin-bottom: 14px; }
-  .potw-stat { }
-  .potw-stat-val { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); }
-  .potw-stat-lbl { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); margin-top: 1px; }
-  .potw-actual { font-family: var(--sans); font-size: 12px; color: var(--text-mid); padding-top: 12px; border-top: 1px solid var(--border); }
-  .potw-actual-score { font-weight: 600; color: var(--text); }
+  /* Callout box */
+  .callout { background: var(--ink); border-radius: 4px; padding: 32px 36px; margin-top: 28px; }
+  .callout-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--gold-light); margin-bottom: 12px; }
+  .callout-body { font-family: var(--sans); font-size: 14px; font-weight: 300; color: #8A8A7A; line-height: 1.7; }
+  .callout-body strong { color: #D4D4C4; font-weight: 500; }
 
-  /* Parlay cards */
-  .parlay-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .parlay-card { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .parlay-card.win { border-color: rgba(90,158,94,0.4); }
-  .parlay-card.loss { border-color: var(--border); }
-  .parlay-card-header { background: var(--ink); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .parlay-week-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #AEAE9E; }
-  .parlay-result { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; }
-  .parlay-result.win { background: rgba(90,158,94,0.2); color: #7BC47F; }
-  .parlay-result.loss { background: rgba(184,90,90,0.15); color: #D4807F; }
-  .parlay-card-body { padding: 16px 18px; }
-  .parlay-leg { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
-  .parlay-leg:last-child { border-bottom: none; }
-  .parlay-leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .parlay-leg-dot.win { background: #5A9E5E; }
-  .parlay-leg-dot.loss { background: #B85A5A; }
-  .parlay-leg-text { font-family: var(--sans); font-size: 12px; color: var(--text); flex: 1; }
-  .parlay-leg-odds { font-family: var(--sans); font-size: 11px; color: var(--text-light); }
-  .parlay-payout { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; margin-top: 4px; }
-  .parlay-payout-lbl { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
-  .parlay-payout-val { font-family: var(--serif); font-size: 16px; font-weight: 700; }
-  .parlay-payout-val.win { color: #5A9E5E; }
-  .parlay-payout-val.loss { color: var(--text-light); }
+  /* Principles */
+  .principle-list { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .principle { display: flex; gap: 16px; align-items: flex-start; }
+  .principle-icon { width: 32px; height: 32px; background: var(--gold-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--serif); font-size: 13px; font-weight: 700; color: var(--gold); margin-top: 2px; }
+  .principle-text { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.7; }
+  .principle-text strong { font-weight: 600; color: var(--text); }
 
-  /* Loading state */
-  .loading { display: flex; align-items: center; justify-content: center; padding: 80px; flex-direction: column; gap: 16px; }
-  .loading-spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-family: var(--sans); font-size: 12px; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; }
-
-  /* Empty state */
-  .empty { text-align: center; padding: 80px 32px; }
-  .empty-title { font-family: var(--serif); font-size: 22px; color: var(--text-mid); margin-bottom: 8px; }
-  .empty-sub { font-family: var(--sans); font-size: 14px; color: var(--text-light); }
+  /* CTA */
+  .cta-section { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 48px; text-align: center; margin-top: 80px; }
+  .cta-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .cta-title em { font-style: italic; color: var(--gold); }
+  .cta-sub { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); margin-bottom: 28px; line-height: 1.6; }
+  .btn-primary { background: var(--ink); color: var(--cream); font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; padding: 14px 28px; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 12px; }
+  .btn-secondary { background: none; color: var(--text-mid); font-family: var(--sans); font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
 
   /* ── FOOTER ── */
-  footer { background: var(--ink); padding: 32px 0; margin-top: 80px; }
+  footer { background: var(--ink); padding: 32px 0; margin-top: 0; }
   .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
   .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
   .footer-links { display: flex; gap: 20px; }
   .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
 
-   }
-   .hamburger { display: flex; } }
+   } }
 
+  
   /* ── MOBILE NAV ── */
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; background: transparent; border: none; outline: none; box-shadow: none; -webkit-appearance: none; appearance: none; }
-  .hamburger span { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.2s; }
   .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
   .mobile-menu.open { display: flex !important; }
   .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
   .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); line-height: 1; }
   .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
   @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
 </style>
 </head>
@@ -207,9 +162,9 @@
       <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
     </a>
     <ul class="nav-links">
-      <li><a href="/results" class="active">Results</a></li>
-      <li><a href="/how-it-works">How It Works</a></li>
-      <li><a href="/about">About</a></li>
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/how-it-works.html" class="active">How It Works</a></li>
+      <li><a href="/about.html">About</a></li>
       <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
     </ul>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
@@ -234,73 +189,119 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- PAGE HEADER -->
 <div class="page-header">
   <div class="page-header-inner">
-    <div class="page-eyebrow">Track Record</div>
-    <h1 class="page-title">Three seasons.<br><em>Zero losing years.</em></h1>
-    <p class="page-sub">Every pick. Every week. Every result. No cherry-picking, no selective memory — the full record.</p>
+    <div class="page-eyebrow">Methodology</div>
+    <h1 class="page-title">The model doesn't care<br>about <em>the narrative.</em></h1>
+    <p class="page-sub">Five quantitative models. One ensemble. No gut feelings, no hot takes, no bias toward name brands. Here's how it actually works — enough to understand it, not enough to copy it.</p>
   </div>
 </div>
 
-<!-- CONTROLS -->
-<div class="controls">
-  <div class="controls-inner">
-    <div class="control-group">
-      <span class="control-label">Season</span>
-      <div class="tab-group" id="season-tabs">
-        <button class="tab" data-season="2023" onclick="setSeason(2023)">2023</button>
-        <button class="tab" data-season="2024" onclick="setSeason(2024)">2024</button>
-        <button class="tab active" data-season="2025" onclick="setSeason(2025)">2025</button>
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- Section 1: The Problem -->
+  <div class="section">
+    <div class="section-num">01</div>
+    <h2 class="section-title">Vegas is very, very good at their job.</h2>
+    <div class="section-body">
+      <p>The sportsbook doesn't set a line to predict the outcome. It sets a line to split the public 50/50 so they collect the vig on both sides. That means public money, media narratives, and fan bias all move lines away from their true probability.</p>
+      <p>That's the inefficiency we're looking for. <strong>When the market misprices a game, we want to find it before it corrects.</strong> Not because we have insider information — because we're measuring things the public doesn't weight correctly.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">The only question that matters</div>
+      <div class="callout-body">Not "who wins?" — Vegas already knows that. The question is: <strong>does the market's number accurately reflect what the data says?</strong> If our model says a team should be a 7-point favorite and the line is 3.5, there's edge. That's a bet.</div>
+    </div>
+  </div>
+
+  <!-- Section 2: The Models -->
+  <div class="section">
+    <div class="section-num">02</div>
+    <h2 class="section-title">Multiple models. Each measuring something <em>different.</em></h2>
+    <div class="section-body">
+      <p>No single model has the full picture. Some are better at measuring season-long quality. Some are better at capturing current form. Some measure efficiency. Some measure how teams actually create and prevent scoring.</p>
+      <p>We run several independently and combine them. Their blind spots cancel out. The ensemble is more reliable than any one of them alone — and it tells us when they agree, which matters as much as what they say.</p>
+    </div>
+  </div>
+
+  <!-- Section 3: The Tier System -->
+  <div class="section">
+    <div class="section-num">03</div>
+    <h2 class="section-title">Edge alone isn't enough. <em>Agreement matters.</em></h2>
+    <div class="section-body">
+      <p>Every game gets filtered through two questions: how large is our edge vs the market, and how many models agree on the direction? Both have to clear a threshold before a pick qualifies as A+.</p>
+      <p>A pick where we have a big edge but the models are split is noise. A pick where the models all agree but the edge is tiny is already priced in. <strong>We only publish picks where both conditions are met.</strong></p>
+    </div>
+
+    <table class="tier-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>What it means</th>
+          <th>Used in</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tier-badge tier-ap">A+</span></td>
+          <td><span class="tier-td-name">Highest conviction</span><br>Strong edge vs market and model consensus. The model is confident and multiple signals point the same direction.</td>
+          <td>Weekly A+, Pick of the Week, Parlay</td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-a">A</span></td>
+          <td><span class="tier-td-name">Strong signal</span><br>Edge present, models generally agree. Less certainty than A+ but still above the noise floor.</td>
+          <td>Reference only</td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-b">B</span></td>
+          <td><span class="tier-td-name">Moderate signal</span><br>Some edge or agreement but not both. Noise is harder to separate from signal here.</td>
+          <td>Reference only</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 4: What we don't do -->
+  <div class="section">
+    <div class="section-num">04</div>
+    <h2 class="section-title">What the model <em>ignores.</em></h2>
+    <div class="section-body">
+      <p>Discipline is as important as methodology. There are things that sound like they should matter that the data consistently shows don't — at least not in the way the public thinks.</p>
+    </div>
+
+    <div class="principle-list">
+      <div class="principle">
+        <div class="principle-icon">✕</div>
+        <div class="principle-text"><strong>Injuries announced after our pick is set.</strong> We pick off opening lines. We don't chase movement caused by news we didn't have when the pick was made.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-icon">✕</div>
+        <div class="principle-text"><strong>Revenge games, rivalry narratives, must-win situations.</strong> These stories are already priced in by the public. We're looking for mispriced talent gaps, not motivation angles.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-icon">✕</div>
+        <div class="principle-text"><strong>Recency bias.</strong> A team that scored 52 points last week isn't necessarily a better bet this week. The model weighs rolling performance but doesn't overreact to a single outlier.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-icon">✕</div>
+        <div class="principle-text"><strong>Brand names.</strong> Alabama, Georgia, Ohio State — the public always overvalues them. The model doesn't know or care what the ESPN narrative is.</div>
       </div>
     </div>
-    <div class="divider"></div>
-    <div class="control-group">
-      <span class="control-label">Product</span>
-      <div class="tab-group" id="product-tabs">
-        <button class="tab active" data-product="weekly" onclick="setProduct('weekly')">Weekly A+</button>
-        <button class="tab" data-product="potw" onclick="setProduct('potw')">Pick of the Week</button>
-        <button class="tab" data-product="parlay" onclick="setProduct('parlay')">Parlay</button>
-      </div>
-    </div>
   </div>
-</div>
 
-<!-- SUMMARY BAR -->
-<div class="summary-bar" id="summary-bar">
-  <div class="summary-inner" id="summary-stats">
-    <div class="summary-stat">
-      <div class="summary-stat-val neutral" id="sum-bets">—</div>
-      <div class="summary-stat-lbl">Total Bets</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-val" id="sum-hits">—</div>
-      <div class="summary-stat-lbl">Hit Rate</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-val positive" id="sum-profit">—</div>
-      <div class="summary-stat-lbl">Profit</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-val positive" id="sum-roi">—</div>
-      <div class="summary-stat-lbl">ROI</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-val neutral" id="sum-record">—</div>
-      <div class="summary-stat-lbl">Record</div>
-    </div>
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2 class="cta-title">See the model in action.</h2>
+    <p class="cta-sub">Three seasons of every pick, every week, every result. No cherry-picking.</p>
+    <a href="/results.html" class="btn-primary">View Full Results</a>
+    <a href="/index.html#waitlist" class="btn-secondary">Join the waitlist</a>
   </div>
-</div>
 
-<!-- RESULTS CONTENT -->
-<div class="results-section" id="results-content">
-  <div class="loading">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">Loading results</div>
-  </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
-    <div class="footer-logo">
+    <div>
       <img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics" style="height:56px;width:auto;display:block;">
     </div>
     <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
@@ -312,330 +313,5 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   </div>
 </footer>
 
-<script>
-const API = 'https://betbuddyservice-production.up.railway.app';
-const BET_SIZE = 50; // Weekly A+ flat bet
-const POTW_BET = 500;
-const PARLAY_BET = 100;
-
-let currentSeason  = 2025;
-let currentProduct = 'weekly';
-let cache = {};
-
-function setSeason(s) {
-  currentSeason = s;
-  document.querySelectorAll('#season-tabs .tab').forEach(t => {
-    t.classList.toggle('active', parseInt(t.dataset.season) === s);
-  });
-  loadData();
-}
-
-function setProduct(p) {
-  currentProduct = p;
-  document.querySelectorAll('#product-tabs .tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.product === p);
-  });
-  loadData();
-}
-
-function fmt(n, prefix='$') {
-  if (n === null || n === undefined) return '—';
-  const abs = Math.abs(n);
-  const str = abs >= 10000
-    ? prefix + (abs/1000).toFixed(1) + 'k'
-    : prefix + abs.toFixed(0);
-  return n < 0 ? '-' + str : str;
-}
-
-function pct(n) { return n !== null && n !== undefined ? n.toFixed(1) + '%' : '—'; }
-
-async function fetchData(url) {
-  if (cache[url]) return cache[url];
-  const r = await fetch(url);
-  const d = await r.json();
-  cache[url] = d;
-  return d;
-}
-
-async function loadData() {
-  const content = document.getElementById('results-content');
-  content.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Loading results</div></div>';
-
-  try {
-    if (currentProduct === 'weekly') {
-      const data = await fetchData(`${API}/backtest/weekly-results?season=${currentSeason}&bet_size=50`);
-      renderWeekly(data);
-    } else if (currentProduct === 'potw') {
-      const data = await fetchData(`${API}/backtest/potw-results?season=${currentSeason}&bet_size=500`);
-      renderPOTW(data);
-    } else {
-      const data = await fetchData(`${API}/backtest/parlay-results?season=${currentSeason}`);
-      renderParlay(data);
-    }
-  } catch(e) {
-    content.innerHTML = '<div class="empty"><div class="empty-title">Could not load results</div><div class="empty-sub">Please try again in a moment.</div></div>';
-  }
-}
-
-function updateSummary(bets, hitPct, profit, roi, record) {
-  document.getElementById('sum-bets').textContent   = bets || '—';
-  document.getElementById('sum-hits').textContent   = hitPct ? pct(hitPct) : '—';
-  document.getElementById('sum-profit').textContent = profit !== null ? fmt(profit) : '—';
-  document.getElementById('sum-roi').textContent    = roi !== null ? pct(roi) : '—';
-  document.getElementById('sum-record').textContent = record || '—';
-
-  const profitEl = document.getElementById('sum-profit');
-  profitEl.className = 'summary-stat-val ' + (profit >= 0 ? 'positive' : 'pnl-neg');
-}
-
-/* ── WEEKLY A+ ── */
-function renderWeekly(data) {
-  updateSummary(
-    data.total_bets,
-    data.hit_pct,
-    data.total_profit,
-    data.roi,
-    `${data.total_hits}-${data.total_bets - data.total_hits}`
-  );
-
-  const weeks = (data.weekly || []).filter(w => w.bets_detail && w.bets_detail.length > 0);
-  if (!weeks.length) {
-    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No picks this season</div></div>';
-    return;
-  }
-
-  const regularWeeks   = weeks.filter(w => !w.is_postseason);
-  const postseasonWeeks = weeks.filter(w => w.is_postseason);
-
-  let html = '';
-  regularWeeks.forEach(week => {
-    const pnlClass = week.week_pnl >= 0 ? 'up' : 'down';
-    const pnlStr   = (week.week_pnl >= 0 ? '+' : '') + '$' + Math.abs(week.week_pnl).toFixed(0);
-    html += `
-      <div class="week-block">
-        <div class="week-header">
-          <div class="week-title">Week ${week.week}</div>
-          <div class="week-meta">
-            <div class="week-meta-item">${week.bets} picks <span class="week-meta-val">${pct(week.hit_pct)} Hit Rate</span></div>
-            <div class="week-meta-item">Week P&L <span class="week-meta-val ${pnlClass}">${pnlStr}</span></div>
-            <div class="week-meta-item">Bankroll <span class="week-meta-val">$${week.bankroll.toFixed(0)}</span></div>
-          </div>
-        </div>
-        <table class="picks-table">
-          <thead>
-            <tr>
-              <th>Matchup</th>
-              <th>Bet Type</th>
-              <th>Our Pick</th>
-              <th>Projection</th>
-              <th>Actual</th>
-              <th>Result</th>
-              <th>Odds</th>
-              <th style="text-align:right">Payout</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${week.bets_detail.map(b => {
-              const hit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
-              const hitLabel = b.hit === true ? 'Win' : b.hit === false ? 'Loss' : 'Push';
-              const pnlCls = b.pnl > 0 ? 'pnl-pos' : b.pnl < 0 ? 'pnl-neg' : '';
-              const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-              const typeLabel = b.type === 'O/U' ? 'O/U' : b.type;
-              const displayActual = b.actual;
-              return `
-                <tr>
-                  <td><div class="pick-team">${b.away_team} @ ${b.home_team}</div></td>
-                  <td><span class="badge-type ${typeCls}">${typeLabel}</span></td>
-                  <td><strong>${b.pick}</strong></td>
-                  <td style="color:var(--text-mid)">${b.projection || '—'}</td>
-                  <td>${displayActual}</td>
-                  <td>
-                    <div class="result-hit">
-                      <div class="result-dot ${hit}"></div>
-                      ${hitLabel}
-                    </div>
-                  </td>
-                  <td>${b.odds > 0 ? '+' : ''}${b.odds}</td>
-                  <td style="text-align:right"><span class="${pnlCls}">${b.pnl > 0 ? '+' : ''}$${Math.abs(b.pnl).toFixed(0)}</span></td>
-                </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>`;
-  });
-
-  // Postseason cards
-  if (postseasonWeeks.length > 0) {
-    html += `
-      <div style="margin-top:48px;margin-bottom:16px;">
-        <div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--text);padding-bottom:12px;border-bottom:2px solid var(--border);">
-          Postseason
-        </div>
-      </div>
-      <div class="potw-grid">`;
-    postseasonWeeks.forEach(week => {
-      week.bets_detail.forEach(b => {
-        const hit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
-        const hitLabel = b.hit === true ? 'WIN ✓' : b.hit === false ? 'LOSS ✗' : 'Push';
-        const pnlCls = b.pnl > 0 ? 'pnl-pos' : b.pnl < 0 ? 'pnl-neg' : '';
-        const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-        html += `
-          <div class="potw-card">
-            <div class="potw-card-header">
-              <div class="potw-week">Postseason</div>
-              <div class="potw-result-badge ${hit}">${hitLabel}</div>
-            </div>
-            <div class="potw-card-body">
-              <div class="potw-matchup">${b.away_team} @ ${b.home_team}</div>
-              <div class="potw-pick"><span class="badge-type ${typeCls}">${b.type}</span> &nbsp;${b.pick}</div>
-              <div class="potw-actual" style="margin-top:12px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                  <span>Projection: <span class="potw-actual-score">${b.projection || '—'}</span></span>
-                  <span>Final: <span class="potw-actual-score">${b.actual || '—'}</span></span>
-                  <span class="${pnlCls}">${b.pnl >= 0 ? '+' : ''}$${Math.abs(b.pnl).toFixed(0)}</span>
-                </div>
-              </div>
-            </div>
-          </div>`;
-      });
-    });
-    html += `</div>`;
-  }
-
-  document.getElementById('results-content').innerHTML = html;
-}
-
-/* ── PICK OF THE WEEK ── */
-function renderPOTW(data) {
-  const wins   = data.wins   || 0;
-  const losses = data.losses || 0;
-  updateSummary(
-    wins + losses,
-    data.hit_pct,
-    data.total_profit,
-    data.roi,
-    `${wins}-${losses}`
-  );
-
-  const weeks = (data.weeks || []).filter(w => w.pick);
-  if (!weeks.length) {
-    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No picks this season</div></div>';
-    return;
-  }
-
-  const regularWeeks    = weeks.filter(w => !w.is_postseason);
-  const postseasonWeeks = weeks.filter(w => w.is_postseason);
-
-  let html = '<div class="potw-grid">';
-  regularWeeks.forEach(week => {
-    const hit = week.hit === true;
-    const push = week.hit === null;
-    const resultLabel = push ? 'Push' : hit ? 'WIN ✓' : 'LOSS ✗';
-    const resultCls   = push ? '' : hit ? 'win' : 'loss';
-
-    html += `
-      <div class="potw-card">
-        <div class="potw-card-header">
-          <div class="potw-week">Week ${week.week}</div>
-          <div class="potw-result-badge ${resultCls}">${resultLabel}</div>
-        </div>
-        <div class="potw-card-body">
-          <div class="potw-matchup">${week.away_team || ''} @ ${week.home_team || ''}</div>
-          <div class="potw-pick">${week.pick || ''} ${week.odds ? (week.odds > 0 ? '+' : '') + week.odds : ''}</div>
-          <div class="potw-stats">
-            <div class="potw-stat">
-              <div class="potw-stat-val">${week.edge ? week.edge.toFixed(1) : '—'}</div>
-              <div class="potw-stat-lbl">Edge (pts)</div>
-            </div>
-            <div class="potw-stat">
-              <div class="potw-stat-val">${week.agreement || '—'}/4</div>
-              <div class="potw-stat-lbl">Core Models</div>
-            </div>
-            <div class="potw-stat">
-              <div class="potw-stat-val">${week.composite_score ? Math.round(week.composite_score) : '—'}</div>
-              <div class="potw-stat-lbl">Score</div>
-            </div>
-          </div>
-          <div class="potw-actual">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-              <span>Our pick: <span class="potw-actual-score">${week.pick || '—'}</span></span>
-              <span>Final: <span class="potw-actual-score">${week.bet_type === 'ou' ? 'Total ' + (week.actual_total || '—') : (week.actual_margin != null ? (week.actual_margin >= 0 ? '+' : '') + week.actual_margin : '—')}</span></span>
-              <span class="${week.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${week.pnl >= 0 ? '+' : ''}$${Math.abs(week.pnl).toFixed(0)}</span>
-            </div>
-          </div>
-        </div>
-      </div>`;
-  });
-  html += '</div>';
-
-  if (postseasonWeeks.length > 0) {
-    html += '<div style="margin-top:48px;margin-bottom:16px;"><div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--text);padding-bottom:12px;border-bottom:2px solid var(--border);">Postseason</div></div><div class="potw-grid">';
-    postseasonWeeks.forEach(week => {
-      const hit2 = week.hit === true;
-      const push2 = week.hit === null;
-      const rl2 = push2 ? 'Push' : hit2 ? 'WIN ✓' : 'LOSS ✗';
-      const rc2 = push2 ? '' : hit2 ? 'win' : 'loss';
-      html += '<div class="potw-card"><div class="potw-card-header"><div class="potw-week">Postseason</div><div class="potw-result-badge ' + rc2 + '">' + rl2 + '</div></div><div class="potw-card-body"><div class="potw-matchup">' + (week.away_team||'') + ' @ ' + (week.home_team||'') + '</div><div class="potw-pick">' + (week.pick||'') + '</div><div class="potw-stats"><div class="potw-stat"><div class="potw-stat-val">' + (week.edge != null ? week.edge.toFixed(1) : '—') + '</div><div class="potw-stat-lbl">Edge (pts)</div></div><div class="potw-stat"><div class="potw-stat-val">' + (week.agreement != null ? week.agreement + '/4' : '—') + '</div><div class="potw-stat-lbl">Core Models</div></div></div><div class="potw-actual"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><span>Final: <span class="potw-actual-score">' + (week.bet_type === 'ou' ? 'Total ' + (week.actual_total||'—') : (week.actual_margin != null ? (week.actual_margin >= 0 ? '+' : '') + week.actual_margin : '—')) + '</span></span><span class="' + (week.pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (week.pnl >= 0 ? '+' : '') + '$' + Math.abs(week.pnl).toFixed(0) + '</span></div></div></div></div>';
-    });
-    html += '</div>';
-  }
-
-  document.getElementById('results-content').innerHTML = html;
-}
-
-/* ── PARLAY ── */
-function renderParlay(data) {
-  const bal = data.balanced || {};
-  updateSummary(
-    bal.wins + bal.losses,
-    bal.hit_pct,
-    bal.total_profit,
-    bal.roi,
-    `${bal.wins || 0}-${bal.losses || 0}`
-  );
-
-  const weeks = (data.weekly || []).filter(w => w.balanced_parlay && w.balanced_parlay.legs && w.balanced_parlay.legs.length);
-  if (!weeks.length) {
-    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No parlays this season</div></div>';
-    return;
-  }
-
-  let html = '<div class="parlay-grid">';
-  weeks.forEach(week => {
-    const bp  = week.balanced_parlay;
-    const hit = bp.all_hit;
-    const resultCls   = hit ? 'win' : 'loss';
-    const payoutStr   = hit ? `+$${bp.payout.toFixed(0)}` : `-$${PARLAY_BET}`;
-
-    html += `
-      <div class="parlay-card ${resultCls}">
-        <div class="parlay-card-header">
-          <div class="parlay-week-label">Week ${week.week}</div>
-          <div class="parlay-result ${resultCls}">${hit ? 'HIT ✓' : 'MISS ✗'}</div>
-        </div>
-        <div class="parlay-card-body">
-          ${(bp.legs || []).map(leg => {
-            const legCls = leg.hit === true ? 'win' : leg.hit === false ? 'loss' : 'push';
-            return `
-              <div class="parlay-leg">
-                <div class="parlay-leg-dot ${legCls}"></div>
-                <div class="parlay-leg-text">${leg.type === 'ou' ? (leg.pick_with_game || leg.pick || '') : (leg.pick || '')}</div>
-                <div class="parlay-leg-odds">${leg.odds > 0 ? '+' : ''}${leg.odds}</div>
-              </div>`;
-          }).join('')}
-          <div class="parlay-payout">
-            <div class="parlay-payout-lbl">${hit ? 'Payout' : 'Result'}</div>
-            <div class="parlay-payout-val ${resultCls}">${payoutStr}</div>
-          </div>
-        </div>
-      </div>`;
-  });
-  html += '</div>';
-  document.getElementById('results-content').innerHTML = html;
-}
-
-// Init
-loadData();
-</script>
 </body>
 </html>
