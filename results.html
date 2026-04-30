@@ -285,8 +285,8 @@
 
 <script>
 const API = 'https://betbuddyservice-production.up.railway.app';
-const BET_SIZE = 20; // Weekly A+ flat bet
-const POTW_BET = 100;
+const BET_SIZE = 50; // Weekly A+ flat bet
+const POTW_BET = 500;
 const PARLAY_BET = 100;
 
 let currentSeason  = 2025;
@@ -334,10 +334,10 @@ async function loadData() {
 
   try {
     if (currentProduct === 'weekly') {
-      const data = await fetchData(`${API}/backtest/weekly-results?season=${currentSeason}`);
+      const data = await fetchData(`${API}/backtest/weekly-results?season=${currentSeason}&bet_size=50`);
       renderWeekly(data);
     } else if (currentProduct === 'potw') {
-      const data = await fetchData(`${API}/backtest/potw-results?season=${currentSeason}`);
+      const data = await fetchData(`${API}/backtest/potw-results?season=${currentSeason}&bet_size=500`);
       renderPOTW(data);
     } else {
       const data = await fetchData(`${API}/backtest/parlay-results?season=${currentSeason}`);
