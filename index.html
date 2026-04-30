@@ -589,7 +589,7 @@
   .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
   .mobile-menu .close-btn { position: absolute; top: 24px; right: 24px; font-size: 24px; cursor: pointer; background: none; border: none; color: var(--text); }
   .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; letter-spacing: 0.5px; }
-  @media (max-width: 768px) { .hamburger { display: flex; } }
+  @media (max-width: 960px) { .hamburger { display: flex; } }
 </style>
 </head>
 <body>
@@ -622,8 +622,12 @@
       <li><a href="/about.html">About</a></li>
       <li><a href="#waitlist" class="btn-nav">Join Waitlist</a></li>
     </ul>
-    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
-      <span></span><span></span><span></span>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu" style="outline:none;border:none;background:transparent;padding:4px;cursor:pointer;">
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="22" height="2" rx="1" fill="#1A1705"/>
+        <rect y="7" width="22" height="2" rx="1" fill="#1A1705"/>
+        <rect y="14" width="22" height="2" rx="1" fill="#1A1705"/>
+      </svg>
     </button>
   </div>
 </nav>
