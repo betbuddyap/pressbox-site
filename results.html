@@ -395,6 +395,7 @@ function renderWeekly(data) {
               <th>Matchup</th>
               <th>Bet Type</th>
               <th>Our Pick</th>
+              <th>Projection</th>
               <th>Actual</th>
               <th>Result</th>
               <th>Odds</th>
@@ -414,6 +415,7 @@ function renderWeekly(data) {
                   <td><div class="pick-team">${b.away_team} @ ${b.home_team}</div></td>
                   <td><span class="badge-type ${typeCls}">${typeLabel}</span></td>
                   <td><strong>${b.pick}</strong></td>
+                  <td style="color:var(--text-mid)">${b.projection || '—'}</td>
                   <td>${displayActual}</td>
                   <td>
                     <div class="result-hit">
