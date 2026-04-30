@@ -375,8 +375,11 @@ function renderWeekly(data) {
     return;
   }
 
+  const regularWeeks   = weeks.filter(w => !w.is_postseason);
+  const postseasonWeeks = weeks.filter(w => w.is_postseason);
+
   let html = '';
-  weeks.forEach(week => {
+  regularWeeks.forEach(week => {
     const pnlClass = week.week_pnl >= 0 ? 'up' : 'down';
     const pnlStr   = (week.week_pnl >= 0 ? '+' : '') + '$' + Math.abs(week.week_pnl).toFixed(0);
     html += `
@@ -432,6 +435,44 @@ function renderWeekly(data) {
       </div>`;
   });
 
+  // Postseason cards
+  if (postseasonWeeks.length > 0) {
+    html += `
+      <div style="margin-top:48px;margin-bottom:16px;">
+        <div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--text);padding-bottom:12px;border-bottom:2px solid var(--border);">
+          Postseason
+        </div>
+      </div>
+      <div class="potw-grid">`;
+    postseasonWeeks.forEach(week => {
+      week.bets_detail.forEach(b => {
+        const hit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
+        const hitLabel = b.hit === true ? 'WIN ✓' : b.hit === false ? 'LOSS ✗' : 'Push';
+        const pnlCls = b.pnl > 0 ? 'pnl-pos' : b.pnl < 0 ? 'pnl-neg' : '';
+        const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
+        html += `
+          <div class="potw-card">
+            <div class="potw-card-header">
+              <div class="potw-week">Postseason</div>
+              <div class="potw-result-badge ${hit}">${hitLabel}</div>
+            </div>
+            <div class="potw-card-body">
+              <div class="potw-matchup">${b.away_team} @ ${b.home_team}</div>
+              <div class="potw-pick"><span class="badge-type ${typeCls}">${b.type}</span> &nbsp;${b.pick}</div>
+              <div class="potw-actual" style="margin-top:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                  <span>Projection: <span class="potw-actual-score">${b.projection || '—'}</span></span>
+                  <span>Final: <span class="potw-actual-score">${b.actual || '—'}</span></span>
+                  <span class="${pnlCls}">${b.pnl >= 0 ? '+' : ''}$${Math.abs(b.pnl).toFixed(0)}</span>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      });
+    });
+    html += `</div>`;
+  }
+
   document.getElementById('results-content').innerHTML = html;
 }
 
@@ -453,8 +494,11 @@ function renderPOTW(data) {
     return;
   }
 
+  const regularWeeks    = weeks.filter(w => !w.is_postseason);
+  const postseasonWeeks = weeks.filter(w => w.is_postseason);
+
   let html = '<div class="potw-grid">';
-  weeks.forEach(week => {
+  regularWeeks.forEach(week => {
     const hit = week.hit === true;
     const push = week.hit === null;
     const resultLabel = push ? 'Push' : hit ? 'WIN ✓' : 'LOSS ✗';
@@ -494,6 +538,19 @@ function renderPOTW(data) {
       </div>`;
   });
   html += '</div>';
+
+  if (postseasonWeeks.length > 0) {
+    html += '<div style="margin-top:48px;margin-bottom:16px;"><div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--text);padding-bottom:12px;border-bottom:2px solid var(--border);">Postseason</div></div><div class="potw-grid">';
+    postseasonWeeks.forEach(week => {
+      const hit2 = week.hit === true;
+      const push2 = week.hit === null;
+      const rl2 = push2 ? 'Push' : hit2 ? 'WIN ✓' : 'LOSS ✗';
+      const rc2 = push2 ? '' : hit2 ? 'win' : 'loss';
+      html += '<div class="potw-card"><div class="potw-card-header"><div class="potw-week">Postseason</div><div class="potw-result-badge ' + rc2 + '">' + rl2 + '</div></div><div class="potw-card-body"><div class="potw-matchup">' + (week.away_team||'') + ' @ ' + (week.home_team||'') + '</div><div class="potw-pick">' + (week.pick||'') + '</div><div class="potw-stats"><div class="potw-stat"><div class="potw-stat-val">' + (week.edge != null ? week.edge.toFixed(1) : '—') + '</div><div class="potw-stat-lbl">Edge (pts)</div></div><div class="potw-stat"><div class="potw-stat-val">' + (week.agreement != null ? week.agreement + '/4' : '—') + '</div><div class="potw-stat-lbl">Core Models</div></div></div><div class="potw-actual"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><span>Final: <span class="potw-actual-score">' + (week.bet_type === 'ou' ? 'Total ' + (week.actual_total||'—') : (week.actual_margin != null ? (week.actual_margin >= 0 ? '+' : '') + week.actual_margin : '—')) + '</span></span><span class="' + (week.pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (week.pnl >= 0 ? '+' : '') + '$' + Math.abs(week.pnl).toFixed(0) + '</span></div></div></div></div>';
+    });
+    html += '</div>';
+  }
+
   document.getElementById('results-content').innerHTML = html;
 }
 
