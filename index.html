@@ -580,6 +580,16 @@
     .footer-note { text-align: center; }
     .how-aside { position: static; }
   }
+
+  /* ── MOBILE NAV ── */
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: all 0.2s; }
+  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 32px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
+  .mobile-menu .close-btn { position: absolute; top: 24px; right: 24px; font-size: 24px; cursor: pointer; background: none; border: none; color: var(--text); }
+  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; letter-spacing: 0.5px; }
+  @media (max-width: 768px) { .hamburger { display: flex; } }
 </style>
 </head>
 <body>
@@ -862,27 +872,50 @@
       </div>
 
       <div class="track-chart">
-        <div class="track-chart-title">Pick of the Week<br>hit rate by season</div>
+        <div class="track-chart-title">A+ Spread<br>hit rate by season</div>
         <div class="track-bar-row">
           <div class="track-bar-label">2023</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:56.2%"></div></div>
-          <div class="track-bar-val">56.2%</div>
+          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:58.7%"></div></div>
+          <div class="track-bar-val">58.7%</div>
         </div>
         <div class="track-bar-row">
           <div class="track-bar-label">2024</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:68.8%"></div></div>
-          <div class="track-bar-val">68.8%</div>
+          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:60.8%"></div></div>
+          <div class="track-bar-val">60.8%</div>
         </div>
         <div class="track-bar-row">
           <div class="track-bar-label">2025</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:75%"></div></div>
-          <div class="track-bar-val">75.0%</div>
+          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:69.3%"></div></div>
+          <div class="track-bar-val">69.3%</div>
         </div>
         <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
           <div class="track-bar-row">
             <div class="track-bar-label" style="color:var(--ink);font-weight:700;">3-Yr</div>
-            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:68.8%;background:var(--ink)"></div></div>
-            <div class="track-bar-val" style="color:var(--ink);font-weight:700;">68.8%</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:62.8%;background:var(--ink)"></div></div>
+            <div class="track-bar-val" style="color:var(--ink);font-weight:700;">62.8%</div>
+          </div>
+        </div>
+        <div class="track-chart-title" style="margin-top:28px;">A+ O/U<br>hit rate by season</div>
+        <div class="track-bar-row">
+          <div class="track-bar-label">2023</div>
+          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:65.7%"></div></div>
+          <div class="track-bar-val">65.7%</div>
+        </div>
+        <div class="track-bar-row">
+          <div class="track-bar-label">2024</div>
+          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:72.7%"></div></div>
+          <div class="track-bar-val">72.7%</div>
+        </div>
+        <div class="track-bar-row">
+          <div class="track-bar-label">2025</div>
+          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:82.4%"></div></div>
+          <div class="track-bar-val">82.4%</div>
+        </div>
+        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+          <div class="track-bar-row">
+            <div class="track-bar-label" style="color:var(--ink);font-weight:700;">3-Yr</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:73%;background:var(--ink)"></div></div>
+            <div class="track-bar-val" style="color:var(--ink);font-weight:700;">73.0%</div>
           </div>
         </div>
         <div class="track-callout" style="margin-top:24px;">
@@ -943,11 +976,11 @@
           <div class="how-aside-stat-lbl">Games backtested · 2023–2025</div>
         </div>
         <div class="how-aside-stat">
-          <div class="how-aside-stat-val">58.6%</div>
+          <div class="how-aside-stat-val">62.8%</div>
           <div class="how-aside-stat-lbl">3-season Weekly A+ hit rate</div>
         </div>
         <div class="how-aside-stat">
-          <div class="how-aside-stat-val">4/4</div>
+          <div class="how-aside-stat-val">3/3</div>
           <div class="how-aside-stat-lbl">Profitable seasons — no exceptions</div>
         </div>
       </div>
