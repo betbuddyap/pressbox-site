@@ -71,7 +71,7 @@
   .summary-stat:first-child { padding-left: 0; }
   .summary-stat:last-child { border-right: none; }
   .summary-stat-val { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--gold-light); line-height: 1; margin-bottom: 4px; }
-  .summary-stat-lbl { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #4A4A3A; }
+  .summary-stat-lbl { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #AEAE9E; }
   .summary-stat-val.positive { color: #7BC47F; }
   .summary-stat-val.neutral { color: #F8F5EE; }
 
@@ -218,8 +218,8 @@
       <span class="control-label">Season</span>
       <div class="tab-group" id="season-tabs">
         <button class="tab" data-season="2023" onclick="setSeason(2023)">2023</button>
-        <button class="tab active" data-season="2024" onclick="setSeason(2024)">2024</button>
-        <button class="tab" data-season="2025" onclick="setSeason(2025)">2025</button>
+        <button class="tab" data-season="2024" onclick="setSeason(2024)">2024</button>
+        <button class="tab active" data-season="2025" onclick="setSeason(2025)">2025</button>
       </div>
     </div>
     <div class="divider"></div>
@@ -289,7 +289,7 @@ const BET_SIZE = 20; // Weekly A+ flat bet
 const POTW_BET = 100;
 const PARLAY_BET = 100;
 
-let currentSeason  = 2024;
+let currentSeason  = 2025;
 let currentProduct = 'weekly';
 let cache = {};
 
