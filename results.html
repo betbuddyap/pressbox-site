@@ -176,7 +176,8 @@
   .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
   .mobile-menu .close-btn { position: absolute; top: 24px; right: 24px; font-size: 24px; cursor: pointer; background: none; border: none; color: var(--text); }
   .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; letter-spacing: 0.5px; }
-  @media (max-width: 960px) { .hamburger { display: flex; } .nav-links { display: none !important; } }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
 </style>
 </head>
 <body>
