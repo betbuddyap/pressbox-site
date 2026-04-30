@@ -393,12 +393,12 @@ function renderWeekly(data) {
           <thead>
             <tr>
               <th>Matchup</th>
-              <th>Type</th>
-              <th>Pick</th>
-              <th>Odds</th>
-              <th>Result</th>
+              <th>Bet Type</th>
+              <th>Our Pick</th>
               <th>Actual</th>
-              <th style="text-align:right">P&L</th>
+              <th>Result</th>
+              <th>Odds</th>
+              <th style="text-align:right">Payout</th>
             </tr>
           </thead>
           <tbody>
@@ -414,14 +414,14 @@ function renderWeekly(data) {
                   <td><div class="pick-team">${b.away_team} @ ${b.home_team}</div></td>
                   <td><span class="badge-type ${typeCls}">${typeLabel}</span></td>
                   <td><strong>${b.pick}</strong></td>
-                  <td>${b.odds > 0 ? '+' : ''}${b.odds}</td>
+                  <td>${displayActual}</td>
                   <td>
                     <div class="result-hit">
                       <div class="result-dot ${hit}"></div>
                       ${hitLabel}
                     </div>
                   </td>
-                  <td>${displayActual}</td>
+                  <td>${b.odds > 0 ? '+' : ''}${b.odds}</td>
                   <td style="text-align:right"><span class="${pnlCls}">${b.pnl > 0 ? '+' : ''}$${Math.abs(b.pnl).toFixed(0)}</span></td>
                 </tr>`;
             }).join('')}
