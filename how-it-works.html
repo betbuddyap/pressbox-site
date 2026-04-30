@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How It Works — PressBox Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background-color: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream:      #F8F5EE;
+    --cream-dark: #EFE9DC;
+    --cream-mid:  #E8E1D3;
+    --border:     #DDD6C8;
+    --text:       #1A1705;
+    --text-mid:   #6B6455;
+    --text-light: #A39A88;
+    --gold:       #B8922A;
+    --gold-light: #D4A83A;
+    --gold-pale:  #F5EDD0;
+    --ink:        #0F0E0A;
+    --serif:      'Libre Baskerville', Georgia, serif;
+    --sans:       'Source Sans 3', system-ui, sans-serif;
+    --max:        1200px;
+  }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  /* ── TICKER ── */
+  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
+  .ticker-track span { margin: 0 28px; color: #2A2A20; }
+  .ticker-track b { color: var(--gold-light); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* ── NAV ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
+
+  /* ── PAGE HEADER ── */
+  .page-header { background: var(--cream); border-bottom: 1px solid var(--border); padding: 64px 0 56px; }
+  .page-header-inner { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--serif); font-size: 44px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; color: var(--text); margin-bottom: 16px; }
+  .page-title em { font-style: italic; color: var(--gold); }
+  .page-sub { font-family: var(--sans); font-size: 17px; font-weight: 300; color: var(--text-mid); line-height: 1.7; }
+
+  /* ── CONTENT ── */
+  .content { max-width: 760px; margin: 0 auto; padding: 72px 32px 96px; }
+
+  /* Section */
+  .section { margin-bottom: 72px; }
+  .section-num { font-family: var(--serif); font-size: 11px; font-weight: 400; color: var(--text-light); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .section-num::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 20px; }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .section-body { font-family: var(--sans); font-size: 16px; font-weight: 300; color: var(--text-mid); line-height: 1.8; }
+  .section-body p + p { margin-top: 16px; }
+  .section-body strong { font-weight: 600; color: var(--text); }
+
+  /* Model cards */
+  .model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
+  .model-card { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; }
+  .model-card-accent { border-left: 3px solid var(--gold); }
+  .model-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .model-desc { font-family: var(--sans); font-size: 13px; font-weight: 300; color: var(--text-mid); line-height: 1.6; }
+  .model-tag { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+
+  /* Phase timeline */
+  .phase-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 28px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .phase-card { padding: 24px 20px; border-right: 1px solid var(--border); }
+  .phase-card:last-child { border-right: none; }
+  .phase-label { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .phase-weeks { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .phase-desc { font-family: var(--sans); font-size: 12px; font-weight: 300; color: var(--text-mid); line-height: 1.6; }
+  .phase-signal { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text-mid); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .phase-signal span { color: var(--gold); }
+
+  /* Tier table */
+  .tier-table { width: 100%; border-collapse: collapse; margin-top: 28px; }
+  .tier-table th { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); text-align: left; padding: 10px 16px; background: var(--cream-dark); border-bottom: 1px solid var(--border); }
+  .tier-table td { font-family: var(--sans); font-size: 13px; color: var(--text-mid); padding: 14px 16px; border-bottom: 1px solid var(--border); line-height: 1.5; vertical-align: top; }
+  .tier-table tr:last-child td { border-bottom: none; }
+  .tier-badge { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; display: inline-block; }
+  .tier-ap { background: var(--gold-pale); color: var(--gold); }
+  .tier-a  { background: var(--cream-mid); color: var(--text-mid); }
+  .tier-b  { background: var(--cream-mid); color: var(--text-light); }
+  .tier-td-name { font-weight: 600; color: var(--text); }
+
+  /* Callout box */
+  .callout { background: var(--ink); border-radius: 4px; padding: 32px 36px; margin-top: 28px; }
+  .callout-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--gold-light); margin-bottom: 12px; }
+  .callout-body { font-family: var(--sans); font-size: 14px; font-weight: 300; color: #8A8A7A; line-height: 1.7; }
+  .callout-body strong { color: #D4D4C4; font-weight: 500; }
+
+  /* Principles */
+  .principle-list { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .principle { display: flex; gap: 16px; align-items: flex-start; }
+  .principle-icon { width: 32px; height: 32px; background: var(--gold-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--serif); font-size: 13px; font-weight: 700; color: var(--gold); margin-top: 2px; }
+  .principle-text { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.7; }
+  .principle-text strong { font-weight: 600; color: var(--text); }
+
+  /* CTA */
+  .cta-section { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 48px; text-align: center; margin-top: 80px; }
+  .cta-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .cta-title em { font-style: italic; color: var(--gold); }
+  .cta-sub { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); margin-bottom: 28px; line-height: 1.6; }
+  .btn-primary { background: var(--ink); color: var(--cream); font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; padding: 14px 28px; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 12px; }
+  .btn-secondary { background: none; color: var(--text-mid); font-family: var(--sans); font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
+
+  /* ── FOOTER ── */
+  footer { background: var(--ink); padding: 32px 0; margin-top: 0; }
+  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$31,612 profit</b> flat betting $20/pick over 3 seasons<span>·</span>
+    2025 Season <b>11-4</b> · 73.3% Hit Rate · best single season<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$31,612 profit</b> flat betting $20/pick over 3 seasons<span>·</span>
+    2025 Season <b>11-4</b> · 73.3% Hit Rate · best single season<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
+    </a>
+    <ul class="nav-links">
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/how-it-works.html" class="active">How It Works</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">Methodology</div>
+    <h1 class="page-title">The model doesn't care<br>about <em>the narrative.</em></h1>
+    <p class="page-sub">Five quantitative models. One ensemble. No gut feelings, no hot takes, no bias toward name brands. Here's how it actually works — enough to understand it, not enough to copy it.</p>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- Section 1: The Problem -->
+  <div class="section">
+    <div class="section-num">01</div>
+    <h2 class="section-title">Vegas is very, very good at their job.</h2>
+    <div class="section-body">
+      <p>The sportsbook doesn't set a line to predict the outcome. It sets a line to split the public 50/50 so they collect the vig on both sides. That means public money, media narratives, and fan bias all move lines away from their true probability.</p>
+      <p>That's the inefficiency we're looking for. <strong>When the market misprices a game, we want to find it before it corrects.</strong> Not because we have insider information — because we're measuring things the public doesn't weight correctly.</p>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">The only question that matters</div>
+      <div class="callout-body">Not "who wins?" — Vegas already knows that. The question is: <strong>does the market's number accurately reflect what the data says?</strong> If our model says a team should be a 7-point favorite and the line is 3.5, there's edge. That's a bet.</div>
+    </div>
+  </div>
+
+  <!-- Section 2: The Models -->
+  <div class="section">
+    <div class="section-num">02</div>
+    <h2 class="section-title">Multiple models. Each measuring something <em>different.</em></h2>
+    <div class="section-body">
+      <p>No single model has the full picture. Some are better at measuring season-long quality. Some are better at capturing current form. Some measure efficiency. Some measure how teams actually create and prevent scoring.</p>
+      <p>We run several independently and combine them. Their blind spots cancel out. The ensemble is more reliable than any one of them alone — and it tells us when they agree, which matters as much as what they say.</p>
+    </div>
+  </div>
+
+  <!-- Section 3: The Tier System -->
+  <div class="section">
+    <div class="section-num">03</div>
+    <h2 class="section-title">Edge alone isn't enough. <em>Agreement matters.</em></h2>
+    <div class="section-body">
+      <p>Every game gets filtered through two questions: how large is our edge vs the market, and how many models agree on the direction? Both have to clear a threshold before a pick qualifies as A+.</p>
+      <p>A pick where we have a big edge but the models are split is noise. A pick where the models all agree but the edge is tiny is already priced in. <strong>We only publish picks where both conditions are met.</strong></p>
+    </div>
+
+    <table class="tier-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>What it means</th>
+          <th>Used in</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tier-badge tier-ap">A+</span></td>
+          <td><span class="tier-td-name">Highest conviction</span><br>Strong edge vs market and model consensus. The model is confident and multiple signals point the same direction.</td>
+          <td>Weekly A+, Pick of the Week, Parlay</td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-a">A</span></td>
+          <td><span class="tier-td-name">Strong signal</span><br>Edge present, models generally agree. Less certainty than A+ but still above the noise floor.</td>
+          <td>Reference only</td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-b">B</span></td>
+          <td><span class="tier-td-name">Moderate signal</span><br>Some edge or agreement but not both. Noise is harder to separate from signal here.</td>
+          <td>Reference only</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 4: What we don't do -->
+  <div class="section">
+    <div class="section-num">04</div>
+    <h2 class="section-title">What the model <em>ignores.</em></h2>
+    <div class="section-body">
+      <p>Discipline is as important as methodology. There are things that sound like they should matter that the data consistently shows don't — at least not in the way the public thinks.</p>
+    </div>
+
+    <div class="principle-list">
+      <div class="principle">
+        <div class="principle-icon">✕</div>
+        <div class="principle-text"><strong>Injuries announced after our pick is set.</strong> We pick off opening lines. We don't chase movement caused by news we didn't have when the pick was made.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-icon">✕</div>
+        <div class="principle-text"><strong>Revenge games, rivalry narratives, must-win situations.</strong> These stories are already priced in by the public. We're looking for mispriced talent gaps, not motivation angles.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-icon">✕</div>
+        <div class="principle-text"><strong>Recency bias.</strong> A team that scored 52 points last week isn't necessarily a better bet this week. The model weighs rolling performance but doesn't overreact to a single outlier.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-icon">✕</div>
+        <div class="principle-text"><strong>Brand names.</strong> Alabama, Georgia, Ohio State — the public always overvalues them. The model doesn't know or care what the ESPN narrative is.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2 class="cta-title">See the model in action.</h2>
+    <p class="cta-sub">Three seasons of every pick, every week, every result. No cherry-picking.</p>
+    <a href="/results.html" class="btn-primary">View Full Results</a>
+    <a href="/index.html#waitlist" class="btn-secondary">Join the waitlist</a>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics" style="height:56px;width:auto;display:block;">
+    </div>
+    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
