@@ -181,6 +181,24 @@
   .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
   @media (min-width: 961px) { .hamburger { display: none !important; } }
   @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+  @media (max-width: 680px) {
+    .controls-inner { flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px 16px; }
+    .control-group { flex-wrap: wrap; }
+    .divider { display: none; }
+    .tab { font-size: 11px; padding: 5px 10px; }
+    .summary-inner { flex-wrap: wrap; padding: 16px; gap: 0; }
+    .summary-stat { flex: 0 0 50%; padding: 8px 12px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .summary-stat:nth-child(odd) { border-right: 1px solid rgba(255,255,255,0.08); }
+    .summary-stat-val { font-size: 20px; }
+    .results-section { padding: 20px 16px; }
+    .week-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .week-meta { flex-wrap: wrap; gap: 8px; }
+    .picks-table th, .picks-table td { padding: 8px 6px; font-size: 11px; }
+    .potw-grid { grid-template-columns: 1fr; }
+    .parlay-grid { grid-template-columns: 1fr; }
+    .page-header { padding: 32px 0 24px; }
+    .page-title { font-size: 28px; }
+  }
 </style>
 </head>
 <body>
