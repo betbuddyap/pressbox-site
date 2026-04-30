@@ -112,7 +112,7 @@
   .potw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
   .potw-card { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .potw-card-header { background: var(--ink); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .potw-week { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #4A4A3A; }
+  .potw-week { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #AEAE9E; }
   .potw-result-badge { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; }
   .potw-result-badge.win { background: rgba(90,158,94,0.2); color: #7BC47F; }
   .potw-result-badge.loss { background: rgba(184,90,90,0.15); color: #D4807F; }
@@ -131,11 +131,11 @@
   .parlay-card { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .parlay-card.win { border-color: rgba(90,158,94,0.4); }
   .parlay-card.loss { border-color: var(--border); }
-  .parlay-card-header { padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-  .parlay-week-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
-  .parlay-result { font-family: var(--serif); font-size: 13px; font-weight: 700; }
-  .parlay-result.win { color: #5A9E5E; }
-  .parlay-result.loss { color: #B85A5A; }
+  .parlay-card-header { background: var(--ink); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .parlay-week-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #AEAE9E; }
+  .parlay-result { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; }
+  .parlay-result.win { background: rgba(90,158,94,0.2); color: #7BC47F; }
+  .parlay-result.loss { background: rgba(184,90,90,0.15); color: #D4807F; }
   .parlay-card-body { padding: 16px 18px; }
   .parlay-leg { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
   .parlay-leg:last-child { border-bottom: none; }
@@ -484,7 +484,11 @@ function renderPOTW(data) {
             </div>
           </div>
           <div class="potw-actual">
-            Final: <span class="potw-actual-score">${week.actual_score || week.actual || '—'}</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+              <span>Our pick: <span class="potw-actual-score">${week.pick || '—'}</span></span>
+              <span>Final: <span class="potw-actual-score">${week.bet_type === 'ou' ? 'Total ' + (week.actual_total || '—') : (week.actual_margin != null ? (week.actual_margin >= 0 ? '+' : '') + week.actual_margin : '—')}</span></span>
+              <span class="${week.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${week.pnl >= 0 ? '+' : ''}$${Math.abs(week.pnl).toFixed(0)}</span>
+            </div>
           </div>
         </div>
       </div>`;
@@ -529,7 +533,7 @@ function renderParlay(data) {
             return `
               <div class="parlay-leg">
                 <div class="parlay-leg-dot ${legCls}"></div>
-                <div class="parlay-leg-text">${leg.pick || ''}</div>
+                <div class="parlay-leg-text">${leg.type === 'ou' ? (leg.pick_with_game || leg.pick || '') : (leg.pick || '')}</div>
                 <div class="parlay-leg-odds">${leg.odds > 0 ? '+' : ''}${leg.odds}</div>
               </div>`;
           }).join('')}
