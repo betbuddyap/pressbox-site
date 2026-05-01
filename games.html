@@ -351,10 +351,13 @@ function tierClass(tier) {
   return 'tier-c';
 }
 
-function resultHtml(result) {
+function resultHtml(result, isAP) {
   if (!result) return '<span style="color:var(--text-light);font-size:12px;">—</span>';
   const cls = result === 'win' ? 'win' : result === 'loss' ? 'loss' : 'push';
   const lbl = result === 'win' ? 'Win' : result === 'loss' ? 'Loss' : 'Push';
+  if (!isAP) {
+    return `<div class="result-dot" style="background:var(--text-light)"></div><span class="result-label" style="color:var(--text-light)">${lbl}</span>`;
+  }
   return `<div class="result-dot ${cls}"></div><span class="result-label ${cls}">${lbl}</span>`;
 }
 
@@ -389,11 +392,15 @@ function renderGames(data) {
     if (ensMargin !== null && ensTotal != null) {
       const homeProj = Math.round((ensTotal + ensMargin) / 2);
       const awayProj = Math.round((ensTotal - ensMargin) / 2);
-      const marginStr = ensMargin >= 0 ? `(${g.home_team} -${Math.abs(ensMargin).toFixed(1)})` : `(${g.away_team} -${Math.abs(ensMargin).toFixed(1)})`;
-      projLabel  = `${g.home_team} ${homeProj}, ${g.away_team} ${awayProj} ${marginStr}`;
+      // Show winner with negative margin (favorite), loser with positive (underdog)
+      const projWinner = ensMargin >= 0 ? g.home_team : g.away_team;
+      const projLoser  = ensMargin >= 0 ? g.away_team : g.home_team;
+      const projMarginStr = `(${projWinner} -${Math.abs(ensMargin).toFixed(1)})`;
+      projLabel  = `${g.home_team} ${homeProj}, ${g.away_team} ${awayProj} ${projMarginStr}`;
       projScores = `Total: ${ensTotal.toFixed(1)}`;
     } else if (ensMargin !== null) {
-      projLabel = ensMargin >= 0 ? `${g.home_team} by ${Math.abs(ensMargin).toFixed(1)}` : `${g.away_team} by ${Math.abs(ensMargin).toFixed(1)}`;
+      const projWinner = ensMargin >= 0 ? g.home_team : g.away_team;
+      projLabel = `${projWinner} by ${Math.abs(ensMargin).toFixed(1)}`;
     }
 
     // Final - same format
@@ -460,12 +467,12 @@ function renderGames(data) {
             <div class="pick-row">
               <span class="pick-type-badge badge-spread" style="${!spread_is_ap ? 'opacity:0.5' : ''}">Spread</span>
               <div class="pick-content">
-                <div class="pick-main ${!spread_is_ap ? 'grayed' : ''}">${g.spread_pick || '—'} ${g.market_spread > 0 ? '+' + g.market_spread : g.market_spread}</div>
+                <div class="pick-main ${!spread_is_ap ? 'grayed' : ''}">${g.spread_pick || '—'} ${(() => { const pickHome = g.ensemble_spread < g.market_spread; const ps = pickHome ? g.market_spread : -g.market_spread; return ps > 0 ? '+' + ps : ps; })()}</div>
                 <div class="pick-detail">Edge: ${g.edge_spread != null ? g.edge_spread.toFixed(1) : '—'} pts · ${g.spread_agreement || 0}/4 models · <span style="color:${g.spread_tier === 'A+' ? 'var(--gold)' : 'var(--text-light)'}">${g.spread_tier}</span></div>
               </div>
-              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">${g.ensemble_margin != null ? sign(g.ensemble_margin.toFixed(1)) : '—'}</div>
-              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore ? sign(g.actual_margin) : '—'}</div>
-              <div class="pick-result" style="${!g.spread_result ? 'opacity:0.4' : ''}">${resultHtml(g.spread_result)}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">${g.ensemble_margin != null ? (() => { const pickHome = g.ensemble_spread < g.market_spread; const pm = pickHome ? g.ensemble_margin : -g.ensemble_margin; return (pm >= 0 ? '+' : '') + Math.abs(pm).toFixed(1); })() : '—'}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore ? (() => { const pickHome = g.ensemble_spread < g.market_spread; const am = pickHome ? g.actual_margin : -g.actual_margin; return (am >= 0 ? '+' : '') + am; })() : '—'}</div>
+              <div class="pick-result" style="${!g.spread_result ? 'opacity:0.4' : ''}">${resultHtml(g.spread_result, spread_is_ap)}</div>
             </div>` : ''}
 
             ${g.market_total != null ? `
@@ -477,7 +484,7 @@ function renderGames(data) {
               </div>
               <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">${g.ensemble_total != null ? g.ensemble_total.toFixed(1) : '—'}</div>
               <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore ? g.actual_total : '—'}</div>
-              <div class="pick-result" style="${!g.ou_result ? 'opacity:0.4' : ''}">${resultHtml(g.ou_result)}</div>
+              <div class="pick-result" style="${!g.ou_result ? 'opacity:0.4' : ''}">${resultHtml(g.ou_result, ou_is_ap)}</div>
             </div>` : ''}
 
             ${g.ml_pick || g.home_moneyline ? `
@@ -489,7 +496,7 @@ function renderGames(data) {
               </div>
               <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">—</div>
               <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore && g.ml_pick ? sign(g.ml_pick === 'home' ? g.actual_margin : -g.actual_margin) : '—'}</div>
-              <div class="pick-result" style="${!g.ml_result ? 'opacity:0.4' : ''}">${resultHtml(g.ml_result)}</div>
+              <div class="pick-result" style="${!g.ml_result ? 'opacity:0.4' : ''}">${resultHtml(g.ml_result, ml_is_ap)}</div>
             </div>` : ''}
           </div>
         </div>
