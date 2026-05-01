@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PressBox — Generate Narratives</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #1a1a1a; color: #e0e0e0; padding: 32px; }
+  h1 { font-size: 20px; margin-bottom: 24px; color: #D4A83A; }
+  .controls { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
+  label { font-size: 13px; color: #aaa; }
+  select, input { background: #2a2a2a; border: 1px solid #444; color: #e0e0e0; padding: 8px 12px; border-radius: 4px; font-size: 13px; }
+  button { background: #D4A83A; color: #000; border: none; padding: 10px 20px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  button:disabled { background: #555; color: #888; cursor: not-allowed; }
+  .log { background: #111; border: 1px solid #333; border-radius: 4px; padding: 16px; height: 400px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.6; }
+  .log-line { margin-bottom: 4px; }
+  .log-ok   { color: #5A9; }
+  .log-err  { color: #E55; }
+  .log-info { color: #888; }
+  .progress { margin-bottom: 12px; font-size: 13px; color: #aaa; }
+  .progress-bar { height: 6px; background: #333; border-radius: 3px; margin-top: 6px; }
+  .progress-fill { height: 6px; background: #D4A83A; border-radius: 3px; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<h1>🏈 PressBox — Narrative Generator</h1>
+
+<div class="controls">
+  <div>
+    <label>Season</label><br>
+    <select id="season">
+      <option value="2023">2023</option>
+      <option value="2024">2024</option>
+      <option value="2025" selected>2025</option>
+    </select>
+  </div>
+  <div>
+    <label>Week</label><br>
+    <select id="week">
+      <option value="all">All Weeks (1-15)</option>
+      <option value="1" selected>Week 1</option>
+      <option value="2">Week 2</option>
+      <option value="3">Week 3</option>
+      <option value="4">Week 4</option>
+      <option value="5">Week 5</option>
+      <option value="6">Week 6</option>
+      <option value="7">Week 7</option>
+      <option value="8">Week 8</option>
+      <option value="9">Week 9</option>
+      <option value="10">Week 10</option>
+      <option value="11">Week 11</option>
+      <option value="12">Week 12</option>
+      <option value="13">Week 13</option>
+      <option value="14">Week 14</option>
+      <option value="15">Week 15</option>
+    </select>
+  </div>
+  <div>
+    <label>Overwrite existing?</label><br>
+    <select id="overwrite">
+      <option value="false">No (skip existing)</option>
+      <option value="true">Yes (regenerate all)</option>
+    </select>
+  </div>
+  <div>
+    <label>Batch size</label><br>
+    <input type="number" id="batchSize" value="10" min="1" max="20" style="width:80px">
+  </div>
+  <div style="margin-top:18px;">
+    <button id="startBtn" onclick="startGeneration()">▶ Start</button>
+    <button id="stopBtn" onclick="stopGeneration()" disabled style="margin-left:8px;background:#555;color:#ccc;">■ Stop</button>
+  </div>
+</div>
+
+<div class="progress">
+  <span id="progressText">Ready</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<div class="log" id="log"></div>
+
+<script>
+const API = 'https://betbuddyservice-production.up.railway.app';
+let running = false;
+
+function log(msg, type = 'info') {
+  const div = document.createElement('div');
+  div.className = `log-line log-${type}`;
+  div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  const logEl = document.getElementById('log');
+  logEl.appendChild(div);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function setProgress(text, pct) {
+  document.getElementById('progressText').textContent = text;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function stopGeneration() {
+  running = false;
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('stopBtn').disabled = true;
+  log('Stopped.', 'err');
+}
+
+async function generateBatch(season, week, offset, limit, overwrite) {
+  const url = `${API}/admin/generate-narratives?season=${season}&week=${week}&overwrite=${overwrite}&limit=${limit}&offset=${offset}`;
+  const resp = await fetch(url);
+  return await resp.json();
+}
+
+async function startGeneration() {
+  if (running) return;
+  running = true;
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('stopBtn').disabled = false;
+  document.getElementById('log').innerHTML = '';
+
+  const season   = parseInt(document.getElementById('season').value);
+  const weekVal  = document.getElementById('week').value;
+  const overwrite = document.getElementById('overwrite').value;
+  const batchSize = parseInt(document.getElementById('batchSize').value);
+  const weeks = weekVal === 'all' ? [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15] : [parseInt(weekVal)];
+
+  let totalGenerated = 0;
+  let totalWeeks = weeks.length;
+
+  for (let wi = 0; wi < weeks.length; wi++) {
+    if (!running) break;
+    const week = weeks[wi];
+    log(`Starting Season ${season} Week ${week}...`, 'info');
+
+    // First get total game count
+    let offset = 0;
+    let weekDone = false;
+    let weekGenerated = 0;
+
+    while (!weekDone && running) {
+      try {
+        const result = await generateBatch(season, week, offset, batchSize, overwrite);
+        if (result.error) {
+          log(`Week ${week} error: ${result.error}`, 'err');
+          break;
+        }
+        weekGenerated += result.generated || 0;
+        totalGenerated += result.generated || 0;
+        const total = result.total || 0;
+
+        log(`Week ${week} offset ${offset}: generated ${result.generated}, skipped ${result.skipped} (total ${total})`, 'ok');
+        setProgress(
+          `Season ${season} Week ${week} — ${offset + batchSize} / ${total} games`,
+          Math.round(((wi + (offset + batchSize) / Math.max(total, 1)) / totalWeeks) * 100)
+        );
+
+        if (offset + batchSize >= total) {
+          weekDone = true;
+          log(`✓ Week ${week} complete — ${weekGenerated} generated`, 'ok');
+        } else {
+          offset += batchSize;
+        }
+      } catch(e) {
+        log(`Error: ${e.message}`, 'err');
+        break;
+      }
+    }
+  }
+
+  running = false;
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('stopBtn').disabled = true;
+  setProgress(`Done — ${totalGenerated} total blurbs generated`, 100);
+  log(`All done! ${totalGenerated} blurbs generated.`, 'ok');
+}
+</script>
+</body>
+</html>
