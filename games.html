@@ -236,6 +236,14 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <option value="1">Week 1</option>
       </select>
     </div>
+    <div class="divider"></div>
+    <div class="control-group">
+      <span class="control-label">Type</span>
+      <div class="tab-group" id="type-tabs">
+        <button class="tab active" data-type="regular" onclick="setType('regular')">Regular</button>
+        <button class="tab" data-type="postseason" onclick="setType('postseason')">Postseason</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -266,6 +274,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 const API = 'https://betbuddyservice-production.up.railway.app';
 let currentSeason = 2025;
 let currentWeek   = 1;
+let currentType   = 'regular';
 let cache = {};
 
 // Week options per season
@@ -288,6 +297,20 @@ function setSeason(s) {
 function setWeek(w) {
   currentWeek = w;
   loadData();
+}
+
+function setType(t) {
+  currentType = t;
+  document.querySelectorAll('#type-tabs .tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.type === t);
+  });
+  // Don't reload - just re-render from cache
+  const url = `${API}/games/by-week?season=${currentSeason}&week=${currentWeek}`;
+  if (cache[url]) {
+    renderGames(cache[url]);
+  } else {
+    loadData();
+  }
 }
 
 function populateWeeks() {
@@ -338,7 +361,7 @@ function resultHtml(result) {
 function sign(n) { return n >= 0 ? `+${n}` : `${n}`; }
 
 function renderGames(data) {
-  const games = data.games || [];
+  const games = (data.games || []).filter(g => g.season_type === currentType);
   if (!games.length) {
     document.getElementById('games-content').innerHTML = '<div class="empty"><div class="empty-title">No games found</div></div>';
     return;
@@ -346,24 +369,43 @@ function renderGames(data) {
 
   let html = '';
   games.forEach((g, idx) => {
-    const hasAP = g.spread_tier === 'A+' || g.ou_tier === 'A+' || g.ml_tier === 'A+';
+    const hasAP    = g.spread_tier === 'A+' || g.ou_tier === 'A+' || g.ml_tier === 'A+';
     const hasScore = g.home_points !== null;
-    const scoreStr = hasScore ? `${g.home_points} - ${g.away_points}` : 'vs';
     const spread_is_ap = g.spread_tier === 'A+';
     const ou_is_ap     = g.ou_tier === 'A+';
     const ml_is_ap     = g.ml_tier === 'A+';
+    const hasML        = g.home_moneyline || g.ml_pick;
 
-    // Best tier badge for header
+    // Best tier badge
     const bestTier = spread_is_ap || ou_is_ap || ml_is_ap ? 'A+'
       : (g.spread_tier === 'A' || g.ou_tier === 'A' || g.ml_tier === 'A') ? 'A'
       : (g.spread_tier === 'B' || g.ou_tier === 'B' || g.ml_tier === 'B') ? 'B' : 'C';
+
+    // Projection header - show as "Home 29, Away 26" format
+    const ensMargin = g.ensemble_margin || 0;
+    const ensTotal  = g.ensemble_total;
+    let projLabel = '—';
+    let projScores = '';
+    if (ensMargin !== null && ensTotal != null) {
+      const homeProj = ((ensTotal + ensMargin) / 2).toFixed(0);
+      const awayProj = ((ensTotal - ensMargin) / 2).toFixed(0);
+      projLabel  = `${g.home_team} ${homeProj}, ${g.away_team} ${awayProj}`;
+      projScores = `Total: ${ensTotal.toFixed(1)}`;
+    } else if (ensMargin !== null) {
+      projLabel = ensMargin >= 0 ? `${g.home_team} by ${Math.abs(ensMargin).toFixed(1)}` : `${g.away_team} by ${Math.abs(ensMargin).toFixed(1)}`;
+    }
+
+    const finalStr = hasScore ? `${g.away_team} ${g.away_points}, ${g.home_team} ${g.home_points}` : 'Not yet played';
+    const finalWinner = hasScore ? (g.actual_margin > 0 ? g.home_team : g.away_team) : null;
+    const finalMargin = hasScore ? Math.abs(g.actual_margin) : null;
+    const finalLabel  = hasScore ? `${finalWinner} ${finalMargin}` : 'TBD';
 
     html += `
       <div class="game-card ${hasAP ? 'has-ap' : ''}" id="game-${idx}">
         <div class="game-header" onclick="toggleGame(${idx})">
           <div class="game-matchup">
             <div class="game-teams">${g.away_team} @ ${g.home_team}</div>
-            <div class="game-score">${hasScore ? `Final: ${g.home_team} ${g.home_points}, ${g.away_team} ${g.away_points}` : g.market_spread ? `Spread: ${g.market_spread > 0 ? g.home_team + ' +' + g.market_spread : g.home_team + ' ' + g.market_spread}` : ''}</div>
+            <div class="game-score">${hasScore ? `Final: ${g.home_team} ${g.home_points}, ${g.away_team} ${g.away_points}` : g.market_spread != null ? `Line: ${g.home_team} ${g.market_spread > 0 ? '+' + g.market_spread : g.market_spread}` : 'No line'}</div>
           </div>
           <div class="game-meta">
             ${bestTier !== 'C' ? `<span class="tier-badge ${tierClass(bestTier)}">${bestTier}</span>` : ''}
@@ -371,53 +413,77 @@ function renderGames(data) {
           </div>
         </div>
         <div class="game-detail">
+
+          <!-- Projection / Final banner -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+            <div style="padding:16px 24px;border-right:1px solid var(--border);">
+              <div style="font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Projection</div>
+              <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:var(--text);">${projLabel}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);margin-top:2px;">${projScores}</div>
+            </div>
+            <div style="padding:16px 24px;background:${hasScore ? 'var(--cream-dark)' : 'var(--cream)'};">
+              <div style="font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px;">Final</div>
+              <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:var(--text);">${hasScore ? `${finalWinner} ${finalMargin}` : '—'}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);margin-top:2px;">${hasScore ? `Total: ${g.actual_total}` : 'Not yet played'}</div>
+            </div>
+          </div>
+
+          <!-- Narratives -->
           <div class="narrative-section">
             <div class="narrative-block">
               <div class="narrative-label">What we thought</div>
-              <div class="${g.pre_game_blurb ? 'narrative-text' : 'narrative-empty'}">${g.pre_game_blurb || 'Analysis not yet generated.'}</div>
+              <div class="${g.pre_game_blurb && !g.pre_game_blurb.startsWith('[') ? 'narrative-text' : 'narrative-empty'}">${g.pre_game_blurb && !g.pre_game_blurb.startsWith('[') ? g.pre_game_blurb : 'Analysis not yet generated.'}</div>
             </div>
             <div class="narrative-block">
               <div class="narrative-label">What happened</div>
-              <div class="${g.post_game_blurb ? 'narrative-text' : 'narrative-empty'}">${g.post_game_blurb || (hasScore ? 'Analysis not yet generated.' : 'Game not yet played.')}</div>
+              <div class="${g.post_game_blurb && !g.post_game_blurb.startsWith('[') ? 'narrative-text' : 'narrative-empty'}">${g.post_game_blurb && !g.post_game_blurb.startsWith('[') ? g.post_game_blurb : (hasScore ? 'Analysis not yet generated.' : 'Game not yet played.')}</div>
             </div>
           </div>
-          <div class="picks-section">
-            <div class="picks-title">All picks · ${g.away_team} @ ${g.home_team}</div>
 
-            ${g.market_spread ? `
+          <!-- All picks -->
+          <div class="picks-section">
+            <div style="display:flex;align-items:center;gap:16px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:4px;">
+              <div style="width:52px;flex-shrink:0;"></div>
+              <div style="flex:1;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);">Pick</div>
+              <div style="min-width:80px;text-align:right;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);">Projection</div>
+              <div style="min-width:50px;text-align:right;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);">Actual</div>
+              <div style="min-width:60px;text-align:right;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);">Result</div>
+            </div>
+
+            ${g.market_spread != null ? `
             <div class="pick-row">
-              <span class="pick-type-badge badge-spread">Spread</span>
+              <span class="pick-type-badge badge-spread" style="${!spread_is_ap ? 'opacity:0.5' : ''}">Spread</span>
               <div class="pick-content">
-                <div class="pick-main ${!spread_is_ap ? 'grayed' : ''}">${g.spread_pick || '—'} ${g.market_spread}</div>
-                <div class="pick-detail">Edge: ${g.edge_spread != null ? g.edge_spread.toFixed(1) : '—'} pts · Agreement: ${g.spread_agreement || 0}/4 · Tier: ${g.spread_tier}</div>
+                <div class="pick-main ${!spread_is_ap ? 'grayed' : ''}">${g.spread_pick || '—'} ${g.market_spread > 0 ? '+' + g.market_spread : g.market_spread}</div>
+                <div class="pick-detail">Edge: ${g.edge_spread != null ? g.edge_spread.toFixed(1) : '—'} pts · ${g.spread_agreement || 0}/4 models · <span style="color:${g.spread_tier === 'A+' ? 'var(--gold)' : 'var(--text-light)'}">${g.spread_tier}</span></div>
               </div>
-              <div class="pick-projection" style="${!spread_is_ap ? 'color:var(--text-light)' : ''}">${g.ensemble_margin != null ? sign(g.ensemble_margin.toFixed(1)) : '—'}</div>
-              <div class="pick-actual" style="${!spread_is_ap ? 'color:var(--text-light)' : ''}">${hasScore ? sign(g.actual_margin) : '—'}</div>
-              <div class="pick-result">${resultHtml(g.spread_result)}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">${g.ensemble_margin != null ? sign(g.ensemble_margin.toFixed(1)) : '—'}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore ? sign(g.actual_margin) : '—'}</div>
+              <div class="pick-result" style="${!g.spread_result ? 'opacity:0.4' : ''}">${resultHtml(g.spread_result)}</div>
             </div>` : ''}
 
-            ${g.market_total ? `
+            ${g.market_total != null ? `
             <div class="pick-row">
-              <span class="pick-type-badge badge-ou">O/U</span>
+              <span class="pick-type-badge badge-ou" style="${!ou_is_ap ? 'opacity:0.5' : ''}">O/U</span>
               <div class="pick-content">
                 <div class="pick-main ${!ou_is_ap ? 'grayed' : ''}">${g.ou_pick ? g.ou_pick.charAt(0).toUpperCase() + g.ou_pick.slice(1) + ' ' + g.market_total : '—'}</div>
-                <div class="pick-detail">Edge: ${g.edge_total != null ? g.edge_total.toFixed(1) : '—'} pts · Tier: ${g.ou_tier}</div>
+                <div class="pick-detail">Edge: ${g.edge_total != null ? g.edge_total.toFixed(1) : '—'} pts · ${g.ou_agreement || 0}/3 models · <span style="color:${g.ou_tier === 'A+' ? 'var(--gold)' : 'var(--text-light)'}">${g.ou_tier}</span></div>
               </div>
-              <div class="pick-projection" style="${!ou_is_ap ? 'color:var(--text-light)' : ''}">${g.ensemble_total != null ? g.ensemble_total.toFixed(1) : '—'}</div>
-              <div class="pick-actual" style="${!ou_is_ap ? 'color:var(--text-light)' : ''}">${hasScore ? g.actual_total : '—'}</div>
-              <div class="pick-result">${resultHtml(g.ou_result)}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">${g.ensemble_total != null ? g.ensemble_total.toFixed(1) : '—'}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore ? g.actual_total : '—'}</div>
+              <div class="pick-result" style="${!g.ou_result ? 'opacity:0.4' : ''}">${resultHtml(g.ou_result)}</div>
             </div>` : ''}
 
-            ${g.home_moneyline ? `
+            ${g.ml_pick || g.home_moneyline ? `
             <div class="pick-row">
-              <span class="pick-type-badge badge-ml">ML</span>
+              <span class="pick-type-badge badge-ml" style="${!ml_is_ap ? 'opacity:0.5' : ''}">ML</span>
               <div class="pick-content">
-                <div class="pick-main ${!ml_is_ap ? 'grayed' : ''}">${g.ml_pick === 'home' ? g.home_team : g.ml_pick === 'away' ? g.away_team : '—'} ML</div>
-                <div class="pick-detail">Edge: ${g.ml_edge != null ? (g.ml_edge * 100).toFixed(1) + '%' : '—'} · Tier: ${g.ml_tier}</div>
+                <div class="pick-main ${!ml_is_ap ? 'grayed' : ''}">${g.ml_pick === 'home' ? g.home_team : g.ml_pick === 'away' ? g.away_team : '—'} ML ${g.ml_pick === 'home' && g.home_moneyline ? '(' + (g.home_moneyline > 0 ? '+' : '') + g.home_moneyline + ')' : g.ml_pick === 'away' && g.away_moneyline ? '(' + (g.away_moneyline > 0 ? '+' : '') + g.away_moneyline + ')' : ''}</div>
+                <div class="pick-detail">Edge: ${g.ml_edge != null ? (g.ml_edge * 100).toFixed(1) + '%' : '—'} · <span style="color:${g.ml_tier === 'A+' ? 'var(--gold)' : 'var(--text-light)'}">${g.ml_tier}</span></div>
               </div>
-              <div class="pick-projection" style="${!ml_is_ap ? 'color:var(--text-light)' : ''}">—</div>
-              <div class="pick-actual" style="${!ml_is_ap ? 'color:var(--text-light)' : ''}">${hasScore ? sign(g.ml_pick === 'home' ? g.actual_margin : -g.actual_margin) : '—'}</div>
-              <div class="pick-result">${resultHtml(g.ml_result)}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">—</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore && g.ml_pick ? sign(g.ml_pick === 'home' ? g.actual_margin : -g.actual_margin) : '—'}</div>
+              <div class="pick-result" style="${!g.ml_result ? 'opacity:0.4' : ''}">${resultHtml(g.ml_result)}</div>
             </div>` : ''}
           </div>
         </div>
