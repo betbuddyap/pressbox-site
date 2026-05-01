@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Games — PressBox Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background-color: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream:      #F8F5EE;
+    --cream-dark: #EFE9DC;
+    --cream-mid:  #E8E1D3;
+    --border:     #DDD6C8;
+    --text:       #1A1705;
+    --text-mid:   #6B6455;
+    --text-light: #A39A88;
+    --gold:       #B8922A;
+    --gold-light: #D4A83A;
+    --gold-pale:  #F5EDD0;
+    --ink:        #0F0E0A;
+    --serif:      'Libre Baskerville', Georgia, serif;
+    --sans:       'Source Sans 3', system-ui, sans-serif;
+    --max:        1200px;
+  }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  /* ── TICKER ── */
+  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
+  .ticker-track span { margin: 0 28px; color: #2A2A20; }
+  .ticker-track b { color: var(--gold-light); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* ── NAV ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
+
+  /* ── MOBILE NAV ── */
+  .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; outline: 0; -webkit-appearance: none; appearance: none; border-radius: 0; box-shadow: none; width: 32px; height: 32px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
+  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+  .mobile-menu.open { display: flex !important; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); line-height: 1; }
+  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* ── PAGE HEADER ── */
+  .page-header { background: var(--cream); border-bottom: 1px solid var(--border); padding: 48px 0 40px; }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--serif); font-size: 40px; font-weight: 700; line-height: 1.1; color: var(--text); margin-bottom: 10px; }
+  .page-title em { font-style: italic; color: var(--gold); }
+  .page-sub { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.6; }
+
+  /* ── CONTROLS ── */
+  .controls { background: var(--cream); border-bottom: 1px solid var(--border); padding: 16px 0; position: sticky; top: 80px; z-index: 90; }
+  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 32px; }
+  .control-group { display: flex; align-items: center; gap: 8px; }
+  .control-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
+  .tab-group { display: flex; gap: 4px; }
+  .tab { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
+  .tab:hover { border-color: var(--text-mid); color: var(--text); }
+  .tab.active { background: var(--ink); color: var(--cream); border-color: var(--ink); font-weight: 600; }
+  .divider { width: 1px; height: 28px; background: var(--border); }
+  .week-select { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); background: var(--cream); border: 1px solid var(--border); padding: 6px 12px; border-radius: 3px; cursor: pointer; }
+
+  /* ── GAME CARDS ── */
+  .games-section { max-width: var(--max); margin: 0 auto; padding: 32px 32px 80px; }
+  .game-card { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 16px; overflow: hidden; transition: border-color 0.15s; }
+  .game-card:hover { border-color: var(--text-light); }
+  .game-card.has-ap { border-left: 3px solid var(--gold); }
+  .game-header { padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .game-matchup { display: flex; flex-direction: column; gap: 2px; }
+  .game-teams { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); }
+  .game-score { font-family: var(--sans); font-size: 13px; color: var(--text-mid); margin-top: 2px; }
+  .game-meta { display: flex; align-items: center; gap: 12px; }
+  .tier-badge { font-family: var(--sans); font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 2px; letter-spacing: 1px; text-transform: uppercase; }
+  .tier-ap   { background: var(--gold-pale); color: var(--gold); }
+  .tier-a    { background: var(--cream-mid); color: var(--text-light); }
+  .tier-b    { background: var(--cream-mid); color: var(--text-light); opacity: 0.7; }
+  .tier-c    { background: var(--cream-mid); color: var(--text-light); opacity: 0.4; }
+  .expand-icon { font-size: 12px; color: var(--text-light); transition: transform 0.2s; }
+  .game-card.expanded .expand-icon { transform: rotate(180deg); }
+
+  /* ── GAME DETAIL ── */
+  .game-detail { display: none; border-top: 1px solid var(--border); }
+  .game-card.expanded .game-detail { display: block; }
+
+  .narrative-section { padding: 20px 24px; background: var(--cream-dark); border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .narrative-block { }
+  .narrative-label { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .narrative-text { font-family: var(--sans); font-size: 13px; font-weight: 300; color: var(--text-mid); line-height: 1.7; }
+  .narrative-empty { font-family: var(--sans); font-size: 12px; color: var(--text-light); font-style: italic; }
+
+  .picks-section { padding: 20px 24px; }
+  .picks-title { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); margin-bottom: 16px; }
+  .pick-row { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .pick-row:last-child { border-bottom: none; }
+  .pick-type-badge { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; width: 52px; text-align: center; flex-shrink: 0; }
+  .badge-spread { background: var(--gold-pale); color: var(--gold); }
+  .badge-ou     { background: #E8F0E8; color: #4A7A4A; }
+  .badge-ml     { background: #E8EEF5; color: #3A5A8A; }
+  .pick-content { flex: 1; }
+  .pick-main { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--text); }
+  .pick-main.grayed { color: var(--text-light); font-weight: 400; }
+  .pick-detail { font-family: var(--sans); font-size: 11px; color: var(--text-light); margin-top: 2px; }
+  .pick-projection { font-family: var(--sans); font-size: 13px; color: var(--text-mid); text-align: right; min-width: 60px; }
+  .pick-actual { font-family: var(--sans); font-size: 13px; text-align: right; min-width: 60px; }
+  .pick-result { display: flex; align-items: center; gap: 6px; min-width: 50px; justify-content: flex-end; }
+  .result-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .result-dot.win  { background: #5A9E5E; }
+  .result-dot.loss { background: #B85A5A; }
+  .result-dot.push { background: var(--text-light); }
+  .result-label { font-family: var(--sans); font-size: 12px; font-weight: 600; }
+  .result-label.win  { color: #5A9E5E; }
+  .result-label.loss { color: #B85A5A; }
+  .result-label.push { color: var(--text-light); }
+
+  /* Loading */
+  .loading { display: flex; align-items: center; justify-content: center; padding: 80px; flex-direction: column; gap: 16px; }
+  .loading-spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--sans); font-size: 12px; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; }
+  .empty { text-align: center; padding: 80px 32px; }
+  .empty-title { font-family: var(--serif); font-size: 22px; color: var(--text-mid); margin-bottom: 8px; }
+
+  /* Mobile */
+  @media (max-width: 680px) {
+    .controls-inner { flex-wrap: wrap; gap: 12px; padding: 12px 16px; }
+    .divider { display: none; }
+    .narrative-section { grid-template-columns: 1fr; }
+    .games-section { padding: 16px 16px 60px; }
+    .game-header { padding: 14px 16px; }
+    .pick-row { flex-wrap: wrap; gap: 8px; }
+    .picks-section { padding: 16px; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background: var(--ink); padding: 32px 0; }
+  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    Pick of the Week <b>32-16</b> · 68.8% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$7,825 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    2025 Season <b>12-4</b> · 75.0% Hit Rate · best single season<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+    Pick of the Week <b>32-16</b> · 68.8% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$7,825 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    2025 Season <b>12-4</b> · 75.0% Hit Rate · best single season<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/index.html" class="nav-logo">
+      <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
+    </a>
+    <ul class="nav-links">
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/games.html" class="active">Past Games</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu" style="outline:none;border:none;background:transparent;padding:4px;cursor:pointer;">
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="22" height="2" rx="1" fill="#1A1705"/>
+        <rect y="7" width="22" height="2" rx="1" fill="#1A1705"/>
+        <rect y="14" width="22" height="2" rx="1" fill="#1A1705"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')">✕</button>
+  <a href="/index.html">Home</a>
+  <a href="/results.html">Results</a>
+  <a href="/games.html">Past Games</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/about.html">About</a>
+  <a href="/index.html#waitlist" class="btn-mobile">Join Waitlist</a>
+</div>
+<script>
+function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+</script>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">Game Analysis</div>
+    <h1 class="page-title">Every game.<br><em>Every grade.</em></h1>
+    <p class="page-sub">What we thought would happen, what actually happened, and how our picks graded out. A+ picks in gold — everything else in gray.</p>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="controls-inner">
+    <div class="control-group">
+      <span class="control-label">Season</span>
+      <div class="tab-group" id="season-tabs">
+        <button class="tab" data-season="2023" onclick="setSeason(2023)">2023</button>
+        <button class="tab" data-season="2024" onclick="setSeason(2024)">2024</button>
+        <button class="tab active" data-season="2025" onclick="setSeason(2025)">2025</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="control-group">
+      <span class="control-label">Week</span>
+      <select class="week-select" id="week-select" onchange="setWeek(parseInt(this.value))">
+        <option value="1">Week 1</option>
+      </select>
+    </div>
+    <div class="divider"></div>
+    <div class="control-group">
+      <span class="control-label">Type</span>
+      <div class="tab-group" id="type-tabs">
+        <button class="tab active" data-type="regular" onclick="setType('regular')">Regular</button>
+        <button class="tab" data-type="postseason" onclick="setType('postseason')">Postseason</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAMES CONTENT -->
+<div class="games-section" id="games-content">
+  <div class="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading games</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics" style="height:56px;width:auto;display:block;">
+    </div>
+    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const API = 'https://betbuddyservice-production.up.railway.app';
+let currentSeason = 2025;
+let currentWeek   = 1;
+let currentType   = 'regular';
+let cache = {};
+
+// Week options per season
+const WEEKS = {
+  2023: Array.from({length: 15}, (_, i) => i + 1),
+  2024: Array.from({length: 15}, (_, i) => i + 1),
+  2025: Array.from({length: 15}, (_, i) => i + 1),
+};
+
+function setSeason(s) {
+  currentSeason = s;
+  currentWeek   = 1;
+  document.querySelectorAll('#season-tabs .tab').forEach(t => {
+    t.classList.toggle('active', parseInt(t.dataset.season) === s);
+  });
+  populateWeeks();
+  loadData();
+}
+
+function setWeek(w) {
+  currentWeek = w;
+  loadData();
+}
+
+function setType(t) {
+  currentType = t;
+  document.querySelectorAll('#type-tabs .tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.type === t);
+  });
+  // Don't reload - just re-render from cache
+  const url = `${API}/games/by-week?season=${currentSeason}&week=${currentWeek}`;
+  if (cache[url]) {
+    renderGames(cache[url]);
+  } else {
+    loadData();
+  }
+}
+
+function populateWeeks() {
+  const sel = document.getElementById('week-select');
+  sel.innerHTML = '';
+  (WEEKS[currentSeason] || []).forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = `Week ${w}`;
+    if (w === currentWeek) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+async function fetchData(url) {
+  if (cache[url]) return cache[url];
+  const r = await fetch(url);
+  const d = await r.json();
+  cache[url] = d;
+  return d;
+}
+
+async function loadData() {
+  const content = document.getElementById('games-content');
+  content.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Loading games</div></div>';
+  try {
+    const data = await fetchData(`${API}/games/by-week?season=${currentSeason}&week=${currentWeek}`);
+    renderGames(data);
+  } catch(e) {
+    content.innerHTML = '<div class="empty"><div class="empty-title">Could not load games</div></div>';
+  }
+}
+
+function tierClass(tier) {
+  if (tier === 'A+') return 'tier-ap';
+  if (tier === 'A')  return 'tier-a';
+  if (tier === 'B')  return 'tier-b';
+  return 'tier-c';
+}
+
+function resultHtml(result, isAP) {
+  if (!result) return '<span style="color:var(--text-light);font-size:12px;">—</span>';
+  const cls = result === 'win' ? 'win' : result === 'loss' ? 'loss' : 'push';
+  const lbl = result === 'win' ? 'Win' : result === 'loss' ? 'Loss' : 'Push';
+  if (!isAP) {
+    return `<div class="result-dot" style="background:var(--text-light)"></div><span class="result-label" style="color:var(--text-light)">${lbl}</span>`;
+  }
+  return `<div class="result-dot ${cls}"></div><span class="result-label ${cls}">${lbl}</span>`;
+}
+
+function sign(n) { return n >= 0 ? `+${n}` : `${n}`; }
+
+function renderGames(data) {
+  const games = (data.games || []).filter(g => g.season_type === currentType);
+  if (!games.length) {
+    document.getElementById('games-content').innerHTML = '<div class="empty"><div class="empty-title">No games found</div></div>';
+    return;
+  }
+
+  let html = '';
+  games.forEach((g, idx) => {
+    const hasAP    = g.spread_tier === 'A+' || g.ou_tier === 'A+' || g.ml_tier === 'A+';
+    const hasScore = g.home_points !== null;
+    const spread_is_ap = g.spread_tier === 'A+';
+    const ou_is_ap     = g.ou_tier === 'A+';
+    const ml_is_ap     = g.ml_tier === 'A+';
+    const hasML        = g.home_moneyline || g.ml_pick;
+
+    // Best tier badge
+    const bestTier = spread_is_ap || ou_is_ap || ml_is_ap ? 'A+'
+      : (g.spread_tier === 'A' || g.ou_tier === 'A' || g.ml_tier === 'A') ? 'A'
+      : (g.spread_tier === 'B' || g.ou_tier === 'B' || g.ml_tier === 'B') ? 'B' : 'C';
+
+    // Projection header - show as "Home 29, Away 26 (-3)" format
+    const ensMargin = g.ensemble_margin || 0;
+    const ensTotal  = g.ensemble_total;
+    let projLabel = '—';
+    let projScores = '';
+    if (ensMargin !== null && ensTotal != null) {
+      const homeProj = Math.round((ensTotal + ensMargin) / 2);
+      const awayProj = Math.round((ensTotal - ensMargin) / 2);
+      // home is favorite if mkt_spread < 0; ensMargin > 0 means home projected to win
+      // Projected winner. Favorite = negative, underdog = positive.
+      const projWinTeam = ensMargin >= 0 ? g.home_team : g.away_team;
+      const projWinIsHome = ensMargin >= 0;
+      const homeFav = g.market_spread != null ? g.market_spread < 0 : true;
+      const projWinIsFav = (projWinIsHome && homeFav) || (!projWinIsHome && !homeFav);
+      const projMarginStr = `(${projWinTeam} ${projWinIsFav ? '-' : '+'}${Math.abs(ensMargin).toFixed(1)})`;
+      projLabel  = `${g.home_team} ${homeProj}, ${g.away_team} ${awayProj} ${projMarginStr}`;
+      projScores = `Total: ${ensTotal.toFixed(1)}`;
+    } else if (ensMargin !== null) {
+      const projWinner = ensMargin >= 0 ? g.home_team : g.away_team;
+      projLabel = `${projWinner} by ${Math.abs(ensMargin).toFixed(1)}`;
+    }
+
+    // Final - same format
+    const finalWinner = hasScore ? (g.actual_margin > 0 ? g.home_team : g.away_team) : null;
+    const finalMargin = hasScore ? Math.abs(g.actual_margin) : null;
+    let finalLabel = '—';
+    if (hasScore) {
+      const actualWinner = g.actual_margin >= 0 ? g.home_team : g.away_team;
+      const actualWinIsHome = g.actual_margin >= 0;
+      const homeFavF = g.market_spread != null ? g.market_spread < 0 : true;
+      const winnerIsFav = (actualWinIsHome && homeFavF) || (!actualWinIsHome && !homeFavF);
+      finalLabel = `${g.home_team} ${g.home_points}, ${g.away_team} ${g.away_points} (${actualWinner} ${winnerIsFav ? '-' : '+'}${Math.abs(g.actual_margin)})`;
+    }
+
+
+    html += `
+      <div class="game-card ${hasAP ? 'has-ap' : ''}" id="game-${idx}">
+        <div class="game-header" onclick="toggleGame(${idx})">
+          <div class="game-matchup">
+            <div class="game-teams">${g.away_team} @ ${g.home_team}</div>
+            <div class="game-score">${hasScore ? `Final: ${g.home_team} ${g.home_points}, ${g.away_team} ${g.away_points}` : ''}</div>
+          </div>
+          <div class="game-meta">
+            ${g.market_spread != null ? `<span style="font-family:var(--sans);font-size:12px;color:var(--text-mid);">${g.market_spread < 0 ? g.home_team + ' ' + g.market_spread : g.away_team + ' ' + (-g.market_spread)}</span>` : ''}
+            ${g.market_total != null ? `<span style="font-family:var(--sans);font-size:12px;color:var(--text-mid);">O/U ${g.market_total}</span>` : ''}
+            ${bestTier !== 'C' ? `<span class="tier-badge ${tierClass(bestTier)}">${bestTier}</span>` : ''}
+            <span class="expand-icon">▼</span>
+          </div>
+        </div>
+        <div class="game-detail">
+
+          <!-- Projection / Final banner -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);">
+            <div style="padding:16px 24px;border-right:1px solid var(--border);">
+              <div style="font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">Projection</div>
+              <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:var(--text);">${projLabel}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);margin-top:2px;">${projScores}</div>
+            </div>
+            <div style="padding:16px 24px;background:${hasScore ? 'var(--cream-dark)' : 'var(--cream)'};">
+              <div style="font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);margin-bottom:6px;">Final</div>
+              <div style="font-family:var(--serif);font-size:16px;font-weight:700;color:var(--text);">${finalLabel}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);margin-top:2px;">${hasScore ? `Total: ${g.actual_total}` : 'Not yet played'}</div>
+            </div>
+          </div>
+
+          <!-- Narratives -->
+          <div class="narrative-section">
+            <div class="narrative-block">
+              <div class="narrative-label">What we thought</div>
+              <div class="${g.pre_game_blurb && !g.pre_game_blurb.startsWith('[') ? 'narrative-text' : 'narrative-empty'}">${g.pre_game_blurb && !g.pre_game_blurb.startsWith('[') ? g.pre_game_blurb : 'Analysis not yet generated.'}</div>
+            </div>
+            <div class="narrative-block">
+              <div class="narrative-label">What happened</div>
+              <div class="${g.post_game_blurb && !g.post_game_blurb.startsWith('[') ? 'narrative-text' : 'narrative-empty'}">${g.post_game_blurb && !g.post_game_blurb.startsWith('[') ? g.post_game_blurb : (hasScore ? 'Analysis not yet generated.' : 'Game not yet played.')}</div>
+            </div>
+          </div>
+
+          <!-- All picks -->
+          <div class="picks-section">
+            <div style="display:flex;align-items:center;gap:16px;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:4px;">
+              <div style="width:52px;flex-shrink:0;"></div>
+              <div style="flex:1;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);">Pick</div>
+              <div style="min-width:80px;text-align:right;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);">Projection</div>
+              <div style="min-width:50px;text-align:right;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);">Actual</div>
+              <div style="min-width:60px;text-align:right;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);">Result</div>
+            </div>
+
+            ${g.market_spread != null ? `
+            <div class="pick-row">
+              <span class="pick-type-badge badge-spread" style="${!spread_is_ap ? 'opacity:0.5' : ''}">Spread</span>
+              <div class="pick-content">
+                <div class="pick-main ${!spread_is_ap ? 'grayed' : ''}">${(() => { const pickHome = g.ensemble_spread < g.market_spread; const pickTeam = pickHome ? g.home_team : g.away_team; const pickIsFav = (pickHome && g.market_spread < 0) || (!pickHome && g.market_spread > 0); return pickTeam + ' ' + (pickIsFav ? '-' : '+') + Math.abs(g.market_spread); })()}</div>
+                <div class="pick-detail">Edge: ${g.edge_spread != null ? g.edge_spread.toFixed(1) : '—'} pts · ${g.spread_agreement || 0}/4 models · <span style="color:${g.spread_tier === 'A+' ? 'var(--gold)' : 'var(--text-light)'}">${g.spread_tier}</span></div>
+              </div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">${g.ensemble_margin != null ? (() => { const homeFav = g.market_spread < 0; const homeWins = g.ensemble_margin >= 0; const favWins = (homeFav && homeWins) || (!homeFav && !homeWins); return (favWins ? '-' : '+') + Math.abs(g.ensemble_margin).toFixed(1); })() : '—'}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore ? (() => { const homeFav = g.market_spread < 0; const homeWins = g.actual_margin >= 0; const favWins = (homeFav && homeWins) || (!homeFav && !homeWins); return (favWins ? '-' : '+') + Math.abs(g.actual_margin); })() : '—'}</div>
+              <div class="pick-result" style="${!g.spread_result ? 'opacity:0.4' : ''}">${resultHtml(g.spread_result, spread_is_ap)}</div>
+            </div>` : ''}
+
+            ${g.market_total != null ? `
+            <div class="pick-row">
+              <span class="pick-type-badge badge-ou" style="${!ou_is_ap ? 'opacity:0.5' : ''}">O/U</span>
+              <div class="pick-content">
+                <div class="pick-main ${!ou_is_ap ? 'grayed' : ''}">${g.ou_pick ? g.ou_pick.charAt(0).toUpperCase() + g.ou_pick.slice(1) + ' ' + g.market_total : '—'}</div>
+                <div class="pick-detail">Edge: ${g.edge_total != null ? g.edge_total.toFixed(1) : '—'} pts · ${g.ou_agreement || 0}/3 models · <span style="color:${g.ou_tier === 'A+' ? 'var(--gold)' : 'var(--text-light)'}">${g.ou_tier}</span></div>
+              </div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">${g.ensemble_total != null ? g.ensemble_total.toFixed(1) : '—'}</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore ? g.actual_total : '—'}</div>
+              <div class="pick-result" style="${!g.ou_result ? 'opacity:0.4' : ''}">${resultHtml(g.ou_result, ou_is_ap)}</div>
+            </div>` : ''}
+
+            ${g.ml_pick || g.home_moneyline ? `
+            <div class="pick-row">
+              <span class="pick-type-badge badge-ml" style="${!ml_is_ap ? 'opacity:0.5' : ''}">ML</span>
+              <div class="pick-content">
+                <div class="pick-main ${!ml_is_ap ? 'grayed' : ''}">${g.ml_pick === 'home' ? g.home_team : g.ml_pick === 'away' ? g.away_team : '—'} ML ${g.ml_pick === 'home' && g.home_moneyline ? '(' + (g.home_moneyline > 0 ? '+' : '') + g.home_moneyline + ')' : g.ml_pick === 'away' && g.away_moneyline ? '(' + (g.away_moneyline > 0 ? '+' : '') + g.away_moneyline + ')' : ''}</div>
+                <div class="pick-detail">Edge: ${g.ml_edge != null ? (g.ml_edge * 100).toFixed(1) + '%' : '—'} · <span style="color:${g.ml_tier === 'A+' ? 'var(--gold)' : 'var(--text-light)'}">${g.ml_tier}</span></div>
+              </div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:80px;">—</div>
+              <div style="font-family:var(--sans);font-size:12px;color:var(--text-light);text-align:right;min-width:50px;">${hasScore && g.ml_pick ? sign(g.ml_pick === 'home' ? g.actual_margin : -g.actual_margin) : '—'}</div>
+              <div class="pick-result" style="${!g.ml_result ? 'opacity:0.4' : ''}">${resultHtml(g.ml_result, ml_is_ap)}</div>
+            </div>` : ''}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('games-content').innerHTML = html;
+}
+
+function toggleGame(idx) {
+  const card = document.getElementById(`game-${idx}`);
+  card.classList.toggle('expanded');
+}
+
+// Init
+populateWeeks();
+loadData();
+</script>
+</body>
+</html>
