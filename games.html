@@ -392,10 +392,10 @@ function renderGames(data) {
     if (ensMargin !== null && ensTotal != null) {
       const homeProj = Math.round((ensTotal + ensMargin) / 2);
       const awayProj = Math.round((ensTotal - ensMargin) / 2);
-      // Show winner with negative margin (favorite), loser with positive (underdog)
-      const projWinner = ensMargin >= 0 ? g.home_team : g.away_team;
-      const projLoser  = ensMargin >= 0 ? g.away_team : g.home_team;
-      const projMarginStr = `(${projWinner} -${Math.abs(ensMargin).toFixed(1)})`;
+      // home is favorite if mkt_spread < 0; ensMargin > 0 means home projected to win
+      const homeFav = g.market_spread != null ? g.market_spread < 0 : ensMargin >= 0;
+      const projSign = (homeFav && ensMargin >= 0) || (!homeFav && ensMargin < 0) ? '-' : '+';
+      const projMarginStr = `(${ensMargin >= 0 ? g.home_team : g.away_team} ${projSign}${Math.abs(ensMargin).toFixed(1)})`;
       projLabel  = `${g.home_team} ${homeProj}, ${g.away_team} ${awayProj} ${projMarginStr}`;
       projScores = `Total: ${ensTotal.toFixed(1)}`;
     } else if (ensMargin !== null) {
@@ -408,8 +408,12 @@ function renderGames(data) {
     const finalMargin = hasScore ? Math.abs(g.actual_margin) : null;
     let finalLabel = '—';
     if (hasScore) {
-      const winMarginStr = g.actual_margin >= 0 ? `(${g.home_team} -${g.actual_margin})` : `(${g.away_team} -${Math.abs(g.actual_margin)})`;
-      finalLabel = `${g.home_team} ${g.home_points}, ${g.away_team} ${g.away_points} ${winMarginStr}`;
+      const homeFav = g.market_spread != null ? g.market_spread < 0 : g.actual_margin >= 0;
+      const actualWinner = g.actual_margin >= 0 ? g.home_team : g.away_team;
+      // favorite wins = negative, underdog wins = positive
+      const favoriteWon = (homeFav && g.actual_margin >= 0) || (!homeFav && g.actual_margin < 0);
+      const finalSign = favoriteWon ? '-' : '+';
+      finalLabel = `${g.home_team} ${g.home_points}, ${g.away_team} ${g.away_points} (${actualWinner} ${finalSign}${Math.abs(g.actual_margin)})`;
     }
 
 
