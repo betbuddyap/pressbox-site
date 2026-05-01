@@ -427,7 +427,7 @@ function renderGames(data) {
             <div class="game-score">${hasScore ? `Final: ${g.home_team} ${g.home_points}, ${g.away_team} ${g.away_points}` : ''}</div>
           </div>
           <div class="game-meta">
-            ${g.market_spread != null ? `<span style="font-family:var(--sans);font-size:12px;color:var(--text-mid);">${g.market_spread < 0 ? g.home_team : g.away_team} ${g.market_spread < 0 ? g.market_spread : '+' + g.market_spread}</span>` : ''}
+            ${g.market_spread != null ? `<span style="font-family:var(--sans);font-size:12px;color:var(--text-mid);">${g.market_spread < 0 ? g.home_team + ' ' + g.market_spread : g.away_team + ' ' + (-g.market_spread)}</span>` : ''}
             ${g.market_total != null ? `<span style="font-family:var(--sans);font-size:12px;color:var(--text-mid);">O/U ${g.market_total}</span>` : ''}
             ${bestTier !== 'C' ? `<span class="tier-badge ${tierClass(bestTier)}">${bestTier}</span>` : ''}
             <span class="expand-icon">▼</span>
