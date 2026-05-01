@@ -65,7 +65,7 @@
   </div>
   <div>
     <label>Batch size</label><br>
-    <input type="number" id="batchSize" value="10" min="1" max="20" style="width:80px">
+    <input type="number" id="batchSize" value="5" min="1" max="20" style="width:80px">
   </div>
   <div style="margin-top:18px;">
     <button id="startBtn" onclick="startGeneration()">▶ Start</button>
@@ -107,7 +107,10 @@ function stopGeneration() {
 
 async function generateBatch(season, week, offset, limit, overwrite) {
   const url = `${API}/admin/generate-narratives?season=${season}&week=${week}&overwrite=${overwrite}&limit=${limit}&offset=${offset}`;
-  const resp = await fetch(url);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+  const resp = await fetch(url, { signal: controller.signal });
+  clearTimeout(timer);
   return await resp.json();
 }
 
@@ -146,7 +149,7 @@ async function startGeneration() {
         }
         weekGenerated += result.generated || 0;
         totalGenerated += result.generated || 0;
-        const total = result.total || 0;
+        const total = result.total_games || result.total || 0;
 
         log(`Week ${week} offset ${offset}: generated ${result.generated}, skipped ${result.skipped} (total ${total})`, 'ok');
         setProgress(
@@ -154,7 +157,7 @@ async function startGeneration() {
           Math.round(((wi + (offset + batchSize) / Math.max(total, 1)) / totalWeeks) * 100)
         );
 
-        if (offset + batchSize >= total) {
+        if (result.done || offset + batchSize >= total) {
           weekDone = true;
           log(`✓ Week ${week} complete — ${weekGenerated} generated`, 'ok');
         } else {
