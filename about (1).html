@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — PressBox Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background-color: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream:      #F8F5EE;
+    --cream-dark: #EFE9DC;
+    --cream-mid:  #E8E1D3;
+    --border:     #DDD6C8;
+    --text:       #1A1705;
+    --text-mid:   #6B6455;
+    --text-light: #A39A88;
+    --gold:       #B8922A;
+    --gold-light: #D4A83A;
+    --gold-pale:  #F5EDD0;
+    --ink:        #0F0E0A;
+    --serif:      'Libre Baskerville', Georgia, serif;
+    --sans:       'Source Sans 3', system-ui, sans-serif;
+    --max:        1200px;
+  }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  /* ── TICKER ── */
+  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
+  .ticker-track span { margin: 0 28px; color: #2A2A20; }
+  .ticker-track b { color: var(--gold-light); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* ── NAV ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
+
+  /* ── MOBILE NAV ── */
+  .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; outline: 0; -webkit-appearance: none; appearance: none; border-radius: 0; box-shadow: none; width: 32px; height: 32px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
+  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+  .mobile-menu.open { display: flex !important; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); line-height: 1; }
+  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* ── PAGE HEADER ── */
+  .page-header { background: var(--ink); padding: 80px 0 72px; }
+  .page-header-inner { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--serif); font-size: 48px; font-weight: 700; line-height: 1.1; color: var(--cream); margin-bottom: 20px; }
+  .page-title em { font-style: italic; color: var(--gold-light); }
+  .page-sub { font-family: var(--sans); font-size: 17px; font-weight: 300; color: #8A8A7A; line-height: 1.7; }
+
+  /* ── CONTENT ── */
+  .content { max-width: 760px; margin: 0 auto; padding: 72px 32px 96px; }
+
+  /* Founder card */
+  .founder-card { display: flex; gap: 40px; align-items: flex-start; margin-bottom: 64px; padding-bottom: 64px; border-bottom: 1px solid var(--border); }
+  .founder-photo { width: 140px; height: 140px; border-radius: 4px; background: var(--cream-dark); border: 1px solid var(--border); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .founder-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .founder-photo-placeholder { font-family: var(--serif); font-size: 48px; font-weight: 700; color: var(--border); }
+  .founder-info { flex: 1; }
+  .founder-name { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .founder-title { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--gold); letter-spacing: 0.5px; margin-bottom: 16px; }
+  .founder-bio { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.8; margin-bottom: 20px; }
+  .founder-links { display: flex; gap: 12px; }
+  .founder-link { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); text-decoration: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 3px; transition: all 0.15s; letter-spacing: 0.5px; }
+  .founder-link:hover { border-color: var(--text-mid); color: var(--text); }
+
+  /* Sections */
+  .section { margin-bottom: 56px; }
+  .section-label { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 16px; }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .section-body { font-family: var(--sans); font-size: 16px; font-weight: 300; color: var(--text-mid); line-height: 1.8; }
+  .section-body p + p { margin-top: 16px; }
+  .section-body strong { font-weight: 600; color: var(--text); }
+
+  /* Commitment list */
+  .commitment-list { margin-top: 24px; display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .commitment { display: flex; gap: 20px; align-items: flex-start; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+  .commitment:last-child { border-bottom: none; }
+  .commitment-icon { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--gold); flex-shrink: 0; width: 24px; margin-top: 2px; }
+  .commitment-text { font-family: var(--sans); font-size: 14px; font-weight: 300; color: var(--text-mid); line-height: 1.7; }
+  .commitment-text strong { font-weight: 600; color: var(--text); }
+
+  /* Stats bar */
+  .stats-bar { background: var(--ink); border-radius: 4px; padding: 32px 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 28px; }
+  .stat-item { text-align: center; padding: 0 20px; border-right: 1px solid #2A2A20; }
+  .stat-item:last-child { border-right: none; }
+  .stat-val { font-family: var(--serif); font-size: 32px; font-weight: 700; color: var(--gold-light); margin-bottom: 4px; }
+  .stat-lbl { font-family: var(--sans); font-size: 11px; font-weight: 500; color: #4A4A3A; letter-spacing: 0.5px; }
+
+  /* CTA */
+  .cta-section { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 48px; text-align: center; margin-top: 80px; }
+  .cta-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .cta-title em { font-style: italic; color: var(--gold); }
+  .cta-sub { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); margin-bottom: 28px; line-height: 1.6; }
+  .btn-primary { background: var(--ink); color: var(--cream); font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; padding: 14px 28px; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 12px; }
+  .btn-secondary { background: none; color: var(--text-mid); font-family: var(--sans); font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
+
+  /* Mobile */
+  @media (max-width: 680px) {
+    .founder-card { flex-direction: column; gap: 24px; }
+    .founder-photo { width: 100px; height: 100px; }
+    .page-title { font-size: 32px; }
+    .stats-bar { grid-template-columns: 1fr; gap: 16px; padding: 24px; }
+    .stat-item { border-right: none; border-bottom: 1px solid #2A2A20; padding-bottom: 16px; }
+    .stat-item:last-child { border-bottom: none; }
+    .cta-section { padding: 32px 24px; }
+  }
+
+  /* ── FOOTER ── */
+  footer { background: var(--ink); padding: 32px 0; }
+  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    Pick of the Week <b>32-16</b> · 68.8% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$7,825 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    2025 Season <b>12-4</b> · 75.0% Hit Rate · best single season<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+    Pick of the Week <b>32-16</b> · 68.8% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$7,825 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    2025 Season <b>12-4</b> · 75.0% Hit Rate · best single season<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/index.html">
+      <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
+    </a>
+    <ul class="nav-links">
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/games.html">Past Games</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+      <li><a href="/about.html" class="active">About</a></li>
+      <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu" style="outline:none;border:none;background:transparent;padding:4px;cursor:pointer;">
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="22" height="2" rx="1" fill="#1A1705"/>
+        <rect y="7" width="22" height="2" rx="1" fill="#1A1705"/>
+        <rect y="14" width="22" height="2" rx="1" fill="#1A1705"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')">✕</button>
+  <a href="/index.html">Home</a>
+  <a href="/results.html">Results</a>
+  <a href="/games.html">Past Games</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/about.html">About</a>
+  <a href="/index.html#waitlist" class="btn-mobile">Join Waitlist</a>
+</div>
+<script>
+function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+</script>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">The story</div>
+    <h1 class="page-title">Built by someone who wants to help you <em>look before you jump.</em></h1>
+    <p class="page-sub">I spent years building and breaking models so you don't have to. There's nothing I enjoy more than putting that work in someone else's hands.</p>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- Founder -->
+  <div class="founder-card">
+    <div class="founder-photo">
+      <!-- Replace with actual photo: <img src="austin-park.jpg" alt="Austin Park"> -->
+      <div class="founder-photo-placeholder">AP</div>
+    </div>
+    <div class="founder-info">
+      <div class="founder-name">Austin Park</div>
+      <div class="founder-title">Founder · PressBox Analytics</div>
+      <p class="founder-bio">Austin spent his career as a CFO — building financial models, translating complex data into clear decisions, and cutting through the noise that clouds most business judgment. He applied the same discipline to college football betting and built something that actually works.</p>
+      <div class="founder-links">
+        <a href="https://linkedin.com/in/YOUR_LINKEDIN" target="_blank" class="founder-link">LinkedIn ↗</a>
+        <a href="mailto:austin@pressboxanalytics.com" class="founder-link">Email</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why -->
+  <div class="section">
+    <div class="section-label">The origin</div>
+    <h2 class="section-title">I got tired of watching people lose money on <em>other people's opinions.</em></h2>
+    <div class="section-body">
+      <p>I've bet on college football. I've also lost money on it — early on, chasing gut feelings and half-built models that weren't ready. Being a CFO teaches you quickly that a bad model is worse than no model at all, because it gives you false confidence.</p>
+      <p>What I kept noticing around me was how many people were getting swept up in sports betting — and how consistently they were losing. Not because they weren't smart, but because they were making decisions based on instinct, narratives, and whoever they'd heard on a podcast that week. The sportsbook is very good at exploiting exactly that.</p>
+      <p><strong>So I started asking whether an edge could actually be quantified.</strong> Over the last few years I've spent a lot of time — and a little bit of money — building, breaking, and refining models to find out. Nothing would make me happier than to see that work provide real value to the people out there who love wagering on sports but have never had a serious, data-driven source of analysis to lean on.</p>
+    </div>
+  </div>
+
+  <!-- What PressBox is not -->
+  <div class="section">
+    <div class="section-label">Transparency</div>
+    <h2 class="section-title">What PressBox is <em>not.</em></h2>
+    <div class="section-body">
+      <p>There are a lot of people selling picks on the internet. Most of them cherry-pick their wins, hide their losses, and charge a monthly fee for the privilege. PressBox is built on a different premise entirely.</p>
+    </div>
+    <div class="commitment-list">
+      <div class="commitment">
+        <div class="commitment-icon">✕</div>
+        <div class="commitment-text"><strong>Not a tout service.</strong> Every pick we've ever made is published — wins, losses, pushes. Three full seasons. You can verify every number on the Results page yourself.</div>
+      </div>
+      <div class="commitment">
+        <div class="commitment-icon">✕</div>
+        <div class="commitment-text"><strong>Not a gambling addiction enabler.</strong> We publish one Pick of the Week and a small set of high-conviction plays. We're not trying to get you to bet every game every week.</div>
+      </div>
+      <div class="commitment">
+        <div class="commitment-icon">✕</div>
+        <div class="commitment-text"><strong>Not a black box.</strong> The How It Works page explains the methodology in plain English. You'll understand what we're measuring and why — just not the exact weights and thresholds.</div>
+      </div>
+      <div class="commitment">
+        <div class="commitment-icon">✕</div>
+        <div class="commitment-text"><strong>Not infallible.</strong> We lose weeks. We lose games. The model is wrong sometimes. What it isn't is consistently wrong — and over three seasons, that difference has added up.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The numbers -->
+  <div class="section">
+    <div class="section-label">The record</div>
+    <h2 class="section-title">Three seasons. The numbers speak for themselves.</h2>
+    <div class="section-body">
+      <p>Every stat below is backtested against real closing lines from real sportsbooks. No simulated results, no favorable assumptions, no cherry-picking the good weeks.</p>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-val">62.8%</div>
+        <div class="stat-lbl">Weekly A+ Hit Rate · 3 seasons</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">3/3</div>
+        <div class="stat-lbl">Profitable seasons · no exceptions</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">68.8%</div>
+        <div class="stat-lbl">Pick of the Week · 32-16 record</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- What's coming -->
+  <div class="section">
+    <div class="section-label">What's next</div>
+    <h2 class="section-title">The 2026 season is coming.<br><em>Get in early.</em></h2>
+    <div class="section-body">
+      <p>PressBox is launching as a subscription product for the 2026 college football season. Members will get weekly A+ picks, the Pick of the Week, parlay legs, and full game-by-game analysis — everything that's been backtested here, delivered live.</p>
+      <p>The waitlist is free. Early members will get a discounted rate locked in for life. We're not doing a big public launch — just opening it up to people who found us early and wanted to be part of it.</p>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2 class="cta-title">Join the waitlist.<br><em>2026 season picks start in August.</em></h2>
+    <p class="cta-sub">Free to join. Early members get a lifetime discounted rate.</p>
+    <a href="/index.html#waitlist" class="btn-primary">Join the Waitlist</a>
+    <a href="/results.html" class="btn-secondary">See the full record first</a>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics" style="height:56px;width:auto;display:block;">
+    </div>
+    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
