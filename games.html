@@ -405,10 +405,6 @@ function renderGames(data) {
       finalLabel = `${g.home_team} ${g.home_points}, ${g.away_team} ${g.away_points} ${winMarginStr}`;
     }
 
-    const finalStr = hasScore ? `${g.away_team} ${g.away_points}, ${g.home_team} ${g.home_points}` : 'Not yet played';
-    const finalWinner = hasScore ? (g.actual_margin > 0 ? g.home_team : g.away_team) : null;
-    const finalMargin = hasScore ? Math.abs(g.actual_margin) : null;
-    const finalLabel  = hasScore ? `${finalWinner} ${finalMargin}` : 'TBD';
 
     html += `
       <div class="game-card ${hasAP ? 'has-ap' : ''}" id="game-${idx}">
