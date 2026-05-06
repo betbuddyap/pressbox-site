@@ -430,13 +430,16 @@ function buildStatsCard(statRanks, statSeason) {
 
   // Group stats into categories
   const groups = [
-    { label: 'Offense', keys: ['points_per_game','yards_per_game','yards_per_play','pass_yards_per_game','rush_yards_per_game','first_downs_per_game','third_down_pct','red_zone_pct','plays_per_game','top_pct','seconds_per_play'] },
-    { label: 'Defense', keys: ['points_allowed_per_game','yards_allowed_per_game','yards_allowed_per_play','pass_yards_allowed_per_game','rush_yards_allowed_per_game','opp_third_down_pct','opp_red_zone_pct','opp_plays_per_game'] },
+    { label: 'Offense', keys: ['points_per_game','yards_per_game','yards_per_play','pass_yards_per_game','rush_yards_per_game','first_downs_per_game','third_down_pct','red_zone_pct','plays_per_game','top_pct','seconds_per_play','off_success_rate','off_explosiveness'] },
+    { label: 'Defense', keys: ['points_allowed_per_game','yards_allowed_per_game','yards_allowed_per_play','pass_yards_allowed_per_game','rush_yards_allowed_per_game','opp_third_down_pct','opp_red_zone_pct','opp_plays_per_game','def_success_rate','def_explosiveness','def_havoc_total','def_stuff_rate'] },
     { label: 'Turnover & Special Teams', keys: ['turnovers_per_game','takeaways_per_game','st_points_per_game','penalties_per_game','penalty_yards_per_game'] },
   ];
 
-  const fmt = (v, unit) => {
+  const fmt = (v, unit, key) => {
     if (v == null) return '—';
+    // Advanced rates are decimals like 0.513 — show as percentage
+    const isRate = key && (key.includes('success_rate') || key.includes('explosiveness') || key.includes('havoc') || key.includes('stuff_rate'));
+    if (isRate) return (v * 100).toFixed(1) + '%';
     const n = typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(1)) : v;
     return unit === '%' ? n + '%' : unit === 's' ? n + 's' : n;
   };
@@ -450,7 +453,7 @@ function buildStatsCard(statRanks, statSeason) {
         <span class="stat-name">${s.label}</span>
         <div class="stat-right">
           <span class="stat-rank-label">#${s.rank} of ${s.of}</span>
-          <span class="stat-val-main">${fmt(s.value, s.unit)}</span>
+          <span class="stat-val-main">${fmt(s.value, s.unit, s.label.toLowerCase().replace(/ /g,'_'))}</span>
         </div>
       </div>
       <div class="stat-bar-wrap">
