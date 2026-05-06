@@ -83,7 +83,7 @@
   .game-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
   .game-badges { display: flex; gap: 6px; flex-wrap: wrap; }
   .badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; }
-  .badge-conf { background: var(--gold-pale); color: var(--gold); }
+  .badge-conf { background: var(--gold-pale); color: #5A4010; }
   .badge-neutral { background: #EDE8F5; color: #7060A8; }
   .badge-intl { background: #E8F0E8; color: #506850; }
   .game-time { font-size: 11px; color: var(--text-light); font-weight: 400; }
@@ -91,8 +91,8 @@
   .game-team { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
   .team-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); }
   .team-conf { font-size: 10px; color: var(--text-light); font-family: var(--sans); font-weight: 400; }
-  .game-at { font-size: 10px; color: var(--text-light); margin: 2px 0 2px 30px; }
-  .rank-spacer { width: 22px; height: 22px; flex-shrink: 0; }
+  .game-at { font-family: var(--serif); font-size: 15px; font-weight: 400; font-style: italic; color: var(--text-light); margin: 2px 0 2px 30px; }
+  .rank-spacer { width: 22px; height: 22px; flex-shrink: 0; display: inline-block; }
   .game-footer { display: flex; align-items: center; justify-content: space-between; }
   .game-venue { font-size: 11px; color: var(--text-light); display: flex; align-items: center; gap: 5px; overflow: hidden; }
   .game-venue span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -100,7 +100,7 @@
   .elo-bar { width: 48px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; position: relative; }
   .elo-home { height: 100%; background: var(--gold); border-radius: 2px; }
   .elo-label { font-size: 10px; color: var(--text-light); font-weight: 500; }
-  .rank-badge { font-family: var(--serif); font-size: 11px; font-weight: 700; color: var(--gold); background: var(--gold-pale); width: 22px; height: 22px; border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .rank-badge { font-family: var(--serif); font-size: 11px; font-weight: 400; color: var(--text); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
   /* LOADING / EMPTY */
   .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; }
