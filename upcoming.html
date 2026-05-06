@@ -88,9 +88,11 @@
   .badge-intl { background: #E8F0E8; color: #506850; }
   .game-time { font-size: 11px; color: var(--text-light); font-weight: 400; }
   .game-matchup { margin-bottom: 12px; }
-  .game-away { font-family: var(--sans); font-size: 13px; font-weight: 400; color: var(--text-mid); margin-bottom: 3px; display: flex; align-items: center; gap: 8px; }
-  .game-at { font-size: 10px; color: var(--text-light); }
-  .game-home { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .game-team { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .team-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); }
+  .team-conf { font-size: 10px; color: var(--text-light); font-family: var(--sans); font-weight: 400; }
+  .game-at { font-size: 10px; color: var(--text-light); margin: 2px 0 2px 30px; }
+  .rank-spacer { width: 22px; height: 22px; flex-shrink: 0; }
   .game-footer { display: flex; align-items: center; justify-content: space-between; }
   .game-venue { font-size: 11px; color: var(--text-light); display: flex; align-items: center; gap: 5px; overflow: hidden; }
   .game-venue span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -333,16 +335,16 @@ function gameCard(g) {
         <div class="game-time">${g.time !== 'TBD' ? g.time : ''}</div>
       </div>
       <div class="game-matchup">
-        <div class="game-away">
-          ${awayRank ? `<span class="rank-badge">${awayRank}</span>` : ''}
-          <span>${g.away_team}</span>
-          <span style="font-size:10px;color:var(--text-light);">${awayConfShort}</span>
+        <div class="game-team">
+          ${awayRank ? `<span class="rank-badge">${awayRank}</span>` : '<span class="rank-spacer"></span>'}
+          <span class="team-name">${g.away_team}</span>
+          <span class="team-conf">${awayConfShort}</span>
         </div>
-        <div style="font-size:10px;color:var(--text-light);margin:3px 0 3px 30px;">@ </div>
-        <div class="game-home">
-          ${homeRank ? `<span class="rank-badge">${homeRank}</span>` : ''}
-          <span>${g.home_team}</span>
-          <span style="font-size:10px;color:var(--text-light);font-family:var(--sans);font-weight:400;">${confShort}</span>
+        <div class="game-at">@</div>
+        <div class="game-team">
+          ${homeRank ? `<span class="rank-badge">${homeRank}</span>` : '<span class="rank-spacer"></span>'}
+          <span class="team-name">${g.home_team}</span>
+          <span class="team-conf">${confShort}</span>
         </div>
       </div>
       <div class="game-footer">
