@@ -279,23 +279,6 @@ async function init() {
   buildConfLeaders();
   render();
 
-  // Update methodology sidebar from API response
-  if (data.weights) {
-    const w = data.weights;
-    const pct = v => Math.round(v * 100) + '%';
-    document.getElementById('w-sp').textContent = pct(w.sp);
-    document.getElementById('w-elo').textContent = pct(w.elo);
-    document.getElementById('w-adv').textContent = pct(w.advanced);
-    document.getElementById('w-ppa').textContent = pct(w.ppa);
-    document.getElementById('b-sp').style.width = pct(w.sp);
-    document.getElementById('b-elo').style.width = pct(w.elo);
-    document.getElementById('b-adv').style.width = pct(w.advanced);
-    document.getElementById('b-ppa').style.width = pct(w.ppa);
-  }
-  if (data.phase) {
-    document.getElementById('phaseNote').textContent =
-      `Phase: ${data.phase.charAt(0).toUpperCase() + data.phase.slice(1)} season weights. Same model used for our A+ picks.`;
-  }
 
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('rankingsContainer').style.display = 'block';
@@ -392,7 +375,10 @@ function buildConfLeaders() {
   }).join('');
 }
 
-init().catch(console.error);
+init().catch(e => {
+  console.error(e);
+  document.getElementById('loadingState').innerHTML = '<div class="loading-text" style="color:#B87878;">Failed to load rankings. Please refresh.</div>';
+});
 </script>
 </body>
 </html>
