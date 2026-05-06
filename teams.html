@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teams — PressBox Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream: #F8F5EE; --cream-dark: #EFE9DC; --cream-mid: #E8E1D3;
+    --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
+    --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
+    --gold-pale: #F5EDD0; --ink: #0F0E0A;
+    --serif: 'Libre Baskerville', Georgia, serif;
+    --sans: 'Source Sans 3', system-ui, sans-serif;
+    --max: 1200px;
+  }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  /* TICKER */
+  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
+  .ticker-track span { margin: 0 28px; color: #2A2A20; }
+  .ticker-track b { color: var(--gold-light); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* NAV */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: transparent; border: 0; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
+  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+  .mobile-menu.open { display: flex !important; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); }
+  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* PAGE HEADER */
+  .page-header { background: var(--ink); padding: 56px 0 48px; }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--cream); line-height: 1.1; }
+  .page-title em { font-style: italic; color: var(--gold-light); }
+  .page-sub { font-size: 14px; font-weight: 300; color: #6A6A58; margin-top: 8px; }
+
+  /* CONTROLS */
+  .controls-bar { background: var(--cream-dark); border-bottom: 1px solid var(--border); position: sticky; top: 80px; z-index: 90; }
+  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 0; overflow-x: auto; }
+  .conf-tab { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-light); padding: 14px 18px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .conf-tab:hover { color: var(--text-mid); }
+  .conf-tab.active { color: var(--text); border-bottom-color: var(--gold); }
+  .search-wrap { margin-left: auto; padding: 8px 0; }
+  .search-input { font-family: var(--sans); font-size: 12px; color: var(--text); background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 7px 12px; width: 200px; outline: none; }
+  .search-input::placeholder { color: var(--text-light); }
+  .search-input:focus { border-color: var(--gold); }
+
+  /* MAIN */
+  .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; }
+
+  /* CONFERENCE SECTION */
+  .conf-section { margin-bottom: 48px; }
+  .conf-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .conf-name { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--text); }
+  .conf-count { font-size: 12px; color: var(--text-light); }
+  .conf-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* TEAMS GRID */
+  .teams-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  @media (max-width: 900px) { .teams-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 600px) { .teams-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* TEAM CARD */
+  .team-card { background: var(--cream); padding: 18px 20px; text-decoration: none; display: block; transition: background 0.12s; }
+  .team-card:hover { background: var(--cream-dark); }
+  .team-rank { font-family: var(--serif); font-size: 11px; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
+  .team-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.2; }
+  .team-score-row { display: flex; align-items: center; gap: 8px; }
+  .team-score-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .team-score-fill { height: 100%; border-radius: 2px; }
+  .team-score-val { font-size: 11px; font-weight: 600; color: var(--text-light); flex-shrink: 0; }
+
+  /* LOADING */
+  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text-light); }
+
+  /* FOOTER */
+  footer { background: var(--ink); padding: 32px 0; }
+  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$4,425 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    A+ O/U <b>82.4%</b> hit rate in 2025<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$4,425 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    A+ O/U <b>82.4%</b> hit rate in 2025<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/index.html"><img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;"></a>
+    <ul class="nav-links">
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/games.html">Past Games</a></li>
+      <li><a href="/upcoming.html">Upcoming</a></li>
+      <li><a href="/rankings.html">Rankings</a></li>
+      <li><a href="/teams.html" class="active">Teams</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')">✕</button>
+  <a href="/index.html">Home</a>
+  <a href="/results.html">Results</a>
+  <a href="/games.html">Past Games</a>
+  <a href="/upcoming.html">Upcoming</a>
+  <a href="/rankings.html">Rankings</a>
+  <a href="/teams.html">Teams</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/about.html">About</a>
+  <a href="/index.html#waitlist" class="btn-mobile">Join Waitlist</a>
+</div>
+<script>function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }</script>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">2026 Season</div>
+    <h1 class="page-title">FBS <em>Teams</em></h1>
+    <p class="page-sub">133 teams · 11 conferences · Click any team for schedule, stats, and history</p>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls-bar">
+  <div class="controls-inner">
+    <button class="conf-tab active" id="tab-all" onclick="setConf('all')">All</button>
+    <button class="conf-tab" id="tab-SEC" onclick="setConf('SEC')">SEC</button>
+    <button class="conf-tab" id="tab-Big Ten" onclick="setConf('Big Ten')">Big Ten</button>
+    <button class="conf-tab" id="tab-Big 12" onclick="setConf('Big 12')">Big 12</button>
+    <button class="conf-tab" id="tab-ACC" onclick="setConf('ACC')">ACC</button>
+    <button class="conf-tab" id="tab-American Athletic" onclick="setConf('American Athletic')">AAC</button>
+    <button class="conf-tab" id="tab-Mountain West" onclick="setConf('Mountain West')">Mtn West</button>
+    <button class="conf-tab" id="tab-Sun Belt" onclick="setConf('Sun Belt')">Sun Belt</button>
+    <button class="conf-tab" id="tab-Pac-12" onclick="setConf('Pac-12')">Pac-12</button>
+    <button class="conf-tab" id="tab-Mid-American" onclick="setConf('Mid-American')">MAC</button>
+    <button class="conf-tab" id="tab-Conference USA" onclick="setConf('Conference USA')">CUSA</button>
+    <button class="conf-tab" id="tab-FBS Independents" onclick="setConf('FBS Independents')">Ind</button>
+    <div class="search-wrap">
+      <input class="search-input" type="text" placeholder="Search teams..." oninput="searchTeams(this.value)" id="searchInput">
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainContent">
+  <div class="loading" id="loadingState">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading teams...</div>
+  </div>
+  <div id="teamsContainer" style="display:none;"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div><img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics" style="height:56px;width:auto;display:block;"></div>
+    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
+    <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+  </div>
+</footer>
+
+<script>
+const API = 'https://betbuddyservice-production.up.railway.app';
+const CONF_ORDER = ['SEC','Big Ten','Big 12','ACC','American Athletic','Mountain West','Sun Belt','Pac-12','Mid-American','Conference USA','FBS Independents'];
+
+let teamsData = {};     // { conference: [team, ...] }
+let rankingsMap = {};   // { team: rank }
+let maxScore = 60;
+let currentConf = 'all';
+let searchQuery = '';
+
+async function init() {
+  // Load teams and rankings in parallel
+  const [teamsRes, rankRes] = await Promise.all([
+    fetch(`${API}/teams?season=2026`),
+    fetch(`${API}/rankings/power?season=2025&limit=200`)
+  ]);
+
+  const teamsJson = await teamsRes.json();
+  const rankJson  = await rankRes.json();
+
+  teamsData = teamsJson.conferences || {};
+
+  // Build rankings lookup
+  const allRanked = rankJson.full || [];
+  maxScore = allRanked[0]?.score || 60;
+  allRanked.forEach(t => {
+    rankingsMap[t.team] = { rank: t.rank, score: t.score };
+  });
+
+  // Inject rank/score into team data
+  Object.values(teamsData).forEach(teams => {
+    teams.forEach(t => {
+      const r = rankingsMap[t.team];
+      if (r) { t.rank = r.rank; t.score = r.score; }
+    });
+    // Sort by rank
+    teams.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+  });
+
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('teamsContainer').style.display = 'block';
+  render();
+}
+
+function setConf(conf) {
+  currentConf = conf;
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.conf-tab').forEach(t => t.classList.remove('active'));
+  const tab = document.getElementById(`tab-${conf}`);
+  if (tab) tab.classList.add('active');
+  render();
+}
+
+function searchTeams(q) {
+  searchQuery = q.toLowerCase();
+  currentConf = 'all';
+  document.querySelectorAll('.conf-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-all').classList.add('active');
+  render();
+}
+
+function render() {
+  const container = document.getElementById('teamsContainer');
+  const confs = currentConf === 'all' ? CONF_ORDER : [currentConf];
+
+  container.innerHTML = confs.map(conf => {
+    let teams = teamsData[conf] || [];
+    if (searchQuery) {
+      teams = Object.values(teamsData).flat().filter(t =>
+        t.team.toLowerCase().includes(searchQuery)
+      );
+      // Only show once when searching
+      if (conf !== confs[0]) return '';
+    }
+    if (!teams.length) return '';
+
+    return `
+      <div class="conf-section">
+        <div class="conf-header">
+          <div class="conf-name">${conf}</div>
+          <div class="conf-count">${teams.length} teams</div>
+          <div class="conf-line"></div>
+        </div>
+        <div class="teams-grid">
+          ${teams.map(t => teamCard(t)).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function teamCard(t) {
+  const score = t.score ?? null;
+  const rank  = t.rank ?? null;
+  const barPct = score != null
+    ? Math.max(2, Math.min(100, ((score + 60) / (maxScore + 60)) * 100))
+    : 2;
+  const barColor = score > 10 ? '#B8922A' : score > 0 ? '#C5A878' : '#DDD6C8';
+
+  return `
+    <a class="team-card" href="/team.html?team=${encodeURIComponent(t.team)}">
+      ${rank ? `<div class="team-rank">#${rank}</div>` : ''}
+      <div class="team-name">${t.team}</div>
+      <div class="team-score-row">
+        <div class="team-score-bar">
+          <div class="team-score-fill" style="width:${barPct}%;background:${barColor};"></div>
+        </div>
+        <div class="team-score-val">${score != null ? (score >= 0 ? '+' : '') + score.toFixed(1) : '—'}</div>
+      </div>
+    </a>
+  `;
+}
+
+init().catch(e => {
+  console.error(e);
+  document.getElementById('loadingState').innerHTML = '<div class="loading-text" style="color:#B87878;">Failed to load teams. Please refresh.</div>';
+});
+</script>
+</body>
+</html>
