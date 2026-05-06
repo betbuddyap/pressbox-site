@@ -134,6 +134,8 @@
   .record-dash { color: var(--border); font-size: 28px; }
   .record-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
 
+  .stats-main-card { margin-bottom: 40px; }
+
   /* LOADING */
   .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; grid-column: 1 / -1; }
   .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -245,6 +247,24 @@ const CONF_SHORT = {
   'FBS Independents': 'IND'
 };
 
+function buildScheduleCompact(schedule, record) {
+  if (!schedule.length) return '<div style="padding:8px 0;font-size:12px;color:var(--text-light);">No schedule available.</div>';
+  return schedule.map(g => {
+    const ha = g.neutral_site ? 'N' : (g.is_home ? 'vs' : '@');
+    const resultHtml = g.result
+      ? `<span class="result-${g.result === 'W' ? 'win' : 'loss'}" style="font-family:var(--serif);font-size:13px;font-weight:700;">${g.result} ${g.team_points}–${g.opp_points}</span>`
+      : `<span style="font-size:11px;color:var(--text-light);">TBD</span>`;
+    return `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:10px;color:var(--text-light);width:28px;flex-shrink:0;">W${g.week}</span>
+        <span style="font-size:10px;font-style:italic;color:var(--text-light);width:20px;flex-shrink:0;">${ha}</span>
+        <a href="/team.html?team=${encodeURIComponent(g.opponent)}" style="font-family:var(--serif);font-size:13px;font-weight:700;color:var(--text);text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${g.opponent}</a>
+        <div style="text-align:right;flex-shrink:0;">${resultHtml}</div>
+      </div>
+    `;
+  }).join('');
+}
+
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const team = params.get('team');
@@ -288,24 +308,26 @@ function buildPage(data, myRank, allRanked) {
   const statRanks  = data.stat_ranks || {};
 
   return `
-    <!-- LEFT: Schedule + Stats -->
+    <!-- LEFT: Stats -->
     <div>
-      <div class="section-label">2026 Schedule</div>
-      ${buildSchedule(schedule, record)}
+      ${Object.keys(statRanks).length ? `
+        <div class="section-label">${statSeason} Stats vs FBS</div>
+        <div class="stats-main-card">
+          ${buildStatsCard(statRanks, statSeason)}
+        </div>
+      ` : ''}
       ${buildRatingsHistory(ratings)}
     </div>
 
     <!-- RIGHT: Sidebar -->
     <div class="sidebar">
       ${myRank ? buildRankCard(myRank, allRanked) : ''}
-      ${Object.keys(statRanks).length ? `
-        <div class="sidebar-card" style="padding:0;">
-          <div class="card-title" style="padding:22px 22px 12px;">${statSeason} <em>Stats vs FBS</em></div>
-          <div style="padding:0 22px 22px;">
-            ${buildStatsCard(statRanks, statSeason)}
-          </div>
+      <div class="sidebar-card" style="padding:0;">
+        <div class="card-title" style="padding:22px 22px 12px;">2026 <em>Schedule</em></div>
+        <div style="padding:0 12px 12px;">
+          ${buildScheduleCompact(schedule, record)}
         </div>
-      ` : ''}
+      </div>
     </div>
   `;
 }
