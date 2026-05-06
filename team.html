@@ -104,6 +104,20 @@
   .stat-val.good { color: var(--win); }
   .stat-val.bad { color: var(--loss); }
 
+  /* FULL STAT ROWS WITH PERCENTILE */
+  .stats-group { margin-bottom: 20px; }
+  .stats-group-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); padding: 8px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .stat-row-full { padding: 7px 0; border-bottom: 1px solid #EFE9DC; }
+  .stat-row-full:last-child { border-bottom: none; }
+  .stat-row-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .stat-right { display: flex; align-items: baseline; gap: 10px; }
+  .stat-rank-label { font-size: 10px; color: var(--text-light); }
+  .stat-val-main { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
+  .stat-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .stat-bar-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .stat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+  .stat-pct { font-size: 10px; color: var(--text-light); width: 30px; text-align: right; flex-shrink: 0; }
+
   /* RATINGS HISTORY */
   .ratings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .rating-item { text-align: center; padding: 12px 8px; background: var(--cream); border: 1px solid var(--border); border-radius: 3px; }
@@ -270,19 +284,28 @@ function buildPage(data, myRank, allRanked) {
   const ratings  = data.ratings || {};
   const record   = data.record || { wins: 0, losses: 0 };
 
+  const statSeason = data.stat_season || 2025;
+  const statRanks  = data.stat_ranks || {};
+
   return `
-    <!-- LEFT: Schedule -->
+    <!-- LEFT: Schedule + Stats -->
     <div>
       <div class="section-label">2026 Schedule</div>
       ${buildSchedule(schedule, record)}
-
       ${buildRatingsHistory(ratings)}
     </div>
 
     <!-- RIGHT: Sidebar -->
     <div class="sidebar">
       ${myRank ? buildRankCard(myRank, allRanked) : ''}
-      ${buildStatsCard(stats)}
+      ${Object.keys(statRanks).length ? `
+        <div class="sidebar-card" style="padding:0;">
+          <div class="card-title" style="padding:22px 22px 12px;">${statSeason} <em>Stats vs FBS</em></div>
+          <div style="padding:0 22px 22px;">
+            ${buildStatsCard(statRanks, statSeason)}
+          </div>
+        </div>
+      ` : ''}
     </div>
   `;
 }
@@ -380,35 +403,52 @@ function buildRankCard(myRank, allRanked) {
   `;
 }
 
-function buildStatsCard(stats) {
-  if (!stats || !stats.points_per_game) return '';
+function buildStatsCard(statRanks, statSeason) {
+  if (!statRanks || !Object.keys(statRanks).length) return '';
 
-  const ppg    = stats.points_per_game;
-  const papg   = stats.points_allowed_per_game;
-  const ypg    = stats.yards_per_game;
-  const ypp    = stats.yards_per_play;
-  const thirdD = stats.third_down_pct;
-  const rz     = stats.red_zone_pct;
-  const top    = stats.top_pct;
-  const to     = stats.turnovers_per_game;
-  const pen    = stats.penalties_per_game;
+  // Group stats into categories
+  const groups = [
+    { label: 'Offense', keys: ['points_per_game','yards_per_game','yards_per_play','pass_yards_per_game','rush_yards_per_game','first_downs_per_game','third_down_pct','red_zone_pct','plays_per_game','top_pct','seconds_per_play'] },
+    { label: 'Defense', keys: ['points_allowed_per_game','yards_allowed_per_game','yards_allowed_per_play','pass_yards_allowed_per_game','rush_yards_allowed_per_game','opp_third_down_pct','opp_red_zone_pct','opp_plays_per_game'] },
+    { label: 'Turnover & Special Teams', keys: ['turnovers_per_game','takeaways_per_game','st_points_per_game','penalties_per_game','penalty_yards_per_game'] },
+  ];
 
-  const fmt = (v, d=1) => v != null ? v.toFixed(d) : '—';
+  const fmt = (v, unit) => {
+    if (v == null) return '—';
+    const n = typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(1)) : v;
+    return unit === '%' ? n + '%' : unit === 's' ? n + 's' : n;
+  };
 
-  return `
-    <div class="sidebar-card">
-      <div class="card-title">2025 <em>Season Stats</em></div>
-      ${ppg != null ? `<div class="stat-row"><span class="stat-name">Points / Game</span><span class="stat-val ${ppg > 30 ? 'good' : ppg < 20 ? 'bad' : ''}">${fmt(ppg)}</span></div>` : ''}
-      ${papg != null ? `<div class="stat-row"><span class="stat-name">Points Allowed</span><span class="stat-val ${papg < 20 ? 'good' : papg > 30 ? 'bad' : ''}">${fmt(papg)}</span></div>` : ''}
-      ${ypg != null ? `<div class="stat-row"><span class="stat-name">Yards / Game</span><span class="stat-val">${fmt(ypg)}</span></div>` : ''}
-      ${ypp != null ? `<div class="stat-row"><span class="stat-name">Yards / Play</span><span class="stat-val ${ypp > 6 ? 'good' : ypp < 4.5 ? 'bad' : ''}">${fmt(ypp, 2)}</span></div>` : ''}
-      ${thirdD != null ? `<div class="stat-row"><span class="stat-name">3rd Down %</span><span class="stat-val ${thirdD > 45 ? 'good' : thirdD < 35 ? 'bad' : ''}">${fmt(thirdD)}%</span></div>` : ''}
-      ${rz != null ? `<div class="stat-row"><span class="stat-name">Red Zone %</span><span class="stat-val ${rz > 70 ? 'good' : rz < 55 ? 'bad' : ''}">${fmt(rz)}%</span></div>` : ''}
-      ${top != null ? `<div class="stat-row"><span class="stat-name">Time of Poss</span><span class="stat-val">${fmt(top)}%</span></div>` : ''}
-      ${to != null ? `<div class="stat-row"><span class="stat-name">TO / Game</span><span class="stat-val ${to < 1 ? 'good' : to > 2 ? 'bad' : ''}">${fmt(to, 2)}</span></div>` : ''}
-      ${pen != null ? `<div class="stat-row"><span class="stat-name">Penalties / Game</span><span class="stat-val">${fmt(pen, 1)}</span></div>` : ''}
+  const barColor = pct => pct >= 75 ? '#4A7A4A' : pct >= 50 ? '#B8922A' : pct >= 25 ? '#C5A878' : '#7A4A4A';
+
+  const statRow = (s) => `
+    <div class="stat-row-full">
+      <div class="stat-row-top">
+        <span class="stat-name">${s.label}</span>
+        <div class="stat-right">
+          <span class="stat-rank-label">#${s.rank} of ${s.of}</span>
+          <span class="stat-val-main">${fmt(s.value, s.unit)}</span>
+        </div>
+      </div>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-track">
+          <div class="stat-bar-fill" style="width:${s.percentile}%;background:${barColor(s.percentile)};"></div>
+        </div>
+        <span class="stat-pct">${s.percentile}th</span>
+      </div>
     </div>
   `;
+
+  return groups.map(g => {
+    const rows = g.keys.map(k => statRanks[k]).filter(Boolean);
+    if (!rows.length) return '';
+    return `
+      <div class="stats-group">
+        <div class="stats-group-label">${g.label}</div>
+        ${rows.map(statRow).join('')}
+      </div>
+    `;
+  }).join('');
 }
 
 init().catch(e => {
