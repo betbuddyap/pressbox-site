@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Power Rankings — PressBox Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream: #F8F5EE; --cream-dark: #EFE9DC; --cream-mid: #E8E1D3;
+    --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
+    --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
+    --gold-pale: #F5EDD0; --ink: #0F0E0A;
+    --serif: 'Libre Baskerville', Georgia, serif;
+    --sans: 'Source Sans 3', system-ui, sans-serif;
+    --max: 1200px;
+  }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  /* TICKER */
+  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
+  .ticker-track span { margin: 0 28px; color: #2A2A20; }
+  .ticker-track b { color: var(--gold-light); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* NAV */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: transparent; border: 0; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
+  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+  .mobile-menu.open { display: flex !important; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); }
+  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* PAGE HEADER */
+  .page-header { background: var(--ink); padding: 56px 0 48px; }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
+  .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--cream); line-height: 1.1; }
+  .page-title em { font-style: italic; color: var(--gold-light); }
+  .page-sub { font-size: 14px; font-weight: 300; color: #6A6A58; margin-top: 8px; max-width: 520px; line-height: 1.6; }
+
+  /* CONTROLS */
+  .controls-bar { background: var(--cream-dark); border-bottom: 1px solid var(--border); padding: 0; position: sticky; top: 80px; z-index: 90; }
+  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 0; }
+  .view-tab { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-light); padding: 14px 20px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .view-tab:hover { color: var(--text-mid); }
+  .view-tab.active { color: var(--text); border-bottom-color: var(--gold); }
+  .conf-select { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 7px 12px; cursor: pointer; margin-left: auto; }
+
+  /* MAIN */
+  .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: start; }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } .sidebar { display: none; } }
+
+  /* RANKINGS TABLE */
+  .rankings-wrap { }
+  .table-header { display: grid; grid-template-columns: 48px 1fr 80px 80px 80px 80px; gap: 0; padding: 10px 16px; border-bottom: 2px solid var(--border); }
+  .th { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
+  .th.r { text-align: right; }
+
+  .rank-row { display: grid; grid-template-columns: 48px 1fr 80px 80px 80px 80px; gap: 0; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.12s; text-decoration: none; color: inherit; }
+  .rank-row:hover { background: var(--cream-dark); }
+  .rank-row.top5 { background: linear-gradient(90deg, rgba(184,146,42,0.04), transparent); }
+
+  .rank-num { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--border); padding: 18px 0; }
+  .rank-row.top5 .rank-num { color: var(--gold); }
+  .rank-row:nth-child(1) .rank-num { font-size: 28px; }
+
+  .rank-team { padding: 16px 0; }
+  .rank-team-name { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .rank-team-meta { display: flex; align-items: center; gap: 8px; }
+  .rank-conf { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
+  .conf-rank { font-size: 10px; color: var(--text-light); }
+
+  .rank-score { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); text-align: right; padding: 16px 0; }
+  .rank-score.neg { color: var(--text-light); }
+
+  .rank-stat { text-align: right; padding: 16px 0; }
+  .rank-stat-val { font-size: 13px; font-weight: 600; color: var(--text-mid); }
+  .rank-stat-val.good { color: #4A7A4A; }
+  .rank-stat-val.bad { color: #7A4A4A; }
+
+  /* Score bar */
+  .score-bar-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .score-bar { width: 60px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .score-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; }
+
+  /* DIVIDERS */
+  .conf-divider { grid-column: 1 / -1; padding: 6px 16px; background: var(--cream-mid); border-bottom: 1px solid var(--border); }
+  .conf-divider-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
+
+  /* SIDEBAR */
+  .sidebar { display: flex; flex-direction: column; gap: 24px; }
+  .sidebar-card { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 24px; }
+  .sidebar-title { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .sidebar-title em { font-style: italic; color: var(--gold); }
+  .method-item { margin-bottom: 14px; }
+  .method-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-mid); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .method-pct { color: var(--gold); }
+  .method-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 4px; }
+  .method-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; }
+  .method-desc { font-size: 11px; color: var(--text-light); line-height: 1.5; }
+
+  .conf-standings { display: flex; flex-direction: column; gap: 0; }
+  .conf-standing-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .conf-standing-row:last-child { border-bottom: none; }
+  .conf-standing-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .conf-standing-top { font-size: 11px; color: var(--text-light); }
+  .conf-standing-score { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--gold); }
+
+  /* LOADING */
+  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text-light); }
+
+  /* FOOTER */
+  footer { background: var(--ink); padding: 32px 0; }
+  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$4,425 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    A+ O/U <b>82.4%</b> hit rate in 2025<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$4,425 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    A+ O/U <b>82.4%</b> hit rate in 2025<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/index.html"><img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;"></a>
+    <ul class="nav-links">
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/games.html">Past Games</a></li>
+      <li><a href="/upcoming.html">Upcoming</a></li>
+      <li><a href="/rankings.html" class="active">Rankings</a></li>
+      <li><a href="/teams.html">Teams</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')">✕</button>
+  <a href="/index.html">Home</a>
+  <a href="/results.html">Results</a>
+  <a href="/games.html">Past Games</a>
+  <a href="/upcoming.html">Upcoming</a>
+  <a href="/rankings.html">Rankings</a>
+  <a href="/teams.html">Teams</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/about.html">About</a>
+  <a href="/index.html#waitlist" class="btn-mobile">Join Waitlist</a>
+</div>
+<script>function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }</script>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <div class="page-eyebrow">Preseason 2026</div>
+      <h1 class="page-title">PressBox <em>Power Rankings</em></h1>
+      <p class="page-sub">Model-driven rankings based on the same weighted ensemble that's gone 63.1% over three seasons. No ballots, no bias — just the data.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls-bar">
+  <div class="controls-inner">
+    <button class="view-tab active" id="tab-all" onclick="setView('all')">All 133 Teams</button>
+    <button class="view-tab" id="tab-25" onclick="setView('25')">Top 25</button>
+    <button class="view-tab" id="tab-conf" onclick="setView('conf')">By Conference</button>
+    <select class="conf-select" id="confSelect" onchange="filterConf(this.value)" style="display:none;">
+      <option value="">All Conferences</option>
+      <option value="SEC">SEC</option>
+      <option value="Big Ten">Big Ten</option>
+      <option value="Big 12">Big 12</option>
+      <option value="ACC">ACC</option>
+      <option value="American Athletic">American Athletic</option>
+      <option value="Mountain West">Mountain West</option>
+      <option value="Sun Belt">Sun Belt</option>
+      <option value="Pac-12">Pac-12</option>
+      <option value="Mid-American">Mid-American</option>
+      <option value="Conference USA">Conference USA</option>
+      <option value="FBS Independents">Independents</option>
+    </select>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- RANKINGS TABLE -->
+  <div class="rankings-wrap">
+    <div class="loading" id="loadingState">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading rankings...</div>
+    </div>
+    <div id="rankingsContainer" style="display:none;">
+      <div class="table-header">
+        <div class="th">Rk</div>
+        <div class="th">Team</div>
+        <div class="th r">Score</div>
+        <div class="th r">SP+</div>
+        <div class="th r">Off</div>
+        <div class="th r">Def</div>
+      </div>
+      <div id="rankingsList"></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <!-- Methodology -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">How We <em>Rank</em></div>
+      <div id="methodItems">
+        <div class="method-item">
+          <div class="method-label">SP+ Rating <span class="method-pct" id="w-sp">50%</span></div>
+          <div class="method-bar"><div class="method-bar-fill" id="b-sp" style="width:50%"></div></div>
+          <div class="method-desc">Tempo-free efficiency metric. Most predictive single factor for team quality.</div>
+        </div>
+        <div class="method-item">
+          <div class="method-label">ELO Rating <span class="method-pct" id="w-elo">15%</span></div>
+          <div class="method-bar"><div class="method-bar-fill" id="b-elo" style="width:15%"></div></div>
+          <div class="method-desc">Win probability rating accounting for schedule strength and margin.</div>
+        </div>
+        <div class="method-item">
+          <div class="method-label">Advanced Stats <span class="method-pct" id="w-adv">20%</span></div>
+          <div class="method-bar"><div class="method-bar-fill" id="b-adv" style="width:20%"></div></div>
+          <div class="method-desc">Success rate, explosiveness, and defensive havoc.</div>
+        </div>
+        <div class="method-item">
+          <div class="method-label">PPA <span class="method-pct" id="w-ppa">15%</span></div>
+          <div class="method-bar"><div class="method-bar-fill" id="b-ppa" style="width:15%"></div></div>
+          <div class="method-desc">Points per play — net offensive minus defensive efficiency.</div>
+        </div>
+      </div>
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); font-size:11px; color:var(--text-light); line-height:1.6;" id="phaseNote">
+        Preseason weights. Shifts each phase of the season to match our live pick model.
+      </div>
+    </div>
+
+    <!-- Conference leaders -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">Conference <em>Leaders</em></div>
+      <div class="conf-standings" id="confLeaders">
+        <div class="loading-text" style="font-size:12px;">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div><img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics" style="height:56px;width:auto;display:block;"></div>
+    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
+    <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+  </div>
+</footer>
+
+<script>
+const API = 'https://betbuddyservice-production.up.railway.app';
+let allRankings = [];
+let currentView = 'all';
+let currentConf = '';
+
+// Max score for bar scaling
+let maxScore = 60;
+
+async function init() {
+  const res = await fetch(`${API}/rankings/power?season=2025&limit=200`);
+  const data = await res.json();
+  allRankings = data.full || data.rankings || [];
+  maxScore = allRankings[0]?.score || 60;
+
+  buildConfLeaders();
+  render();
+
+  // Update methodology sidebar from API response
+  if (data.weights) {
+    const w = data.weights;
+    const pct = v => Math.round(v * 100) + '%';
+    document.getElementById('w-sp').textContent = pct(w.sp);
+    document.getElementById('w-elo').textContent = pct(w.elo);
+    document.getElementById('w-adv').textContent = pct(w.advanced);
+    document.getElementById('w-ppa').textContent = pct(w.ppa);
+    document.getElementById('b-sp').style.width = pct(w.sp);
+    document.getElementById('b-elo').style.width = pct(w.elo);
+    document.getElementById('b-adv').style.width = pct(w.advanced);
+    document.getElementById('b-ppa').style.width = pct(w.ppa);
+  }
+  if (data.phase) {
+    document.getElementById('phaseNote').textContent =
+      `Phase: ${data.phase.charAt(0).toUpperCase() + data.phase.slice(1)} season weights. Same model used for our A+ picks.`;
+  }
+
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('rankingsContainer').style.display = 'block';
+}
+
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${v}`).classList.add('active');
+  document.getElementById('confSelect').style.display = v === 'conf' ? 'block' : 'none';
+  render();
+}
+
+function filterConf(conf) {
+  currentConf = conf;
+  render();
+}
+
+function render() {
+  let teams = [...allRankings];
+
+  if (currentView === '25') {
+    teams = teams.slice(0, 25);
+  } else if (currentView === 'conf' && currentConf) {
+    teams = teams.filter(t => t.conference === currentConf);
+  }
+
+  const list = document.getElementById('rankingsList');
+
+  if (currentView === 'conf' && !currentConf) {
+    // Group by conference
+    const byConf = {};
+    allRankings.forEach(t => {
+      if (!byConf[t.conference]) byConf[t.conference] = [];
+      byConf[t.conference].push(t);
+    });
+    const confOrder = ['SEC','Big Ten','Big 12','ACC','American Athletic','Mountain West','Sun Belt','Pac-12','Mid-American','Conference USA','FBS Independents'];
+    list.innerHTML = confOrder.map(conf => {
+      const confTeams = byConf[conf] || [];
+      if (!confTeams.length) return '';
+      return `
+        <div class="conf-divider"><span class="conf-divider-label">${conf}</span></div>
+        ${confTeams.map(t => rankRow(t)).join('')}
+      `;
+    }).join('');
+  } else {
+    list.innerHTML = teams.map(t => rankRow(t)).join('');
+  }
+}
+
+function rankRow(t) {
+  const isTop5 = t.rank <= 5;
+  const score = t.score || 0;
+  const barPct = Math.max(0, Math.min(100, ((score + 60) / (maxScore + 60)) * 100));
+  const sp = t.sp_overall;
+  const off = t.sp_offense;
+  const def = t.sp_defense;
+
+  return `
+    <a class="rank-row ${isTop5 ? 'top5' : ''}" href="/team.html?team=${encodeURIComponent(t.team)}">
+      <div class="rank-num">${t.rank}</div>
+      <div class="rank-team">
+        <div class="rank-team-name">${t.team}</div>
+        <div class="rank-team-meta">
+          <span class="rank-conf">${t.conference}</span>
+          <span class="conf-rank">#${t.conference_rank} in conf</span>
+        </div>
+      </div>
+      <div class="rank-score ${score < 0 ? 'neg' : ''}">
+        <div class="score-bar-wrap">
+          <div class="score-bar"><div class="score-bar-fill" style="width:${barPct}%"></div></div>
+          ${score >= 0 ? '+' : ''}${score.toFixed(1)}
+        </div>
+      </div>
+      <div class="rank-stat"><span class="rank-stat-val ${sp > 10 ? 'good' : sp < 0 ? 'bad' : ''}">${sp != null ? (sp >= 0 ? '+' : '') + sp.toFixed(1) : '—'}</span></div>
+      <div class="rank-stat"><span class="rank-stat-val ${off > 35 ? 'good' : off < 20 ? 'bad' : ''}">${off != null ? off.toFixed(1) : '—'}</span></div>
+      <div class="rank-stat"><span class="rank-stat-val ${def < 15 ? 'good' : def > 30 ? 'bad' : ''}">${def != null ? def.toFixed(1) : '—'}</span></div>
+    </a>
+  `;
+}
+
+function buildConfLeaders() {
+  const confOrder = ['SEC','Big Ten','Big 12','ACC','American Athletic','Mountain West','Sun Belt','Pac-12','Mid-American','Conference USA'];
+  const leaders = {};
+  allRankings.forEach(t => {
+    if (!leaders[t.conference]) leaders[t.conference] = t;
+  });
+
+  document.getElementById('confLeaders').innerHTML = confOrder.map(conf => {
+    const t = leaders[conf];
+    if (!t) return '';
+    return `
+      <div class="conf-standing-row">
+        <div>
+          <div class="conf-standing-name">${t.team}</div>
+          <div class="conf-standing-top">${conf}</div>
+        </div>
+        <div class="conf-standing-score">#${t.rank}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+init().catch(console.error);
+</script>
+</body>
+</html>
