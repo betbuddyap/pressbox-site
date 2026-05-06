@@ -67,11 +67,11 @@
 
   /* RANKINGS TABLE */
   .rankings-wrap { }
-  .table-header { display: grid; grid-template-columns: 48px 1fr 80px 80px 80px 80px; gap: 0; padding: 10px 16px; border-bottom: 2px solid var(--border); }
+  .table-header { display: grid; grid-template-columns: 48px 1fr 120px; gap: 0; padding: 10px 16px; border-bottom: 2px solid var(--border); }
   .th { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
   .th.r { text-align: right; }
 
-  .rank-row { display: grid; grid-template-columns: 48px 1fr 80px 80px 80px 80px; gap: 0; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.12s; text-decoration: none; color: inherit; }
+  .rank-row { display: grid; grid-template-columns: 48px 1fr 120px; gap: 0; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.12s; text-decoration: none; color: inherit; }
   .rank-row:hover { background: var(--cream-dark); }
   .rank-row.top5 { background: linear-gradient(90deg, rgba(184,146,42,0.04), transparent); }
 
@@ -235,9 +235,6 @@
         <div class="th">Rk</div>
         <div class="th">Team</div>
         <div class="th r">Score</div>
-        <div class="th r">SP+</div>
-        <div class="th r">Off</div>
-        <div class="th r">Def</div>
       </div>
       <div id="rankingsList"></div>
     </div>
@@ -245,36 +242,6 @@
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <!-- Methodology -->
-    <div class="sidebar-card">
-      <div class="sidebar-title">How We <em>Rank</em></div>
-      <div id="methodItems">
-        <div class="method-item">
-          <div class="method-label">SP+ Rating <span class="method-pct" id="w-sp">50%</span></div>
-          <div class="method-bar"><div class="method-bar-fill" id="b-sp" style="width:50%"></div></div>
-          <div class="method-desc">Tempo-free efficiency metric. Most predictive single factor for team quality.</div>
-        </div>
-        <div class="method-item">
-          <div class="method-label">ELO Rating <span class="method-pct" id="w-elo">15%</span></div>
-          <div class="method-bar"><div class="method-bar-fill" id="b-elo" style="width:15%"></div></div>
-          <div class="method-desc">Win probability rating accounting for schedule strength and margin.</div>
-        </div>
-        <div class="method-item">
-          <div class="method-label">Advanced Stats <span class="method-pct" id="w-adv">20%</span></div>
-          <div class="method-bar"><div class="method-bar-fill" id="b-adv" style="width:20%"></div></div>
-          <div class="method-desc">Success rate, explosiveness, and defensive havoc.</div>
-        </div>
-        <div class="method-item">
-          <div class="method-label">PPA <span class="method-pct" id="w-ppa">15%</span></div>
-          <div class="method-bar"><div class="method-bar-fill" id="b-ppa" style="width:15%"></div></div>
-          <div class="method-desc">Points per play — net offensive minus defensive efficiency.</div>
-        </div>
-      </div>
-      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border); font-size:11px; color:var(--text-light); line-height:1.6;" id="phaseNote">
-        Preseason weights. Shifts each phase of the season to match our live pick model.
-      </div>
-    </div>
-
     <!-- Conference leaders -->
     <div class="sidebar-card">
       <div class="sidebar-title">Conference <em>Leaders</em></div>
@@ -383,10 +350,6 @@ function rankRow(t) {
   const isTop5 = t.rank <= 5;
   const score = t.score || 0;
   const barPct = Math.max(0, Math.min(100, ((score + 60) / (maxScore + 60)) * 100));
-  const sp = t.sp_overall;
-  const off = t.sp_offense;
-  const def = t.sp_defense;
-
   return `
     <a class="rank-row ${isTop5 ? 'top5' : ''}" href="/team.html?team=${encodeURIComponent(t.team)}">
       <div class="rank-num">${t.rank}</div>
@@ -403,9 +366,6 @@ function rankRow(t) {
           ${score >= 0 ? '+' : ''}${score.toFixed(1)}
         </div>
       </div>
-      <div class="rank-stat"><span class="rank-stat-val ${sp > 10 ? 'good' : sp < 0 ? 'bad' : ''}">${sp != null ? (sp >= 0 ? '+' : '') + sp.toFixed(1) : '—'}</span></div>
-      <div class="rank-stat"><span class="rank-stat-val ${off > 35 ? 'good' : off < 20 ? 'bad' : ''}">${off != null ? off.toFixed(1) : '—'}</span></div>
-      <div class="rank-stat"><span class="rank-stat-val ${def < 15 ? 'good' : def > 30 ? 'bad' : ''}">${def != null ? def.toFixed(1) : '—'}</span></div>
     </a>
   `;
 }
