@@ -215,37 +215,35 @@ let currentConf = 'all';
 let searchQuery = '';
 
 async function init() {
-  // Load teams and rankings in parallel
-  const [teamsRes, rankRes] = await Promise.all([
-    fetch(`${API}/teams?season=2026`),
-    fetch(`${API}/rankings/power?season=2025&limit=200`)
-  ]);
-
+  // Load teams first — show them immediately
+  const teamsRes = await fetch(`${API}/teams?season=2026`);
   const teamsJson = await teamsRes.json();
-  const rankJson  = await rankRes.json();
-
   teamsData = teamsJson.conferences || {};
-
-  // Build rankings lookup
-  const allRanked = rankJson.full || [];
-  maxScore = allRanked[0]?.score || 60;
-  allRanked.forEach(t => {
-    rankingsMap[t.team] = { rank: t.rank, score: t.score };
-  });
-
-  // Inject rank/score into team data
-  Object.values(teamsData).forEach(teams => {
-    teams.forEach(t => {
-      const r = rankingsMap[t.team];
-      if (r) { t.rank = r.rank; t.score = r.score; }
-    });
-    // Sort by rank
-    teams.sort((a, b) => (a.rank || 999) - (b.rank || 999));
-  });
 
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('teamsContainer').style.display = 'block';
   render();
+
+  // Load rankings in background — enrich cards when ready
+  try {
+    const rankRes = await fetch(`${API}/rankings/power?season=2025&limit=200`);
+    const rankJson = await rankRes.json();
+    const allRanked = rankJson.full || rankJson.rankings || [];
+    maxScore = allRanked[0]?.score || 60;
+    allRanked.forEach(t => {
+      rankingsMap[t.team] = { rank: t.rank, score: t.score };
+    });
+    Object.values(teamsData).forEach(teams => {
+      teams.forEach(t => {
+        const r = rankingsMap[t.team];
+        if (r) { t.rank = r.rank; t.score = r.score; }
+      });
+      teams.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+    });
+    render(); // Re-render with ranks
+  } catch(e) {
+    console.warn('Rankings failed to load:', e);
+  }
 }
 
 function setConf(conf) {
