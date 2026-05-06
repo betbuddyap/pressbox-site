@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team — PressBox Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream: #F8F5EE; --cream-dark: #EFE9DC; --cream-mid: #E8E1D3;
+    --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
+    --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
+    --gold-pale: #F5EDD0; --ink: #0F0E0A;
+    --win: #4A7A4A; --loss: #7A4A4A;
+    --serif: 'Libre Baskerville', Georgia, serif;
+    --sans: 'Source Sans 3', system-ui, sans-serif;
+    --max: 1200px;
+  }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  /* TICKER */
+  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
+  .ticker-track span { margin: 0 28px; color: #2A2A20; }
+  .ticker-track b { color: var(--gold-light); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* NAV */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: transparent; border: 0; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
+  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+  .mobile-menu.open { display: flex !important; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); }
+  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* PAGE HEADER */
+  .page-header { background: var(--ink); padding: 52px 0 44px; }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
+  .header-left { }
+  .breadcrumb { font-size: 11px; color: #3A3A28; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb a { color: #3A3A28; text-decoration: none; }
+  .breadcrumb a:hover { color: var(--gold); }
+  .page-conference { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .page-conference::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-team { font-family: var(--serif); font-size: 48px; font-weight: 700; color: var(--cream); line-height: 1.05; }
+  .header-right { text-align: right; flex-shrink: 0; }
+  .rank-display { font-family: var(--serif); font-size: 72px; font-weight: 700; color: var(--gold-light); line-height: 1; }
+  .rank-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #3A3A28; margin-top: 4px; }
+
+  /* MAIN LAYOUT */
+  .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+
+  /* SECTION LABELS */
+  .section-label { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--text-light); display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* SCHEDULE */
+  .schedule-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+  .schedule-table th { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
+  .schedule-table th.r { text-align: right; }
+  .schedule-row { border-bottom: 1px solid var(--border); }
+  .schedule-row:last-child { border-bottom: none; }
+  .schedule-row:hover { background: var(--cream-dark); }
+  .schedule-row td { padding: 12px; vertical-align: middle; }
+  .week-cell { font-size: 11px; color: var(--text-light); width: 44px; }
+  .date-cell { font-size: 12px; color: var(--text-light); width: 80px; white-space: nowrap; }
+  .opp-cell { }
+  .opp-ha { font-size: 10px; color: var(--text-light); font-style: italic; margin-right: 4px; }
+  .opp-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); }
+  .opp-conf { font-size: 10px; color: var(--text-light); margin-left: 6px; }
+  .neutral-tag { font-size: 9px; color: #7060A8; background: #EDE8F5; padding: 1px 6px; border-radius: 2px; margin-left: 6px; }
+  .conf-tag { font-size: 9px; color: #5A4010; background: var(--gold-pale); padding: 1px 6px; border-radius: 2px; margin-left: 6px; }
+  .result-cell { text-align: right; width: 100px; }
+  .result-win { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--win); }
+  .result-loss { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--loss); }
+  .result-score { font-size: 12px; color: var(--text-mid); margin-left: 6px; }
+  .result-upcoming { font-size: 11px; color: var(--text-light); }
+  .venue-cell { font-size: 11px; color: var(--text-light); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* SIDEBAR CARDS */
+  .sidebar { display: flex; flex-direction: column; gap: 20px; }
+  .sidebar-card { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 22px; }
+  .card-title { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .card-title em { font-style: italic; color: var(--gold); }
+
+  /* STAT ROWS */
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-name { font-size: 12px; color: var(--text-mid); }
+  .stat-val { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
+  .stat-val.good { color: var(--win); }
+  .stat-val.bad { color: var(--loss); }
+
+  /* RATINGS HISTORY */
+  .ratings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .rating-item { text-align: center; padding: 12px 8px; background: var(--cream); border: 1px solid var(--border); border-radius: 3px; }
+  .rating-season { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); margin-bottom: 4px; }
+  .rating-val { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); }
+  .rating-val.gold { color: var(--gold); }
+  .rating-label { font-size: 9px; color: var(--text-light); margin-top: 2px; }
+
+  /* RECORD DISPLAY */
+  .record-big { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .record-num { font-family: var(--serif); font-size: 36px; font-weight: 700; }
+  .record-w { color: var(--win); }
+  .record-l { color: var(--loss); }
+  .record-dash { color: var(--border); font-size: 28px; }
+  .record-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
+
+  /* LOADING */
+  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; grid-column: 1 / -1; }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: var(--text-light); }
+
+  /* FOOTER */
+  footer { background: var(--ink); padding: 32px 0; }
+  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$4,425 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    A+ O/U <b>82.4%</b> hit rate in 2025<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
+    Weekly A+ <b>$4,425 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
+    A+ O/U <b>82.4%</b> hit rate in 2025<span>·</span>
+    Never a losing season<span>·</span>
+    <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/index.html"><img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;"></a>
+    <ul class="nav-links">
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/games.html">Past Games</a></li>
+      <li><a href="/upcoming.html">Upcoming</a></li>
+      <li><a href="/rankings.html">Rankings</a></li>
+      <li><a href="/teams.html" class="active">Teams</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')">✕</button>
+  <a href="/index.html">Home</a>
+  <a href="/results.html">Results</a>
+  <a href="/games.html">Past Games</a>
+  <a href="/upcoming.html">Upcoming</a>
+  <a href="/rankings.html">Rankings</a>
+  <a href="/teams.html">Teams</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/about.html">About</a>
+  <a href="/index.html#waitlist" class="btn-mobile">Join Waitlist</a>
+</div>
+<script>function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }</script>
+
+<!-- PAGE HEADER -->
+<div class="page-header" id="pageHeader">
+  <div class="page-header-inner">
+    <div class="header-left">
+      <div class="breadcrumb">
+        <a href="/teams.html">← Teams</a>
+      </div>
+      <div class="page-conference" id="headerConf">Loading...</div>
+      <div class="page-team" id="headerTeam">—</div>
+    </div>
+    <div class="header-right" id="headerRank" style="display:none;">
+      <div class="rank-display" id="rankNum">—</div>
+      <div class="rank-label">PressBox Ranking</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainContent">
+  <div class="loading" id="loadingState">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading team data...</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div><img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics" style="height:56px;width:auto;display:block;"></div>
+    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
+    <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+  </div>
+</footer>
+
+<script>
+const API = 'https://betbuddyservice-production.up.railway.app';
+
+const CONF_SHORT = {
+  'ACC': 'ACC', 'Big 12': 'B12', 'Big Ten': 'B1G', 'SEC': 'SEC',
+  'American Athletic': 'AAC', 'Mountain West': 'MW', 'Sun Belt': 'SBC',
+  'Conference USA': 'CUSA', 'Mid-American': 'MAC', 'Pac-12': 'P12',
+  'FBS Independents': 'IND'
+};
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const team = params.get('team');
+  if (!team) { window.location.href = '/teams.html'; return; }
+
+  document.title = `${team} — PressBox Analytics`;
+
+  // Load team data and rankings in parallel
+  const [teamRes, rankRes] = await Promise.all([
+    fetch(`${API}/teams/${encodeURIComponent(team)}?season=2026`),
+    fetch(`${API}/rankings/power?season=2025&limit=200`)
+  ]);
+
+  const teamData = await teamRes.json();
+  const rankData = await rankRes.json();
+
+  // Find this team's ranking
+  const allRanked = rankData.full || [];
+  const myRank = allRanked.find(t => t.team === team);
+
+  // Update header
+  document.getElementById('headerTeam').textContent = team;
+  document.getElementById('headerConf').textContent = teamData.conference || '';
+  if (myRank) {
+    document.getElementById('rankNum').textContent = `#${myRank.rank}`;
+    document.getElementById('headerRank').style.display = 'block';
+  }
+
+  // Build page
+  const main = document.getElementById('mainContent');
+  main.innerHTML = buildPage(teamData, myRank, allRanked);
+}
+
+function buildPage(data, myRank, allRanked) {
+  const schedule = data.schedule || [];
+  const stats    = data.stats || {};
+  const ratings  = data.ratings || {};
+  const record   = data.record || { wins: 0, losses: 0 };
+
+  return `
+    <!-- LEFT: Schedule -->
+    <div>
+      <div class="section-label">2026 Schedule</div>
+      ${buildSchedule(schedule, record)}
+
+      ${buildRatingsHistory(ratings)}
+    </div>
+
+    <!-- RIGHT: Sidebar -->
+    <div class="sidebar">
+      ${myRank ? buildRankCard(myRank, allRanked) : ''}
+      ${buildStatsCard(stats)}
+    </div>
+  `;
+}
+
+function buildSchedule(schedule, record) {
+  if (!schedule.length) return '<div style="color:var(--text-light);font-size:13px;padding:20px 0;">No schedule data available.</div>';
+
+  const rows = schedule.map(g => {
+    const ha = g.neutral_site ? '' : (g.is_home ? '' : '@');
+    const resultHtml = g.result
+      ? `<span class="result-${g.result === 'W' ? 'win' : 'loss'}">${g.result}</span><span class="result-score">${g.team_points}–${g.opp_points}</span>`
+      : `<span class="result-upcoming">TBD</span>`;
+
+    return `
+      <tr class="schedule-row">
+        <td class="week-cell">Wk ${g.week}</td>
+        <td class="date-cell">${g.date}</td>
+        <td class="opp-cell">
+          <span class="opp-ha">${ha}</span>
+          <a class="opp-name" href="/team.html?team=${encodeURIComponent(g.opponent)}" style="text-decoration:none;color:inherit;">${g.opponent}</a>
+          <span class="opp-conf">${CONF_SHORT[g.opp_conference] || g.opp_conference || ''}</span>
+          ${g.neutral_site ? '<span class="neutral-tag">N</span>' : ''}
+          ${g.conference_game ? '<span class="conf-tag">Conf</span>' : ''}
+        </td>
+        <td class="result-cell">${resultHtml}</td>
+        <td class="venue-cell">${g.neutral_site ? g.venue || '' : ''}</td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th>Wk</th>
+          <th>Date</th>
+          <th>Opponent</th>
+          <th class="r">Result</th>
+          <th>Venue</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function buildRatingsHistory(ratings) {
+  const seasons = [2025, 2024, 2023];
+  const hasSome = seasons.some(s => ratings[s]);
+  if (!hasSome) return '';
+
+  return `
+    <div class="section-label" style="margin-top:32px;">SP+ History</div>
+    <div class="ratings-grid">
+      ${seasons.map(s => {
+        const r = ratings[s];
+        const sp = r?.sp_overall;
+        return `
+          <div class="rating-item">
+            <div class="rating-season">${s}</div>
+            <div class="rating-val ${sp > 10 ? 'gold' : ''}">${sp != null ? (sp >= 0 ? '+' : '') + sp.toFixed(1) : '—'}</div>
+            <div class="rating-label">SP+</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function buildRankCard(myRank, allRanked) {
+  const confTeams = allRanked.filter(t => t.conference === myRank.conference);
+  const score = myRank.score;
+
+  return `
+    <div class="sidebar-card">
+      <div class="card-title">PressBox <em>Ranking</em></div>
+      <div class="stat-row">
+        <span class="stat-name">Overall Rank</span>
+        <span class="stat-val">#${myRank.rank} of ${allRanked.length}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Conference Rank</span>
+        <span class="stat-val">#${myRank.conference_rank} in ${myRank.conference}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-name">Model Score</span>
+        <span class="stat-val ${score >= 0 ? 'good' : 'bad'}">${score >= 0 ? '+' : ''}${score.toFixed(1)}</span>
+      </div>
+      ${myRank.sp_overall != null ? `
+      <div class="stat-row">
+        <span class="stat-name">SP+ Overall</span>
+        <span class="stat-val">${myRank.sp_overall >= 0 ? '+' : ''}${myRank.sp_overall.toFixed(1)}</span>
+      </div>` : ''}
+    </div>
+  `;
+}
+
+function buildStatsCard(stats) {
+  if (!stats || !stats.points_per_game) return '';
+
+  const ppg    = stats.points_per_game;
+  const papg   = stats.points_allowed_per_game;
+  const ypg    = stats.yards_per_game;
+  const ypp    = stats.yards_per_play;
+  const thirdD = stats.third_down_pct;
+  const rz     = stats.red_zone_pct;
+  const top    = stats.top_pct;
+  const to     = stats.turnovers_per_game;
+  const pen    = stats.penalties_per_game;
+
+  const fmt = (v, d=1) => v != null ? v.toFixed(d) : '—';
+
+  return `
+    <div class="sidebar-card">
+      <div class="card-title">2025 <em>Season Stats</em></div>
+      ${ppg != null ? `<div class="stat-row"><span class="stat-name">Points / Game</span><span class="stat-val ${ppg > 30 ? 'good' : ppg < 20 ? 'bad' : ''}">${fmt(ppg)}</span></div>` : ''}
+      ${papg != null ? `<div class="stat-row"><span class="stat-name">Points Allowed</span><span class="stat-val ${papg < 20 ? 'good' : papg > 30 ? 'bad' : ''}">${fmt(papg)}</span></div>` : ''}
+      ${ypg != null ? `<div class="stat-row"><span class="stat-name">Yards / Game</span><span class="stat-val">${fmt(ypg)}</span></div>` : ''}
+      ${ypp != null ? `<div class="stat-row"><span class="stat-name">Yards / Play</span><span class="stat-val ${ypp > 6 ? 'good' : ypp < 4.5 ? 'bad' : ''}">${fmt(ypp, 2)}</span></div>` : ''}
+      ${thirdD != null ? `<div class="stat-row"><span class="stat-name">3rd Down %</span><span class="stat-val ${thirdD > 45 ? 'good' : thirdD < 35 ? 'bad' : ''}">${fmt(thirdD)}%</span></div>` : ''}
+      ${rz != null ? `<div class="stat-row"><span class="stat-name">Red Zone %</span><span class="stat-val ${rz > 70 ? 'good' : rz < 55 ? 'bad' : ''}">${fmt(rz)}%</span></div>` : ''}
+      ${top != null ? `<div class="stat-row"><span class="stat-name">Time of Poss</span><span class="stat-val">${fmt(top)}%</span></div>` : ''}
+      ${to != null ? `<div class="stat-row"><span class="stat-name">TO / Game</span><span class="stat-val ${to < 1 ? 'good' : to > 2 ? 'bad' : ''}">${fmt(to, 2)}</span></div>` : ''}
+      ${pen != null ? `<div class="stat-row"><span class="stat-name">Penalties / Game</span><span class="stat-val">${fmt(pen, 1)}</span></div>` : ''}
+    </div>
+  `;
+}
+
+init().catch(e => {
+  console.error(e);
+  document.getElementById('loadingState').innerHTML = '<div class="loading-text" style="color:#B87878;">Failed to load team data. Please refresh.</div>';
+});
+</script>
+</body>
+</html>
