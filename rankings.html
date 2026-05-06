@@ -59,7 +59,26 @@
   .view-tab { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-light); padding: 14px 20px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
   .view-tab:hover { color: var(--text-mid); }
   .view-tab.active { color: var(--text); border-bottom-color: var(--gold); }
-  .conf-select { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 7px 12px; cursor: pointer; margin-left: auto; }
+  .conf-select { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 7px 12px; cursor: pointer; margin-left: 12px; }
+  .controls-inner > .conf-select:first-of-type { margin-left: auto; }
+
+  /* PLAYER TOGGLE */
+  .player-toggle { display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); margin-left: 12px; cursor: pointer; user-select: none; }
+  .player-toggle input { cursor: pointer; accent-color: var(--gold); }
+  .toggle-info { font-size: 11px; color: var(--text-light); cursor: help; }
+
+  /* PLAYER ROW (extends rank-row with stats column) */
+  .player-table-header { display: grid; grid-template-columns: 48px 1fr 90px 120px; gap: 0; padding: 10px 16px; border-bottom: 2px solid var(--border); }
+  .player-row { display: grid; grid-template-columns: 48px 1fr 90px 120px; gap: 0; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.12s; text-decoration: none; color: inherit; }
+  .player-row:hover { background: var(--cream-dark); }
+  .player-row.top5 { background: linear-gradient(90deg, rgba(184,146,42,0.04), transparent); }
+  .player-row.top5 .rank-num { color: var(--gold); }
+  .player-pos-team { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
+  .player-stat { text-align: right; padding: 16px 0; font-size: 12px; color: var(--text-mid); font-weight: 500; }
+  .player-stat-label { font-size: 9px; color: var(--text-light); display: block; letter-spacing: 1px; text-transform: uppercase; }
+
+  .player-disclaimer { background: var(--gold-pale); border: 1px solid var(--gold); border-radius: 4px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; color: var(--text-mid); line-height: 1.5; }
+  .player-disclaimer strong { color: var(--text); }
 
   /* MAIN */
   .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: start; }
@@ -192,9 +211,9 @@
 <div class="page-header">
   <div class="page-header-inner">
     <div>
-      <div class="page-eyebrow">Preseason 2026</div>
-      <h1 class="page-title">PressBox <em>Power Rankings</em></h1>
-      <p class="page-sub">Model-driven rankings based on the same weighted ensemble that's gone 63.1% over three seasons. No ballots, no bias — just the data.</p>
+      <div class="page-eyebrow" id="pageEyebrow">Preseason 2026</div>
+      <h1 class="page-title" id="pageTitle">PressBox <em>Power Rankings</em></h1>
+      <p class="page-sub" id="pageSub">Model-driven rankings based on the same weighted ensemble that's gone 63.1% over three seasons. No ballots, no bias — just the data.</p>
     </div>
   </div>
 </div>
@@ -205,6 +224,7 @@
     <button class="view-tab active" id="tab-all" onclick="setView('all')">All 133 Teams</button>
     <button class="view-tab" id="tab-25" onclick="setView('25')">Top 25</button>
     <button class="view-tab" id="tab-conf" onclick="setView('conf')">By Conference</button>
+    <button class="view-tab" id="tab-players" onclick="setView('players')">Players</button>
     <select class="conf-select" id="confSelect" onchange="filterConf(this.value)" style="display:none;">
       <option value="">All Conferences</option>
       <option value="SEC">SEC</option>
@@ -219,6 +239,21 @@
       <option value="Conference USA">Conference USA</option>
       <option value="FBS Independents">Independents</option>
     </select>
+    <select class="conf-select" id="posSelect" onchange="filterPos(this.value)" style="display:none;">
+      <option value="">All Positions</option>
+      <option value="QB">Quarterbacks</option>
+      <option value="RB">Running Backs</option>
+      <option value="WR">Wide Receivers</option>
+      <option value="TE">Tight Ends</option>
+      <option value="LB">Linebackers</option>
+      <option value="DB">Defensive Backs</option>
+      <option value="DL">Defensive Line</option>
+    </select>
+    <label class="player-toggle" id="returningToggle" style="display:none;">
+      <input type="checkbox" id="returningCheck" onchange="toggleReturning()">
+      <span>Returning only</span>
+      <span class="toggle-info" title="Approximate until July 2026 roster updates">ⓘ</span>
+    </label>
   </div>
 </div>
 
@@ -231,9 +266,15 @@
       <div class="loading-text">Loading rankings...</div>
     </div>
     <div id="rankingsContainer" style="display:none;">
-      <div class="table-header">
+      <div class="table-header" id="teamHeader">
         <div class="th">Rk</div>
         <div class="th">Team</div>
+        <div class="th r">Score</div>
+      </div>
+      <div class="player-table-header" id="playerHeader" style="display:none;">
+        <div class="th">Rk</div>
+        <div class="th">Player</div>
+        <div class="th r">Key Stat</div>
         <div class="th r">Score</div>
       </div>
       <div id="rankingsList"></div>
@@ -264,11 +305,16 @@
 <script>
 const API = 'https://betbuddyservice-production.up.railway.app';
 let allRankings = [];
+let allPlayers = [];
 let currentView = 'all';
 let currentConf = '';
+let currentPos = '';
+let returningOnly = false;
+let playersLoaded = false;
 
 // Max score for bar scaling
 let maxScore = 60;
+let maxPlayerScore = 100;
 
 async function init() {
   const res = await fetch(`${API}/rankings/power?season=2025&limit=200`);
@@ -279,17 +325,53 @@ async function init() {
   buildConfLeaders();
   render();
 
-
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('rankingsContainer').style.display = 'block';
+}
+
+async function loadPlayers() {
+  if (playersLoaded) return;
+  // Pull all players in one shot, we'll filter client-side
+  const url = `${API}/players/rankings?season=2025&limit=2000`;
+  const res = await fetch(url);
+  const data = await res.json();
+  allPlayers = data.full || data.players || [];
+  maxPlayerScore = allPlayers[0]?.score || 100;
+  playersLoaded = true;
 }
 
 function setView(v) {
   currentView = v;
   document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`tab-${v}`).classList.add('active');
+
+  const isPlayers = v === 'players';
   document.getElementById('confSelect').style.display = v === 'conf' ? 'block' : 'none';
-  render();
+  document.getElementById('posSelect').style.display = isPlayers ? 'block' : 'none';
+  document.getElementById('returningToggle').style.display = isPlayers ? 'inline-flex' : 'none';
+  document.getElementById('teamHeader').style.display = isPlayers ? 'none' : 'grid';
+  document.getElementById('playerHeader').style.display = isPlayers ? 'grid' : 'none';
+
+  // Update page header copy
+  if (isPlayers) {
+    document.getElementById('pageEyebrow').textContent = '2025 Season Stats';
+    document.getElementById('pageTitle').innerHTML = 'Player <em>Rankings</em>';
+    document.getElementById('pageSub').textContent = 'Cross-position composite scores based on production relative to position group. Filter by position and view returning starters for 2026.';
+  } else {
+    document.getElementById('pageEyebrow').textContent = 'Preseason 2026';
+    document.getElementById('pageTitle').innerHTML = 'PressBox <em>Power Rankings</em>';
+    document.getElementById('pageSub').textContent = "Model-driven rankings based on the same weighted ensemble that's gone 63.1% over three seasons. No ballots, no bias — just the data.";
+  }
+
+  if (isPlayers) {
+    showLoadingInList();
+    loadPlayers().then(render).catch(err => {
+      console.error(err);
+      document.getElementById('rankingsList').innerHTML = '<div class="loading-text" style="padding:40px;text-align:center;color:#B87878;">Failed to load players. Please refresh.</div>';
+    });
+  } else {
+    render();
+  }
 }
 
 function filterConf(conf) {
@@ -297,7 +379,45 @@ function filterConf(conf) {
   render();
 }
 
+function filterPos(pos) {
+  currentPos = pos;
+  render();
+}
+
+function toggleReturning() {
+  returningOnly = document.getElementById('returningCheck').checked;
+  render();
+}
+
+function showLoadingInList() {
+  document.getElementById('rankingsList').innerHTML = '<div style="padding:60px 0;display:flex;flex-direction:column;align-items:center;gap:12px;"><div class="spinner"></div><div class="loading-text">Loading players...</div></div>';
+}
+
 function render() {
+  const list = document.getElementById('rankingsList');
+
+  if (currentView === 'players') {
+    let players = [...allPlayers];
+    if (currentPos) players = players.filter(p => p.position === currentPos || p.position_group === currentPos);
+    if (returningOnly) players = players.filter(p => p.returning_2026);
+
+    // Re-rank within the filtered set so the displayed rank matches what the user is seeing
+    players = players.map((p, i) => ({...p, displayRank: i + 1}));
+
+    if (!players.length) {
+      list.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-light);font-size:13px;">No players match these filters.</div>';
+      return;
+    }
+
+    const disclaimer = returningOnly
+      ? '<div class="player-disclaimer"><strong>Note:</strong> "Returning" is approximate until CFBD publishes the 2026 roster (typically July). It currently uses class year as a proxy and may include juniors who declared for the NFL Draft.</div>'
+      : '';
+
+    list.innerHTML = disclaimer + players.slice(0, 200).map(p => playerRow(p)).join('');
+    return;
+  }
+
+  // Team rankings (existing logic)
   let teams = [...allRankings];
 
   if (currentView === '25') {
@@ -305,8 +425,6 @@ function render() {
   } else if (currentView === 'conf' && currentConf) {
     teams = teams.filter(t => t.conference === currentConf);
   }
-
-  const list = document.getElementById('rankingsList');
 
   if (currentView === 'conf' && !currentConf) {
     // Group by conference
@@ -351,6 +469,68 @@ function rankRow(t) {
       </div>
     </a>
   `;
+}
+
+function playerRow(p) {
+  const isTop5 = p.displayRank <= 5;
+  const score = p.score || 0;
+  const barPct = Math.max(0, Math.min(100, (score / maxPlayerScore) * 100));
+  const stat = keyStatFor(p);
+  const pos = p.position || p.position_group || '';
+  return `
+    <div class="player-row ${isTop5 ? 'top5' : ''}">
+      <div class="rank-num">${p.displayRank}</div>
+      <div class="rank-team">
+        <div class="rank-team-name">${p.name || 'Unknown'}</div>
+        <div class="rank-team-meta">
+          <span class="player-pos-team">${pos} · ${p.team || ''}</span>
+          <span class="conf-rank">${p.conference || ''}</span>
+        </div>
+      </div>
+      <div class="player-stat">
+        <span class="player-stat-label">${stat.label}</span>
+        ${stat.value}
+      </div>
+      <div class="rank-score">
+        <div class="score-bar-wrap">
+          <div class="score-bar"><div class="score-bar-fill" style="width:${barPct}%"></div></div>
+          ${score.toFixed(1)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function keyStatFor(p) {
+  // Show the most relevant stat for the position
+  const pos = (p.position || p.position_group || '').toUpperCase();
+
+  if (pos === 'QB') {
+    if (p.passing_yards != null) return { label: 'Pass Yds', value: p.passing_yards.toLocaleString() };
+  }
+  if (pos === 'RB') {
+    if (p.rushing_yards != null) return { label: 'Rush Yds', value: p.rushing_yards.toLocaleString() };
+  }
+  if (pos === 'WR' || pos === 'TE') {
+    if (p.receiving_yards != null) return { label: 'Rec Yds', value: p.receiving_yards.toLocaleString() };
+  }
+  if (pos === 'LB' || pos === 'DB' || pos === 'DL' || pos === 'DE' || pos === 'DT' || pos === 'CB' || pos === 'S') {
+    if (p.tackles != null) return { label: 'Tackles', value: p.tackles };
+  }
+
+  // Generic fallback: pick the biggest non-null counting stat
+  const candidates = [
+    ['Pass Yds', p.passing_yards],
+    ['Rush Yds', p.rushing_yards],
+    ['Rec Yds', p.receiving_yards],
+    ['Tackles', p.tackles],
+    ['Sacks', p.sacks],
+  ].filter(c => c[1] != null && c[1] !== 0);
+  if (candidates.length) {
+    const [label, value] = candidates[0];
+    return { label, value: typeof value === 'number' ? value.toLocaleString() : value };
+  }
+  return { label: '—', value: '—' };
 }
 
 function buildConfLeaders() {
