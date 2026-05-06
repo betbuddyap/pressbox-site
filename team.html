@@ -116,7 +116,7 @@
   .stat-bar-wrap { display: flex; align-items: center; gap: 8px; }
   .stat-bar-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
   .stat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
-  .stat-pct { font-size: 10px; color: var(--text-light); width: 30px; text-align: right; flex-shrink: 0; }
+  .stat-pct { font-size: 10px; font-weight: 600; width: 70px; text-align: right; flex-shrink: 0; }
 
   /* RATINGS HISTORY */
   .ratings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -442,6 +442,7 @@ function buildStatsCard(statRanks, statSeason) {
   };
 
   const barColor = pct => pct >= 75 ? '#4A7A4A' : pct >= 50 ? '#B8922A' : pct >= 25 ? '#C5A878' : '#7A4A4A';
+  const qualLabel = pct => pct >= 90 ? 'Elite' : pct >= 75 ? 'Strong' : pct >= 50 ? 'Above Avg' : pct >= 25 ? 'Below Avg' : 'Weak';
 
   const statRow = (s) => `
     <div class="stat-row-full">
@@ -456,7 +457,7 @@ function buildStatsCard(statRanks, statSeason) {
         <div class="stat-bar-track">
           <div class="stat-bar-fill" style="width:${s.percentile}%;background:${barColor(s.percentile)};"></div>
         </div>
-        <span class="stat-pct">${s.percentile}th</span>
+        <span class="stat-pct" style="color:${barColor(s.percentile)};">${qualLabel(s.percentile)}</span>
       </div>
     </div>
   `;
