@@ -166,12 +166,15 @@
   .stat-side.away { flex-direction: row; justify-content: flex-end; }
   .stat-side.home { flex-direction: row; }
 
-  /* Bar track + fill — track is the full width; fill grows from team-name side outward */
+  /* Bar track + fill — bar grows from center outward toward the team-name side (page edge).
+     Length = percentile (longer = better). */
   .bar-track { position: relative; flex: 1; height: 8px; background: var(--cream-dark); border-radius: 2px; overflow: hidden; }
   .bar-fill { position: absolute; top: 0; bottom: 0; transition: width 0.6s ease-out; }
-  /* AWAY: bar grows from RIGHT (team-name side) toward LEFT (center) */
+  /* AWAY team is on the far left. Its bar sits between the value (far left) and the center label.
+     Anchor fill to the RIGHT edge of the track so it grows LEFTWARD toward the team name. */
   .bar-track.away .bar-fill { right: 0; }
-  /* HOME: bar grows from LEFT (team-name side) toward RIGHT (center) */
+  /* HOME team is on the far right. Its bar sits between the center label and the value (far right).
+     Anchor fill to the LEFT edge of the track so it grows RIGHTWARD toward the team name. */
   .bar-track.home .bar-fill { left: 0; }
   /* Color: above 50th percentile = gold, otherwise muted */
   .bar-fill.above { background: var(--gold); }
