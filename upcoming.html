@@ -263,7 +263,7 @@ async function init() {
     </button>
   `).join('<div class="controls-sep"></div>');
 
-  currentWeek = firstWeek || 1;
+  currentWeek = firstWeek != null ? firstWeek : 1;
   renderGames(currentWeek);
 }
 
