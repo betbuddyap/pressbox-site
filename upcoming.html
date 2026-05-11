@@ -255,14 +255,15 @@ async function init() {
 
   // Build week tabs
   const weeks = data.weeks || [];
+  const firstWeek = weeks[0];
   const tabsEl = document.getElementById('weekTabs');
   tabsEl.innerHTML = weeks.map(w => `
-    <button class="week-tab ${w === 1 ? 'active' : ''}" onclick="setWeek(${w})" id="tab-${w}">
-      Week ${w}
+    <button class="week-tab ${w === firstWeek ? 'active' : ''}" onclick="setWeek(${w})" id="tab-${w}">
+      ${w === 0 ? 'Week 0' : `Week ${w}`}
     </button>
   `).join('<div class="controls-sep"></div>');
 
-  currentWeek = weeks[0] || 1;
+  currentWeek = firstWeek || 1;
   renderGames(currentWeek);
 }
 
