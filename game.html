@@ -167,18 +167,13 @@
   .stat-side.home { flex-direction: row; }
 
   /* Bar track + fill — bar grows from center outward toward the team-name side (page edge).
-     Length = percentile (longer = better). */
+     Length = position on the min-max scale of all FBS teams (best=100, worst=0, avg=mid). */
   .bar-track { position: relative; flex: 1; height: 8px; background: var(--cream-dark); border-radius: 2px; overflow: hidden; }
-  .bar-fill { position: absolute; top: 0; bottom: 0; transition: width 0.6s ease-out; }
-  /* AWAY team is on the far left. Its bar sits between the value (far left) and the center label.
-     Anchor fill to the RIGHT edge of the track so it grows LEFTWARD toward the team name. */
+  .bar-fill { position: absolute; top: 0; bottom: 0; background: var(--gold); transition: width 0.6s ease-out; }
+  /* AWAY team is on the far left. Anchor fill to the RIGHT edge of the track so it grows LEFTWARD. */
   .bar-track.away .bar-fill { right: 0; }
-  /* HOME team is on the far right. Its bar sits between the center label and the value (far right).
-     Anchor fill to the LEFT edge of the track so it grows RIGHTWARD toward the team name. */
+  /* HOME team is on the far right. Anchor fill to the LEFT edge of the track so it grows RIGHTWARD. */
   .bar-track.home .bar-fill { left: 0; }
-  /* Color: above 50th percentile = gold, otherwise muted */
-  .bar-fill.above { background: var(--gold); }
-  .bar-fill.below { background: var(--text-light); opacity: 0.45; }
 
   .stat-value { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); min-width: 64px; display: flex; flex-direction: column; gap: 1px; }
   .stat-value .stat-rank { font-family: var(--sans); font-size: 9px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; }
@@ -733,7 +728,14 @@ function renderStats(g) {
         'points_per_game', 'yards_per_game', 'yards_per_play',
         'pass_yards_per_game', 'rush_yards_per_game', 'first_downs_per_game',
         'third_down_pct', 'red_zone_pct',
-        'off_success_rate', 'off_explosiveness',
+      ],
+    },
+    {
+      title: 'Offensive Efficiency',
+      keys: [
+        'off_success_rate', 'off_explosiveness', 'off_power_success',
+        'off_stuff_rate', 'off_line_yards', 'off_second_level_yards',
+        'off_open_field_yards',
       ],
     },
     {
@@ -742,34 +744,63 @@ function renderStats(g) {
         'points_allowed_per_game', 'yards_allowed_per_game', 'yards_allowed_per_play',
         'pass_yards_allowed_per_game', 'rush_yards_allowed_per_game',
         'opp_third_down_pct', 'opp_red_zone_pct',
-        'def_success_rate', 'def_explosiveness', 'def_havoc_total',
       ],
     },
     {
-      title: 'Turnovers & Pace',
+      title: 'Defensive Efficiency',
+      keys: [
+        'def_success_rate', 'def_explosiveness', 'def_power_success',
+        'def_stuff_rate', 'def_line_yards',
+        'def_havoc_total', 'def_havoc_front_seven', 'def_havoc_db',
+      ],
+    },
+    {
+      title: 'Turnovers, Special Teams & Pace',
       keys: [
         'turnovers_per_game', 'takeaways_per_game',
-        'penalties_per_game', 'penalty_yards_per_game', 'top_pct',
+        'def_td_per_game', 'st_points_per_game',
+        'penalties_per_game', 'penalty_yards_per_game',
+        'top_pct', 'plays_per_game', 'seconds_per_play',
       ],
     },
   ];
 
-  // Format a stat value for display
+  // Format a stat value for display.
+  // Different stat types have different display conventions:
+  //   - Counts/yardage (points, yards): integer or 1 decimal
+  //   - Percent stats (third_down_pct, top_pct): already 0-100, show as "%.1f%%"
+  //   - Rate stats (success_rate, stuff_rate, havoc_total, power_success): 0-1, show as "%.1f%%"
+  //   - Multipliers (explosiveness, line_yards): show as "%.2f"
   function fmtVal(stat) {
     if (!stat || stat.value == null) return '—';
     const v = stat.value;
+    const k = stat._key;
+
     if (stat.unit === '%') {
-      // pct values may already be in 0-100 range from team_stats columns
-      // or 0-1 range from advanced columns. Heuristic: <= 1 means 0-1.
-      return Math.abs(v) <= 1 ? (v * 100).toFixed(1) + '%' : (typeof v === 'number' ? v.toFixed(1) + '%' : v);
+      // team_stats percent columns store values already in 0-100 range
+      return typeof v === 'number' ? v.toFixed(1) + '%' : v;
     }
+    if (stat.unit === 's') {
+      return typeof v === 'number' ? v.toFixed(2) + 's' : v;
+    }
+
     // Rate-style advanced metrics (in 0-1 range, displayed as percentages)
-    const isRate = ['off_success_rate', 'def_success_rate', 'def_havoc_total'].includes(stat._key);
-    if (isRate) return (v * 100).toFixed(1) + '%';
-    // Explosiveness is a multiplier value (typically 0.8 - 1.6), not a rate
-    if (stat._key === 'off_explosiveness' || stat._key === 'def_explosiveness') {
-      return typeof v === 'number' ? v.toFixed(2) : v;
-    }
+    const rateKeys = new Set([
+      'off_success_rate', 'def_success_rate',
+      'off_power_success', 'def_power_success',
+      'off_stuff_rate', 'def_stuff_rate',
+      'def_havoc_total', 'def_havoc_front_seven', 'def_havoc_db',
+    ]);
+    if (rateKeys.has(k)) return (v * 100).toFixed(1) + '%';
+
+    // Multiplier-style values (typically 0.5 - 6.0 range) — show to 2 decimals
+    const multiplierKeys = new Set([
+      'off_explosiveness', 'def_explosiveness',
+      'off_line_yards', 'def_line_yards',
+      'off_second_level_yards', 'off_open_field_yards',
+    ]);
+    if (multiplierKeys.has(k)) return typeof v === 'number' ? v.toFixed(2) : v;
+
     return typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(1)) : v;
   }
 
@@ -784,17 +815,18 @@ function renderStats(g) {
     if (homeStat) homeStat._key = key;
 
     // Bar geometry:
-    // - Bar always fills from the team-name side outward (toward center).
-    // - Width = the team's percentile (0-100), so longer = better.
-    // - Color: above 50th percentile = gold, below = muted grey.
+    // - Bar grows from center of row OUTWARD toward team-name side (page edge)
+    // - Width = bar_pct (0-100) which is computed by backend as the team's position
+    //   on the min-max scale across all FBS teams for that metric.
+    //   Best team = 100, worst team = 0, average team = ~50.
+    // - Single gold color — length tells the whole story.
     function barFor(stat, side) {
-      if (!stat || stat.percentile == null) {
+      if (!stat || stat.bar_pct == null) {
         return `<div class="bar-track ${side}"></div>`;
       }
-      const pct = stat.percentile;
-      const colorClass = pct >= 50 ? 'above' : 'below';
+      const pct = stat.bar_pct;
       return `<div class="bar-track ${side}">
-        <div class="bar-fill ${colorClass}" style="width:${pct}%"></div>
+        <div class="bar-fill" style="width:${pct}%"></div>
       </div>`;
     }
 
