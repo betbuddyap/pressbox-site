@@ -62,11 +62,6 @@
   .conf-select { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 7px 12px; cursor: pointer; margin-left: 12px; }
   .controls-inner > .conf-select:first-of-type { margin-left: auto; }
 
-  /* PLAYER TOGGLE */
-  .player-toggle { display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); margin-left: 12px; cursor: pointer; user-select: none; }
-  .player-toggle input { cursor: pointer; accent-color: var(--gold); }
-  .toggle-info { font-size: 11px; color: var(--text-light); cursor: help; }
-
   /* PLAYER ROW (extends rank-row with stats column) */
   .player-table-header { display: grid; grid-template-columns: 48px 1fr 90px 120px; gap: 0; padding: 10px 16px; border-bottom: 2px solid var(--border); }
   .player-row { display: grid; grid-template-columns: 48px 1fr 90px 120px; gap: 0; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.12s; text-decoration: none; color: inherit; }
@@ -76,9 +71,6 @@
   .player-pos-team { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
   .player-stat { text-align: right; padding: 16px 0; font-size: 12px; color: var(--text-mid); font-weight: 500; }
   .player-stat-label { font-size: 9px; color: var(--text-light); display: block; letter-spacing: 1px; text-transform: uppercase; }
-
-  .player-disclaimer { background: var(--gold-pale); border: 1px solid var(--gold); border-radius: 4px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; color: var(--text-mid); line-height: 1.5; }
-  .player-disclaimer strong { color: var(--text); }
 
   /* MAIN */
   .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: start; }
@@ -249,11 +241,6 @@
       <option value="DB">Defensive Backs</option>
       <option value="DL">Defensive Line</option>
     </select>
-    <label class="player-toggle" id="returningToggle" style="display:none;">
-      <input type="checkbox" id="returningCheck" onchange="toggleReturning()">
-      <span>Returning only</span>
-      <span class="toggle-info" title="Approximate until July 2026 roster updates">ⓘ</span>
-    </label>
   </div>
 </div>
 
@@ -309,7 +296,6 @@ let allPlayers = [];
 let currentView = 'all';
 let currentConf = '';
 let currentPos = '';
-let returningOnly = false;
 let playersLoaded = false;
 
 // Max score for bar scaling
@@ -348,15 +334,14 @@ function setView(v) {
   const isPlayers = v === 'players';
   document.getElementById('confSelect').style.display = v === 'conf' ? 'block' : 'none';
   document.getElementById('posSelect').style.display = isPlayers ? 'block' : 'none';
-  document.getElementById('returningToggle').style.display = isPlayers ? 'inline-flex' : 'none';
   document.getElementById('teamHeader').style.display = isPlayers ? 'none' : 'grid';
   document.getElementById('playerHeader').style.display = isPlayers ? 'grid' : 'none';
 
   // Update page header copy
   if (isPlayers) {
-    document.getElementById('pageEyebrow').textContent = '2025 Season Stats';
+    document.getElementById('pageEyebrow').textContent = '2026 Returning Starters';
     document.getElementById('pageTitle').innerHTML = 'Player <em>Rankings</em>';
-    document.getElementById('pageSub').textContent = 'Cross-position composite scores based on production relative to position group. Filter by position and view returning starters for 2026.';
+    document.getElementById('pageSub').textContent = 'Cross-position composite scores for players returning in 2026, based on 2025 production relative to position group. Seniors and 2026 NFL Draft declarees are excluded.';
   } else {
     document.getElementById('pageEyebrow').textContent = 'Preseason 2026';
     document.getElementById('pageTitle').innerHTML = 'PressBox <em>Power Rankings</em>';
@@ -384,11 +369,6 @@ function filterPos(pos) {
   render();
 }
 
-function toggleReturning() {
-  returningOnly = document.getElementById('returningCheck').checked;
-  render();
-}
-
 function showLoadingInList() {
   document.getElementById('rankingsList').innerHTML = '<div style="padding:60px 0;display:flex;flex-direction:column;align-items:center;gap:12px;"><div class="spinner"></div><div class="loading-text">Loading players...</div></div>';
 }
@@ -398,8 +378,8 @@ function render() {
 
   if (currentView === 'players') {
     let players = [...allPlayers];
+    players = players.filter(p => p.returning_2026);
     if (currentPos) players = players.filter(p => p.position === currentPos || p.position_group === currentPos);
-    if (returningOnly) players = players.filter(p => p.returning_2026);
 
     // Re-rank within the filtered set so the displayed rank matches what the user is seeing
     players = players.map((p, i) => ({...p, displayRank: i + 1}));
@@ -409,11 +389,7 @@ function render() {
       return;
     }
 
-    const disclaimer = returningOnly
-      ? '<div class="player-disclaimer"><strong>Note:</strong> "Returning" is approximate until CFBD publishes the 2026 roster (typically July). It currently uses class year as a proxy and may include juniors who declared for the NFL Draft.</div>'
-      : '';
-
-    list.innerHTML = disclaimer + players.slice(0, 200).map(p => playerRow(p)).join('');
+    list.innerHTML = players.slice(0, 200).map(p => playerRow(p)).join('');
     return;
   }
 
