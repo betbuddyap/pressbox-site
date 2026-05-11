@@ -239,7 +239,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="control-group">
       <span class="control-label">Week</span>
       <select class="week-select" id="week-select" onchange="setWeek(parseInt(this.value))">
-        <option value="0">Week 0</option>
+        <option value="1">Week 1</option>
       </select>
     </div>
     <div class="divider"></div>
@@ -279,7 +279,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <script>
 const API = 'https://betbuddyservice-production.up.railway.app';
 let currentSeason = 2025;
-let currentWeek   = 0;
+let currentWeek   = 1;
 let currentType   = 'regular';
 let cache = {};
 
@@ -292,7 +292,7 @@ const WEEKS = {
 
 function setSeason(s) {
   currentSeason = s;
-  currentWeek   = 0;
+  currentWeek   = 1;
   document.querySelectorAll('#season-tabs .tab').forEach(t => {
     t.classList.toggle('active', parseInt(t.dataset.season) === s);
   });
