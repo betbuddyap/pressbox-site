@@ -283,11 +283,11 @@ let currentWeek   = 1;
 let currentType   = 'regular';
 let cache = {};
 
-// Week options per season
+// Week options per season. Week 0 = pre-Sep 1 games (often labeled "Week 1" by CFBD).
 const WEEKS = {
-  2023: Array.from({length: 15}, (_, i) => i + 1),
-  2024: Array.from({length: 15}, (_, i) => i + 1),
-  2025: Array.from({length: 15}, (_, i) => i + 1),
+  2023: [0, ...Array.from({length: 15}, (_, i) => i + 1)],
+  2024: [0, ...Array.from({length: 15}, (_, i) => i + 1)],
+  2025: [0, ...Array.from({length: 15}, (_, i) => i + 1)],
 };
 
 function setSeason(s) {
@@ -325,7 +325,7 @@ function populateWeeks() {
   (WEEKS[currentSeason] || []).forEach(w => {
     const opt = document.createElement('option');
     opt.value = w;
-    opt.textContent = `Week ${w}`;
+    opt.textContent = w === 0 ? 'Week 0' : `Week ${w}`;
     if (w === currentWeek) opt.selected = true;
     sel.appendChild(opt);
   });
