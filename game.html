@@ -69,8 +69,15 @@
   .team-conf { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
   .team-name { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--cream); line-height: 1.05; }
   .team-name em { font-style: italic; color: var(--gold-light); }
-  .team-score { font-family: var(--serif); font-size: 56px; font-weight: 700; color: var(--cream); line-height: 1; margin-top: 14px; }
+  .team-score { font-family: var(--serif); font-size: 48px; font-weight: 700; color: var(--cream); line-height: 1; }
   .team-score.loser { color: var(--text-mid); }
+  .score-line { display: flex; align-items: flex-end; gap: 22px; margin-top: 14px; }
+  .team-block.home .score-line { flex-direction: row-reverse; }
+  .proj-block { display: flex; flex-direction: column; gap: 4px; }
+  .proj-label { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); }
+  .proj-num { font-family: var(--serif); font-size: 36px; font-weight: 700; color: var(--gold-light); line-height: 1; opacity: 0.9; }
+  .score-block { display: flex; flex-direction: column; gap: 4px; }
+  .score-label { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
   .vs { font-family: var(--serif); font-size: 22px; font-style: italic; color: var(--gold-light); text-align: center; opacity: 0.6; }
 
   .game-meta-row { display: flex; align-items: center; justify-content: center; gap: 24px; margin-top: 32px; padding-top: 24px; border-top: 1px solid #2A2820; }
@@ -145,26 +152,42 @@
   .notes-list { display: flex; flex-wrap: wrap; gap: 8px; }
   .note-chip { font-family: var(--sans); font-size: 12px; color: var(--text-mid); background: var(--cream); border: 1px solid var(--border); border-radius: 2px; padding: 4px 10px; }
 
-  /* TEAM COMPARISON BARS */
+  /* TEAM COMPARISON — diverging percentile bars */
   .stats-table { background: var(--cream); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-  .stats-header { display: grid; grid-template-columns: 1fr 220px 1fr; padding: 18px 28px; border-bottom: 1px solid var(--border); background: var(--cream-dark); }
+  .stats-header { display: grid; grid-template-columns: 1fr 240px 1fr; padding: 18px 28px; border-bottom: 1px solid var(--border); background: var(--cream-dark); align-items: center; }
   .stats-header-team { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); }
   .stats-header-team.right { text-align: right; }
   .stats-header-label { text-align: center; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
-  .stats-row { display: grid; grid-template-columns: 1fr 220px 1fr; padding: 16px 28px; border-bottom: 1px solid var(--border); align-items: center; gap: 16px; }
+  .stats-group-header { padding: 12px 28px 8px; background: var(--cream-dark); border-bottom: 1px solid var(--border); border-top: 1px solid var(--border); font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-mid); }
+  .stats-group-header:first-of-type { border-top: none; }
+  .stats-row { display: grid; grid-template-columns: 1fr 240px 1fr; padding: 14px 28px; border-bottom: 1px solid var(--border); align-items: center; gap: 16px; }
   .stats-row:last-child { border-bottom: none; }
   .stat-side { display: flex; align-items: center; gap: 14px; }
-  .stat-side.away { flex-direction: row; }
-  .stat-side.home { flex-direction: row-reverse; }
-  .stat-value { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); min-width: 56px; }
-  .stat-value.away { text-align: right; }
-  .stat-bar-wrap { flex: 1; height: 6px; background: var(--cream-dark); border-radius: 3px; overflow: hidden; position: relative; }
-  .stat-bar { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.6s ease-out; }
-  .stat-bar.muted { background: var(--text-light); opacity: 0.4; }
-  .stat-side.home .stat-bar-wrap { transform: scaleX(-1); }
+  .stat-side.away { flex-direction: row; justify-content: flex-end; }
+  .stat-side.home { flex-direction: row; }
+
+  /* Diverging bar: midline at 50th percentile, fills outward */
+  .diverge-bar { position: relative; flex: 1; height: 8px; background: var(--cream-dark); border-radius: 0; }
+  /* the actual fill */
+  .diverge-bar .midline { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 1px; background: var(--text-light); opacity: 0.6; }
+  .diverge-bar .fill { position: absolute; top: 0; bottom: 0; border-radius: 2px; transition: width 0.6s ease-out, left 0.6s ease-out; }
+  /* AWAY team bars fill to the LEFT (toward away team name) from midline */
+  .diverge-bar.away .fill { right: 50%; }
+  /* HOME team bars fill to the RIGHT (toward home team name) from midline */
+  .diverge-bar.home .fill { left: 50%; }
+  /* color states */
+  .diverge-bar .fill.above { background: var(--gold); }
+  .diverge-bar .fill.below { background: var(--text-light); opacity: 0.5; }
+
+  .stat-value { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); min-width: 64px; display: flex; flex-direction: column; gap: 1px; }
+  .stat-value .stat-rank { font-family: var(--sans); font-size: 9px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; }
+  .stat-value.away { text-align: right; align-items: flex-end; }
+  .stat-value.home { text-align: left; align-items: flex-start; }
+
   .stat-label-center { text-align: center; }
   .stat-label-name { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-mid); }
   .stat-label-hint { font-size: 9px; font-style: italic; color: var(--text-light); margin-top: 2px; letter-spacing: 0.5px; }
+
 
   /* AUTH GATE OVERLAY */
   .auth-gate { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,14,10,0.92); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 32px; backdrop-filter: blur(8px); }
@@ -289,13 +312,31 @@
         <div class="team-block away">
           <div class="team-conf" id="awayConf">—</div>
           <div class="team-name" id="awayTeam">Away</div>
-          <div class="team-score" id="awayScore" style="display:none;">—</div>
+          <div class="score-line">
+            <div class="proj-block">
+              <div class="proj-label">Our Projection</div>
+              <div class="proj-num" id="awayProj">—</div>
+            </div>
+            <div class="score-block" id="awayScoreBlock" style="display:none;">
+              <div class="score-label">Final</div>
+              <div class="team-score" id="awayScore">—</div>
+            </div>
+          </div>
         </div>
         <div class="vs">@</div>
         <div class="team-block home">
           <div class="team-conf" id="homeConf">—</div>
           <div class="team-name" id="homeTeam">Home</div>
-          <div class="team-score" id="homeScore" style="display:none;">—</div>
+          <div class="score-line">
+            <div class="score-block" id="homeScoreBlock" style="display:none;">
+              <div class="score-label">Final</div>
+              <div class="team-score" id="homeScore">—</div>
+            </div>
+            <div class="proj-block">
+              <div class="proj-label">Our Projection</div>
+              <div class="proj-num" id="homeProj">—</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -363,9 +404,11 @@
 const API = 'https://betbuddyservice-production.up.railway.app';
 const params = new URLSearchParams(window.location.search);
 const gameId = params.get('id');
+const previewMode = params.get('preview') === '1';
 
 // TODO: replace with real auth check once login exists.
-const isSubscriber = false;
+// previewMode=1 bypasses the auth gate for testing pre-game pages.
+const isSubscriber = previewMode;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -473,11 +516,25 @@ function renderGame(g) {
   document.getElementById('awayConf').textContent = g.away_conference || '';
   document.getElementById('homeConf').textContent = g.home_conference || '';
 
+  // Projected scores: derive from ensemble_margin + ensemble_total
+  // ensemble_margin is positive if home wins by that much (per ensemble_model.py)
+  if (g.ensemble_margin != null && g.ensemble_total != null) {
+    const homeProj = Math.round((g.ensemble_total + g.ensemble_margin) / 2);
+    const awayProj = Math.round((g.ensemble_total - g.ensemble_margin) / 2);
+    document.getElementById('homeProj').textContent = homeProj;
+    document.getElementById('awayProj').textContent = awayProj;
+  } else if (g.ensemble_total != null) {
+    // No margin available — split total evenly as fallback
+    const half = Math.round(g.ensemble_total / 2);
+    document.getElementById('homeProj').textContent = half;
+    document.getElementById('awayProj').textContent = half;
+  }
+
   if (g.is_played) {
     document.getElementById('awayScore').textContent = g.away_points;
     document.getElementById('homeScore').textContent = g.home_points;
-    document.getElementById('awayScore').style.display = 'block';
-    document.getElementById('homeScore').style.display = 'block';
+    document.getElementById('awayScoreBlock').style.display = 'flex';
+    document.getElementById('homeScoreBlock').style.display = 'flex';
     if (g.actual_margin > 0) {
       document.getElementById('awayScore').classList.add('loser');
     } else if (g.actual_margin < 0) {
@@ -657,7 +714,7 @@ function renderStats(g) {
   const away = g.away_stats || {};
   const statSeason = home.stat_season || away.stat_season || (g.season - 1);
 
-  document.getElementById('statsTitle').innerHTML = `Team Profile <span style="color:var(--text-light);font-weight:300;font-style:italic;letter-spacing:0.5px;text-transform:none;font-size:12px;margin-left:8px;">${statSeason} season</span>`;
+  document.getElementById('statsTitle').innerHTML = `Team Profile <span style="color:var(--text-light);font-weight:300;font-style:italic;letter-spacing:0.5px;text-transform:none;font-size:12px;margin-left:8px;">${statSeason} season · vs all FBS</span>`;
 
   const headerHtml = `
     <div class="stats-header">
@@ -667,66 +724,145 @@ function renderStats(g) {
     </div>
   `;
 
-  const metrics = [
-    { key: 'sp_overall',        label: 'Overall Rating',     hint: 'higher is better', higher: true,  fmt: v => v != null ? v.toFixed(1) : '—' },
-    { key: 'sp_offense',        label: 'Offense',            hint: 'higher is better', higher: true,  fmt: v => v != null ? v.toFixed(1) : '—' },
-    { key: 'sp_defense',        label: 'Defense',            hint: 'lower is better',  higher: false, fmt: v => v != null ? v.toFixed(1) : '—' },
-    { key: 'ppa_offense',       label: 'PPA Offense',        hint: 'higher is better', higher: true,  fmt: v => v != null ? v.toFixed(2) : '—' },
-    { key: 'ppa_defense',       label: 'PPA Defense',        hint: 'lower is better',  higher: false, fmt: v => v != null ? v.toFixed(2) : '—' },
-    { key: 'off_explosiveness', label: 'Explosiveness',      hint: 'higher is better', higher: true,  fmt: v => v != null ? v.toFixed(2) : '—' },
-    { key: 'off_success_rate',  label: 'Success Rate',       hint: 'higher is better', higher: true,  fmt: v => v != null ? (v * 100).toFixed(1) + '%' : '—' },
-    { key: 'def_havoc_total',   label: 'Havoc Defense',      hint: 'higher is better', higher: true,  fmt: v => v != null ? (v * 100).toFixed(1) + '%' : '—' },
-    { key: 'ppa_pass_off',      label: 'Pass Offense',       hint: 'higher is better', higher: true,  fmt: v => v != null ? v.toFixed(2) : '—' },
-    { key: 'ppa_rush_off',      label: 'Rush Offense',       hint: 'higher is better', higher: true,  fmt: v => v != null ? v.toFixed(2) : '—' },
+  // Define group order and which keys belong in each
+  const groups = [
+    {
+      title: 'Offense',
+      keys: [
+        'points_per_game', 'yards_per_game', 'yards_per_play',
+        'pass_yards_per_game', 'rush_yards_per_game', 'first_downs_per_game',
+        'third_down_pct', 'red_zone_pct',
+        'off_success_rate', 'off_explosiveness',
+      ],
+    },
+    {
+      title: 'Defense',
+      keys: [
+        'points_allowed_per_game', 'yards_allowed_per_game', 'yards_allowed_per_play',
+        'pass_yards_allowed_per_game', 'rush_yards_allowed_per_game',
+        'opp_third_down_pct', 'opp_red_zone_pct',
+        'def_success_rate', 'def_explosiveness', 'def_havoc_total',
+      ],
+    },
+    {
+      title: 'Turnovers & Pace',
+      keys: [
+        'turnovers_per_game', 'takeaways_per_game',
+        'penalties_per_game', 'penalty_yards_per_game', 'top_pct',
+      ],
+    },
   ];
 
-  const rows = metrics.map(m => {
-    const aVal = away[m.key];
-    const hVal = home[m.key];
-
-    if ((aVal == null) && (hVal == null)) return '';
-
-    const aNum = aVal != null ? Math.abs(aVal) : 0;
-    const hNum = hVal != null ? Math.abs(hVal) : 0;
-    const maxV = Math.max(aNum, hNum, 0.001);
-    const aPct = (aNum / maxV) * 100;
-    const hPct = (hNum / maxV) * 100;
-
-    let aBetter = false, hBetter = false;
-    if (aVal == null) { hBetter = true; }
-    else if (hVal == null) { aBetter = true; }
-    else if (m.higher) {
-      aBetter = aVal > hVal;
-      hBetter = hVal > aVal;
-    } else {
-      aBetter = aVal < hVal;
-      hBetter = hVal < aVal;
+  // Format a stat value for display
+  function fmtVal(stat) {
+    if (!stat || stat.value == null) return '—';
+    const v = stat.value;
+    if (stat.unit === '%') {
+      // pct values may already be in 0-100 range from team_stats columns
+      // or 0-1 range from advanced columns. Heuristic: <= 1 means 0-1.
+      return Math.abs(v) <= 1 ? (v * 100).toFixed(1) + '%' : (typeof v === 'number' ? v.toFixed(1) + '%' : v);
     }
+    // Rate-style advanced metrics (in 0-1 range, displayed as percentages)
+    const isRate = ['off_success_rate', 'def_success_rate', 'def_havoc_total'].includes(stat._key);
+    if (isRate) return (v * 100).toFixed(1) + '%';
+    // Explosiveness is a multiplier value (typically 0.8 - 1.6), not a rate
+    if (stat._key === 'off_explosiveness' || stat._key === 'def_explosiveness') {
+      return typeof v === 'number' ? v.toFixed(2) : v;
+    }
+    return typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(1)) : v;
+  }
+
+  // Render one comparison row
+  function renderRow(key, awayStat, homeStat) {
+    const label = (awayStat && awayStat.label) || (homeStat && homeStat.label) || key;
+    const higherBetter = (awayStat && awayStat.higher_better) ?? (homeStat && homeStat.higher_better) ?? true;
+    const hint = higherBetter ? 'higher is better' : 'lower is better';
+
+    // Tag values with key for fmtVal
+    if (awayStat) awayStat._key = key;
+    if (homeStat) homeStat._key = key;
+
+    // Diverging-bar geometry:
+    // percentile 50 -> fill = 0 width
+    // percentile 100 -> fill = 50% width (extends from midline outward fully)
+    // percentile 0   -> fill = 50% width on the opposite side (below average)
+    // Color: above average (>= 50) -> gold "above"; below average (< 50) -> muted "below"
+    function barFor(stat, side) {
+      if (!stat || stat.percentile == null) {
+        return `<div class="diverge-bar ${side}"><div class="midline"></div></div>`;
+      }
+      const pct = stat.percentile;
+      const isAbove = pct >= 50;
+      // Distance from 50; max 50 -> 50% width of full bar
+      const width = Math.abs(pct - 50);
+      // For away (fills toward away on left), when above-average it pushes toward away
+      // For home (fills toward home on right), when above-average it pushes toward home
+      // When BELOW average, the fill goes toward the OPPOSITE side from team's natural side
+      // (i.e. an away team below average shows muted fill extending right, away from its name)
+      let extraStyle;
+      if (side === 'away') {
+        if (isAbove) {
+          extraStyle = `right:50%;left:auto;width:${width}%;`;
+        } else {
+          extraStyle = `left:50%;right:auto;width:${width}%;`;
+        }
+      } else { // home
+        if (isAbove) {
+          extraStyle = `left:50%;right:auto;width:${width}%;`;
+        } else {
+          extraStyle = `right:50%;left:auto;width:${width}%;`;
+        }
+      }
+      return `<div class="diverge-bar ${side}">
+        <div class="midline"></div>
+        <div class="fill ${isAbove ? 'above' : 'below'}" style="${extraStyle}"></div>
+      </div>`;
+    }
+
+    const awayRankStr = awayStat ? `#${awayStat.rank} of ${awayStat.of}` : '—';
+    const homeRankStr = homeStat ? `#${homeStat.rank} of ${homeStat.of}` : '—';
 
     return `
       <div class="stats-row">
         <div class="stat-side away">
-          <div class="stat-value away">${m.fmt(aVal)}</div>
-          <div class="stat-bar-wrap"><div class="stat-bar ${aBetter ? '' : 'muted'}" style="width:${aPct}%"></div></div>
+          <div class="stat-value away">
+            <span>${fmtVal(awayStat)}</span>
+            <span class="stat-rank">${awayRankStr}</span>
+          </div>
+          ${barFor(awayStat, 'away')}
         </div>
         <div class="stat-label-center">
-          <div class="stat-label-name">${m.label}</div>
-          <div class="stat-label-hint">${m.hint}</div>
+          <div class="stat-label-name">${label}</div>
+          <div class="stat-label-hint">${hint}</div>
         </div>
         <div class="stat-side home">
-          <div class="stat-value">${m.fmt(hVal)}</div>
-          <div class="stat-bar-wrap"><div class="stat-bar ${hBetter ? '' : 'muted'}" style="width:${hPct}%"></div></div>
+          ${barFor(homeStat, 'home')}
+          <div class="stat-value home">
+            <span>${fmtVal(homeStat)}</span>
+            <span class="stat-rank">${homeRankStr}</span>
+          </div>
         </div>
       </div>
     `;
-  }).filter(Boolean).join('');
+  }
 
-  if (!rows) {
+  // Build all groups
+  let body = '';
+  for (const group of groups) {
+    const rows = group.keys
+      .map(k => ({ key: k, away: away[k], home: home[k] }))
+      .filter(({ away, home }) => away != null || home != null);
+    if (!rows.length) continue;
+    body += `<div class="stats-group-header">${group.title}</div>`;
+    body += rows.map(({ key, away, home }) => renderRow(key, away, home)).join('');
+  }
+
+  if (!body) {
     document.getElementById('statsSection').style.display = 'none';
     return;
   }
 
-  document.getElementById('statsTable').innerHTML = headerHtml + rows;
+  document.getElementById('statsTable').innerHTML = headerHtml + body;
 }
 
 load();
