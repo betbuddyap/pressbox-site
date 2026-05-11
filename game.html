@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game — PressBox Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream: #F8F5EE; --cream-dark: #EFE9DC; --cream-mid: #E8E1D3;
+    --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
+    --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
+    --gold-pale: #F5EDD0; --ink: #0F0E0A;
+    --green: #6B8E5A; --green-light: #82A872;
+    --red: #A05858; --red-soft: #B87878;
+    --serif: 'Libre Baskerville', Georgia, serif;
+    --sans: 'Source Sans 3', system-ui, sans-serif;
+    --max: 1200px;
+  }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+
+  /* NAV */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-brand { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: -0.5px; }
+  .nav-brand em { font-style: italic; color: var(--gold); }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
+
+  /* PAGE HEADER (ink hero) */
+  .page-header { background: var(--ink); padding: 48px 0 40px; }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .matchup-line { font-family: var(--serif); font-size: 46px; font-weight: 700; color: var(--cream); line-height: 1.05; margin-bottom: 6px; }
+  .matchup-line .at { color: var(--gold-light); font-style: italic; font-weight: 400; margin: 0 14px; }
+  .page-sub { font-size: 13px; font-weight: 400; color: #8A8470; margin-top: 12px; }
+  .page-sub span { color: var(--cream-mid); }
+
+  /* SCOREBOARD ROW (final score / scheduled) */
+  .scoreboard { background: var(--cream); border-bottom: 1px solid var(--border); padding: 28px 0; }
+  .scoreboard-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: center; gap: 56px; }
+  .score-team { display: flex; flex-direction: column; align-items: center; min-width: 200px; }
+  .score-team-name { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px; text-align: center; }
+  .score-team-conf { font-size: 10px; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; }
+  .score-num { font-family: var(--serif); font-size: 64px; font-weight: 700; color: var(--text); line-height: 1; }
+  .score-num.loser { color: var(--text-light); }
+  .score-divider { font-family: var(--serif); font-size: 28px; color: var(--text-light); font-style: italic; }
+  .scheduled { text-align: center; }
+  .scheduled-title { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--text); }
+  .scheduled-sub { font-size: 12px; color: var(--text-mid); margin-top: 6px; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* MAIN GRID */
+  .main { max-width: var(--max); margin: 0 auto; padding: 48px 32px 80px; }
+
+  /* SECTION HEADERS */
+  .section { margin-bottom: 56px; }
+  .section-title { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  .section-title::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+
+  /* PICKS GRID — three cards (spread / total / ML) */
+  .picks-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .pick-card { background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 24px 26px; position: relative; }
+  .pick-card.no-pick { opacity: 0.4; }
+  .pick-type { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .pick-tier { background: var(--gold-pale); color: var(--gold); padding: 2px 8px; border-radius: 2px; font-size: 9px; font-weight: 700; letter-spacing: 1px; }
+  .pick-tier.aplus { background: var(--ink); color: var(--gold-light); }
+  .pick-tier.b { background: var(--cream-dark); color: var(--text-mid); }
+  .pick-tier.c { background: var(--cream-dark); color: var(--text-light); }
+  .pick-name { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 14px; line-height: 1.2; }
+  .pick-meta { display: flex; gap: 20px; margin-bottom: 14px; }
+  .pick-stat { display: flex; flex-direction: column; }
+  .pick-stat-label { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); margin-bottom: 4px; }
+  .pick-stat-value { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
+  .pick-result { padding-top: 14px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .result-badge { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; }
+  .result-badge.won { background: rgba(107,142,90,0.12); color: var(--green); border: 1px solid var(--green); }
+  .result-badge.lost { background: rgba(160,88,88,0.08); color: var(--red); border: 1px solid var(--red); }
+  .result-badge.push { background: var(--cream-dark); color: var(--text-mid); border: 1px solid var(--border); }
+  .result-actual { font-size: 11px; color: var(--text-mid); }
+
+  /* MARKET LINE STRIP */
+  .market-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0; background: var(--cream); border: 1px solid var(--border); border-radius: 4px; }
+  .market-cell { padding: 20px 24px; border-right: 1px solid var(--border); }
+  .market-cell:last-child { border-right: none; }
+  .market-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
+  .market-value { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.1; }
+  .market-value.muted { color: var(--text-light); font-style: italic; font-size: 14px; }
+
+  /* DATA BARS (team comparison) */
+  .bars-grid { display: grid; gap: 18px; }
+  .bar-row { display: grid; grid-template-columns: 1fr 180px 1fr; gap: 16px; align-items: center; }
+  .bar-side { display: flex; align-items: center; gap: 12px; }
+  .bar-side.home { flex-direction: row-reverse; text-align: right; }
+  .bar-value { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); min-width: 50px; }
+  .bar-fill-wrap { flex: 1; height: 8px; background: var(--cream-dark); border-radius: 4px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; background: var(--gold); transition: width 0.6s ease-out; border-radius: 4px; }
+  .bar-fill.muted { background: var(--text-light); opacity: 0.5; }
+  .bar-side.away .bar-fill-wrap { transform: scaleX(-1); }
+  .bar-label { text-align: center; font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-mid); }
+  .bar-label small { display: block; font-size: 8px; color: var(--text-light); margin-top: 2px; letter-spacing: 1px; text-transform: none; font-style: italic; }
+
+  /* ENSEMBLE MODEL TABLE */
+  .ensemble-table { background: var(--cream); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .ensemble-header { display: grid; grid-template-columns: 1fr 100px 100px 100px; padding: 14px 24px; border-bottom: 2px solid var(--border); background: var(--cream-dark); }
+  .ensemble-header div { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
+  .ensemble-header div:not(:first-child) { text-align: right; }
+  .ensemble-row { display: grid; grid-template-columns: 1fr 100px 100px 100px; padding: 14px 24px; border-bottom: 1px solid var(--border); align-items: center; }
+  .ensemble-row:last-child { border-bottom: none; }
+  .ensemble-row.final { background: var(--gold-pale); }
+  .model-name { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
+  .ensemble-row.final .model-name { color: var(--gold); }
+  .model-stat { text-align: right; font-family: var(--sans); font-size: 13px; color: var(--text-mid); font-weight: 500; }
+  .ensemble-row.final .model-stat { color: var(--text); font-weight: 700; }
+
+  /* AUTH GATE OVERLAY */
+  .auth-gate { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,14,10,0.92); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 32px; }
+  .auth-gate-card { background: var(--cream); border-radius: 8px; padding: 56px 48px; max-width: 480px; text-align: center; }
+  .auth-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+  .auth-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 16px; }
+  .auth-sub { font-size: 14px; color: var(--text-mid); line-height: 1.6; margin-bottom: 28px; }
+  .auth-btn { display: inline-block; background: var(--ink); color: var(--cream); padding: 14px 32px; border-radius: 4px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-decoration: none; transition: opacity 0.2s; }
+  .auth-btn:hover { opacity: 0.85; }
+  .auth-link { display: block; margin-top: 18px; font-size: 12px; color: var(--text-mid); text-decoration: none; }
+  .auth-link:hover { color: var(--text); }
+
+  /* LOADING + ERROR */
+  .loading-page { padding: 120px 0; text-align: center; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--cream-dark); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 12px; color: var(--text-light); letter-spacing: 2px; text-transform: uppercase; }
+  .error-state { text-align: center; padding: 80px 32px; color: var(--text-mid); }
+  .error-state h2 { font-family: var(--serif); font-size: 24px; color: var(--text); margin-bottom: 12px; }
+
+  @media (max-width: 800px) {
+    .matchup-line { font-size: 32px; }
+    .picks-grid { grid-template-columns: 1fr; }
+    .market-row { grid-template-columns: 1fr 1fr; }
+    .market-cell:nth-child(2) { border-right: none; }
+    .scoreboard-inner { flex-direction: column; gap: 20px; }
+    .bar-row { grid-template-columns: 1fr 120px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">PressBox<em> Analytics</em></a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/rankings">Rankings</a></li>
+      <li><a href="/picks">Picks</a></li>
+      <li><a href="/account" class="btn-nav">Sign In</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- LOADING STATE -->
+<div id="loadingState" class="loading-page">
+  <div class="spinner"></div>
+  <div class="loading-text">Loading game...</div>
+</div>
+
+<!-- MAIN CONTENT (hidden until loaded) -->
+<div id="gameContent" style="display:none;">
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="page-eyebrow" id="pageEyebrow">2025 Season · Week 1</div>
+      <h1 class="matchup-line">
+        <span id="awayTeamName">Away</span><span class="at"> @ </span><span id="homeTeamName">Home</span>
+      </h1>
+      <div class="page-sub" id="pageSub"></div>
+    </div>
+  </div>
+
+  <!-- SCOREBOARD -->
+  <div class="scoreboard">
+    <div class="scoreboard-inner" id="scoreboardInner">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- OUR PICKS -->
+    <div class="section">
+      <div class="section-title">Our Picks</div>
+      <div class="picks-grid" id="picksGrid">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- MARKET LINE -->
+    <div class="section">
+      <div class="section-title">Market Line</div>
+      <div class="market-row" id="marketRow">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- DATA BARS -->
+    <div class="section">
+      <div class="section-title" id="statsBarTitle">Team Comparison · 2025 Season</div>
+      <div class="bars-grid" id="barsGrid">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <!-- ENSEMBLE BREAKDOWN -->
+    <div class="section">
+      <div class="section-title">Model Breakdown</div>
+      <div class="ensemble-table" id="ensembleTable">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR STATE -->
+<div id="errorState" style="display:none;" class="error-state">
+  <h2>Game not found</h2>
+  <p>We couldn't find that game. <a href="/" style="color:var(--gold);">Return home.</a></p>
+</div>
+
+<!-- AUTH GATE (shown only for unplayed games) -->
+<div id="authGate" class="auth-gate" style="display:none;">
+  <div class="auth-gate-card">
+    <div class="auth-eyebrow">Subscribers Only</div>
+    <div class="auth-title">Upcoming picks live behind the gate.</div>
+    <div class="auth-sub">Our weekly predictions, model breakdowns, and pick grading are available to PressBox subscribers. Past games are open to all — sign up to see our picks before kickoff.</div>
+    <a href="/signup" class="auth-btn">Set Up An Account</a>
+    <a href="/login" class="auth-link">Already a subscriber? Sign in</a>
+  </div>
+</div>
+
+<script>
+const API = 'https://betbuddyservice-production.up.railway.app';
+
+// Read game ID from query string
+const params = new URLSearchParams(window.location.search);
+const gameId = params.get('id');
+
+// TODO: replace this with real auth check when auth is added.
+// For now, treat everyone as "not logged in".
+const isSubscriber = false;
+
+async function load() {
+  if (!gameId) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/game/${gameId}`);
+    const data = await res.json();
+
+    if (data.error) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'block';
+      return;
+    }
+
+    // Auth gate: unplayed games require subscription
+    if (!data.is_played && !isSubscriber) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('authGate').style.display = 'flex';
+      // Still render the page in the background so it's there once they subscribe
+      renderGame(data);
+      document.getElementById('gameContent').style.display = 'block';
+      return;
+    }
+
+    renderGame(data);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('gameContent').style.display = 'block';
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+  }
+}
+
+function renderGame(data) {
+  const m = data.matchup;
+  const market = data.market;
+  const ens = data.ensemble || {};
+  const grading = data.grading;
+  const stats = data.team_stats;
+
+  // Page header
+  const seasonType = m.season_type === 'postseason' ? 'Postseason' : `Week ${m.week}`;
+  document.getElementById('pageEyebrow').textContent = `${m.season} Season · ${seasonType}`;
+  document.getElementById('awayTeamName').textContent = m.away_team;
+  document.getElementById('homeTeamName').textContent = m.home_team;
+
+  const subParts = [];
+  if (m.start_date) {
+    const dt = new Date(m.start_date);
+    subParts.push(`<span>${dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>`);
+  }
+  if (m.venue) subParts.push(m.venue);
+  if (m.neutral_site) subParts.push('Neutral site');
+  document.getElementById('pageSub').innerHTML = subParts.join(' · ');
+
+  // Scoreboard
+  renderScoreboard(m, grading);
+
+  // Picks
+  renderPicks(ens, market, grading, m);
+
+  // Market line
+  renderMarket(market);
+
+  // Team stats bars
+  document.getElementById('statsBarTitle').textContent = `Team Comparison · ${stats.stats_season} Season`;
+  renderBars(stats, m);
+
+  // Ensemble breakdown
+  renderEnsemble(data);
+}
+
+function renderScoreboard(m, grading) {
+  const el = document.getElementById('scoreboardInner');
+  if (grading) {
+    const hWin = grading.winner === 'home';
+    const aWin = grading.winner === 'away';
+    el.innerHTML = `
+      <div class="score-team">
+        <div class="score-team-name">${m.away_team}</div>
+        <div class="score-team-conf">${m.away_conference || ''}</div>
+        <div class="score-num ${hWin ? 'loser' : ''}">${grading.away_points}</div>
+      </div>
+      <div class="score-divider">—</div>
+      <div class="score-team">
+        <div class="score-team-name">${m.home_team}</div>
+        <div class="score-team-conf">${m.home_conference || ''}</div>
+        <div class="score-num ${aWin ? 'loser' : ''}">${grading.home_points}</div>
+      </div>
+    `;
+  } else {
+    const dt = m.start_date ? new Date(m.start_date) : null;
+    const dateStr = dt ? dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'TBD';
+    const timeStr = dt ? dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : '';
+    el.innerHTML = `
+      <div class="scheduled">
+        <div class="scheduled-title">${dateStr}</div>
+        <div class="scheduled-sub">${timeStr}</div>
+      </div>
+    `;
+  }
+}
+
+function fmtSpread(s) {
+  if (s === null || s === undefined) return '—';
+  const n = Number(s);
+  return n > 0 ? `+${n}` : `${n}`;
+}
+
+function tierClass(t) {
+  if (t === 'A+') return 'aplus';
+  if (t === 'A')  return '';
+  if (t === 'B')  return 'b';
+  return 'c';
+}
+
+function renderPicks(ens, market, grading, m) {
+  const cards = [];
+
+  // SPREAD
+  if (ens.spread_pick) {
+    const result = grading?.spread_result;
+    const tier = ens.spread_tier || 'C';
+    cards.push(`
+      <div class="pick-card">
+        <div class="pick-type">
+          <span>Spread</span>
+          <span class="pick-tier ${tierClass(tier)}">${tier}</span>
+        </div>
+        <div class="pick-name">${ens.spread_pick}</div>
+        <div class="pick-meta">
+          <div class="pick-stat">
+            <div class="pick-stat-label">Our Model</div>
+            <div class="pick-stat-value">${fmtSpread(ens.ensemble_spread)}</div>
+          </div>
+          <div class="pick-stat">
+            <div class="pick-stat-label">Market</div>
+            <div class="pick-stat-value">${fmtSpread(market.spread)}</div>
+          </div>
+          ${ens.edge_spread !== null && ens.edge_spread !== undefined ? `
+          <div class="pick-stat">
+            <div class="pick-stat-label">Edge</div>
+            <div class="pick-stat-value">${Math.abs(ens.edge_spread).toFixed(1)} pts</div>
+          </div>` : ''}
+        </div>
+        ${result ? `
+        <div class="pick-result">
+          <span class="result-badge ${result}">${result.toUpperCase()} ${result === 'won' ? '✓' : (result === 'lost' ? '✗' : '—')}</span>
+          <span class="result-actual">Final margin: ${grading.actual_margin > 0 ? '+' : ''}${grading.actual_margin}</span>
+        </div>` : ''}
+      </div>
+    `);
+  } else {
+    cards.push(`<div class="pick-card no-pick"><div class="pick-type"><span>Spread</span></div><div class="pick-name">No edge</div></div>`);
+  }
+
+  // TOTAL
+  if (ens.ou_pick) {
+    const result = grading?.ou_result;
+    const tier = ens.ou_tier || 'C';
+    cards.push(`
+      <div class="pick-card">
+        <div class="pick-type">
+          <span>Total</span>
+          <span class="pick-tier ${tierClass(tier)}">${tier}</span>
+        </div>
+        <div class="pick-name">${ens.ou_pick}</div>
+        <div class="pick-meta">
+          <div class="pick-stat">
+            <div class="pick-stat-label">Our Model</div>
+            <div class="pick-stat-value">${ens.ensemble_total !== null && ens.ensemble_total !== undefined ? ens.ensemble_total.toFixed(1) : '—'}</div>
+          </div>
+          <div class="pick-stat">
+            <div class="pick-stat-label">Market</div>
+            <div class="pick-stat-value">${market.over_under !== null && market.over_under !== undefined ? market.over_under : '—'}</div>
+          </div>
+          ${ens.edge_total !== null && ens.edge_total !== undefined ? `
+          <div class="pick-stat">
+            <div class="pick-stat-label">Edge</div>
+            <div class="pick-stat-value">${Math.abs(ens.edge_total).toFixed(1)} pts</div>
+          </div>` : ''}
+        </div>
+        ${result ? `
+        <div class="pick-result">
+          <span class="result-badge ${result}">${result.toUpperCase()} ${result === 'won' ? '✓' : (result === 'lost' ? '✗' : '—')}</span>
+          <span class="result-actual">Final total: ${grading.actual_total}</span>
+        </div>` : ''}
+      </div>
+    `);
+  } else {
+    cards.push(`<div class="pick-card no-pick"><div class="pick-type"><span>Total</span></div><div class="pick-name">No edge</div></div>`);
+  }
+
+  // MONEYLINE
+  if (ens.ml_pick) {
+    const result = grading?.ml_result;
+    const tier = ens.ml_tier || 'C';
+    cards.push(`
+      <div class="pick-card">
+        <div class="pick-type">
+          <span>Moneyline</span>
+          <span class="pick-tier ${tierClass(tier)}">${tier}</span>
+        </div>
+        <div class="pick-name">${ens.ml_pick}</div>
+        <div class="pick-meta">
+          <div class="pick-stat">
+            <div class="pick-stat-label">Win Prob</div>
+            <div class="pick-stat-value">${ens.ensemble_win_prob !== null && ens.ensemble_win_prob !== undefined ? (ens.ensemble_win_prob * 100).toFixed(0) + '%' : '—'}</div>
+          </div>
+          ${ens.ml_edge !== null && ens.ml_edge !== undefined ? `
+          <div class="pick-stat">
+            <div class="pick-stat-label">Edge</div>
+            <div class="pick-stat-value">${(ens.ml_edge * 100).toFixed(1)}%</div>
+          </div>` : ''}
+        </div>
+        ${result ? `
+        <div class="pick-result">
+          <span class="result-badge ${result}">${result.toUpperCase()} ${result === 'won' ? '✓' : (result === 'lost' ? '✗' : '—')}</span>
+          <span class="result-actual">${grading.winner === 'home' ? m.home_team : m.away_team} won</span>
+        </div>` : ''}
+      </div>
+    `);
+  } else {
+    cards.push(`<div class="pick-card no-pick"><div class="pick-type"><span>Moneyline</span></div><div class="pick-name">No edge</div></div>`);
+  }
+
+  document.getElementById('picksGrid').innerHTML = cards.join('');
+}
+
+function renderMarket(market) {
+  const el = document.getElementById('marketRow');
+  if (!market.has_line) {
+    el.innerHTML = `<div class="market-cell" style="grid-column:1/-1;text-align:center;"><div class="market-value muted">No line yet</div></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="market-cell">
+      <div class="market-label">Spread</div>
+      <div class="market-value">${fmtSpread(market.spread)}</div>
+    </div>
+    <div class="market-cell">
+      <div class="market-label">Total</div>
+      <div class="market-value">${market.over_under !== null && market.over_under !== undefined ? market.over_under : '—'}</div>
+    </div>
+    <div class="market-cell">
+      <div class="market-label">Home ML</div>
+      <div class="market-value">${market.home_moneyline !== null && market.home_moneyline !== undefined ? (market.home_moneyline > 0 ? '+' : '') + market.home_moneyline : '—'}</div>
+    </div>
+    <div class="market-cell">
+      <div class="market-label">Away ML</div>
+      <div class="market-value">${market.away_moneyline !== null && market.away_moneyline !== undefined ? (market.away_moneyline > 0 ? '+' : '') + market.away_moneyline : '—'}</div>
+    </div>
+  `;
+}
+
+function renderBars(stats, m) {
+  // Each metric: label, key, higherIsBetter, displayFormat
+  // Going to compare values within each row and scale relative bars
+  const metrics = [
+    { label: 'SP+ Rating',     key: 'sp_rating',     higher: true,  fmt: v => v?.toFixed(1) ?? '—' },
+    { label: 'Offense PPA',    key: 'ppa_offense',   higher: true,  fmt: v => v?.toFixed(2) ?? '—' },
+    { label: 'Defense PPA',    key: 'ppa_defense',   higher: false, fmt: v => v?.toFixed(2) ?? '—', subtitle: 'lower is better' },
+    { label: 'Explosiveness',  key: 'explosiveness', higher: true,  fmt: v => v?.toFixed(2) ?? '—' },
+    { label: 'Success Rate',   key: 'success_rate',  higher: true,  fmt: v => v !== null && v !== undefined ? (v * 100).toFixed(1) + '%' : '—' },
+    { label: 'Pass PPA',       key: 'ppa_pass',      higher: true,  fmt: v => v?.toFixed(2) ?? '—' },
+    { label: 'Rush PPA',       key: 'ppa_rush',      higher: true,  fmt: v => v?.toFixed(2) ?? '—' },
+    { label: 'Havoc',          key: 'havoc',         higher: true,  fmt: v => v !== null && v !== undefined ? (v * 100).toFixed(1) + '%' : '—' },
+  ];
+
+  const rows = metrics.map(metric => {
+    const hVal = stats.home[metric.key];
+    const aVal = stats.away[metric.key];
+
+    // Skip if both are null
+    if (hVal === null && aVal === null) return '';
+    if (hVal === undefined && aVal === undefined) return '';
+
+    // Scale each bar relative to max of the two (or based on which is better)
+    const hNum = hVal !== null && hVal !== undefined ? Math.abs(hVal) : 0;
+    const aNum = aVal !== null && aVal !== undefined ? Math.abs(aVal) : 0;
+    const maxV = Math.max(hNum, aNum, 0.001);
+
+    const hPct = (hNum / maxV) * 100;
+    const aPct = (aNum / maxV) * 100;
+
+    // Who is "winning" this stat
+    let hBetter, aBetter;
+    if (hVal === null || hVal === undefined) { hBetter = false; aBetter = true; }
+    else if (aVal === null || aVal === undefined) { hBetter = true; aBetter = false; }
+    else if (metric.higher) {
+      hBetter = hVal > aVal;
+      aBetter = aVal > hVal;
+    } else {
+      hBetter = hVal < aVal;
+      aBetter = aVal < hVal;
+    }
+
+    return `
+      <div class="bar-row">
+        <div class="bar-side away">
+          <div class="bar-value">${metric.fmt(aVal)}</div>
+          <div class="bar-fill-wrap"><div class="bar-fill ${aBetter ? '' : 'muted'}" style="width:${aPct}%"></div></div>
+        </div>
+        <div class="bar-label">${metric.label}${metric.subtitle ? `<small>${metric.subtitle}</small>` : ''}</div>
+        <div class="bar-side home">
+          <div class="bar-value">${metric.fmt(hVal)}</div>
+          <div class="bar-fill-wrap"><div class="bar-fill ${hBetter ? '' : 'muted'}" style="width:${hPct}%"></div></div>
+        </div>
+      </div>
+    `;
+  }).filter(Boolean).join('');
+
+  if (!rows) {
+    document.getElementById('barsGrid').innerHTML = '<div style="text-align:center;color:var(--text-light);padding:32px;font-size:13px;">No team comparison data available for this season.</div>';
+  } else {
+    document.getElementById('barsGrid').innerHTML = rows;
+  }
+}
+
+function renderEnsemble(data) {
+  const ens = data.ensemble || {};
+  const models = data.models || {};
+  const m = data.matchup;
+
+  const fmtMargin = (val) => {
+    if (val === null || val === undefined) return '—';
+    const n = Number(val);
+    return n > 0 ? `${m.home_team} -${n.toFixed(1)}` : `${m.away_team} -${Math.abs(n).toFixed(1)}`;
+  };
+
+  const fmtPct = (val) => {
+    if (val === null || val === undefined) return '—';
+    return (val * 100).toFixed(0) + '%';
+  };
+
+  const rows = [
+    { name: 'SP+',          margin: models.sp?.predicted_margin,       total: models.sp?.predicted_total,       wp: models.sp?.home_win_prob },
+    { name: 'Elo',          margin: models.elo?.predicted_margin,      total: models.elo?.predicted_total,      wp: models.elo?.home_win_prob },
+    { name: 'PPA',          margin: models.ppa?.predicted_margin,      total: models.ppa?.predicted_total,      wp: models.ppa?.home_win_prob },
+    { name: 'Advanced',     margin: models.advanced?.predicted_margin, total: models.advanced?.predicted_total, wp: models.advanced?.home_win_prob },
+  ];
+
+  const ensRow = {
+    name:   'Ensemble',
+    margin: ens.ensemble_spread !== undefined && ens.ensemble_spread !== null ? -ens.ensemble_spread : null,
+    total:  ens.ensemble_total,
+    wp:     ens.ensemble_win_prob,
+  };
+
+  let html = `
+    <div class="ensemble-header">
+      <div>Model</div>
+      <div>Margin</div>
+      <div>Total</div>
+      <div>Win Prob</div>
+    </div>
+  `;
+
+  rows.forEach(r => {
+    html += `
+      <div class="ensemble-row">
+        <div class="model-name">${r.name}</div>
+        <div class="model-stat">${fmtMargin(r.margin)}</div>
+        <div class="model-stat">${r.total !== null && r.total !== undefined ? r.total.toFixed(1) : '—'}</div>
+        <div class="model-stat">${fmtPct(r.wp)}</div>
+      </div>
+    `;
+  });
+
+  html += `
+    <div class="ensemble-row final">
+      <div class="model-name">${ensRow.name}</div>
+      <div class="model-stat">${fmtMargin(ensRow.margin)}</div>
+      <div class="model-stat">${ensRow.total !== null && ensRow.total !== undefined ? ensRow.total.toFixed(1) : '—'}</div>
+      <div class="model-stat">${fmtPct(ensRow.wp)}</div>
+    </div>
+  `;
+
+  document.getElementById('ensembleTable').innerHTML = html;
+}
+
+load();
+</script>
+
+</body>
+</html>
