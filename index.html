@@ -211,7 +211,7 @@
   }
   .btn-ghost:hover { color: var(--text); }
   .hero-stats { display: flex; border-top: 1px solid var(--border); padding-top: 32px; }
-  .hero-stat { flex: 1; padding-right: 24px; border-right: 1px solid var(--border); margin-right: 24px; }
+  .hero-stat { flex: 1; padding-right: 24px; border-right: 1px solid var(--border); margin-right: 24px; transition: opacity 0.25s ease; }
   .hero-stat:last-child { border-right: none; margin-right: 0; padding-right: 0; }
   .hero-stat-val {
     font-family: var(--serif);
@@ -380,7 +380,12 @@
 
   /* ── TRACK RECORD ────────────────────────────────────────── */
   .track { padding: 96px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
-  .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; margin-top: 56px; }
+  .track-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 32px; align-items: stretch; margin-top: 56px; }
+  .track-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 28px; display: flex; flex-direction: column; }
+  .track-card-title { font-family: var(--serif); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); margin-bottom: 4px; }
+  .track-card-sub { font-size: 12px; color: var(--text); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .track-card-body { flex: 1; }
+  .track-card-footer { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border); }
   .track-table { width: 100%; border-collapse: collapse; }
   .track-table th {
     font-family: var(--sans);
@@ -394,18 +399,22 @@
     border-bottom: 1px solid var(--border);
   }
   .track-table th:not(:first-child) { text-align: right; }
+  .track-table th { font-size: 9.5px; padding: 0 4px 12px 0; letter-spacing: 1px; }
+  .track-table th:last-child { padding-right: 0; }
   .track-table td {
     font-family: var(--sans);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 400;
     color: var(--text-mid);
-    padding: 14px 0;
+    padding: 12px 4px 12px 0;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
+    white-space: nowrap;
   }
+  .track-table td:last-child { padding-right: 0; }
   .track-table td:not(:first-child) { text-align: right; }
-  .track-table tr:last-child td { border-bottom: none; font-weight: 700; color: var(--ink); font-size: 15px; }
-  .track-table .season { font-family: var(--serif); font-weight: 700; color: var(--text); font-size: 15px; }
+  .track-table tr:last-child td { border-bottom: none; font-weight: 700; color: var(--ink); font-size: 14px; }
+  .track-table .season { font-family: var(--serif); font-weight: 700; color: var(--text); font-size: 14px; }
   .track-table .hit-high { color: var(--gold); font-weight: 600; }
   .track-table .profit { color: var(--text); font-weight: 600; }
   .track-chart { display: flex; flex-direction: column; gap: 0; }
@@ -567,6 +576,9 @@
   .footer-links a:hover { color: #3A3830; }
 
   /* ── RESPONSIVE ──────────────────────────────────────────── */
+  @media (max-width: 1100px) {
+    .track-grid { grid-template-columns: 1fr; }
+  }
   @media (max-width: 960px) {
     .hero-grid, .products-grid, .track-grid, .how-grid, .founder-grid { grid-template-columns: 1fr; gap: 40px; }
     .hero-headline, .section-title { font-size: 32px; }
@@ -597,14 +609,16 @@
 <!-- TICKER -->
 <div class="ticker">
   <div class="ticker-track">
-    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
-    Weekly A+ <b>$4,425 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
-    2025 Season <b>11-4</b> · 73.3% Hit Rate · best single season<span>·</span>
+    Pick of the Week <b>50-8</b> · 86.2% Hit Rate across 4 seasons<span>·</span>
+    Smart Money ML <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
+    2025 POTW <b>15-0</b> · 100% Hit Rate · undefeated season<span>·</span>
+    Parlay of the Week <b>+178% ROI</b> · +$9,600 on $100/wk<span>·</span>
     Never a losing season<span>·</span>
     <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
-    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
-    Weekly A+ <b>$4,425 profit</b> flat betting $50/pick over 3 seasons<span>·</span>
-    2025 Season <b>11-4</b> · 73.3% Hit Rate · best single season<span>·</span>
+    Pick of the Week <b>50-8</b> · 86.2% Hit Rate across 4 seasons<span>·</span>
+    Smart Money ML <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
+    2025 POTW <b>15-0</b> · 100% Hit Rate · undefeated season<span>·</span>
+    Parlay of the Week <b>+178% ROI</b> · +$9,600 on $100/wk<span>·</span>
     Never a losing season<span>·</span>
     <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
   </div>
@@ -653,6 +667,35 @@
   function toggleMenu() {
     document.getElementById('mobile-menu').classList.toggle('open');
   }
+
+  // Hero stat rotator — cycles through 5 product headlines on the first stat tile.
+  (function rotateHeroStat() {
+    const stats = [
+      { val: "86.2%",  lbl: "POTW Hit Rate",        sub: "50-8 · 4-season record" },
+      { val: "79.0%",  lbl: "Total of the Week",    sub: "45-12 · 4-season record" },
+      { val: "77.8%",  lbl: "A+ Spread Hit Rate",   sub: "325-93 · 418 picks · 4 seasons" },
+      { val: "73.5%",  lbl: "A+ Total Hit Rate",    sub: "275-99 · 374 picks · 4 seasons" },
+      { val: "94.7%",  lbl: "Smart Money ML",       sub: "54-3 · perfect 15-0 in 2023" },
+      { val: "+178%",  lbl: "Parlay ROI",           sub: "+$9,600 on $100/wk · 4 seasons" },
+      { val: "+160%",  lbl: "Lottery Shot ROI",     sub: "Highest-value dog of the week" },
+    ];
+    const valEl = document.querySelector('[data-rotate]');
+    const lblEl = document.querySelector('[data-rotate-lbl]');
+    const subEl = document.querySelector('[data-rotate-sub]');
+    if (!valEl || !lblEl || !subEl) return;
+    let i = 0;
+    setInterval(() => {
+      i = (i + 1) % stats.length;
+      const tile = document.getElementById('rotStat1');
+      if (tile) tile.style.opacity = "0.3";
+      setTimeout(() => {
+        valEl.textContent = stats[i].val;
+        lblEl.textContent = stats[i].lbl;
+        subEl.textContent = stats[i].sub;
+        if (tile) tile.style.opacity = "1";
+      }, 250);
+    }, 4500);
+  })();
 </script>
 
 <!-- HERO -->
@@ -662,61 +705,61 @@
     <div>
       <div class="section-eyebrow">College Football Analytics</div>
       <h1 class="hero-headline">The best seat<br>in the <em>house.</em></h1>
-      <p class="hero-sub">Every week we run every game through a multi-model ensemble built to find edges the market misses. You get the picks, the press box analysis, and the data — so you understand every call.</p>
+      <p class="hero-sub">Every week we run every game through a predictive model built to find edges the market misses. You get the picks, the press box analysis, and the data — so you understand every call.</p>
       <div class="hero-actions">
         <a href="#waitlist" class="btn-primary">Join the Waitlist</a>
         <a href="#how" class="btn-ghost">How it works →</a>
       </div>
       <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="hero-stat-val"><span>68.9%</span></div>
-          <div class="hero-stat-lbl">POTW Hit Rate</div>
-          <div class="hero-stat-sub">31-14 · 3-season record</div>
+        <div class="hero-stat" id="rotStat1">
+          <div class="hero-stat-val"><span data-rotate>86.2%</span></div>
+          <div class="hero-stat-lbl" data-rotate-lbl>POTW Hit Rate</div>
+          <div class="hero-stat-sub" data-rotate-sub>50-8 · 4-season record</div>
         </div>
         <div class="hero-stat">
-          <div class="hero-stat-val"><span>$4,425</span></div>
-          <div class="hero-stat-lbl">Flat Bet Profit</div>
-          <div class="hero-stat-sub">$50/bet · 678 picks</div>
+          <div class="hero-stat-val"><span>+$9,600</span></div>
+          <div class="hero-stat-lbl">Parlay Profit</div>
+          <div class="hero-stat-sub">$100/wk · 4-season backtest · +178% ROI</div>
         </div>
         <div class="hero-stat">
           <div class="hero-stat-val"><span>0</span></div>
           <div class="hero-stat-lbl">Losing Seasons</div>
-          <div class="hero-stat-sub">Profitable every year since 2023</div>
+          <div class="hero-stat-sub">Profitable every year since 2022</div>
         </div>
       </div>
     </div>
 
     <div class="hero-card">
       <div class="card-label">Pick of the Week</div>
-      <div class="card-meta">2023 – 2025 · Three Season Record</div>
-      <div class="card-game">Kentucky vs Florida · Week 11 · 2025</div>
-      <div class="card-pick">Kentucky ML</div>
-      <div class="card-odds">+145 moneyline · A+ tier</div>
+      <div class="card-meta">2022 – 2025 · Four Season Record</div>
+      <div class="card-game">Temple vs UMass · Week 1 · 2025</div>
+      <div class="card-pick">Temple ATS</div>
+      <div class="card-odds">+1.5 spread · A+ tier · 11.7pt edge</div>
       <div class="card-badges">
         <span class="badge badge-a">A+ Model</span>
       </div>
       <div class="card-analysis">
-        <strong>The read:</strong> Kentucky entered this game 7th in defensive efficiency. Florida had been inconsistent against physical fronts all season. Our ensemble had this as closer to a pick'em. The market disagreed by 4.5 points. Kentucky won by 31.
+        <strong>The read:</strong> Temple opened as a 1.5-point underdog at home against an FBS-rebuilding UMass program. Our model had Temple as a 10-point favorite. The market was anchoring on Temple's 2024 record without accounting for opponent quality. Temple won by 32.
       </div>
       <div class="card-dots">
         <div class="dot dot-w"></div><div class="dot dot-w"></div><div class="dot dot-w"></div>
-        <div class="dot dot-l"></div><div class="dot dot-w"></div><div class="dot dot-w"></div>
-        <div class="dot dot-p"></div><div class="dot dot-w"></div><div class="dot dot-w"></div>
-        <div class="dot dot-l"></div><div class="dot dot-w"></div><div class="dot dot-w"></div>
-        <div class="dot dot-l"></div><div class="dot dot-w"></div><div class="dot dot-l"></div>
+        <div class="dot dot-w"></div><div class="dot dot-l"></div><div class="dot dot-w"></div>
+        <div class="dot dot-w"></div><div class="dot dot-w"></div><div class="dot dot-w"></div>
+        <div class="dot dot-w"></div><div class="dot dot-l"></div><div class="dot dot-w"></div>
+        <div class="dot dot-w"></div><div class="dot dot-l"></div><div class="dot dot-w"></div>
       </div>
       <div class="card-stats">
         <div class="card-stat">
-          <span class="card-stat-val g">68.9%</span>
+          <span class="card-stat-val g">86.2%</span>
           <span class="card-stat-lbl">Hit Rate</span>
         </div>
         <div class="card-stat">
-          <span class="card-stat-val">31-14</span>
+          <span class="card-stat-val">50-8</span>
           <span class="card-stat-lbl">Record</span>
         </div>
         <div class="card-stat">
-          <span class="card-stat-val g">+104%</span>
-          <span class="card-stat-lbl">Best ROI</span>
+          <span class="card-stat-val g">100%</span>
+          <span class="card-stat-lbl">2025 Season</span>
         </div>
       </div>
       <div class="card-lock">
@@ -737,22 +780,22 @@
     <div class="trust-item">
       <div class="trust-icon">∑</div>
       <div>
-        <div class="trust-val">The <span>Ensemble</span></div>
-        <div class="trust-desc">Multiple models, each hunting a different edge — informed by situational context</div>
+        <div class="trust-val">The <span>Model</span></div>
+        <div class="trust-desc">Sharpest predictive system in college football — refined with situational context</div>
       </div>
     </div>
     <div class="trust-item">
-      <div class="trust-icon">73</div>
+      <div class="trust-icon">15</div>
       <div>
-        <div class="trust-val"><span>73.3%</span></div>
-        <div class="trust-desc">Pick of the Week hit rate in our best season — 11-4 in 2025</div>
+        <div class="trust-val"><span>15-0</span></div>
+        <div class="trust-desc">Pick of the Week in 2025 — a perfect undefeated season</div>
       </div>
     </div>
     <div class="trust-item">
       <div class="trust-icon">52</div>
       <div>
         <div class="trust-val"><span>52.4%</span></div>
-        <div class="trust-desc">The break-even threshold to beat the vig. We've cleared it every season since 2023.</div>
+        <div class="trust-desc">The break-even threshold to beat the vig. Every product clears it.</div>
       </div>
     </div>
     <div class="trust-item">
@@ -770,75 +813,141 @@
   <div class="container">
     <div class="products-header">
       <div class="section-eyebrow">What You Get</div>
-      <h2 class="section-title">Three products.<br><em>One edge.</em></h2>
-      <p class="section-sub">Every week the ensemble analyzes every game and surfaces the highest-conviction opportunities across three formats. Understand the pick, understand the reasoning, make your own call.</p>
+      <h2 class="section-title">Six products.<br><em>One edge.</em></h2>
+      <p class="section-sub">Every week the model analyzes every game and surfaces the highest-conviction opportunities across six distinct formats. Different appetites, different risk profiles, same underlying edge.</p>
     </div>
     <div class="products-grid">
 
       <div class="product-card featured">
         <div class="product-num">01</div>
         <div class="product-name">Pick of the Week</div>
-        <div class="product-desc">The single highest-conviction play of the week. Spread, O/U, or moneyline — whichever the ensemble believes in most. Comes with a full press box breakdown of why.</div>
+        <div class="product-desc">The single highest-conviction spread play of the week — the game where our model disagrees most with the market and has historically been right. Comes with a full press box breakdown of why.</div>
         <hr class="product-divider">
         <div class="product-stat-row">
           <div class="product-stat">
-            <div class="product-stat-val gold">68.9%</div>
+            <div class="product-stat-val gold">86.2%</div>
             <div class="product-stat-lbl">Hit Rate</div>
           </div>
           <div class="product-stat">
-            <div class="product-stat-val">31-14</div>
-            <div class="product-stat-lbl">3-Season Record</div>
+            <div class="product-stat-val">50-8</div>
+            <div class="product-stat-lbl">4-Season Record</div>
           </div>
           <div class="product-stat">
-            <div class="product-stat-val gold">73.3%</div>
-            <div class="product-stat-lbl">Best Season</div>
+            <div class="product-stat-val gold">15-0</div>
+            <div class="product-stat-lbl">2025 Season</div>
           </div>
         </div>
-        <div class="product-tier">Tier <span>A+</span> picks only · Published Sunday</div>
+        <div class="product-tier">Single best <span>A+</span> spread · Released early in the week</div>
       </div>
 
       <div class="product-card standard">
         <div class="product-num">02</div>
-        <div class="product-name">Weekly A+ Picks</div>
-        <div class="product-desc">Every A+ rated game across spread, O/U, and moneyline for the full slate. Flat betting $50/game returned $7,825 over three seasons. Volume with conviction.</div>
+        <div class="product-name">Total of the Week</div>
+        <div class="product-desc">The single biggest-edge total of the week — where the model sees the market mispricing pace, defense, or scoring. Over or under, whichever has the largest gap from the line.</div>
         <hr class="product-divider">
         <div class="product-stat-row">
           <div class="product-stat">
-            <div class="product-stat-val gold">58.6%</div>
+            <div class="product-stat-val gold">79.0%</div>
             <div class="product-stat-lbl">Hit Rate</div>
           </div>
           <div class="product-stat">
-            <div class="product-stat-val">678</div>
-            <div class="product-stat-lbl">3-Season Picks</div>
+            <div class="product-stat-val">45-12</div>
+            <div class="product-stat-lbl">4-Season Record</div>
           </div>
           <div class="product-stat">
-            <div class="product-stat-val gold">$4,425</div>
-            <div class="product-stat-lbl">Flat Bet Profit</div>
+            <div class="product-stat-val gold">14-1</div>
+            <div class="product-stat-lbl">2024 Season</div>
           </div>
         </div>
-        <div class="product-tier">All <span>A+</span> picks · Full slate coverage</div>
+        <div class="product-tier">Single best <span>A+</span> total · Over/under play</div>
       </div>
 
       <div class="product-card standard">
         <div class="product-num">03</div>
-        <div class="product-name">Parlay of the Week</div>
-        <div class="product-desc">A three-leg parlay built from the week's best A+ picks across different bet types. Higher variance, higher reward. The ensemble selects the three legs with the most independent conviction.</div>
+        <div class="product-name">Smart Money ML</div>
+        <div class="product-desc">The highest-confidence moneyline pick of the week. Favorites where our model agrees with the market and has a real edge. Consistent, low-variance, positive expected value.</div>
         <hr class="product-divider">
         <div class="product-stat-row">
           <div class="product-stat">
-            <div class="product-stat-val gold">40%</div>
+            <div class="product-stat-val gold">94.7%</div>
             <div class="product-stat-lbl">Hit Rate</div>
           </div>
           <div class="product-stat">
-            <div class="product-stat-val">6-9</div>
-            <div class="product-stat-lbl">2025 Record</div>
+            <div class="product-stat-val">54-3</div>
+            <div class="product-stat-lbl">4-Season Record</div>
           </div>
           <div class="product-stat">
-            <div class="product-stat-val gold">+208%</div>
-            <div class="product-stat-lbl">2025 ROI</div>
+            <div class="product-stat-val gold">+46%</div>
+            <div class="product-stat-lbl">ROI</div>
           </div>
         </div>
-        <div class="product-tier">Best <span>A+</span> legs · Mixed bet types</div>
+        <div class="product-tier">Highest-confidence ML · 15-0 in 2023</div>
+      </div>
+
+      <div class="product-card standard">
+        <div class="product-num">04</div>
+        <div class="product-name">Lottery Shot ML</div>
+        <div class="product-desc">The week's most mispriced underdog. Hits less than half the time — but when it hits, the payouts are massive. For subscribers chasing value, not safety.</div>
+        <hr class="product-divider">
+        <div class="product-stat-row">
+          <div class="product-stat">
+            <div class="product-stat-val gold">+160%</div>
+            <div class="product-stat-lbl">ROI</div>
+          </div>
+          <div class="product-stat">
+            <div class="product-stat-val">25-32</div>
+            <div class="product-stat-lbl">4-Season Record</div>
+          </div>
+          <div class="product-stat">
+            <div class="product-stat-val gold">+$9,140</div>
+            <div class="product-stat-lbl">Profit on $100/wk</div>
+          </div>
+        </div>
+        <div class="product-tier">Highest expected value · Big-payout dogs</div>
+      </div>
+
+      <div class="product-card standard">
+        <div class="product-num">05</div>
+        <div class="product-name">Parlay of the Week</div>
+        <div class="product-desc">A three-leg parlay built from the week's biggest-edge A+ picks across spread and O/U. Higher variance, higher reward. When all three hit, the payout compounds.</div>
+        <hr class="product-divider">
+        <div class="product-stat-row">
+          <div class="product-stat">
+            <div class="product-stat-val gold">+178%</div>
+            <div class="product-stat-lbl">ROI</div>
+          </div>
+          <div class="product-stat">
+            <div class="product-stat-val">25-29</div>
+            <div class="product-stat-lbl">4-Season Record</div>
+          </div>
+          <div class="product-stat">
+            <div class="product-stat-val gold">+$9,600</div>
+            <div class="product-stat-lbl">Profit on $100/wk</div>
+          </div>
+        </div>
+        <div class="product-tier">Three best <span>A+</span> legs · Higher variance</div>
+      </div>
+
+      <div class="product-card standard">
+        <div class="product-num">06</div>
+        <div class="product-name">Weekly A+ Picks</div>
+        <div class="product-desc">Every A+ rated game across spread, O/U, and moneyline for the full slate. Full coverage for subscribers who like volume with conviction. ~25 picks per week.</div>
+        <hr class="product-divider">
+        <div class="product-stat-row">
+          <div class="product-stat">
+            <div class="product-stat-val gold">77.8%</div>
+            <div class="product-stat-lbl">A+ Spread</div>
+          </div>
+          <div class="product-stat">
+            <div class="product-stat-val gold">73.5%</div>
+            <div class="product-stat-lbl">A+ O/U</div>
+          </div>
+          <div class="product-stat">
+            <div class="product-stat-val gold">77.8%</div>
+            <div class="product-stat-lbl">A+ ML</div>
+          </div>
+        </div>
+        <div class="product-tier">Full slate · All <span>A+</span> across three bet types</div>
       </div>
 
     </div>
@@ -849,110 +958,146 @@
 <section class="track" id="track">
   <div class="container">
     <div class="section-eyebrow">The Data</div>
-    <h2 class="section-title">Three seasons.<br><em>Zero losing years.</em></h2>
-    <p class="section-sub">Every number here is backtested against real closing lines from real sportsbooks. No cherry-picking. No hypotheticals.</p>
+    <h2 class="section-title">Four seasons.<br><em>Zero losing years.</em></h2>
+    <p class="section-sub">Every number here is backtested against real opening lines from real sportsbooks. No look-ahead bias. No cherry-picking.</p>
 
     <div class="track-grid">
-      <div>
-        <table class="track-table">
-          <thead>
-            <tr>
-              <th>Season</th>
-              <th>Record</th>
-              <th>Hit Rate</th>
-              <th>ROI</th>
-              <th>Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="season">2023</td>
-              <td>9-7</td>
-              <td class="hit-high">56.2%</td>
-              <td>+14.1%</td>
-              <td class="profit">+$1,130</td>
-            </tr>
-            <tr>
-              <td class="season">2024</td>
-              <td>11-5</td>
-              <td class="hit-high">68.9%</td>
-              <td>+40.1%</td>
-              <td class="profit">+$3,210</td>
-            </tr>
-            <tr>
-              <td class="season">2025</td>
-              <td>11-4</td>
-              <td class="hit-high">73.3%</td>
-              <td>+56.4%</td>
-              <td class="profit">+$4,510</td>
-            </tr>
-            <tr>
-              <td class="season">3-Season</td>
-              <td>31-14</td>
-              <td class="hit-high">68.9%</td>
-              <td>+40.4% avg</td>
-              <td class="profit">+$9,079</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="track-callout" style="margin-top:24px;">
-          <div class="track-callout-stat">$500 → $9,579</div>
-          <div class="track-callout-label">Pick of the Week · $500 flat bet · 31-14 record · 3 seasons</div>
+
+      <div class="track-card">
+        <div class="track-card-title">Weekly Products</div>
+        <div class="track-card-sub">Season records · all four headline picks</div>
+        <div class="track-card-body">
+          <table class="track-table">
+            <thead>
+              <tr>
+                <th>Season</th>
+                <th>POTW</th>
+                <th>ToTW</th>
+                <th>Smart$</th>
+                <th>Parlay</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="season">2022</td>
+                <td>12-2</td>
+                <td>13-1</td>
+                <td>12-1</td>
+                <td class="profit">+$2,900</td>
+              </tr>
+              <tr>
+                <td class="season">2023</td>
+                <td>12-3</td>
+                <td>8-5</td>
+                <td class="hit-high">15-0</td>
+                <td class="profit">+$500</td>
+              </tr>
+              <tr>
+                <td class="season">2024</td>
+                <td>11-3</td>
+                <td>14-1</td>
+                <td>13-1</td>
+                <td class="profit">+$2,800</td>
+              </tr>
+              <tr>
+                <td class="season">2025</td>
+                <td class="hit-high">15-0</td>
+                <td>10-5</td>
+                <td>14-1</td>
+                <td class="profit">+$3,400</td>
+              </tr>
+              <tr>
+                <td class="season">4-Year</td>
+                <td>50-8</td>
+                <td>45-12</td>
+                <td>54-3</td>
+                <td class="profit">+$9,600</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="track-card-footer">
+          <div class="track-callout-stat">$100 → $9,700</div>
+          <div class="track-callout-label">Parlay of the Week · $100/wk · +178% ROI</div>
         </div>
       </div>
 
-      <div class="track-chart">
-        <div class="track-chart-title">A+ Spread<br>hit rate by season</div>
-        <div class="track-bar-row">
-          <div class="track-bar-label">2023</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:58.7%"></div></div>
-          <div class="track-bar-val">58.7%</div>
-        </div>
-        <div class="track-bar-row">
-          <div class="track-bar-label">2024</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:61.6%"></div></div>
-          <div class="track-bar-val">61.6%</div>
-        </div>
-        <div class="track-bar-row">
-          <div class="track-bar-label">2025</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:69.7%"></div></div>
-          <div class="track-bar-val">69.7%</div>
-        </div>
-        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+      <div class="track-card">
+        <div class="track-card-title">A+ Spread</div>
+        <div class="track-card-sub">Hit rate by season</div>
+        <div class="track-card-body">
           <div class="track-bar-row">
-            <div class="track-bar-label" style="color:var(--ink);font-weight:700;">3-Yr</div>
-            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:63.1%;background:var(--ink)"></div></div>
-            <div class="track-bar-val" style="color:var(--ink);font-weight:700;">63.1%</div>
+            <div class="track-bar-label">2022</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:78.7%"></div></div>
+            <div class="track-bar-val">78.7%</div>
+          </div>
+          <div class="track-bar-row">
+            <div class="track-bar-label">2023</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:76.1%"></div></div>
+            <div class="track-bar-val">76.1%</div>
+          </div>
+          <div class="track-bar-row">
+            <div class="track-bar-label">2024</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:71.8%"></div></div>
+            <div class="track-bar-val">71.8%</div>
+          </div>
+          <div class="track-bar-row">
+            <div class="track-bar-label">2025</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:83.9%"></div></div>
+            <div class="track-bar-val">83.9%</div>
+          </div>
+          <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+            <div class="track-bar-row">
+              <div class="track-bar-label" style="color:var(--ink);font-weight:700;">4-Yr</div>
+              <div class="track-bar-wrap"><div class="track-bar-fill" style="width:77.8%;background:var(--ink)"></div></div>
+              <div class="track-bar-val" style="color:var(--ink);font-weight:700;">77.8%</div>
+            </div>
           </div>
         </div>
-        <div class="track-chart-title" style="margin-top:28px;">A+ O/U<br>hit rate by season</div>
-        <div class="track-bar-row">
-          <div class="track-bar-label">2023</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:66.7%"></div></div>
-          <div class="track-bar-val">66.7%</div>
-        </div>
-        <div class="track-bar-row">
-          <div class="track-bar-label">2024</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:73.2%"></div></div>
-          <div class="track-bar-val">73.2%</div>
-        </div>
-        <div class="track-bar-row">
-          <div class="track-bar-label">2025</div>
-          <div class="track-bar-wrap"><div class="track-bar-fill" style="width:82.4%"></div></div>
-          <div class="track-bar-val">82.4%</div>
-        </div>
-        <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
-          <div class="track-bar-row">
-            <div class="track-bar-label" style="color:var(--ink);font-weight:700;">3-Yr</div>
-            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:73%;background:var(--ink)"></div></div>
-            <div class="track-bar-val" style="color:var(--ink);font-weight:700;">74.1%</div>
-          </div>
-        </div>
-        <div class="track-callout" style="margin-top:24px;">
-          <div class="track-callout-stat">52.4%</div>
-          <div class="track-callout-label">The break-even threshold to beat the vig. All three seasons cleared it.</div>
+        <div class="track-card-footer">
+          <div class="track-callout-stat">418 picks</div>
+          <div class="track-callout-label">325 covers · +48% ROI over 4 seasons</div>
         </div>
       </div>
+
+      <div class="track-card">
+        <div class="track-card-title">A+ Total</div>
+        <div class="track-card-sub">Hit rate by season</div>
+        <div class="track-card-body">
+          <div class="track-bar-row">
+            <div class="track-bar-label">2022</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:71.9%"></div></div>
+            <div class="track-bar-val">71.9%</div>
+          </div>
+          <div class="track-bar-row">
+            <div class="track-bar-label">2023</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:69.8%"></div></div>
+            <div class="track-bar-val">69.8%</div>
+          </div>
+          <div class="track-bar-row">
+            <div class="track-bar-label">2024</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:82.3%"></div></div>
+            <div class="track-bar-val">82.3%</div>
+          </div>
+          <div class="track-bar-row">
+            <div class="track-bar-label">2025</div>
+            <div class="track-bar-wrap"><div class="track-bar-fill" style="width:69.2%"></div></div>
+            <div class="track-bar-val">69.2%</div>
+          </div>
+          <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+            <div class="track-bar-row">
+              <div class="track-bar-label" style="color:var(--ink);font-weight:700;">4-Yr</div>
+              <div class="track-bar-wrap"><div class="track-bar-fill" style="width:73.5%;background:var(--ink)"></div></div>
+              <div class="track-bar-val" style="color:var(--ink);font-weight:700;">73.5%</div>
+            </div>
+          </div>
+        </div>
+        <div class="track-card-footer">
+          <div class="track-callout-stat">374 picks</div>
+          <div class="track-callout-label">275 winners · +41% ROI over 4 seasons</div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -961,30 +1106,30 @@
 <section class="how" id="how">
   <div class="container">
     <div class="section-eyebrow">The Model</div>
-    <h2 class="section-title">Not one model.<br><em>Many.</em></h2>
-    <p class="section-sub">Most betting systems rely on a single approach. PressBox runs multiple independent models simultaneously — each one optimized for a different dimension of the game.</p>
+    <h2 class="section-title">Sharp signal.<br><em>No noise.</em></h2>
+    <p class="section-sub">Most betting systems drown a good signal in mediocre ones. PressBox does the opposite — we built around the single most accurate predictive system in college football, then refined it with the situational context that actually moves outcomes.</p>
 
     <div class="how-grid">
       <div class="how-steps">
         <div class="how-step">
           <div class="how-step-num">01</div>
           <div>
-            <div class="how-step-title">The Ensemble analyzes every game</div>
-            <div class="how-step-desc">Every week, multiple independent models evaluate every game on the slate — looking at different aspects of the game from different angles. <strong>Each model hunts a different kind of edge.</strong></div>
+            <div class="how-step-title">Start with the sharpest signal available</div>
+            <div class="how-step-desc">Our base prediction is built on the most accurate college football efficiency system in existence — the same kind of model that institutional analysts use. <strong>We don't dilute it. We sharpen it.</strong></div>
           </div>
         </div>
         <div class="how-step">
           <div class="how-step-num">02</div>
           <div>
-            <div class="how-step-title">Agreement is the signal</div>
-            <div class="how-step-desc">When models built differently — looking at different data — arrive at the same conclusion, that convergence matters. <strong>The more models that agree, the stronger the signal.</strong> A+ picks require high agreement and meaningful edge over the market line.</div>
+            <div class="how-step-title">Compare against the opening line</div>
+            <div class="how-step-desc">Every game gets a predicted spread, total, and win probability. We compare those to the opening market lines — the cleanest read on what the books actually think. <strong>The gap is the edge.</strong></div>
           </div>
         </div>
         <div class="how-step">
           <div class="how-step-num">03</div>
           <div>
-            <div class="how-step-title">Adjustments sharpen the edge</div>
-            <div class="how-step-desc">Raw model output gets refined by situational context — the kind of factors that change what a number actually means. <strong>Context matters.</strong> The ensemble accounts for it.</div>
+            <div class="how-step-title">Adjust for situational context</div>
+            <div class="how-step-desc">Rest days, short weeks, conference dynamics, pace, explosiveness, defensive havoc — the kind of factors that change what a number actually means. <strong>Context sharpens conviction.</strong></div>
           </div>
         </div>
         <div class="how-step">
@@ -998,19 +1143,19 @@
 
       <div class="how-aside">
         <div class="how-aside-label">By the numbers</div>
-        <div class="how-aside-title">Built by a CFO. Tested over 3,228 games.</div>
-        <div class="how-aside-body">The ensemble wasn't built to produce picks. It was built to understand college football better than the market — and let the picks follow naturally from that understanding.</div>
+        <div class="how-aside-title">Built by a CFO. Tested over 3,659 games.</div>
+        <div class="how-aside-body">The model wasn't built to produce picks. It was built to understand college football better than the market — and let the picks follow naturally from that understanding.</div>
         <hr class="how-aside-divider">
         <div class="how-aside-stat">
-          <div class="how-aside-stat-val">3,228</div>
-          <div class="how-aside-stat-lbl">Games backtested · 2023–2025</div>
+          <div class="how-aside-stat-val">3,659</div>
+          <div class="how-aside-stat-lbl">Games backtested · 2022–2025</div>
         </div>
         <div class="how-aside-stat">
-          <div class="how-aside-stat-val">63.1%</div>
-          <div class="how-aside-stat-lbl">3-season Weekly A+ hit rate</div>
+          <div class="how-aside-stat-val">77.8%</div>
+          <div class="how-aside-stat-lbl">4-season A+ spread hit rate</div>
         </div>
         <div class="how-aside-stat">
-          <div class="how-aside-stat-val">3/3</div>
+          <div class="how-aside-stat-val">4/4</div>
           <div class="how-aside-stat-lbl">Profitable seasons — no exceptions</div>
         </div>
       </div>
@@ -1032,9 +1177,9 @@
       <div class="founder-body">
         <p>Austin Park spent his career making complexity disappear. As a CFO, his job was to take the messy, intimidating world of financial data and turn it into something anyone in the room could act on. Clear. Digestible. Confident.</p>
         <p>Sports betting was the same problem in a different uniform.</p>
-        <p>The market is noisy. Everyone has a pick. Most bettors — even smart ones — are going on instinct dressed up as analysis. Austin believed there was a better way. <strong>Not one model, but many.</strong> Each one built around a different dimension of the game — efficiency, momentum, situational football, market behavior. Individually they're good. Together, they're something else.</p>
+        <p>The market is noisy. Everyone has a pick. Most bettors — even smart ones — are going on instinct dressed up as analysis. Austin believed there was a better way. <strong>Find the sharpest signal that exists. Then sharpen it further.</strong> Start with the best predictive system in college football, refine it with the situational context that actually moves outcomes, and only act when there's a real gap between the model and the market.</p>
         <p>But the pick was never the point. The point was always education — <strong>demystifying the world of sports betting</strong> for people who want to think more clearly about it. PressBox isn't a tout service. It's the view from the press box: analytical, informed, and explained in plain language.</p>
-        <p>The result is three seasons of backtested data, over 2,000 games analyzed, and a model that doesn't ask you to trust a gut. It gives your gut something real to work with.</p>
+        <p>The result is four seasons of honestly backtested data, over 3,500 games analyzed, and a model that doesn't ask you to trust a gut. It gives your gut something real to work with.</p>
       </div>
     </div>
   </div>
@@ -1068,7 +1213,7 @@
         <ul class="tier-features">
           <li class="active">Full 2025 season results</li>
           <li class="active">Weekly results recap every Monday</li>
-          <li class="active">3-season track record</li>
+          <li class="active">4-season track record</li>
           <li>Current week's picks</li>
           <li>Press box breakdowns</li>
           <li>Full A+ pick list</li>
@@ -1080,7 +1225,7 @@
         <ul class="tier-features">
           <li class="active">Full 2025 season results</li>
           <li class="active">Weekly results recap every Monday</li>
-          <li class="active">3-season track record</li>
+          <li class="active">4-season track record</li>
           <li class="active">Current week's picks</li>
           <li class="active">Press box breakdowns</li>
           <li class="active">Full A+ pick list</li>
