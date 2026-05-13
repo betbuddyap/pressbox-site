@@ -54,15 +54,15 @@
   .page-sub { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.6; }
 
   /* ── CONTROLS ── */
-  .controls { background: var(--cream); border-bottom: 1px solid var(--border); padding: 20px 0; position: sticky; top: 80px; z-index: 90; }
-  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 32px; }
-  .control-group { display: flex; align-items: center; gap: 8px; }
-  .control-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
-  .tab-group { display: flex; gap: 4px; }
+  .controls { background: var(--cream); border-bottom: 1px solid var(--border); padding: 16px 0; position: sticky; top: 80px; z-index: 90; }
+  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; flex-direction: column; gap: 10px; }
+  .control-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .control-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-light); min-width: 64px; }
+  .divider { display: none; }
+  .tab-group { display: flex; gap: 4px; flex-wrap: wrap; }
   .tab { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
   .tab:hover { border-color: var(--text-mid); color: var(--text); }
   .tab.active { background: var(--ink); color: var(--cream); border-color: var(--ink); font-weight: 600; }
-  .divider { width: 1px; height: 28px; background: var(--border); }
 
   /* ── SUMMARY BAR ── */
   .summary-bar { background: var(--ink); padding: 24px 0; }
@@ -99,6 +99,11 @@
   .badge-spread { background: var(--gold-pale); color: var(--gold); }
   .badge-ou { background: #E8F0E8; color: #4A7A4A; }
   .badge-ml { background: #E8EEF5; color: #3A5A8A; }
+  .tier-badge { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 0.5px; padding: 3px 7px; border-radius: 2px; display: inline-block; }
+  .tier-ap { background: #2A2A28; color: #F5EFE0; }
+  .tier-a  { background: var(--gold-pale); color: var(--gold); }
+  .tier-sm { background: #E8F0E8; color: #4A7A4A; }
+  .tier-ls { background: #FBEFE0; color: #B8922A; }
   .result-hit { display: flex; align-items: center; gap: 6px; }
   .result-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .result-dot.win { background: #5A9E5E; }
@@ -206,14 +211,16 @@
 <!-- TICKER -->
 <div class="ticker">
   <div class="ticker-track">
-    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
-    Weekly A+ <b>$31,612 profit</b> flat betting $20/pick over 3 seasons<span>·</span>
-    2025 Season <b>11-4</b> · 73.3% Hit Rate · best single season<span>·</span>
+    Pick of the Week <b>50-8</b> · 86.2% Hit Rate across 4 seasons<span>·</span>
+    Smart Money ML <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
+    2025 POTW <b>15-0</b> · 100% Hit Rate · undefeated season<span>·</span>
+    Parlay of the Week <b>+178% ROI</b> · +$9,600 on $100/wk<span>·</span>
     Never a losing season<span>·</span>
     <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
-    Pick of the Week <b>31-14</b> · 68.9% Hit Rate across 3 seasons<span>·</span>
-    Weekly A+ <b>$31,612 profit</b> flat betting $20/pick over 3 seasons<span>·</span>
-    2025 Season <b>11-4</b> · 73.3% Hit Rate · best single season<span>·</span>
+    Pick of the Week <b>50-8</b> · 86.2% Hit Rate across 4 seasons<span>·</span>
+    Smart Money ML <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
+    2025 POTW <b>15-0</b> · 100% Hit Rate · undefeated season<span>·</span>
+    Parlay of the Week <b>+178% ROI</b> · +$9,600 on $100/wk<span>·</span>
     Never a losing season<span>·</span>
     <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
   </div>
@@ -268,7 +275,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <div class="page-header">
   <div class="page-header-inner">
     <div class="page-eyebrow">Track Record</div>
-    <h1 class="page-title">Three seasons.<br><em>Zero losing years.</em></h1>
+    <h1 class="page-title">Four seasons.<br><em>Zero losing years.</em></h1>
     <p class="page-sub">Every pick. Every week. Every result. No cherry-picking, no selective memory — the full record.</p>
   </div>
 </div>
@@ -279,6 +286,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="control-group">
       <span class="control-label">Season</span>
       <div class="tab-group" id="season-tabs">
+        <button class="tab" data-season="2022" onclick="setSeason(2022)">2022</button>
         <button class="tab" data-season="2023" onclick="setSeason(2023)">2023</button>
         <button class="tab" data-season="2024" onclick="setSeason(2024)">2024</button>
         <button class="tab active" data-season="2025" onclick="setSeason(2025)">2025</button>
@@ -288,9 +296,12 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="control-group">
       <span class="control-label">Product</span>
       <div class="tab-group" id="product-tabs">
-        <button class="tab active" data-product="weekly" onclick="setProduct('weekly')">Weekly A+</button>
-        <button class="tab" data-product="potw" onclick="setProduct('potw')">Pick of the Week</button>
-        <button class="tab" data-product="parlay" onclick="setProduct('parlay')">Parlay</button>
+        <button class="tab active" data-product="aplus"  onclick="setProduct('aplus')">A+ Board</button>
+        <button class="tab" data-product="potw"          onclick="setProduct('potw')">POTW</button>
+        <button class="tab" data-product="totw"          onclick="setProduct('totw')">ToTW</button>
+        <button class="tab" data-product="smart-money"   onclick="setProduct('smart-money')">Smart Money ML</button>
+        <button class="tab" data-product="lottery-shot"  onclick="setProduct('lottery-shot')">Lottery Shot ML</button>
+        <button class="tab" data-product="parlay"        onclick="setProduct('parlay')">Parlay</button>
       </div>
     </div>
   </div>
@@ -347,12 +358,19 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
 <script>
 const API = 'https://betbuddyservice-production.up.railway.app';
-const BET_SIZE = 50; // Weekly A+ flat bet
-const POTW_BET = 500;
-const PARLAY_BET = 100;
+const BET_SIZE = 100;
+
+const PRODUCT_CONFIG = {
+  'aplus':        { endpoint: 'aplus-board',  label: 'A+ Board',         render: 'weekly' },
+  'potw':         { endpoint: 'potw',         label: 'Pick of the Week', render: 'weekly' },
+  'totw':         { endpoint: 'totw',         label: 'Total of the Week', render: 'weekly' },
+  'smart-money':  { endpoint: 'smart-money',  label: 'Smart Money ML',   render: 'weekly' },
+  'lottery-shot': { endpoint: 'lottery-shot', label: 'Lottery Shot ML',  render: 'weekly' },
+  'parlay':       { endpoint: 'parlay',       label: 'Parlay',           render: 'parlay' },
+};
 
 let currentSeason  = 2025;
-let currentProduct = 'weekly';
+let currentProduct = 'aplus';
 let cache = {};
 
 function setSeason(s) {
@@ -395,33 +413,34 @@ async function loadData() {
   content.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Loading results</div></div>';
 
   try {
-    if (currentProduct === 'weekly') {
-      const data = await fetchData(`${API}/backtest/weekly-results?season=${currentSeason}&bet_size=50`);
-      renderWeekly(data);
-    } else if (currentProduct === 'potw') {
-      const data = await fetchData(`${API}/backtest/potw-results?season=${currentSeason}&bet_size=500`);
-      renderPOTW(data);
-    } else {
-      const data = await fetchData(`${API}/backtest/parlay-results?season=${currentSeason}`);
+    const cfg = PRODUCT_CONFIG[currentProduct];
+    const data = await fetchData(`${API}/results/${cfg.endpoint}?season=${currentSeason}&bet_size=${BET_SIZE}`);
+    if (data.error) throw new Error(data.error);
+
+    if (cfg.render === 'parlay') {
       renderParlay(data);
+    } else {
+      renderWeekly(data);
     }
   } catch(e) {
+    console.error(e);
     content.innerHTML = '<div class="empty"><div class="empty-title">Could not load results</div><div class="empty-sub">Please try again in a moment.</div></div>';
   }
 }
 
 function updateSummary(bets, hitPct, profit, roi, record) {
   document.getElementById('sum-bets').textContent   = bets || '—';
-  document.getElementById('sum-hits').textContent   = hitPct ? pct(hitPct) : '—';
-  document.getElementById('sum-profit').textContent = profit !== null ? fmt(profit) : '—';
-  document.getElementById('sum-roi').textContent    = roi !== null ? pct(roi) : '—';
+  document.getElementById('sum-hits').textContent   = hitPct !== null && hitPct !== undefined ? pct(hitPct) : '—';
+  document.getElementById('sum-profit').textContent = profit !== null && profit !== undefined ? fmt(profit) : '—';
+  document.getElementById('sum-roi').textContent    = roi !== null && roi !== undefined ? pct(roi) : '—';
   document.getElementById('sum-record').textContent = record || '—';
 
   const profitEl = document.getElementById('sum-profit');
-  profitEl.className = 'summary-stat-val ' + (profit >= 0 ? 'positive' : 'pnl-neg');
+  profitEl.className = 'summary-stat-val ' + ((profit || 0) >= 0 ? 'positive' : 'pnl-neg');
+  const roiEl = document.getElementById('sum-roi');
+  roiEl.className = 'summary-stat-val ' + ((roi || 0) >= 0 ? 'positive' : 'pnl-neg');
 }
 
-/* ── WEEKLY A+ ── */
 function renderWeekly(data) {
   updateSummary(
     data.total_bets,
@@ -433,24 +452,21 @@ function renderWeekly(data) {
 
   const weeks = (data.weekly || []).filter(w => w.bets_detail && w.bets_detail.length > 0);
   if (!weeks.length) {
-    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No picks this season</div></div>';
+    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No picks for this product in this season</div></div>';
     return;
   }
 
-  const regularWeeks   = weeks.filter(w => !w.is_postseason);
-  const postseasonWeeks = weeks.filter(w => w.is_postseason);
-
   let html = '';
-  regularWeeks.forEach(week => {
-    const pnlClass = week.week_pnl >= 0 ? 'up' : 'down';
+  weeks.forEach(week => {
+    const pnlClass = week.week_pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
     const pnlStr   = (week.week_pnl >= 0 ? '+' : '') + '$' + Math.abs(week.week_pnl).toFixed(0);
     html += `
       <div class="week-block">
         <div class="week-header">
           <div class="week-title">Week ${week.week}</div>
           <div class="week-meta">
-            <div class="week-meta-item">${week.bets} picks <span class="week-meta-val">${pct(week.hit_pct)} Hit Rate</span></div>
-            <div class="week-meta-item">Week P&L <span class="week-meta-val ${pnlClass}">${pnlStr}</span></div>
+            <div class="week-meta-item">${week.bets} ${week.bets === 1 ? 'pick' : 'picks'} <span class="week-meta-val">${pct(week.hit_pct)} Hit Rate</span></div>
+            <div class="week-meta-item">Week P&amp;L <span class="week-meta-val ${pnlClass}">${pnlStr}</span></div>
             <div class="week-meta-item">Bankroll <span class="week-meta-val">$${week.bankroll.toFixed(0)}</span></div>
           </div>
         </div>
@@ -459,9 +475,9 @@ function renderWeekly(data) {
             <tr>
               <th>Matchup</th>
               <th>Bet Type</th>
+              <th>Tier</th>
               <th>Our Pick</th>
-              <th>Projection</th>
-              <th>Actual</th>
+              <th>Edge</th>
               <th>Result</th>
               <th>Odds</th>
               <th style="text-align:right">Payout</th>
@@ -473,15 +489,15 @@ function renderWeekly(data) {
               const hitLabel = b.hit === true ? 'Win' : b.hit === false ? 'Loss' : 'Push';
               const pnlCls = b.pnl > 0 ? 'pnl-pos' : b.pnl < 0 ? 'pnl-neg' : '';
               const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-              const typeLabel = b.type === 'O/U' ? 'O/U' : b.type;
-              const displayActual = b.actual;
+              const tierCls = b.tier === 'A+' ? 'tier-ap' : b.tier === 'A' ? 'tier-a' : (b.tier === 'smart_money' ? 'tier-sm' : b.tier === 'lottery_shot' ? 'tier-ls' : '');
+              const tierLabel = b.tier === 'smart_money' ? 'Smart$' : b.tier === 'lottery_shot' ? 'Lottery' : (b.tier || '—');
               return `
                 <tr>
                   <td><div class="pick-team">${b.away_team} @ ${b.home_team}</div></td>
-                  <td><span class="badge-type ${typeCls}">${typeLabel}</span></td>
+                  <td><span class="badge-type ${typeCls}">${b.type}</span></td>
+                  <td><span class="tier-badge ${tierCls}">${tierLabel}</span></td>
                   <td><strong>${b.pick}</strong></td>
-                  <td style="color:var(--text-mid)">${b.projection || '—'}</td>
-                  <td>${displayActual}</td>
+                  <td style="color:var(--text-mid)">${b.edge !== null && b.edge !== undefined ? (typeof b.edge === 'number' && b.edge < 1 ? (b.edge*100).toFixed(1) + '%' : b.edge) : '—'}</td>
                   <td>
                     <div class="result-hit">
                       <div class="result-dot ${hit}"></div>
@@ -497,149 +513,29 @@ function renderWeekly(data) {
       </div>`;
   });
 
-  // Postseason cards
-  if (postseasonWeeks.length > 0) {
-    html += `
-      <div style="margin-top:48px;margin-bottom:16px;">
-        <div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--text);padding-bottom:12px;border-bottom:2px solid var(--border);">
-          Postseason
-        </div>
-      </div>
-      <div class="potw-grid">`;
-    postseasonWeeks.forEach(week => {
-      week.bets_detail.forEach(b => {
-        const hit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
-        const hitLabel = b.hit === true ? 'WIN ✓' : b.hit === false ? 'LOSS ✗' : 'Push';
-        const pnlCls = b.pnl > 0 ? 'pnl-pos' : b.pnl < 0 ? 'pnl-neg' : '';
-        const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-        html += `
-          <div class="potw-card">
-            <div class="potw-card-header">
-              <div class="potw-week">Postseason</div>
-              <div class="potw-result-badge ${hit}">${hitLabel}</div>
-            </div>
-            <div class="potw-card-body">
-              <div class="potw-matchup">${b.away_team} @ ${b.home_team}</div>
-              <div class="potw-pick"><span class="badge-type ${typeCls}">${b.type}</span> &nbsp;${b.pick}</div>
-              <div class="potw-actual" style="margin-top:12px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                  <span>Projection: <span class="potw-actual-score">${b.projection || '—'}</span></span>
-                  <span>Final: <span class="potw-actual-score">${b.actual || '—'}</span></span>
-                  <span class="${pnlCls}">${b.pnl >= 0 ? '+' : ''}$${Math.abs(b.pnl).toFixed(0)}</span>
-                </div>
-              </div>
-            </div>
-          </div>`;
-      });
-    });
-    html += `</div>`;
-  }
-
   document.getElementById('results-content').innerHTML = html;
 }
 
-/* ── PICK OF THE WEEK ── */
-function renderPOTW(data) {
-  const wins   = data.wins   || 0;
-  const losses = data.losses || 0;
+function renderParlay(data) {
   updateSummary(
-    wins + losses,
+    data.total_bets,
     data.hit_pct,
     data.total_profit,
     data.roi,
-    `${wins}-${losses}`
+    `${data.total_hits}-${data.total_bets - data.total_hits}`
   );
 
-  const weeks = (data.weeks || []).filter(w => w.pick);
+  const weeks = (data.weekly || []).filter(w => w.bets_detail && w.bets_detail.length > 0);
   if (!weeks.length) {
-    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No picks this season</div></div>';
-    return;
-  }
-
-  const regularWeeks    = weeks.filter(w => !w.is_postseason);
-  const postseasonWeeks = weeks.filter(w => w.is_postseason);
-
-  let html = '<div class="potw-grid">';
-  regularWeeks.forEach(week => {
-    const hit = week.hit === true;
-    const push = week.hit === null;
-    const resultLabel = push ? 'Push' : hit ? 'WIN ✓' : 'LOSS ✗';
-    const resultCls   = push ? '' : hit ? 'win' : 'loss';
-
-    html += `
-      <div class="potw-card">
-        <div class="potw-card-header">
-          <div class="potw-week">Week ${week.week}</div>
-          <div class="potw-result-badge ${resultCls}">${resultLabel}</div>
-        </div>
-        <div class="potw-card-body">
-          <div class="potw-matchup">${week.away_team || ''} @ ${week.home_team || ''}</div>
-          <div class="potw-pick">${week.pick || ''} ${week.odds ? (week.odds > 0 ? '+' : '') + week.odds : ''}</div>
-          <div class="potw-stats">
-            <div class="potw-stat">
-              <div class="potw-stat-val">${week.edge ? week.edge.toFixed(1) : '—'}</div>
-              <div class="potw-stat-lbl">Edge (pts)</div>
-            </div>
-            <div class="potw-stat">
-              <div class="potw-stat-val">${week.agreement || '—'}/4</div>
-              <div class="potw-stat-lbl">Core Models</div>
-            </div>
-            <div class="potw-stat">
-              <div class="potw-stat-val">${week.composite_score ? Math.round(week.composite_score) : '—'}</div>
-              <div class="potw-stat-lbl">Score</div>
-            </div>
-          </div>
-          <div class="potw-actual">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
-              <span>Our pick: <span class="potw-actual-score">${week.pick || '—'}</span></span>
-              <span>Final: <span class="potw-actual-score">${week.bet_type === 'ou' ? 'Total ' + (week.actual_total || '—') : (week.actual_margin != null ? (week.actual_margin >= 0 ? '+' : '') + week.actual_margin : '—')}</span></span>
-              <span class="${week.pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${week.pnl >= 0 ? '+' : ''}$${Math.abs(week.pnl).toFixed(0)}</span>
-            </div>
-          </div>
-        </div>
-      </div>`;
-  });
-  html += '</div>';
-
-  if (postseasonWeeks.length > 0) {
-    html += '<div style="margin-top:48px;margin-bottom:16px;"><div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--text);padding-bottom:12px;border-bottom:2px solid var(--border);">Postseason</div></div><div class="potw-grid">';
-    postseasonWeeks.forEach(week => {
-      const hit2 = week.hit === true;
-      const push2 = week.hit === null;
-      const rl2 = push2 ? 'Push' : hit2 ? 'WIN ✓' : 'LOSS ✗';
-      const rc2 = push2 ? '' : hit2 ? 'win' : 'loss';
-      html += '<div class="potw-card"><div class="potw-card-header"><div class="potw-week">Postseason</div><div class="potw-result-badge ' + rc2 + '">' + rl2 + '</div></div><div class="potw-card-body"><div class="potw-matchup">' + (week.away_team||'') + ' @ ' + (week.home_team||'') + '</div><div class="potw-pick">' + (week.pick||'') + '</div><div class="potw-stats"><div class="potw-stat"><div class="potw-stat-val">' + (week.edge != null ? week.edge.toFixed(1) : '—') + '</div><div class="potw-stat-lbl">Edge (pts)</div></div><div class="potw-stat"><div class="potw-stat-val">' + (week.agreement != null ? week.agreement + '/4' : '—') + '</div><div class="potw-stat-lbl">Core Models</div></div></div><div class="potw-actual"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><span>Final: <span class="potw-actual-score">' + (week.bet_type === 'ou' ? 'Total ' + (week.actual_total||'—') : (week.actual_margin != null ? (week.actual_margin >= 0 ? '+' : '') + week.actual_margin : '—')) + '</span></span><span class="' + (week.pnl >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (week.pnl >= 0 ? '+' : '') + '$' + Math.abs(week.pnl).toFixed(0) + '</span></div></div></div></div>';
-    });
-    html += '</div>';
-  }
-
-  document.getElementById('results-content').innerHTML = html;
-}
-
-/* ── PARLAY ── */
-function renderParlay(data) {
-  const bal = data.balanced || {};
-  updateSummary(
-    bal.wins + bal.losses,
-    bal.hit_pct,
-    bal.total_profit,
-    bal.roi,
-    `${bal.wins || 0}-${bal.losses || 0}`
-  );
-
-  const weeks = (data.weekly || []).filter(w => w.balanced_parlay && w.balanced_parlay.legs && w.balanced_parlay.legs.length);
-  if (!weeks.length) {
-    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No parlays this season</div></div>';
+    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No parlays for this season</div></div>';
     return;
   }
 
   let html = '<div class="parlay-grid">';
   weeks.forEach(week => {
-    const bp  = week.balanced_parlay;
-    const hit = bp.all_hit;
-    const resultCls   = hit ? 'win' : 'loss';
-    const payoutStr   = hit ? `+$${bp.payout.toFixed(0)}` : `-$${PARLAY_BET}`;
-
+    const hit = week.parlay_hit;
+    const resultCls = hit ? 'win' : 'loss';
+    const payoutStr = (week.week_pnl >= 0 ? '+' : '-') + '$' + Math.abs(week.week_pnl).toFixed(0);
     html += `
       <div class="parlay-card ${resultCls}">
         <div class="parlay-card-header">
@@ -647,12 +543,16 @@ function renderParlay(data) {
           <div class="parlay-result ${resultCls}">${hit ? 'HIT ✓' : 'MISS ✗'}</div>
         </div>
         <div class="parlay-card-body">
-          ${(bp.legs || []).map(leg => {
+          ${(week.bets_detail || []).map(leg => {
             const legCls = leg.hit === true ? 'win' : leg.hit === false ? 'loss' : 'push';
+            const typeCls = leg.type === 'Spread' ? 'badge-spread' : leg.type === 'O/U' ? 'badge-ou' : 'badge-ml';
             return `
               <div class="parlay-leg">
                 <div class="parlay-leg-dot ${legCls}"></div>
-                <div class="parlay-leg-text">${leg.type === 'ou' ? (leg.pick_with_game || leg.pick || '') : (leg.pick || '')}</div>
+                <div class="parlay-leg-text">
+                  <span class="badge-type ${typeCls}" style="margin-right:6px;">${leg.type}</span>
+                  ${leg.pick} <span style="color:var(--text-mid);font-size:11px;">(${leg.away_team} @ ${leg.home_team})</span>
+                </div>
                 <div class="parlay-leg-odds">${leg.odds > 0 ? '+' : ''}${leg.odds}</div>
               </div>`;
           }).join('')}
