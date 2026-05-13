@@ -234,6 +234,9 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="control-group">
       <span class="control-label">Season</span>
       <div class="tab-group" id="season-tabs">
+        <button class="tab" data-season="2022" onclick="setSeason(2022)">2022</button>
+        <button class="tab" data-season="2023" onclick="setSeason(2023)">2023</button>
+        <button class="tab" data-season="2024" onclick="setSeason(2024)">2024</button>
         <button class="tab active" data-season="2025" onclick="setSeason(2025)">2025</button>
       </div>
     </div>
@@ -287,6 +290,9 @@ let cache = {};
 
 // Week options per season
 const WEEKS = {
+  2022: Array.from({length: 15}, (_, i) => i + 1),
+  2023: Array.from({length: 15}, (_, i) => i + 1),
+  2024: Array.from({length: 15}, (_, i) => i + 1),
   2025: Array.from({length: 15}, (_, i) => i + 1),
 };
 
@@ -470,11 +476,11 @@ function renderGames(data) {
           <div class="narrative-section">
             <div class="narrative-block">
               <div class="narrative-label">What we thought</div>
-              <div class="${g.pre_game_blurb && !g.pre_game_blurb.startsWith('[') ? 'narrative-text' : 'narrative-empty'}">${g.pre_game_blurb && !g.pre_game_blurb.startsWith('[') ? g.pre_game_blurb : 'Analysis not yet generated.'}</div>
+              <div class="${g.pre_game_blurb && !g.pre_game_blurb.startsWith('[') ? 'narrative-text' : 'narrative-empty'}">${g.pre_game_blurb && !g.pre_game_blurb.startsWith('[') ? g.pre_game_blurb : (currentSeason >= 2025 ? 'Analysis not yet generated.' : 'Pre-game analysis not available for this season.')}</div>
             </div>
             <div class="narrative-block">
               <div class="narrative-label">What happened</div>
-              <div class="${g.post_game_blurb && !g.post_game_blurb.startsWith('[') ? 'narrative-text' : 'narrative-empty'}">${g.post_game_blurb && !g.post_game_blurb.startsWith('[') ? g.post_game_blurb : (hasScore ? 'Analysis not yet generated.' : 'Game not yet played.')}</div>
+              <div class="${g.post_game_blurb && !g.post_game_blurb.startsWith('[') ? 'narrative-text' : 'narrative-empty'}">${g.post_game_blurb && !g.post_game_blurb.startsWith('[') ? g.post_game_blurb : (hasScore ? (currentSeason >= 2025 ? 'Analysis not yet generated.' : 'See final score and pick grading below.') : 'Game not yet played.')}</div>
             </div>
           </div>
 
