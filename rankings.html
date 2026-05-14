@@ -487,31 +487,38 @@ function keyStatFor(p) {
   // Show the most relevant stat for the position
   const pos = (p.position || p.position_group || '').toUpperCase();
 
+  // Skill players come from player_seasons — they have PPA stats, not raw yards
   if (pos === 'QB') {
-    if (p.passing_yards != null) return { label: 'Pass Yds', value: p.passing_yards.toLocaleString() };
+    if (p.ppa_total_pass != null) return { label: 'Pass PPA', value: p.ppa_total_pass.toFixed(1) };
+    if (p.player_value  != null) return { label: 'Player Val', value: p.player_value.toFixed(2) };
   }
-  if (pos === 'RB') {
-    if (p.rushing_yards != null) return { label: 'Rush Yds', value: p.rushing_yards.toLocaleString() };
+  if (pos === 'RB' || pos === 'HB' || pos === 'FB') {
+    if (p.ppa_total_rush != null) return { label: 'Rush PPA', value: p.ppa_total_rush.toFixed(1) };
+    if (p.player_value  != null) return { label: 'Player Val', value: p.player_value.toFixed(2) };
   }
   if (pos === 'WR' || pos === 'TE') {
-    if (p.receiving_yards != null) return { label: 'Rec Yds', value: p.receiving_yards.toLocaleString() };
+    if (p.ppa_total_all != null) return { label: 'Rec PPA', value: p.ppa_total_all.toFixed(1) };
+    if (p.player_value != null) return { label: 'Player Val', value: p.player_value.toFixed(2) };
   }
-  if (pos === 'LB' || pos === 'DB' || pos === 'DL' || pos === 'DE' || pos === 'DT' || pos === 'CB' || pos === 'S') {
+  // Defenders come from player_stats — they have counting stats
+  if (pos === 'LB' || pos === 'ILB' || pos === 'OLB' || pos === 'MLB') {
+    if (p.tackles != null) return { label: 'Tackles', value: p.tackles };
+  }
+  if (pos === 'DL' || pos === 'DE' || pos === 'DT' || pos === 'NT' || pos === 'EDGE') {
+    if (p.sacks != null && p.sacks > 0) return { label: 'Sacks', value: p.sacks };
+    if (p.tackles_for_loss != null) return { label: 'TFL', value: p.tackles_for_loss };
+    if (p.tackles != null) return { label: 'Tackles', value: p.tackles };
+  }
+  if (pos === 'DB' || pos === 'CB' || pos === 'S' || pos === 'SS' || pos === 'FS' || pos === 'NB') {
+    if (p.def_interceptions != null && p.def_interceptions > 0)
+      return { label: 'INTs', value: p.def_interceptions };
+    if (p.passes_broken_up != null && p.passes_broken_up > 0)
+      return { label: 'PBUs', value: p.passes_broken_up };
     if (p.tackles != null) return { label: 'Tackles', value: p.tackles };
   }
 
-  // Generic fallback: pick the biggest non-null counting stat
-  const candidates = [
-    ['Pass Yds', p.passing_yards],
-    ['Rush Yds', p.rushing_yards],
-    ['Rec Yds', p.receiving_yards],
-    ['Tackles', p.tackles],
-    ['Sacks', p.sacks],
-  ].filter(c => c[1] != null && c[1] !== 0);
-  if (candidates.length) {
-    const [label, value] = candidates[0];
-    return { label, value: typeof value === 'number' ? value.toLocaleString() : value };
-  }
+  // Generic fallback
+  if (p.player_value != null) return { label: 'Player Val', value: p.player_value.toFixed(2) };
   return { label: '—', value: '—' };
 }
 
