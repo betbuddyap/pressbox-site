@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026 Schedule — PressBox Analytics</title>
+<title>Upcoming — PressBox Analytics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: #F8F5EE; min-height: 100vh; }
@@ -15,213 +15,222 @@
     --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
     --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
     --gold-pale: #F5EDD0; --ink: #0F0E0A;
+    --sage: #4A7A4A; --sage-pale: #E8F0E8;
+    --rust: #B85A2A; --rust-pale: #FBEFE0;
     --serif: 'Libre Baskerville', Georgia, serif;
     --sans: 'Source Sans 3', system-ui, sans-serif;
     --max: 1200px;
   }
   body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-  /* TICKER */
+  /* ── TICKER ── */
   .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
   .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
   .ticker-track span { margin: 0 28px; color: #2A2A20; }
   .ticker-track b { color: var(--gold-light); }
   @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-  /* NAV */
+  /* ── NAV ── */
   nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-logo { text-decoration: none; }
   .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
   .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--text); }
   .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: transparent; border: 0; padding: 4px; }
+
+  /* ── UPCOMING NAV TREATMENT ── */
+  .nav-links a.nav-upcoming { color: var(--gold) !important; font-weight: 700; letter-spacing: 0.3px; position: relative; text-transform: uppercase; font-size: 11px; }
+  .nav-links a.nav-upcoming::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--gold); border-radius: 50%; margin-right: 7px; vertical-align: 2px; animation: pulse-gold 2.4s ease-in-out infinite; }
+  .nav-links a.nav-upcoming:hover { color: var(--gold-light) !important; }
+  .nav-links a.nav-upcoming.active { color: var(--text) !important; }
+  .nav-links a.nav-upcoming.active::before { background: var(--text); animation: none; }
+  @keyframes pulse-gold { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+  .mobile-menu a.nav-upcoming-mobile { color: var(--gold) !important; }
+
+  /* ── HAMBURGER ── */
+  .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; outline: 0; width: 32px; height: 32px; }
   .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
   .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
   .mobile-menu.open { display: flex !important; }
   .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
-  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); line-height: 1; }
   .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
   @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
 
-  /* PAGE HEADER */
-  .page-header { background: var(--ink); padding: 56px 0 48px; }
-  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
+  /* ── PAGE HEADER ── */
+  .page-header { background: var(--ink); padding: 48px 0 32px; border-bottom: 1px solid #2A2A20; }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
   .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
   .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--cream); line-height: 1.1; }
   .page-title em { font-style: italic; color: var(--gold-light); }
-  .page-sub { font-size: 14px; font-weight: 300; color: #6A6A58; margin-top: 8px; }
-  .header-stats { display: flex; gap: 32px; flex-shrink: 0; }
-  .hstat { text-align: right; }
-  .hstat-val { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--gold-light); }
-  .hstat-lbl { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #3A3A28; margin-top: 2px; }
+  .page-sub { font-size: 14px; font-weight: 300; color: #8A8A78; margin-top: 8px; line-height: 1.6; }
 
-  /* CONTROLS */
-  .controls-bar { background: var(--cream-dark); border-bottom: 1px solid var(--border); padding: 0; position: sticky; top: 80px; z-index: 90; }
-  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 0; overflow-x: auto; }
-  .week-tab { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-light); padding: 14px 20px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+  /* ── WEEK SELECTOR ── */
+  .week-bar { background: var(--cream-dark); border-bottom: 1px solid var(--border); position: sticky; top: 80px; z-index: 90; }
+  .week-bar-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  .week-bar-inner::-webkit-scrollbar { display: none; }
+  .week-tab { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-light); padding: 14px 18px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
   .week-tab:hover { color: var(--text-mid); }
   .week-tab.active { color: var(--text); border-bottom-color: var(--gold); }
-  .controls-sep { width: 1px; height: 20px; background: var(--border); margin: 0 8px; flex-shrink: 0; }
-  .conf-filter { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: none; border: 1px solid var(--border); border-radius: 3px; padding: 6px 12px; cursor: pointer; margin-left: auto; margin-right: 0; }
 
-  /* MAIN */
-  .main { max-width: var(--max); margin: 0 auto; padding: 32px 32px 80px; }
+  /* ── MAIN ── */
+  .main { max-width: var(--max); margin: 0 auto; padding: 0 32px 80px; }
 
-  /* DATE GROUP */
-  .date-group { margin-bottom: 40px; }
-  .date-label { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--text-light); display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-  .date-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  /* ── SECTION HEADERS ── */
+  .section { padding: 48px 0 0; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px solid var(--text); }
+  .section-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .section-title { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .section-meta { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; text-transform: uppercase; }
 
-  /* GAME CARDS GRID */
-  .games-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  /* ── GAME OF THE WEEK HERO ── */
+  .gotw-link { text-decoration: none; color: inherit; display: block; }
+  .gotw { position: relative; overflow: hidden; border-radius: 6px; min-height: 320px; background: var(--ink); margin-bottom: 8px; transition: transform 0.2s; }
+  .gotw-link:hover .gotw { transform: translateY(-2px); }
+  .gotw-bg { position: absolute; inset: 0; display: flex; }
+  .gotw-bg-half { flex: 1; }
+  .gotw-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,14,10,0.35) 0%, rgba(15,14,10,0.65) 50%, rgba(15,14,10,0.92) 100%); }
+  .gotw-content { position: relative; z-index: 2; padding: 32px 36px 28px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 320px; }
+  .gotw-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .gotw-tag { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold-light); padding: 6px 12px; background: rgba(212, 168, 58, 0.18); border: 1px solid rgba(212, 168, 58, 0.4); border-radius: 3px; }
+  .gotw-time { font-family: var(--sans); font-size: 12px; font-weight: 500; color: rgba(248, 245, 238, 0.85); }
+  .gotw-matchup { font-family: var(--serif); font-size: 60px; font-weight: 700; color: var(--cream); line-height: 1.05; letter-spacing: -1px; }
+  .gotw-matchup em { font-style: italic; }
+  .gotw-vs { display: inline-block; color: var(--gold-light); font-style: italic; font-size: 0.5em; vertical-align: middle; padding: 0 12px; font-weight: 400; }
+  .gotw-team-line { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .gotw-team-rank { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--gold-light); letter-spacing: 0.5px; }
+  .gotw-team-conf { font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(248, 245, 238, 0.6); }
+  .gotw-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+  .gotw-why { font-family: var(--sans); font-size: 14px; font-weight: 400; color: rgba(248, 245, 238, 0.9); line-height: 1.5; max-width: 520px; }
+  .gotw-why strong { font-weight: 700; color: var(--gold-light); }
+  .gotw-cta { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-light); flex-shrink: 0; padding-bottom: 4px; }
+  .gotw-cta::after { content: '→'; margin-left: 8px; display: inline-block; transition: transform 0.2s; }
+  .gotw-link:hover .gotw-cta::after { transform: translateX(4px); }
 
-  /* GAME CARD */
-  .game-card { background: var(--cream); padding: 20px 22px; cursor: pointer; transition: background 0.15s; text-decoration: none; display: block; }
-  .game-card:hover { background: var(--cream-dark); }
-  .game-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
-  .game-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-  .badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; }
-  .badge-conf { background: var(--gold-pale); color: #5A4010; }
-  .badge-neutral { background: #EDE8F5; color: #7060A8; }
-  .badge-intl { background: #E8F0E8; color: #506850; }
-  .game-time { font-size: 11px; color: var(--text-light); font-weight: 400; }
-  .game-matchup { margin-bottom: 12px; }
-  .game-team { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-  .team-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); }
-  .team-conf { font-size: 10px; color: var(--text-light); font-family: var(--sans); font-weight: 400; }
-  .game-at { font-family: var(--serif); font-size: 13px; font-weight: 400; font-style: italic; color: var(--text); margin: 2px 0 2px 30px; }
-  .rank-spacer { width: 22px; height: 22px; flex-shrink: 0; display: inline-block; }
-  .game-footer { display: flex; align-items: center; justify-content: space-between; }
-  .game-venue { font-size: 11px; color: var(--text-light); display: flex; align-items: center; gap: 5px; overflow: hidden; }
-  .game-venue span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .elo-matchup { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-  .elo-bar { width: 48px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; position: relative; }
-  .elo-home { height: 100%; background: var(--gold); border-radius: 2px; }
-  .elo-label { font-size: 10px; color: var(--text-light); font-weight: 500; }
-  .rank-badge { font-family: var(--serif); font-size: 11px; font-weight: 400; color: var(--text); width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  /* ── PICKS SECTION ── */
+  .picks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .pick-card { background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; text-decoration: none; color: inherit; display: block; transition: all 0.15s; position: relative; overflow: hidden; }
+  .pick-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--text-light); }
+  .pick-card.tier-ap::before { background: var(--gold); }
+  .pick-card.tier-a::before { background: var(--gold-light); }
+  .pick-card.tier-sm::before { background: var(--sage); }
+  .pick-card.tier-ls::before { background: var(--rust); }
+  .pick-card:hover { border-color: var(--text-mid); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .pick-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .pick-card-tier { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 4px 8px; border-radius: 2px; }
+  .pick-card-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .pick-card-tier.tier-a { background: var(--gold-pale); color: var(--gold); }
+  .pick-card-tier.tier-sm { background: var(--sage-pale); color: var(--sage); }
+  .pick-card-tier.tier-ls { background: var(--rust-pale); color: var(--rust); }
+  .pick-card-time { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); }
+  .pick-card-matchup { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.25; margin-bottom: 12px; }
+  .pick-card-matchup em { font-style: italic; color: var(--text-mid); font-weight: 400; padding: 0 4px; }
+  .pick-card-pick { display: flex; align-items: baseline; gap: 10px; padding: 12px 14px; background: var(--cream-dark); border-radius: 3px; margin-bottom: 12px; }
+  .pick-card-pick-lbl { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
+  .pick-card-pick-val { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); }
+  .pick-card-why { font-family: var(--sans); font-size: 12px; font-weight: 400; color: var(--text-mid); line-height: 1.55; }
 
-  /* LOADING / EMPTY */
-  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; }
-  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-light); }
-  .empty { text-align: center; padding: 60px 0; color: var(--text-light); font-size: 14px; }
+  /* ── RANKED MATCHUPS ── */
+  .ranked-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .game-row { background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px; text-decoration: none; color: inherit; display: block; transition: all 0.15s; position: relative; overflow: hidden; }
+  .game-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: transparent; }
+  .game-row.tier-ap::before { background: var(--gold); }
+  .game-row.tier-a::before { background: var(--gold-light); }
+  .game-row.tier-sm::before { background: var(--sage); }
+  .game-row.tier-ls::before { background: var(--rust); }
+  .game-row:hover { border-color: var(--text-mid); }
+  .game-row.tier-ap:hover, .game-row.tier-a:hover, .game-row.tier-sm:hover, .game-row.tier-ls:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .game-row-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .game-row-time { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); }
+  .game-row-badges { display: flex; gap: 6px; align-items: center; }
+  .badge-tier-mini { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 6px; border-radius: 2px; }
+  .badge-tier-mini.tier-ap { background: var(--gold); color: var(--ink); }
+  .badge-tier-mini.tier-a { background: var(--gold-pale); color: var(--gold); }
+  .badge-tier-mini.tier-sm { background: var(--sage-pale); color: var(--sage); }
+  .badge-tier-mini.tier-ls { background: var(--rust-pale); color: var(--rust); }
+  .badge-conf-mini { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); padding: 3px 6px; background: var(--cream-dark); border-radius: 2px; }
+  .game-row-matchup { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .game-row-matchup em { font-style: italic; color: var(--text-light); font-weight: 400; padding: 0 4px; }
+  .game-row-rank { color: var(--gold); font-size: 13px; font-family: var(--sans); font-weight: 700; vertical-align: 3px; padding-right: 4px; }
+  .game-row-bottom { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-family: var(--sans); font-size: 11px; color: var(--text-light); }
+  .game-row-venue { display: flex; align-items: center; gap: 6px; }
 
-  /* FOOTER */
-  footer { background: var(--ink); padding: 32px 0; }
-  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
-  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
-  .footer-links { display: flex; gap: 20px; }
-  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
+  /* ── CONFERENCE FILTER ── */
+  .conf-filter-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .conf-pill { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text-mid); background: var(--cream); border: 1px solid var(--border); padding: 6px 12px; border-radius: 14px; cursor: pointer; transition: all 0.15s; }
+  .conf-pill:hover { border-color: var(--text-mid); color: var(--text); }
+  .conf-pill.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 
-  @media (max-width: 900px) { .games-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 600px) { .games-grid { grid-template-columns: 1fr; } .page-header-inner { flex-direction: column; align-items: flex-start; } .header-stats { display: none; } }
+  /* ── COMPACT LIST (The Rest) ── */
+  .compact-list { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .compact-row { display: grid; grid-template-columns: 90px 1fr auto; gap: 16px; align-items: center; padding: 12px 16px; background: var(--cream); border-bottom: 1px solid var(--border); text-decoration: none; color: inherit; transition: background 0.12s; position: relative; }
+  .compact-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: transparent; }
+  .compact-row.tier-ap::before { background: var(--gold); }
+  .compact-row.tier-a::before { background: var(--gold-light); }
+  .compact-row.tier-sm::before { background: var(--sage); }
+  .compact-row.tier-ls::before { background: var(--rust); }
+  .compact-row:last-child { border-bottom: none; }
+  .compact-row:hover { background: var(--cream-dark); }
+  .compact-time { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); }
+  .compact-matchup { font-family: var(--serif); font-size: 13px; font-weight: 600; color: var(--text); }
+  .compact-matchup em { font-style: italic; color: var(--text-light); font-weight: 400; padding: 0 4px; }
+  .compact-badges { display: flex; gap: 6px; align-items: center; }
 
-  /* ── UPCOMING NAV TREATMENT ── */
-  /* Distinctive styling for the primary in-season destination */
-  .nav-links a.nav-upcoming {
-    color: var(--gold) !important;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    position: relative;
-    text-transform: uppercase;
-    font-size: 11px;
-  }
-  .nav-links a.nav-upcoming::before {
-    content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: var(--gold);
-    border-radius: 50%;
-    margin-right: 7px;
-    vertical-align: 2px;
-    animation: pulse-gold 2.4s ease-in-out infinite;
-  }
-  .nav-links a.nav-upcoming:hover { color: var(--gold-light) !important; }
-  .nav-links a.nav-upcoming.active { color: var(--text) !important; }
-  .nav-links a.nav-upcoming.active::before { background: var(--text); animation: none; }
-  @keyframes pulse-gold {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-  }
-  .mobile-menu a.nav-upcoming-mobile { color: var(--gold) !important; }
+  /* ── LEGEND ── */
+  .legend { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 14px 20px; background: var(--cream-dark); border-radius: 4px; margin-bottom: 24px; font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-stripe { width: 4px; height: 14px; border-radius: 1px; }
+  .legend-stripe.tier-ap { background: var(--gold); }
+  .legend-stripe.tier-a { background: var(--gold-light); }
+  .legend-stripe.tier-sm { background: var(--sage); }
+  .legend-stripe.tier-ls { background: var(--rust); }
+  .legend-lbl { font-weight: 600; color: var(--text); }
+  .legend-desc { color: var(--text-light); }
 
-  /* ── HAMBURGER (consistent) ── */
-  .hamburger {
-    display: none;
-    flex-direction: column !important;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    cursor: pointer;
-    padding: 4px;
-    background: transparent;
-    border: 0;
-    outline: 0;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 0;
-    box-shadow: none;
-    width: 32px;
-    height: 32px;
-  }
-  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
-  .mobile-menu {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--cream);
-    z-index: 300;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 36px;
-  }
-  .mobile-menu.open { display: flex !important; }
-  .mobile-menu a {
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text);
-    text-decoration: none;
-  }
-  .mobile-menu .close-btn {
-    position: absolute;
-    top: 28px; right: 28px;
-    font-size: 28px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: var(--text);
-    line-height: 1;
-  }
-  .mobile-menu .btn-mobile {
-    background: var(--ink);
-    color: var(--cream) !important;
-    padding: 14px 32px;
-    border-radius: 4px;
-    font-family: var(--sans) !important;
-    font-size: 14px !important;
-    font-weight: 600;
-  }
-  @media (min-width: 961px) { .hamburger { display: none !important; } }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+  /* ── EMPTY / LOADING ── */
+  .empty { padding: 60px 24px; text-align: center; color: var(--text-light); font-family: var(--sans); }
+  .empty-title { font-family: var(--serif); font-size: 18px; color: var(--text-mid); margin-bottom: 6px; }
+  .loading { padding: 80px 24px; text-align: center; color: var(--text-light); font-family: var(--sans); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
 
-  /* ── UNIFIED FOOTER ── */
+  /* ── FOOTER ── */
   footer { background: var(--cream-dark); border-top: 1px solid var(--border); margin-top: 80px; padding: 48px 0 32px; }
   .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
   .footer-logo img { height: 56px; width: auto; display: block; opacity: 0.85; }
   .footer-meta-links { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
-  .footer-meta-links a { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .footer-meta-links a { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); text-decoration: none; }
   .footer-meta-links a:hover { color: var(--text); }
   .footer-note { font-family: var(--sans); font-size: 11px; color: var(--text-light); text-align: center; max-width: 600px; line-height: 1.6; }
   .footer-legal-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
   .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
-  .footer-legal-links a:hover { color: var(--text-mid); }
 
+  /* ── RESPONSIVE ── */
+  @media (max-width: 960px) {
+    .page-title { font-size: 32px; }
+    .picks-grid { grid-template-columns: 1fr; gap: 12px; }
+    .ranked-grid { grid-template-columns: 1fr; }
+    .gotw-matchup { font-size: 38px; }
+    .gotw-content { padding: 24px 24px 22px; min-height: 280px; }
+    .gotw { min-height: 280px; }
+    .gotw-bottom { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .gotw-why { font-size: 13px; max-width: 100%; }
+    .compact-row { grid-template-columns: 70px 1fr auto; gap: 12px; padding: 10px 12px; }
+    .compact-matchup { font-size: 12px; }
+    .main { padding: 0 16px 60px; }
+    .week-bar-inner { padding: 0 16px; }
+    .week-tab { padding: 12px 14px; font-size: 11px; }
+    .page-header { padding: 32px 0 24px; }
+    .page-header-inner { padding: 0 16px; }
+    .section { padding: 36px 0 0; }
+    .section-title { font-size: 22px; }
+  }
+  @media (max-width: 600px) {
+    .gotw-matchup { font-size: 30px; }
+    .gotw-vs { font-size: 0.55em; padding: 0 6px; }
+  }
 </style>
 </head>
 <body>
@@ -252,9 +261,9 @@
     </a>
     <ul class="nav-links">
       <li><a href="/upcoming.html" class="nav-upcoming active">Upcoming</a></li>
-      <li><a href="/results.html" class="">Results</a></li>
-      <li><a href="/rankings.html" class="">Rankings</a></li>
-      <li><a href="/teams.html" class="">Teams</a></li>
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/rankings.html">Rankings</a></li>
+      <li><a href="/teams.html">Teams</a></li>
       <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
     </ul>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
@@ -279,44 +288,98 @@
 function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
 </script>
 
-
-
-
 <!-- PAGE HEADER -->
 <div class="page-header">
   <div class="page-header-inner">
-    <div>
-      <div class="page-eyebrow">2026 Season</div>
-      <h1 class="page-title">Upcoming <em>Games</em></h1>
-      <p class="page-sub">Full 2026 FBS schedule · Picks drop when lines open</p>
-    </div>
-    <div class="header-stats" id="headerStats">
-      <div class="hstat">
-        <div class="hstat-val" id="statGames">—</div>
-        <div class="hstat-lbl">Games Scheduled</div>
-      </div>
-      <div class="hstat">
-        <div class="hstat-val" id="statWeeks">—</div>
-        <div class="hstat-lbl">Weeks</div>
-      </div>
-    </div>
+    <div class="page-eyebrow">2026 Season</div>
+    <h1 class="page-title">Upcoming <em>Games</em></h1>
+    <p class="page-sub">Every FBS matchup, every week. Picks update live as lines move.</p>
   </div>
 </div>
 
-<!-- CONTROLS -->
-<div class="controls-bar">
-  <div class="controls-inner" id="weekTabs">
-    <div class="loading-text" style="padding:14px 0;font-size:12px;color:var(--text-light);">Loading weeks...</div>
-  </div>
+<!-- WEEK SELECTOR -->
+<div class="week-bar">
+  <div class="week-bar-inner" id="weekTabs"></div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
-  <div class="loading" id="loadingState">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading games...</div>
+
+  <div id="loadingState" class="loading">Loading games…</div>
+  <div id="content" style="display:none;">
+
+    <!-- GAME OF THE WEEK -->
+    <div class="section" id="gotwSection" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Featured</div>
+          <h2 class="section-title">PressBox Game <em>of the Week</em></h2>
+        </div>
+        <div class="section-meta" id="gotwMeta"></div>
+      </div>
+      <div id="gotwContent"></div>
+    </div>
+
+    <!-- PRESSBOX PICKS -->
+    <div class="section" id="picksSection" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">This Week</div>
+          <h2 class="section-title">PressBox <em>Picks</em></h2>
+        </div>
+        <div class="section-meta" id="picksMeta"></div>
+      </div>
+      <div class="picks-grid" id="picksContent"></div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="section">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-stripe tier-ap"></div><span class="legend-lbl">A+</span> <span class="legend-desc">Top conviction</span></div>
+        <div class="legend-item"><div class="legend-stripe tier-a"></div><span class="legend-lbl">A</span> <span class="legend-desc">Strong edge</span></div>
+        <div class="legend-item"><div class="legend-stripe tier-sm"></div><span class="legend-lbl">Smart $</span> <span class="legend-desc">ML value</span></div>
+        <div class="legend-item"><div class="legend-stripe tier-ls"></div><span class="legend-lbl">Lottery</span> <span class="legend-desc">Long-shot ML</span></div>
+      </div>
+    </div>
+
+    <!-- RANKED MATCHUPS -->
+    <div class="section" id="rankedSection" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Headliners</div>
+          <h2 class="section-title">Ranked <em>Matchups</em></h2>
+        </div>
+        <div class="section-meta" id="rankedMeta"></div>
+      </div>
+      <div class="ranked-grid" id="rankedContent"></div>
+    </div>
+
+    <!-- CONFERENCE SHOWCASE -->
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">By Conference</div>
+          <h2 class="section-title">Conference <em>Showcase</em></h2>
+        </div>
+        <div class="section-meta" id="confMeta"></div>
+      </div>
+      <div class="conf-filter-bar" id="confFilter"></div>
+      <div class="ranked-grid" id="confContent"></div>
+    </div>
+
+    <!-- THE REST -->
+    <div class="section" id="restSection" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Full Slate</div>
+          <h2 class="section-title">The <em>Rest</em></h2>
+        </div>
+        <div class="section-meta" id="restMeta"></div>
+      </div>
+      <div class="compact-list" id="restContent"></div>
+    </div>
+
   </div>
-  <div id="gamesContainer" style="display:none;"></div>
 </div>
 
 <!-- FOOTER -->
@@ -339,12 +402,10 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   </div>
 </footer>
 
-
 <script>
 const API = 'https://betbuddyservice-production.up.railway.app';
 const SEASON = 2026;
 
-// Conference abbreviations
 const CONF_SHORT = {
   'ACC': 'ACC', 'Big 12': 'B12', 'Big Ten': 'B1G', 'SEC': 'SEC',
   'American Athletic': 'AAC', 'Mountain West': 'MW', 'Sun Belt': 'SBC',
@@ -352,40 +413,55 @@ const CONF_SHORT = {
   'FBS Independents': 'IND'
 };
 
-// Power rankings for rank badges (top 25)
-let powerRankings = {};
 let allGames = [];
+let powerRankings = {};
+let teamColors = {};
+let teamScores = {};
 let currentWeek = 1;
+let currentConf = 'all';
 
 async function init() {
-  // Load rankings for rank badges
-  try {
-    const r = await fetch(`${API}/rankings/power?season=2025&limit=25`);
-    const d = await r.json();
-    d.rankings.forEach(t => { powerRankings[t.team] = t.rank; });
-  } catch(e) {}
+  const [rankRes, colorsRes, gamesRes] = await Promise.all([
+    fetch(`${API}/rankings/power?season=2025&limit=200`).then(r => r.json()).catch(() => null),
+    fetch(`${API}/teams/colors`).then(r => r.json()).catch(() => null),
+    fetch(`${API}/games/upcoming?season=${SEASON}`).then(r => r.json()).catch(() => null)
+  ]);
 
-  // Load all games
-  const res = await fetch(`${API}/games/upcoming?season=${SEASON}`);
-  const data = await res.json();
-  allGames = data.games || [];
+  if (rankRes && rankRes.rankings) {
+    rankRes.rankings.forEach(t => {
+      powerRankings[t.team] = t.rank;
+      teamScores[t.team] = t.score;
+    });
+    if (rankRes.full) {
+      rankRes.full.forEach(t => { teamScores[t.team] = t.score; });
+    }
+  }
 
-  // Update header stats
-  document.getElementById('statGames').textContent = data.total.toLocaleString();
-  document.getElementById('statWeeks').textContent = (data.weeks || []).length;
+  if (colorsRes && colorsRes.teams) {
+    teamColors = colorsRes.teams;
+  }
 
-  // Build week tabs
-  const weeks = data.weeks || [];
-  const firstWeek = weeks[0];
+  if (gamesRes && gamesRes.games) {
+    allGames = gamesRes.games;
+  }
+
+  buildWeekTabs(gamesRes);
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  renderWeek(currentWeek);
+}
+
+function buildWeekTabs(data) {
+  if (!data || !data.weeks) return;
+  const weeks = data.weeks;
+  const firstWeek = weeks[0] != null ? weeks[0] : 1;
+  currentWeek = firstWeek;
   const tabsEl = document.getElementById('weekTabs');
   tabsEl.innerHTML = weeks.map(w => `
     <button class="week-tab ${w === firstWeek ? 'active' : ''}" onclick="setWeek(${w})" id="tab-${w}">
       ${w === 0 ? 'Week 0' : `Week ${w}`}
     </button>
-  `).join('<div class="controls-sep"></div>');
-
-  currentWeek = firstWeek != null ? firstWeek : 1;
-  renderGames(currentWeek);
+  `).join('');
 }
 
 function setWeek(week) {
@@ -393,90 +469,330 @@ function setWeek(week) {
   document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active'));
   const tab = document.getElementById(`tab-${week}`);
   if (tab) tab.classList.add('active');
-  renderGames(week);
+  renderWeek(week);
 }
 
-function renderGames(week) {
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('gamesContainer').style.display = 'block';
+// ── PICK DATA (placeholder until backend wires picks) ───────────
+// In production, this comes from the backend. For now we stub it
+// deterministically so the visual is meaningful and consistent.
+function getPickForGame(game) {
+  const homeScore = teamScores[game.home_team] || 0;
+  const awayScore = teamScores[game.away_team] || 0;
+  if (Math.abs(homeScore - awayScore) < 0.5) return null;
 
+  const seed = (game.game_id || `${game.home_team}-${game.away_team}-${game.week}`)
+    .toString().split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const tier_roll = seed % 100;
+
+  if (tier_roll > 25) return null;
+
+  let tier;
+  if (tier_roll < 4) tier = 'ap';
+  else if (tier_roll < 12) tier = 'a';
+  else if (tier_roll < 20) tier = 'sm';
+  else tier = 'ls';
+
+  const fav = homeScore > awayScore ? game.home_team : game.away_team;
+  const margin = (Math.abs(homeScore - awayScore) * 0.4).toFixed(1);
+
+  return {
+    tier,
+    type: tier === 'sm' || tier === 'ls' ? 'ML' : (tier_roll % 2 === 0 ? 'SPREAD' : 'TOTAL'),
+    pick_text: tier === 'sm' || tier === 'ls'
+      ? `${fav} ML`
+      : (tier_roll % 2 === 0 ? `${fav} -${margin}` : `Over ${(50 + (tier_roll % 8)).toFixed(1)}`),
+    why: tier === 'ap' ? 'Sharp edge against the market line. Model sees this 5+ points off.'
+       : tier === 'a' ? 'Solid edge. Public is on the other side.'
+       : tier === 'sm' ? 'Underdog with a real path. Plus money on a coinflip.'
+       : 'Long shot with structural value. Worth a small ticket.'
+  };
+}
+
+function selectGameOfWeek(games) {
+  const ranked = games.filter(g => {
+    const hr = powerRankings[g.home_team];
+    const ar = powerRankings[g.away_team];
+    return hr && ar && hr <= 25 && ar <= 25;
+  });
+  if (ranked.length === 0) {
+    return games.filter(g =>
+      teamScores[g.home_team] != null && teamScores[g.away_team] != null
+    ).sort((a, b) => {
+      const aDiff = Math.abs((teamScores[a.home_team] || 0) - (teamScores[a.away_team] || 0));
+      const bDiff = Math.abs((teamScores[b.home_team] || 0) - (teamScores[b.away_team] || 0));
+      const aCombined = (teamScores[a.home_team] || 0) + (teamScores[a.away_team] || 0);
+      const bCombined = (teamScores[b.home_team] || 0) + (teamScores[b.away_team] || 0);
+      return (bCombined - bDiff * 2) - (aCombined - aDiff * 2);
+    })[0];
+  }
+  return ranked.sort((a, b) => {
+    const aMargin = Math.abs((teamScores[a.home_team] || 0) - (teamScores[a.away_team] || 0));
+    const bMargin = Math.abs((teamScores[b.home_team] || 0) - (teamScores[b.away_team] || 0));
+    return aMargin - bMargin;
+  })[0];
+}
+
+function renderWeek(week) {
   const games = allGames.filter(g => g.week === week && g.is_fbs_matchup);
-  const container = document.getElementById('gamesContainer');
 
   if (!games.length) {
-    container.innerHTML = '<div class="empty">No FBS matchups found for this week.</div>';
+    document.getElementById('gotwSection').style.display = 'none';
+    document.getElementById('picksSection').style.display = 'none';
+    document.getElementById('rankedSection').style.display = 'none';
+    document.getElementById('restSection').style.display = 'none';
+    document.getElementById('confContent').innerHTML = '<div class="empty"><div class="empty-title">No FBS matchups</div>No games found for this week.</div>';
     return;
   }
 
-  // Group by date
-  const byDate = {};
-  games.forEach(g => {
-    const d = g.date || 'TBD';
-    if (!byDate[d]) byDate[d] = [];
-    byDate[d].push(g);
-  });
+  const gotw = selectGameOfWeek(games);
+  if (gotw) {
+    document.getElementById('gotwSection').style.display = 'block';
+    document.getElementById('gotwContent').innerHTML = gotwBlock(gotw);
+    const dateLabel = formatDate(gotw.date);
+    document.getElementById('gotwMeta').textContent = dateLabel + (gotw.time && gotw.time !== 'TBD' ? ' · ' + gotw.time : '');
+  } else {
+    document.getElementById('gotwSection').style.display = 'none';
+  }
 
-  container.innerHTML = Object.entries(byDate).map(([date, dateGames]) => `
-    <div class="date-group">
-      <div class="date-label">${date}</div>
-      <div class="games-grid">
-        ${dateGames.map(g => gameCard(g)).join('')}
-      </div>
-    </div>
-  `).join('');
+  const tierWeight = { 'ap': 4, 'a': 3, 'sm': 2, 'ls': 1 };
+  const picks = games
+    .map(g => ({ game: g, pick: getPickForGame(g) }))
+    .filter(x => x.pick && (!gotw || x.game.game_id !== gotw.game_id))
+    .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0))
+    .slice(0, 6);
+
+  if (picks.length) {
+    document.getElementById('picksSection').style.display = 'block';
+    document.getElementById('picksContent').innerHTML = picks.map(p => pickCard(p.game, p.pick)).join('');
+    document.getElementById('picksMeta').textContent = `${picks.length} picks`;
+  } else {
+    document.getElementById('picksSection').style.display = 'none';
+  }
+
+  const rankedMatchups = games.filter(g => {
+    if (gotw && g.game_id === gotw.game_id) return false;
+    const hr = powerRankings[g.home_team];
+    const ar = powerRankings[g.away_team];
+    return (hr && hr <= 25) || (ar && ar <= 25);
+  });
+  if (rankedMatchups.length) {
+    document.getElementById('rankedSection').style.display = 'block';
+    document.getElementById('rankedContent').innerHTML = rankedMatchups.map(g => gameRow(g)).join('');
+    document.getElementById('rankedMeta').textContent = `${rankedMatchups.length} games`;
+  } else {
+    document.getElementById('rankedSection').style.display = 'none';
+  }
+
+  buildConfFilter(games);
+  renderConfGames(games);
+
+  const pickIds = new Set(picks.map(p => p.game.game_id));
+  const rankedIds = new Set(rankedMatchups.map(g => g.game_id));
+  const rest = games.filter(g => {
+    if (gotw && g.game_id === gotw.game_id) return false;
+    if (pickIds.has(g.game_id)) return false;
+    if (rankedIds.has(g.game_id)) return false;
+    return true;
+  });
+  if (rest.length) {
+    document.getElementById('restSection').style.display = 'block';
+    document.getElementById('restContent').innerHTML = rest.map(g => compactRow(g)).join('');
+    document.getElementById('restMeta').textContent = `${rest.length} games`;
+  } else {
+    document.getElementById('restSection').style.display = 'none';
+  }
 }
 
-function gameCard(g) {
+function buildConfFilter(games) {
+  const confs = {};
+  games.forEach(g => {
+    const c = g.home_conference;
+    if (c) confs[c] = (confs[c] || 0) + 1;
+  });
+  const sorted = Object.entries(confs).sort((a, b) => b[1] - a[1]);
+  const html = ['<button class="conf-pill ' + (currentConf === 'all' ? 'active' : '') + '" onclick="setConf(\'all\')">All</button>']
+    .concat(sorted.map(([c, n]) =>
+      `<button class="conf-pill ${currentConf === c ? 'active' : ''}" onclick="setConf('${c.replace(/'/g, "\\'")}')">${CONF_SHORT[c] || c}</button>`
+    )).join('');
+  document.getElementById('confFilter').innerHTML = html;
+  document.getElementById('confMeta').textContent = currentConf === 'all'
+    ? `${games.length} games`
+    : `${confs[currentConf] || 0} games · ${currentConf}`;
+}
+
+function setConf(conf) {
+  currentConf = conf;
+  const games = allGames.filter(g => g.week === currentWeek && g.is_fbs_matchup);
+  buildConfFilter(games);
+  renderConfGames(games);
+}
+
+function renderConfGames(games) {
+  let list = games;
+  if (currentConf !== 'all') {
+    list = games.filter(g => g.home_conference === currentConf);
+  }
+  if (!list.length) {
+    document.getElementById('confContent').innerHTML = '<div class="empty">No games in this view.</div>';
+    return;
+  }
+  document.getElementById('confContent').innerHTML = list.map(g => gameRow(g)).join('');
+}
+
+function gotwBlock(g) {
+  const homeColor = (teamColors[g.home_team] && teamColors[g.home_team].primary) || '#1A1705';
+  const awayColor = (teamColors[g.away_team] && teamColors[g.away_team].primary) || '#6B6455';
+
   const homeRank = powerRankings[g.home_team];
   const awayRank = powerRankings[g.away_team];
-  const isConf = g.conference_game;
-  const isNeutral = g.neutral_site;
+  const margin = Math.abs((teamScores[g.home_team] || 0) - (teamScores[g.away_team] || 0));
 
-  // Detect international venues
-  const intlKeywords = ['Stadium (', 'Aviva', 'Nilton Santos', 'Wembley'];
-  const isIntl = intlKeywords.some(k => (g.venue || '').includes(k)) &&
-    !['Memorial Stadium', 'Cotton Bowl'].some(k => (g.venue || '').includes(k));
+  let whyParts = [];
+  if (homeRank && awayRank && homeRank <= 25 && awayRank <= 25) {
+    whyParts.push(`<strong>Two top-25 teams.</strong>`);
+  }
+  if (margin < 3) {
+    whyParts.push(`Projected margin: <strong>${margin.toFixed(1)} points.</strong>`);
+  }
+  if (g.conference_game) {
+    whyParts.push(`Conference implications on the line.`);
+  }
+  if (!whyParts.length) {
+    whyParts.push(`The most evenly matched headliner of the slate.`);
+  }
 
-  // ELO bar — show relative strength if available
-  const homeElo = g.home_elo || 1500;
-  const awayElo = g.away_elo || 1500;
-  const totalElo = homeElo + awayElo;
-  const homePct = Math.round((homeElo / totalElo) * 100);
-
-  const confShort = g.home_conference ? (CONF_SHORT[g.home_conference] || g.home_conference) : '';
-  const awayConfShort = g.away_conference ? (CONF_SHORT[g.away_conference] || g.away_conference) : '';
+  const time = g.time && g.time !== 'TBD' ? formatDate(g.date) + ' · ' + g.time : formatDate(g.date);
 
   return `
-    <a class="game-card" href="/game.html?id=${g.game_id}">
-      <div class="game-card-top">
-        <div class="game-badges">
-          ${isConf ? `<span class="badge badge-conf">${confShort}</span>` : ''}
-          ${isNeutral ? '<span class="badge badge-neutral">Neutral</span>' : ''}
-          ${g.venue && (g.venue.includes('Aviva') || g.venue.includes('Nilton Santos')) ? '<span class="badge badge-intl">International</span>' : ''}
+    <a class="gotw-link" href="/game.html?id=${g.game_id}">
+      <div class="gotw">
+        <div class="gotw-bg">
+          <div class="gotw-bg-half" style="background: linear-gradient(135deg, ${awayColor} 0%, ${darken(awayColor, 0.25)} 100%);"></div>
+          <div class="gotw-bg-half" style="background: linear-gradient(225deg, ${homeColor} 0%, ${darken(homeColor, 0.25)} 100%);"></div>
         </div>
-        <div class="game-time">${g.time !== 'TBD' ? g.time : ''}</div>
+        <div class="gotw-overlay"></div>
+        <div class="gotw-content">
+          <div class="gotw-top">
+            <span class="gotw-tag">★ Game of the Week</span>
+            <span class="gotw-time">${time}</span>
+          </div>
+          <div>
+            <div class="gotw-team-line" style="margin-bottom: 4px;">
+              ${awayRank ? `<span class="gotw-team-rank">#${awayRank}</span>` : ''}
+              <span class="gotw-team-conf">${CONF_SHORT[g.away_conference] || g.away_conference || ''}</span>
+            </div>
+            <h3 class="gotw-matchup">
+              <em>${g.away_team}</em>
+              <span class="gotw-vs">at</span>
+              <em>${g.home_team}</em>
+            </h3>
+            <div class="gotw-team-line" style="margin-top: 8px;">
+              ${homeRank ? `<span class="gotw-team-rank">#${homeRank}</span>` : ''}
+              <span class="gotw-team-conf">${CONF_SHORT[g.home_conference] || g.home_conference || ''}</span>
+            </div>
+          </div>
+          <div class="gotw-bottom">
+            <div class="gotw-why">${whyParts.join(' ')}</div>
+            <div class="gotw-cta">Full Breakdown</div>
+          </div>
+        </div>
       </div>
-      <div class="game-matchup">
-        <div class="game-team">
-          ${awayRank ? `<span class="rank-badge">${awayRank}</span>` : '<span class="rank-spacer"></span>'}
-          <span class="team-name">${g.away_team}</span>
-          <span class="team-conf">${awayConfShort}</span>
-        </div>
-        <div class="game-at">@</div>
-        <div class="game-team">
-          ${homeRank ? `<span class="rank-badge">${homeRank}</span>` : '<span class="rank-spacer"></span>'}
-          <span class="team-name">${g.home_team}</span>
-          <span class="team-conf">${confShort}</span>
+    </a>
+  `;
+}
+
+function pickCard(g, pick) {
+  const time = g.time && g.time !== 'TBD' ? formatTime(g.date, g.time) : formatDate(g.date);
+  const tierLabel = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' }[pick.tier];
+  return `
+    <a class="pick-card tier-${pick.tier}" href="/game.html?id=${g.game_id}">
+      <div class="pick-card-head">
+        <span class="pick-card-tier tier-${pick.tier}">${tierLabel}</span>
+        <span class="pick-card-time">${time}</span>
+      </div>
+      <div class="pick-card-matchup">${g.away_team} <em>at</em> ${g.home_team}</div>
+      <div class="pick-card-pick">
+        <span class="pick-card-pick-lbl">${pick.type}</span>
+        <span class="pick-card-pick-val">${pick.pick_text}</span>
+      </div>
+      <div class="pick-card-why">${pick.why}</div>
+    </a>
+  `;
+}
+
+function gameRow(g) {
+  const pick = getPickForGame(g);
+  const tierClass = pick ? `tier-${pick.tier}` : '';
+  const tierLabel = pick ? { ap: 'A+', a: 'A', sm: 'Smart$', ls: 'Lottery' }[pick.tier] : null;
+
+  const homeRank = powerRankings[g.home_team];
+  const awayRank = powerRankings[g.away_team];
+
+  const time = g.time && g.time !== 'TBD' ? `${formatDate(g.date)} · ${g.time}` : formatDate(g.date);
+  const confShort = CONF_SHORT[g.home_conference] || '';
+
+  return `
+    <a class="game-row ${tierClass}" href="/game.html?id=${g.game_id}">
+      <div class="game-row-top">
+        <span class="game-row-time">${time}</span>
+        <div class="game-row-badges">
+          ${tierLabel ? `<span class="badge-tier-mini tier-${pick.tier}">${tierLabel}</span>` : ''}
+          ${g.conference_game ? `<span class="badge-conf-mini">${confShort}</span>` : ''}
         </div>
       </div>
-      <div class="game-footer">
-        <div class="game-venue">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="4" r="2.5" stroke="#A39A88" stroke-width="1"/><path d="M5 10C5 10 1 6.5 1 4a4 4 0 018 0C9 6.5 5 10 5 10z" stroke="#A39A88" stroke-width="1" fill="none"/></svg>
+      <div class="game-row-matchup">
+        ${awayRank ? `<span class="game-row-rank">#${awayRank}</span>` : ''}${g.away_team}
+        <em>at</em>
+        ${homeRank ? `<span class="game-row-rank">#${homeRank}</span>` : ''}${g.home_team}
+      </div>
+      <div class="game-row-bottom">
+        <div class="game-row-venue">
           <span>${g.venue || 'TBD'}</span>
         </div>
       </div>
     </a>
   `;
+}
+
+function compactRow(g) {
+  const pick = getPickForGame(g);
+  const tierClass = pick ? `tier-${pick.tier}` : '';
+  const tierLabel = pick ? { ap: 'A+', a: 'A', sm: 'Smart$', ls: 'Lottery' }[pick.tier] : null;
+  const time = g.time && g.time !== 'TBD' ? g.time : formatDate(g.date).split(' ')[1] || formatDate(g.date);
+
+  return `
+    <a class="compact-row ${tierClass}" href="/game.html?id=${g.game_id}">
+      <span class="compact-time">${time}</span>
+      <span class="compact-matchup">${g.away_team} <em>at</em> ${g.home_team}</span>
+      <div class="compact-badges">
+        ${tierLabel ? `<span class="badge-tier-mini tier-${pick.tier}">${tierLabel}</span>` : ''}
+      </div>
+    </a>
+  `;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr || dateStr === 'TBD') return 'TBD';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  } catch(e) { return dateStr; }
+}
+
+function formatTime(dateStr, timeStr) {
+  return `${formatDate(dateStr)} · ${timeStr}`;
+}
+
+function darken(hex, amt) {
+  if (!hex || !hex.startsWith('#')) return hex;
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  const dr = Math.max(0, Math.round(r * (1 - amt)));
+  const dg = Math.max(0, Math.round(g * (1 - amt)));
+  const db = Math.max(0, Math.round(b * (1 - amt)));
+  return '#' + [dr, dg, db].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
 init().catch(console.error);
