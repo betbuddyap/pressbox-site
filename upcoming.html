@@ -15,8 +15,8 @@
     --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
     --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
     --gold-pale: #F5EDD0; --ink: #0F0E0A;
-    --sage: #4A7A4A; --sage-pale: #E8F0E8;
-    --rust: #B85A2A; --rust-pale: #FBEFE0;
+    --sage: #4A7A4A; --sage-light: #6BA06B; --sage-pale: #E8F0E8;
+    --rust: #B85A2A; --rust-light: #D17A4A; --rust-pale: #FBEFE0;
     --serif: 'Libre Baskerville', Georgia, serif;
     --sans: 'Source Sans 3', system-ui, sans-serif;
     --max: 1200px;
@@ -99,39 +99,53 @@
   .gc-link:hover .gc { transform: translateY(-2px); }
   .gc-bg { position: absolute; inset: 0; display: flex; }
   .gc-bg-half { flex: 1; }
-  .gc-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,14,10,0.25) 0%, rgba(15,14,10,0.50) 60%, rgba(15,14,10,0.78) 100%); }
+  .gc-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,14,10,0.22) 0%, rgba(15,14,10,0.42) 60%, rgba(15,14,10,0.72) 100%); }
   /* Gold seam separator at the color break */
-  .gc-seam { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, rgba(212,168,58,0) 0%, rgba(212,168,58,0.5) 30%, rgba(212,168,58,0.5) 70%, rgba(212,168,58,0) 100%); transform: translateX(-0.5px); z-index: 2; }
+  .gc-seam { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, rgba(212,168,58,0) 0%, rgba(212,168,58,0.55) 30%, rgba(212,168,58,0.55) 70%, rgba(212,168,58,0) 100%); transform: translateX(-0.5px); z-index: 2; }
 
-  /* TOP STRIP (badge + time) — sits above content */
-  .gc-strip { position: relative; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .gc-tag { font-family: var(--sans); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 4px 8px; border-radius: 2px; }
-  .gc-tag.tier-ap { background: var(--gold); color: var(--ink); }
-  .gc-tag.tier-a  { background: var(--gold-pale); color: var(--gold); }
-  .gc-tag.tier-sm { background: var(--sage-pale); color: var(--sage); }
-  .gc-tag.tier-ls { background: var(--rust-pale); color: var(--rust); }
-  .gc-tag.gotw    { background: rgba(212,168,58,0.18); color: var(--gold-light); border: 1px solid rgba(212,168,58,0.4); }
+  /* TIER RIBBON — corner band, top-left of the card, hard edges */
+  .gc-ribbon { position: absolute; top: 0; left: 0; z-index: 4; font-family: var(--sans); font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 12px 5px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.35); display: flex; align-items: center; gap: 5px; }
+  .gc-ribbon::after { content: ''; position: absolute; left: 100%; top: 0; bottom: 0; width: 8px; }
+  .gc-ribbon.tier-ap { background: var(--gold); color: var(--ink); }
+  .gc-ribbon.tier-ap::after { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
+  .gc-ribbon.tier-a  { background: var(--gold-light); color: var(--ink); }
+  .gc-ribbon.tier-a::after  { background: linear-gradient(135deg, var(--gold-light) 50%, transparent 50%); }
+  .gc-ribbon.tier-sm { background: var(--sage); color: #fff; }
+  .gc-ribbon.tier-sm::after { background: linear-gradient(135deg, var(--sage) 50%, transparent 50%); }
+  .gc-ribbon.tier-ls { background: var(--rust); color: #fff; }
+  .gc-ribbon.tier-ls::after { background: linear-gradient(135deg, var(--rust) 50%, transparent 50%); }
+  .gc-ribbon.featured { background: var(--ink); color: var(--gold-light); border: 1px solid var(--gold); }
+  .gc-ribbon.featured::after { background: linear-gradient(135deg, var(--ink) 50%, transparent 50%); }
+  .gc-ribbon.gotw    { background: var(--gold); color: var(--ink); }
+  .gc-ribbon.gotw::after    { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
+  .gc-ribbon.waiting { background: var(--text-mid); color: #fff; }
+  .gc-ribbon.waiting::after { background: linear-gradient(135deg, var(--text-mid) 50%, transparent 50%); }
+
+  /* TOP STRIP (time + optional badges) */
+  .gc-strip { position: relative; z-index: 3; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
   .gc-meta { font-family: var(--sans); font-weight: 500; color: rgba(248,245,238,0.85); }
 
-  /* TEAMS ROW (two halves with team info + "at" centered) */
+  /* TEAMS ROW — equal halves, "at" stays centered on seam regardless of name length */
   .gc-teams { position: relative; z-index: 3; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
-  .gc-team-side { display: flex; flex-direction: column; }
-  .gc-team-side.home { text-align: right; align-items: flex-end; padding-left: 24px; }
-  .gc-team-side.away { text-align: left;  align-items: flex-start; padding-right: 24px; }
-  .gc-team-name { font-family: var(--serif); font-weight: 700; color: var(--cream); letter-spacing: -0.5px; line-height: 1.05; }
+  .gc-team-side { min-width: 0; }   /* allows overflow ellipsis if names get huge */
+  .gc-team-side.away { text-align: right; padding-right: 16px; }
+  .gc-team-side.home { text-align: left;  padding-left: 16px; }
+  .gc-team-name { font-family: var(--serif); font-weight: 700; color: var(--cream); letter-spacing: -0.5px; line-height: 1.05; text-shadow: 0 1px 8px rgba(0,0,0,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .gc-team-name em { font-style: italic; }
-  .gc-team-sub { display: flex; align-items: center; gap: 10px; font-family: var(--sans); color: rgba(248,245,238,0.75); }
-  .gc-team-side.away .gc-team-sub { justify-content: flex-start; }
-  .gc-team-side.home .gc-team-sub { justify-content: flex-end; }
-  .gc-team-rank { font-weight: 700; color: var(--gold-light); letter-spacing: 0.5px; }
+  .gc-team-sub { display: flex; align-items: center; gap: 10px; font-family: var(--sans); color: rgba(248,245,238,0.78); margin-top: 4px; }
+  .gc-team-side.away .gc-team-sub { justify-content: flex-end; }
+  .gc-team-side.home .gc-team-sub { justify-content: flex-start; }
+  .gc-team-rank { font-weight: 700; color: var(--gold-light); letter-spacing: 0.3px; }
   .gc-team-conf { font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; }
 
-  /* CENTER "at" */
+  /* CENTER "at" — sized per density */
   .gc-at {
     font-family: var(--serif); font-style: italic; font-weight: 400;
-    color: var(--gold-light); padding: 0 18px;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+    color: var(--gold-light);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.5);
     line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   /* BOTTOM STRIP — pick info or "why" narrative */
@@ -142,59 +156,76 @@
   .gc-cta::after { content: '→'; margin-left: 8px; display: inline-block; transition: transform 0.2s; }
   .gc-link:hover .gc-cta::after { transform: translateX(4px); }
 
-  /* Pick bar inside card (medium/compact) */
+  /* Pick bar inside card */
   .gc-pickbar { position: relative; z-index: 3; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.55); padding: 8px 14px; border-radius: 3px; backdrop-filter: blur(2px); }
   .gc-pickbar-lbl { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(248,245,238,0.7); }
   .gc-pickbar-val { font-family: var(--serif); font-weight: 700; color: var(--cream); flex: 1; }
   .gc-pickbar-book { font-family: var(--sans); font-size: 10px; font-weight: 500; color: rgba(248,245,238,0.65); text-align: right; white-space: nowrap; }
+  .gc-pickbar.waiting { background: rgba(107,100,85,0.7); justify-content: center; }
+  .gc-pickbar.waiting .gc-pickbar-val { font-family: var(--sans); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; font-size: 11px; color: rgba(248,245,238,0.85); flex: none; }
 
-  /* ── HERO DENSITY (GotW + Top Picks) ── */
-  .gc.hero { min-height: 320px; }
-  .gc.hero .gc-content { padding: 28px 36px 26px; display: flex; flex-direction: column; justify-content: space-between; min-height: 320px; gap: 18px; position: relative; z-index: 3; }
-  .gc.hero .gc-tag { font-size: 10px; }
+  /* ── HERO DENSITY (GotW + Featured Products + Top Picks) ── */
+  .gc.hero { min-height: 280px; }
+  .gc.hero .gc-content { padding: 24px 32px 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; gap: 14px; position: relative; z-index: 3; }
+  .gc.hero .gc-ribbon { font-size: 10px; }
   .gc.hero .gc-meta { font-size: 12px; }
-  .gc.hero .gc-team-name { font-size: 38px; }
-  .gc.hero .gc-team-sub { font-size: 11px; margin-top: 6px; }
-  .gc.hero .gc-at { font-size: 22px; }
+  .gc.hero .gc-team-name { font-size: 34px; }
+  .gc.hero .gc-team-sub { font-size: 11px; }
+  .gc.hero .gc-at { font-size: 20px; padding: 0 14px; }
   .gc.hero .gc-why { font-size: 14px; max-width: 520px; }
   .gc.hero .gc-cta { font-size: 11px; }
 
-  /* GotW is a slightly enhanced hero */
-  .gc.gotw-card { min-height: 360px; }
-  .gc.gotw-card .gc-content { min-height: 360px; padding: 32px 40px 30px; }
-  .gc.gotw-card .gc-team-name { font-size: 52px; }
-  .gc.gotw-card .gc-at { font-size: 28px; }
+  /* GotW is the largest hero */
+  .gc.gotw-card { min-height: 340px; }
+  .gc.gotw-card .gc-content { min-height: 340px; padding: 28px 36px 28px; }
+  .gc.gotw-card .gc-team-name { font-size: 46px; }
+  .gc.gotw-card .gc-at { font-size: 26px; padding: 0 18px; }
+  .gc.gotw-card .gc-team-sub { margin-top: 6px; }
+
+  /* Featured products (POTW/TOTW/Parlay) — 3-up row of heroes */
+  .gc.featured-card { min-height: 240px; }
+  .gc.featured-card .gc-content { min-height: 240px; padding: 22px 24px 20px; }
+  .gc.featured-card .gc-team-name { font-size: 22px; }
+  .gc.featured-card .gc-team-sub { font-size: 10px; margin-top: 4px; }
+  .gc.featured-card .gc-at { font-size: 14px; padding: 0 10px; }
 
   /* ── MEDIUM DENSITY (Ranked + Conference) ── */
-  .gc.medium { min-height: 160px; }
-  .gc.medium .gc-content { padding: 16px 22px 16px; display: flex; flex-direction: column; justify-content: space-between; min-height: 160px; gap: 12px; position: relative; z-index: 3; }
-  .gc.medium .gc-tag { font-size: 9px; padding: 3px 7px; }
+  .gc.medium { min-height: 130px; }
+  .gc.medium .gc-content { padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between; min-height: 130px; gap: 10px; position: relative; z-index: 3; }
+  .gc.medium .gc-ribbon { font-size: 9px; padding: 4px 9px 4px 10px; }
   .gc.medium .gc-meta { font-size: 11px; }
-  .gc.medium .gc-team-name { font-size: 22px; }
-  .gc.medium .gc-team-sub { font-size: 10px; margin-top: 4px; gap: 6px; }
-  .gc.medium .gc-team-side.away { padding-right: 14px; }
-  .gc.medium .gc-team-side.home { padding-left: 14px; }
-  .gc.medium .gc-at { font-size: 14px; padding: 0 10px; }
+  .gc.medium .gc-team-name { font-size: 20px; }
+  .gc.medium .gc-team-sub { font-size: 10px; gap: 8px; margin-top: 3px; }
+  .gc.medium .gc-team-side.away { padding-right: 10px; }
+  .gc.medium .gc-team-side.home { padding-left: 10px; }
+  .gc.medium .gc-at { font-size: 14px; padding: 0 8px; }
+  .gc.medium .gc-pickbar { padding: 6px 12px; }
   .gc.medium .gc-pickbar-lbl { font-size: 8px; }
   .gc.medium .gc-pickbar-val { font-size: 13px; }
 
   /* ── COMPACT DENSITY (The Rest) ── */
-  .gc.compact { min-height: 64px; }
-  .gc.compact .gc-content { padding: 10px 16px; display: grid; grid-template-columns: 80px 1fr 80px; align-items: center; gap: 12px; min-height: 64px; position: relative; z-index: 3; }
+  .gc.compact { min-height: 56px; }
+  .gc.compact .gc-content { padding: 8px 14px; display: grid; grid-template-columns: 70px 1fr 70px; align-items: center; gap: 10px; min-height: 56px; position: relative; z-index: 3; }
   .gc.compact .gc-meta { font-size: 10px; color: rgba(248,245,238,0.85); }
-  .gc.compact .gc-teams { padding: 0; }
-  .gc.compact .gc-team-name { font-size: 14px; }
-  .gc.compact .gc-team-side.away .gc-team-rank, .gc.compact .gc-team-side.home .gc-team-rank { font-size: 11px; }
+  .gc.compact .gc-team-name { font-size: 13px; }
+  .gc.compact .gc-team-side.away .gc-team-rank, .gc.compact .gc-team-side.home .gc-team-rank { font-size: 10px; }
   .gc.compact .gc-team-sub { display: none; }
-  .gc.compact .gc-at { font-size: 11px; padding: 0 8px; }
-  .gc.compact .gc-team-side.away { padding-right: 8px; }
-  .gc.compact .gc-team-side.home { padding-left: 8px; }
-  .gc.compact .gc-tag-compact { display: flex; justify-content: flex-end; }
-  .gc.compact .gc-tag { font-size: 8px; padding: 2px 6px; }
+  .gc.compact .gc-at { font-size: 11px; padding: 0 6px; }
+  .gc.compact .gc-team-side.away { padding-right: 6px; }
+  .gc.compact .gc-team-side.home { padding-left: 6px; }
+  .gc.compact .gc-ribbon { font-size: 8px; padding: 3px 7px 3px 8px; }
+  .gc.compact .gc-ribbon::after { width: 6px; }
+  .gc.compact .gc-tag-compact { display: flex; justify-content: flex-end; align-items: center; }
+  .gc.compact .gc-pill-tier { font-family: var(--sans); font-size: 8px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; }
+  .gc.compact .gc-pill-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .gc.compact .gc-pill-tier.tier-a  { background: var(--gold-light); color: var(--ink); }
+  .gc.compact .gc-pill-tier.tier-sm { background: var(--sage); color: #fff; }
+  .gc.compact .gc-pill-tier.tier-ls { background: var(--rust); color: #fff; }
 
   /* ── GRIDS ── */
-  .picks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-  .ranked-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .featured-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .picks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .ranked-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .compact-list { display: flex; flex-direction: column; gap: 6px; }
 
   /* ── CONFERENCE FILTER ── */
@@ -206,11 +237,11 @@
   /* ── LEGEND ── */
   .legend { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 14px 20px; background: var(--cream-dark); border-radius: 4px; margin-bottom: 24px; font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
   .legend-item { display: flex; align-items: center; gap: 8px; }
-  .legend-tag { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 7px; border-radius: 2px; }
+  .legend-tag { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 3px 8px; border-radius: 0; }
   .legend-tag.tier-ap { background: var(--gold); color: var(--ink); }
-  .legend-tag.tier-a  { background: var(--gold-pale); color: var(--gold); }
-  .legend-tag.tier-sm { background: var(--sage-pale); color: var(--sage); }
-  .legend-tag.tier-ls { background: var(--rust-pale); color: var(--rust); }
+  .legend-tag.tier-a  { background: var(--gold-light); color: var(--ink); }
+  .legend-tag.tier-sm { background: var(--sage); color: #fff; }
+  .legend-tag.tier-ls { background: var(--rust); color: #fff; }
   .legend-desc { color: var(--text-light); }
 
   /* ── EMPTY / LOADING ── */
@@ -232,23 +263,26 @@
   /* ── RESPONSIVE ── */
   @media (max-width: 960px) {
     .page-title { font-size: 32px; }
+    .featured-grid { grid-template-columns: 1fr; gap: 12px; }
     .picks-grid { grid-template-columns: 1fr; gap: 12px; }
     .ranked-grid { grid-template-columns: 1fr; gap: 10px; }
 
-    .gc.gotw-card .gc-team-name { font-size: 32px; }
-    .gc.gotw-card .gc-at { font-size: 18px; padding: 0 8px; }
-    .gc.gotw-card .gc-content { padding: 22px 22px 22px; min-height: 300px; }
-    .gc.gotw-card { min-height: 300px; }
+    .gc.gotw-card .gc-team-name { font-size: 28px; }
+    .gc.gotw-card .gc-at { font-size: 18px; padding: 0 10px; }
+    .gc.gotw-card .gc-content { padding: 22px 22px 20px; min-height: 280px; }
+    .gc.gotw-card { min-height: 280px; }
 
-    .gc.hero .gc-team-name { font-size: 26px; }
-    .gc.hero .gc-at { font-size: 16px; padding: 0 8px; }
-    .gc.hero .gc-content { padding: 20px 22px; min-height: 280px; }
-    .gc.hero { min-height: 280px; }
+    .gc.hero .gc-team-name { font-size: 24px; }
+    .gc.hero .gc-at { font-size: 14px; padding: 0 8px; }
+    .gc.hero .gc-content { padding: 20px 20px; min-height: 240px; }
+    .gc.hero { min-height: 240px; }
 
-    .gc.medium .gc-team-name { font-size: 17px; }
+    .gc.featured-card .gc-team-name { font-size: 20px; }
+
+    .gc.medium .gc-team-name { font-size: 16px; }
     .gc.medium .gc-at { font-size: 12px; padding: 0 6px; }
 
-    .gc.compact .gc-content { grid-template-columns: 64px 1fr 60px; padding: 8px 12px; gap: 8px; }
+    .gc.compact .gc-content { grid-template-columns: 56px 1fr 56px; padding: 8px 12px; gap: 8px; }
     .gc.compact .gc-team-name { font-size: 12px; }
 
     .main { padding: 0 16px 60px; }
@@ -260,10 +294,10 @@
     .section-title { font-size: 22px; }
   }
   @media (max-width: 600px) {
-    .gc.gotw-card .gc-team-name { font-size: 24px; }
+    .gc.gotw-card .gc-team-name { font-size: 22px; }
     .gc.gotw-card .gc-at { font-size: 14px; }
-    .gc.hero .gc-team-name { font-size: 20px; }
-    .gc.medium .gc-team-name { font-size: 15px; }
+    .gc.hero .gc-team-name { font-size: 18px; }
+    .gc.medium .gc-team-name { font-size: 14px; }
   }
 </style>
 </head>
@@ -354,16 +388,16 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <div id="gotwContent"></div>
     </div>
 
-    <!-- PRESSBOX PICKS -->
-    <div class="section" id="picksSection" style="display:none;">
+    <!-- FEATURED PRODUCTS — POTW / TOTW / Parlay -->
+    <div class="section" id="featuredSection" style="display:none;">
       <div class="section-head">
         <div>
-          <div class="section-eyebrow">This Week</div>
-          <h2 class="section-title">PressBox <em>Picks</em></h2>
+          <div class="section-eyebrow">Flagship Picks</div>
+          <h2 class="section-title">Pick · Total · <em>Parlay</em></h2>
         </div>
-        <div class="section-meta" id="picksMeta"></div>
+        <div class="section-meta" id="featuredMeta"></div>
       </div>
-      <div class="picks-grid" id="picksContent"></div>
+      <div class="featured-grid" id="featuredContent"></div>
     </div>
 
     <!-- LEGEND -->
@@ -374,6 +408,42 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="legend-item"><span class="legend-tag tier-sm">Smart $</span> <span class="legend-desc">ML value</span></div>
         <div class="legend-item"><span class="legend-tag tier-ls">Lottery</span> <span class="legend-desc">Long-shot ML</span></div>
       </div>
+    </div>
+
+    <!-- A+ AND A PICKS -->
+    <div class="section" id="apicksSection" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Sharp Edges</div>
+          <h2 class="section-title">A+ &amp; A <em>Picks</em></h2>
+        </div>
+        <div class="section-meta" id="apicksMeta"></div>
+      </div>
+      <div class="picks-grid" id="apicksContent"></div>
+    </div>
+
+    <!-- SMART MONEY -->
+    <div class="section" id="smartSection" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Plus Money</div>
+          <h2 class="section-title">Smart <em>Money</em></h2>
+        </div>
+        <div class="section-meta" id="smartMeta"></div>
+      </div>
+      <div class="picks-grid" id="smartContent"></div>
+    </div>
+
+    <!-- LOTTERY SHOTS -->
+    <div class="section" id="lotterySection" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Long Shots</div>
+          <h2 class="section-title">Lottery <em>Shots</em></h2>
+        </div>
+        <div class="section-meta" id="lotteryMeta"></div>
+      </div>
+      <div class="picks-grid" id="lotteryContent"></div>
     </div>
 
     <!-- RANKED MATCHUPS -->
@@ -455,8 +525,10 @@ let powerRankings = {};
 let teamColors = {};
 let teamScores = {};
 let picksByGameId = {};
+let weeksList = [];
 let currentWeek = 1;
 let currentConf = 'all';
+let firstAvailableWeek = 1;   // the "current" week — anything beyond shows waiting
 
 async function init() {
   const [rankRes, colorsRes, gamesRes, picksRes] = await Promise.all([
@@ -488,12 +560,13 @@ async function init() {
 
 function buildWeekTabs(data) {
   if (!data || !data.weeks) return;
-  const weeks = data.weeks;
-  const firstWeek = weeks[0] != null ? weeks[0] : 1;
-  currentWeek = firstWeek;
+  // Sort weeks numerically, INCLUDE Week 0 if it's present
+  weeksList = [...data.weeks].sort((a, b) => a - b);
+  firstAvailableWeek = weeksList[0] != null ? weeksList[0] : 1;
+  currentWeek = firstAvailableWeek;
   const tabsEl = document.getElementById('weekTabs');
-  tabsEl.innerHTML = weeks.map(w => `
-    <button class="week-tab ${w === firstWeek ? 'active' : ''}" onclick="setWeek(${w})" id="tab-${w}">
+  tabsEl.innerHTML = weeksList.map(w => `
+    <button class="week-tab ${w === firstAvailableWeek ? 'active' : ''}" onclick="setWeek(${w})" id="tab-${w}">
       ${w === 0 ? 'Week 0' : `Week ${w}`}
     </button>
   `).join('');
@@ -509,6 +582,21 @@ function setWeek(week) {
 
 function pickFor(game) {
   return picksByGameId[game.game_id] || null;
+}
+
+// Show picks only for the most immediate (first available) week.
+// Future weeks show flagship cards with "waiting for lines" treatment.
+function isCurrentWeek() {
+  return currentWeek === firstAvailableWeek;
+}
+
+// Sort games alphabetically by AWAY team
+function sortByAwayTeam(games) {
+  return [...games].sort((a, b) => {
+    const an = (a.away_team || '').toLowerCase();
+    const bn = (b.away_team || '').toLowerCase();
+    return an < bn ? -1 : an > bn ? 1 : 0;
+  });
 }
 
 function selectGameOfWeek(games) {
@@ -535,51 +623,143 @@ function selectGameOfWeek(games) {
   })[0];
 }
 
+function selectFlagshipGames(games, gotwId) {
+  // POTW: highest-tier spread/total pick that isn't the GotW
+  // TOTW: highest-tier total pick (could be the POTW if it's a total)
+  // Parlay: not really a single game, but for now we pick the best A/A+ pick
+
+  const tierWeight = { 'ap': 4, 'a': 3, 'sm': 2, 'ls': 1 };
+  const withPicks = games
+    .map(g => ({ game: g, pick: pickFor(g) }))
+    .filter(x => x.pick && x.game.game_id !== gotwId);
+
+  // POTW — best spread pick
+  const spreadPicks = withPicks.filter(x => x.pick.type === 'Spread')
+    .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
+  const potw = spreadPicks[0];
+
+  // TOTW — best total pick
+  const totalPicks = withPicks.filter(x => x.pick.type === 'Total')
+    .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
+  const totw = totalPicks[0];
+
+  // Parlay — for now, treat as best A+ pick (parlay involves multiple games but
+  // we render it as a single "featured" card pointing to the parlay-of-the-week game)
+  const apicks = withPicks.filter(x => x.pick.tier === 'ap')
+    .sort((a, b) => {
+      const aMargin = Math.abs((teamScores[a.game.home_team] || 0) - (teamScores[a.game.away_team] || 0));
+      const bMargin = Math.abs((teamScores[b.game.home_team] || 0) - (teamScores[b.game.away_team] || 0));
+      return bMargin - aMargin;
+    });
+  const parlay = apicks[0] || withPicks[Math.min(2, withPicks.length - 1)];
+
+  return { potw, totw, parlay };
+}
+
 function renderWeek(week) {
-  const games = allGames.filter(g => g.week === week && g.is_fbs_matchup);
+  let games = allGames.filter(g => g.week === week && g.is_fbs_matchup);
+
+  // Defensive dedupe by game_id (in case of CFBD data issues)
+  const seenIds = new Set();
+  games = games.filter(g => {
+    if (seenIds.has(g.game_id)) return false;
+    seenIds.add(g.game_id);
+    return true;
+  });
 
   if (!games.length) {
-    document.getElementById('gotwSection').style.display = 'none';
-    document.getElementById('picksSection').style.display = 'none';
-    document.getElementById('rankedSection').style.display = 'none';
-    document.getElementById('restSection').style.display = 'none';
+    ['gotwSection', 'featuredSection', 'apicksSection', 'smartSection', 'lotterySection',
+     'rankedSection', 'restSection'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
     document.getElementById('confContent').innerHTML = '<div class="empty"><div class="empty-title">No FBS matchups</div>No games found for this week.</div>';
     return;
   }
 
+  const isFuture = !isCurrentWeek();
+
+  // ─── GAME OF THE WEEK ───
   const gotw = selectGameOfWeek(games);
   if (gotw) {
     document.getElementById('gotwSection').style.display = 'block';
     document.getElementById('gotwContent').innerHTML = renderGotW(gotw);
-    const dateLabel = formatDate(gotw.date);
-    document.getElementById('gotwMeta').textContent = dateLabel + (gotw.time && gotw.time !== 'TBD' ? ' · ' + gotw.time : '');
+    document.getElementById('gotwMeta').textContent =
+      formatDate(gotw.date) + (gotw.time && gotw.time !== 'TBD' ? ' · ' + gotw.time : '');
   } else {
     document.getElementById('gotwSection').style.display = 'none';
   }
 
-  const tierWeight = { 'ap': 4, 'a': 3, 'sm': 2, 'ls': 1 };
-  const picks = games
-    .map(g => ({ game: g, pick: pickFor(g) }))
-    .filter(x => x.pick && (!gotw || x.game.game_id !== gotw.game_id))
-    .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0))
-    .slice(0, 6);
+  // ─── FEATURED PRODUCTS (POTW, TOTW, Parlay) ───
+  // These always show — if future week or no picks yet, show "waiting for lines"
+  document.getElementById('featuredSection').style.display = 'block';
+  const flagship = isFuture ? { potw: null, totw: null, parlay: null }
+                            : selectFlagshipGames(games, gotw ? gotw.game_id : null);
+  document.getElementById('featuredContent').innerHTML = renderFeaturedRow(flagship, isFuture);
+  document.getElementById('featuredMeta').textContent = isFuture ? 'Waiting for lines' : 'Live for this week';
 
-  if (picks.length) {
-    document.getElementById('picksSection').style.display = 'block';
-    document.getElementById('picksContent').innerHTML = picks.map(p => renderHeroCard(p.game, p.pick)).join('');
-    document.getElementById('picksMeta').textContent = `${picks.length} picks`;
+  // ─── A+ AND A PICKS ───
+  let apicks = isFuture ? [] : sortByAwayTeam(
+    games.filter(g => {
+      if (gotw && g.game_id === gotw.game_id) return false;
+      const p = pickFor(g);
+      return p && (p.tier === 'ap' || p.tier === 'a');
+    })
+  );
+  if (apicks.length) {
+    document.getElementById('apicksSection').style.display = 'block';
+    document.getElementById('apicksContent').innerHTML = apicks.map(g => renderHeroCard(g, pickFor(g))).join('');
+    document.getElementById('apicksMeta').textContent = `${apicks.length} picks`;
   } else {
-    document.getElementById('picksSection').style.display = 'none';
+    document.getElementById('apicksSection').style.display = 'none';
   }
 
-  const pickIds = new Set(picks.map(p => p.game.game_id));
-  const rankedMatchups = games.filter(g => {
-    if (gotw && g.game_id === gotw.game_id) return false;
-    if (pickIds.has(g.game_id)) return false;
-    const hr = powerRankings[g.home_team];
-    const ar = powerRankings[g.away_team];
-    return (hr && hr <= 25) || (ar && ar <= 25);
-  });
+  // ─── SMART MONEY ───
+  let smartPicks = isFuture ? [] : sortByAwayTeam(
+    games.filter(g => {
+      if (gotw && g.game_id === gotw.game_id) return false;
+      const p = pickFor(g);
+      return p && p.tier === 'sm';
+    })
+  );
+  if (smartPicks.length) {
+    document.getElementById('smartSection').style.display = 'block';
+    document.getElementById('smartContent').innerHTML = smartPicks.map(g => renderHeroCard(g, pickFor(g))).join('');
+    document.getElementById('smartMeta').textContent = `${smartPicks.length} plays`;
+  } else {
+    document.getElementById('smartSection').style.display = 'none';
+  }
+
+  // ─── LOTTERY SHOTS ───
+  let lotteryPicks = isFuture ? [] : sortByAwayTeam(
+    games.filter(g => {
+      if (gotw && g.game_id === gotw.game_id) return false;
+      const p = pickFor(g);
+      return p && p.tier === 'ls';
+    })
+  );
+  if (lotteryPicks.length) {
+    document.getElementById('lotterySection').style.display = 'block';
+    document.getElementById('lotteryContent').innerHTML = lotteryPicks.map(g => renderHeroCard(g, pickFor(g))).join('');
+    document.getElementById('lotteryMeta').textContent = `${lotteryPicks.length} tickets`;
+  } else {
+    document.getElementById('lotterySection').style.display = 'none';
+  }
+
+  // ─── RANKED MATCHUPS (no pick, has ranked team) ───
+  const pickedIds = new Set([
+    ...(gotw ? [gotw.game_id] : []),
+    ...apicks.map(g => g.game_id),
+    ...smartPicks.map(g => g.game_id),
+    ...lotteryPicks.map(g => g.game_id)
+  ]);
+  const rankedMatchups = sortByAwayTeam(
+    games.filter(g => {
+      if (pickedIds.has(g.game_id)) return false;
+      const hr = powerRankings[g.home_team];
+      const ar = powerRankings[g.away_team];
+      return (hr && hr <= 25) || (ar && ar <= 25);
+    })
+  );
   if (rankedMatchups.length) {
     document.getElementById('rankedSection').style.display = 'block';
     document.getElementById('rankedContent').innerHTML = rankedMatchups.map(g => renderMediumCard(g)).join('');
@@ -588,16 +768,15 @@ function renderWeek(week) {
     document.getElementById('rankedSection').style.display = 'none';
   }
 
+  // ─── CONFERENCE SHOWCASE ───
   buildConfFilter(games);
   renderConfGames(games);
 
+  // ─── THE REST ───
   const rankedIds = new Set(rankedMatchups.map(g => g.game_id));
-  const rest = games.filter(g => {
-    if (gotw && g.game_id === gotw.game_id) return false;
-    if (pickIds.has(g.game_id)) return false;
-    if (rankedIds.has(g.game_id)) return false;
-    return true;
-  });
+  const rest = sortByAwayTeam(
+    games.filter(g => !pickedIds.has(g.game_id) && !rankedIds.has(g.game_id))
+  );
   if (rest.length) {
     document.getElementById('restSection').style.display = 'block';
     document.getElementById('restContent').innerHTML = rest.map(g => renderCompactCard(g)).join('');
@@ -632,9 +811,9 @@ function setConf(conf) {
 }
 
 function renderConfGames(games) {
-  let list = games;
+  let list = sortByAwayTeam(games);
   if (currentConf !== 'all') {
-    list = games.filter(g => g.home_conference === currentConf);
+    list = list.filter(g => g.home_conference === currentConf);
   }
   if (!list.length) {
     document.getElementById('confContent').innerHTML = '<div class="empty">No games in this view.</div>';
@@ -643,7 +822,7 @@ function renderConfGames(games) {
   document.getElementById('confContent').innerHTML = list.map(g => renderMediumCard(g)).join('');
 }
 
-// ────── RENDERERS — three densities, same DNA ──────
+// ────── RENDERERS ──────
 
 function teamSideHTML(team, conf, rank, side) {
   return `
@@ -668,7 +847,7 @@ function bgHTML(awayColor, homeColor) {
   `;
 }
 
-// ── HERO (GotW) ──
+// ── GOTW ──
 function renderGotW(g) {
   const homeColor = colorFor(g.home_team);
   const awayColor = colorFor(g.away_team);
@@ -687,9 +866,9 @@ function renderGotW(g) {
     <a class="gc-link" href="/game.html?id=${g.game_id}">
       <div class="gc gotw-card">
         ${bgHTML(awayColor, homeColor)}
+        <div class="gc-ribbon gotw">★ Game of the Week</div>
         <div class="gc-content">
           <div class="gc-strip">
-            <span class="gc-tag gotw">★ Game of the Week</span>
             <span class="gc-meta">${time}</span>
           </div>
           <div class="gc-teams">
@@ -707,7 +886,79 @@ function renderGotW(g) {
   `;
 }
 
-// ── HERO (Pressbox Picks — same density as GotW but smaller) ──
+// ── FEATURED PRODUCT ROW (POTW/TOTW/Parlay) ──
+function renderFeaturedRow(flagship, isFuture) {
+  const cards = [
+    { product: 'Pick of the Week',  short: 'POTW',  entry: flagship.potw },
+    { product: 'Total of the Week', short: 'TOTW',  entry: flagship.totw },
+    { product: 'Parlay of the Week', short: 'Parlay', entry: flagship.parlay }
+  ];
+  return cards.map(c => renderFeaturedCard(c.product, c.short, c.entry, isFuture)).join('');
+}
+
+function renderFeaturedCard(product, shortName, entry, isFuture) {
+  // If we have an entry, use the entry's game. Otherwise show waiting placeholder.
+  if (!entry || isFuture) {
+    return `
+      <div class="gc-link" style="cursor: default; pointer-events: none;">
+        <div class="gc featured-card">
+          <div class="gc-bg">
+            <div class="gc-bg-half" style="background: linear-gradient(135deg, #3A3328 0%, #1A1705 100%);"></div>
+            <div class="gc-bg-half" style="background: linear-gradient(225deg, #3A3328 0%, #1A1705 100%);"></div>
+          </div>
+          <div class="gc-overlay"></div>
+          <div class="gc-seam"></div>
+          <div class="gc-ribbon waiting">${product}</div>
+          <div class="gc-content">
+            <div class="gc-strip"><span class="gc-meta">${isFuture ? 'Future Week' : 'Coming this week'}</span></div>
+            <div class="gc-teams">
+              <div class="gc-team-side away"><div class="gc-team-name" style="opacity:0.6;">—</div></div>
+              <span class="gc-at">at</span>
+              <div class="gc-team-side home"><div class="gc-team-name" style="opacity:0.6;">—</div></div>
+            </div>
+            <div class="gc-pickbar waiting">
+              <span class="gc-pickbar-val">Waiting for Lines</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  const g = entry.game;
+  const pick = entry.pick;
+  const homeColor = colorFor(g.home_team);
+  const awayColor = colorFor(g.away_team);
+  const homeRank = powerRankings[g.home_team];
+  const awayRank = powerRankings[g.away_team];
+  const time = g.time && g.time !== 'TBD' ? formatDate(g.date) + ' · ' + g.time : formatDate(g.date);
+
+  return `
+    <a class="gc-link" href="/game.html?id=${g.game_id}">
+      <div class="gc featured-card">
+        ${bgHTML(awayColor, homeColor)}
+        <div class="gc-ribbon featured">${product}</div>
+        <div class="gc-content">
+          <div class="gc-strip">
+            <span class="gc-meta">${time}</span>
+          </div>
+          <div class="gc-teams">
+            ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
+            <span class="gc-at">at</span>
+            ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
+          </div>
+          <div class="gc-pickbar">
+            <span class="gc-pickbar-lbl">${(pick.type || '').toUpperCase()}</span>
+            <span class="gc-pickbar-val">${pick.pick_text}</span>
+            <span class="gc-pickbar-book">${pick.best_book || ''}${pick.best_odds ? ' · ' + (pick.best_odds > 0 ? '+' : '') + pick.best_odds : ''}</span>
+          </div>
+        </div>
+      </div>
+    </a>
+  `;
+}
+
+// ── HERO CARD (used by A+/A, Smart Money, Lottery sections) ──
 function renderHeroCard(g, pick) {
   const homeColor = colorFor(g.home_team);
   const awayColor = colorFor(g.away_team);
@@ -719,9 +970,9 @@ function renderHeroCard(g, pick) {
     <a class="gc-link" href="/game.html?id=${g.game_id}">
       <div class="gc hero">
         ${bgHTML(awayColor, homeColor)}
+        <div class="gc-ribbon tier-${pick.tier}">${TIER_LABEL[pick.tier]}</div>
         <div class="gc-content">
           <div class="gc-strip">
-            <span class="gc-tag tier-${pick.tier}">${TIER_LABEL[pick.tier]}</span>
             <span class="gc-meta">${time}</span>
           </div>
           <div class="gc-teams">
@@ -753,9 +1004,9 @@ function renderMediumCard(g) {
     <a class="gc-link" href="/game.html?id=${g.game_id}">
       <div class="gc medium">
         ${bgHTML(awayColor, homeColor)}
+        ${pick ? `<div class="gc-ribbon tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</div>` : ''}
         <div class="gc-content">
           <div class="gc-strip">
-            ${pick ? `<span class="gc-tag tier-${pick.tier}">${TIER_LABEL[pick.tier]}</span>` : '<span></span>'}
             <span class="gc-meta">${time}</span>
           </div>
           <div class="gc-teams">
@@ -796,7 +1047,7 @@ function renderCompactCard(g) {
             ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
           </div>
           <div class="gc-tag-compact">
-            ${pick ? `<span class="gc-tag tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</span>` : ''}
+            ${pick ? `<span class="gc-pill-tier tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</span>` : ''}
           </div>
         </div>
       </div>
