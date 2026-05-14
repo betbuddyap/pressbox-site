@@ -92,6 +92,7 @@
 
   .rank-team { padding: 16px 0; }
   .rank-team-name { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .transfer-tag { font-family: var(--sans); font-size: 10px; font-weight: 500; color: var(--gold); background: rgba(190, 154, 92, 0.12); padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: 2px; letter-spacing: 0.5px; text-transform: uppercase; }
   .rank-team-meta { display: flex; align-items: center; gap: 8px; }
   .rank-conf { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
   .conf-rank { font-size: 10px; color: var(--text-light); }
@@ -455,11 +456,14 @@ function playerRow(p) {
   const barPct = Math.max(0, Math.min(100, (score / maxPlayerScore) * 100));
   const stat = keyStatFor(p);
   const pos = p.position || p.position_group || '';
+  const transferTag = (p.transferred && p.prior_team)
+    ? `<span class="transfer-tag">via ${p.prior_team}</span>`
+    : '';
   return `
     <div class="player-row ${isTop5 ? 'top5' : ''}">
       <div class="rank-num">${p.displayRank}</div>
       <div class="rank-team">
-        <div class="rank-team-name">${p.name || 'Unknown'}</div>
+        <div class="rank-team-name">${p.name || 'Unknown'} ${transferTag}</div>
         <div class="rank-team-meta">
           <span class="player-pos-team">${pos} · ${p.team || ''}</span>
           <span class="conf-rank">${p.conference || ''}</span>
