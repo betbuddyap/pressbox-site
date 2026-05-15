@@ -605,9 +605,8 @@ function buildStatsCard(statRanks, statSeason) {
   const barColor = pct => pct >= 75 ? '#4A7A4A' : pct >= 50 ? '#B8922A' : pct >= 25 ? '#C5A878' : '#7A4A4A';
   const qualLabel = pct => pct >= 90 ? 'Elite' : pct >= 75 ? 'Strong' : pct >= 50 ? 'Above Avg' : pct >= 25 ? 'Below Avg' : 'Weak';
 
-  // Value-anchored bar width: min=2%, median=50%, max=100%.
-  // For lower-is-better metrics the scale flips (a low value still produces a long bar).
-  // Falls back to percentile if league context isn't on the stat_ranks entry.
+  // Bar width tracks raw MAGNITUDE (min=2%, median=50%, max=100%), NOT inverted for lowerBetter.
+  // Color tracks QUALITY via percentile (already inverted in the backend for lowerBetter metrics).
   function valueWidth(s) {
     const v = s.value;
     if (v == null) return 0;
@@ -615,24 +614,13 @@ function buildStatsCard(statRanks, statSeason) {
     if (lmin == null || lmax == null || lmed == null || lmax === lmin) {
       return s.percentile != null ? s.percentile : 5;
     }
-    const lowerBetter = !s.higher_better;
     let pct;
-    if (lowerBetter) {
-      if (v <= lmed) {
-        const denom = (lmed - lmin) || 1;
-        pct = 50 + ((lmed - v) / denom) * 50;
-      } else {
-        const denom = (lmax - lmed) || 1;
-        pct = 50 - ((v - lmed) / denom) * 50;
-      }
+    if (v >= lmed) {
+      const denom = (lmax - lmed) || 1;
+      pct = 50 + ((v - lmed) / denom) * 50;
     } else {
-      if (v >= lmed) {
-        const denom = (lmax - lmed) || 1;
-        pct = 50 + ((v - lmed) / denom) * 50;
-      } else {
-        const denom = (lmed - lmin) || 1;
-        pct = 50 - ((lmed - v) / denom) * 50;
-      }
+      const denom = (lmed - lmin) || 1;
+      pct = 50 - ((lmed - v) / denom) * 50;
     }
     return Math.max(2, Math.min(100, pct));
   }
