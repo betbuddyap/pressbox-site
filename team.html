@@ -606,7 +606,7 @@ function buildStatsCard(statRanks, statSeason) {
   const qualLabel = pct => pct >= 90 ? 'Elite' : pct >= 75 ? 'Strong' : pct >= 50 ? 'Above Avg' : pct >= 25 ? 'Below Avg' : 'Weak';
 
   // Bar width tracks raw MAGNITUDE (min=2%, median=50%, max=100%), NOT inverted for lowerBetter.
-  // Color tracks QUALITY via percentile (already inverted in the backend for lowerBetter metrics).
+  // Color tracks QUALITY derived from league position (low=good for lowerBetter metrics).
   function valueWidth(s) {
     const v = s.value;
     if (v == null) return 0;
@@ -625,7 +625,24 @@ function buildStatsCard(statRanks, statSeason) {
     return Math.max(2, Math.min(100, pct));
   }
 
-  const statRow = (s) => `
+  // Quality percentile for color/label — derived from league min/max position.
+  // Inverts for lowerBetter so a low (good) value gets high quality.
+  // Falls back to s.percentile if no league context available.
+  function qualityPct(s) {
+    if (!s) return null;
+    const v = s.value;
+    const lmin = s.league_min, lmax = s.league_max;
+    if (v == null || lmin == null || lmax == null || lmax === lmin) {
+      return s.percentile != null ? s.percentile : null;
+    }
+    let pos = ((v - lmin) / (lmax - lmin)) * 100;
+    if (!s.higher_better) pos = 100 - pos;
+    return Math.max(0, Math.min(100, pos));
+  }
+
+  const statRow = (s) => {
+    const qPct = qualityPct(s);
+    return `
     <div class="stat-row-full">
       <div class="stat-row-top">
         <span class="stat-name">${s.label}</span>
@@ -636,12 +653,13 @@ function buildStatsCard(statRanks, statSeason) {
       </div>
       <div class="stat-bar-wrap">
         <div class="stat-bar-track">
-          <div class="stat-bar-fill" style="width:${valueWidth(s)}%;background:${barColor(s.percentile)};"></div>
+          <div class="stat-bar-fill" style="width:${valueWidth(s)}%;background:${barColor(qPct)};"></div>
         </div>
-        <span class="stat-pct" style="color:${barColor(s.percentile)};">${qualLabel(s.percentile)}</span>
+        <span class="stat-pct" style="color:${barColor(qPct)};">${qualLabel(qPct)}</span>
       </div>
     </div>
   `;
+  };
 
   return groups.map(g => {
     const rows = g.keys.map(k => statRanks[k]).filter(Boolean);
