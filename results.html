@@ -210,9 +210,19 @@
   .footer-links { display: flex; gap: 20px; }
   .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
 
-   } }
+  /* ── MOBILE: stacked pick cards (hidden on desktop) ── */
+  .picks-mobile { display: none; }
+  .pick-card { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 14px 14px 12px; margin-bottom: 10px; }
+  .pick-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .pick-card-matchup { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.25; flex: 1; min-width: 0; }
+  .pick-card-tags { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .pick-card-pick { font-family: var(--sans); font-size: 13px; color: var(--text); margin-bottom: 10px; }
+  .pick-card-pick strong { font-weight: 700; color: var(--gold); }
+  .pick-card-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); font-family: var(--sans); font-size: 12px; }
+  .pick-card-result { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+  .pick-card-odds { color: var(--text-mid); font-size: 11px; }
+  .pick-card-payout { font-family: var(--sans); font-weight: 700; font-size: 13px; }
 
-  
   /* ── MOBILE NAV ── */
   .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; outline: 0; -webkit-appearance: none; appearance: none; border-radius: 0; box-shadow: none; width: 32px; height: 32px; }
   .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
@@ -223,7 +233,7 @@
   .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
   @media (min-width: 961px) { .hamburger { display: none !important; } }
   @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
-  @media (max-width: 680px) {
+  @media (max-width: 720px) {
     .controls-inner { flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px 16px; }
     .control-group { flex-wrap: wrap; }
     .divider { display: none; }
@@ -233,12 +243,15 @@
     .summary-stat:nth-child(odd) { border-right: 1px solid rgba(255,255,255,0.08); }
     .summary-stat-val { font-size: 20px; }
     .results-section { padding: 20px 16px; }
-    .week-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-    .week-meta { flex-wrap: wrap; gap: 8px; }
-    .picks-table th, .picks-table td { padding: 8px 6px; font-size: 11px; }
+    .week-block { margin-bottom: 28px; }
+    .week-header { flex-direction: column; align-items: flex-start; gap: 6px; padding-bottom: 10px; margin-bottom: 12px; }
+    .week-meta { flex-wrap: wrap; gap: 8px 14px; font-size: 11px; }
+    .picks-table { display: none; }
+    .picks-mobile { display: block; }
     .potw-grid { grid-template-columns: 1fr; }
     .parlay-grid { grid-template-columns: 1fr; }
     .page-header { padding: 32px 0 24px; }
+    .page-header-inner { padding: 0 16px; }
     .page-title { font-size: 28px; }
   }
 
@@ -690,6 +703,35 @@ function renderWeekly(data) {
             }).join('')}
           </tbody>
         </table>
+        <div class="picks-mobile">
+          ${week.bets_detail.map(b => {
+            const hit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
+            const hitLabel = b.hit === true ? 'Win' : b.hit === false ? 'Loss' : 'Push';
+            const pnlCls = b.pnl > 0 ? 'pnl-pos' : b.pnl < 0 ? 'pnl-neg' : '';
+            const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
+            const tierCls = b.tier === 'A+' ? 'tier-ap' : b.tier === 'A' ? 'tier-a' : (b.tier === 'smart_money' ? 'tier-sm' : b.tier === 'lottery_shot' ? 'tier-ls' : '');
+            const tierLabel = b.tier === 'smart_money' ? 'Smart$' : b.tier === 'lottery_shot' ? 'Lottery' : (b.tier || '—');
+            return `
+              <div class="pick-card">
+                <div class="pick-card-top">
+                  <div class="pick-card-matchup">${b.away_team} @ ${b.home_team}</div>
+                  <div class="pick-card-tags">
+                    <span class="tier-badge ${tierCls}">${tierLabel}</span>
+                    <span class="badge-type ${typeCls}">${b.type}</span>
+                  </div>
+                </div>
+                <div class="pick-card-pick">Pick: <strong>${b.pick}</strong></div>
+                <div class="pick-card-foot">
+                  <div class="pick-card-result">
+                    <div class="result-dot ${hit}"></div>
+                    <span>${hitLabel}</span>
+                    <span class="pick-card-odds">· ${b.odds > 0 ? '+' : ''}${b.odds}</span>
+                  </div>
+                  <div class="pick-card-payout ${pnlCls}">${b.pnl > 0 ? '+' : ''}$${Math.abs(b.pnl).toFixed(0)}</div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
       </div>`;
   });
 
@@ -767,6 +809,35 @@ function renderParlay(data) {
             }).join('')}
           </tbody>
         </table>
+        <div class="picks-mobile">
+          ${week.bets_detail.map(b => {
+            const legHit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
+            const legLabel = b.hit === true ? 'Win' : b.hit === false ? 'Loss' : 'Push';
+            const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
+            const tierCls = b.tier === 'A+' ? 'tier-ap' : b.tier === 'A' ? 'tier-a' : (b.tier === 'smart_money' ? 'tier-sm' : b.tier === 'lottery_shot' ? 'tier-ls' : '');
+            const tierLabel = b.tier === 'smart_money' ? 'Smart$' : b.tier === 'lottery_shot' ? 'Lottery' : (b.tier || '—');
+            const legPnlCls = b.hit === true ? 'pnl-pos' : b.hit === false ? 'pnl-neg' : '';
+            return `
+              <div class="pick-card">
+                <div class="pick-card-top">
+                  <div class="pick-card-matchup">${b.away_team} @ ${b.home_team}</div>
+                  <div class="pick-card-tags">
+                    <span class="tier-badge ${tierCls}">${tierLabel}</span>
+                    <span class="badge-type ${typeCls}">${b.type}</span>
+                  </div>
+                </div>
+                <div class="pick-card-pick">Pick: <strong>${b.pick}</strong></div>
+                <div class="pick-card-foot">
+                  <div class="pick-card-result">
+                    <div class="result-dot ${legHit}"></div>
+                    <span>${legLabel}</span>
+                    <span class="pick-card-odds">· ${b.odds > 0 ? '+' : ''}${b.odds}</span>
+                  </div>
+                  <div class="pick-card-payout ${legPnlCls}">${b.hit === true ? '✓' : '✗'}</div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>
       </div>`;
   });
 
