@@ -287,10 +287,7 @@
 
   /* ── MEDIUM (Ranked + Conference) ── */
   .gc.medium { min-height: 130px; }
-  .gc.medium .gc-content { padding: 14px 18px; min-height: 130px; position: relative; z-index: 3; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
-  .gc.medium .gc-strip { position: absolute; top: 10px; right: 14px; left: 14px; }
-  .gc.medium .gc-teams { padding: 2px 0; }
-  .gc.medium .gc-pickbar { margin-top: 0; }
+  .gc.medium .gc-content { padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between; min-height: 130px; gap: 10px; position: relative; z-index: 3; }
   .gc.medium .gc-ribbon { font-size: 9px; padding: 4px 9px 4px 10px; }
   .gc.medium .gc-meta { font-size: 11px; }
   .gc.medium .gc-team-name { font-size: 20px; }
@@ -811,11 +808,24 @@ function renderWeek(week) {
   }
 
   // ─── FEATURED PRODUCTS ───
-  document.getElementById('featuredSection').style.display = 'block';
-  const flagship = isFuture ? { potw: null, totw: null, parlay: null }
-                            : selectFlagshipGames(games, gotw ? gotw.game_id : null);
-  document.getElementById('featuredContent').innerHTML = renderFeaturedRow(flagship, isFuture);
-  document.getElementById('featuredMeta').textContent = isFuture ? 'Waiting for lines' : 'Live for this week';
+  // Only show the flagship row on the CURRENT week (no future-week speculation)
+  // AND only when the slate is big enough to support POTW + TOTW + 3-leg Parlay.
+  // Week 0 typically has 4-6 games — too few to assemble flagships.
+  const totalPicksThisWeek = games.filter(g => pickFor(g) != null).length;
+  const flagshipEligible = !isFuture && totalPicksThisWeek >= 8;
+  if (flagshipEligible) {
+    const flagship = selectFlagshipGames(games, gotw ? gotw.game_id : null);
+    // Only show if we actually got at least the POTW (spread pick) OR TOTW
+    if (flagship.potw || flagship.totw || (flagship.parlay && flagship.parlay.length)) {
+      document.getElementById('featuredSection').style.display = 'block';
+      document.getElementById('featuredContent').innerHTML = renderFeaturedRow(flagship, false);
+      document.getElementById('featuredMeta').textContent = 'Live for this week';
+    } else {
+      document.getElementById('featuredSection').style.display = 'none';
+    }
+  } else {
+    document.getElementById('featuredSection').style.display = 'none';
+  }
 
   // ─── A+ AND A PICKS ───
   let apicks = isFuture ? [] : sortByAwayTeam(
