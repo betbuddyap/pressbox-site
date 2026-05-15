@@ -83,14 +83,12 @@
   .section { padding: 48px 0 0; }
   .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px solid var(--text); }
   .section-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-  .section-title { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .section-title { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--text); }
   .section-title em { font-style: italic; color: var(--gold); }
   .section-meta { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; text-transform: uppercase; }
 
   /* ─────────────────────────────────────────────────────────
      UNIFIED SPLIT-CARD DESIGN SYSTEM
-     Three densities (hero / medium / compact) — same DNA.
-     Every card has: away-color half | gold seam | home-color half
      ───────────────────────────────────────────────────────── */
   .gc-link { text-decoration: none; color: inherit; display: block; }
 
@@ -100,12 +98,20 @@
   .gc-bg { position: absolute; inset: 0; display: flex; }
   .gc-bg-half { flex: 1; }
   .gc-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,14,10,0.22) 0%, rgba(15,14,10,0.42) 60%, rgba(15,14,10,0.72) 100%); }
-  /* Gold seam separator at the color break */
   .gc-seam { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, rgba(212,168,58,0) 0%, rgba(212,168,58,0.55) 30%, rgba(212,168,58,0.55) 70%, rgba(212,168,58,0) 100%); transform: translateX(-0.5px); z-index: 2; }
 
-  /* TIER RIBBON — corner band, top-left of the card, hard edges */
-  .gc-ribbon { position: absolute; top: 0; left: 0; z-index: 4; font-family: var(--sans); font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 12px 5px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.35); display: flex; align-items: center; gap: 5px; }
-  .gc-ribbon::after { content: ''; position: absolute; left: 100%; top: 0; bottom: 0; width: 8px; }
+  /* TIER RIBBON — corner ribbon, top-left of the card */
+  .gc-ribbon {
+    position: absolute; top: 0; left: 0; z-index: 4;
+    font-family: var(--sans); font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .gc-ribbon::after {
+    content: ''; position: absolute; left: 100%; top: 0; bottom: 0; width: 8px;
+  }
   .gc-ribbon.tier-ap { background: var(--gold); color: var(--ink); }
   .gc-ribbon.tier-ap::after { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
   .gc-ribbon.tier-a  { background: var(--gold-light); color: var(--ink); }
@@ -114,31 +120,42 @@
   .gc-ribbon.tier-sm::after { background: linear-gradient(135deg, var(--sage) 50%, transparent 50%); }
   .gc-ribbon.tier-ls { background: var(--rust); color: #fff; }
   .gc-ribbon.tier-ls::after { background: linear-gradient(135deg, var(--rust) 50%, transparent 50%); }
-  .gc-ribbon.featured { background: var(--ink); color: var(--gold-light); border: 1px solid var(--gold); }
-  .gc-ribbon.featured::after { background: linear-gradient(135deg, var(--ink) 50%, transparent 50%); }
+  .gc-ribbon.featured { background: var(--gold); color: var(--ink); }
+  .gc-ribbon.featured::after { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
   .gc-ribbon.gotw    { background: var(--gold); color: var(--ink); }
   .gc-ribbon.gotw::after    { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
   .gc-ribbon.waiting { background: var(--text-mid); color: #fff; }
   .gc-ribbon.waiting::after { background: linear-gradient(135deg, var(--text-mid) 50%, transparent 50%); }
 
-  /* TOP STRIP (time + optional badges) */
+  /* TOP STRIP */
   .gc-strip { position: relative; z-index: 3; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
   .gc-meta { font-family: var(--sans); font-weight: 500; color: rgba(248,245,238,0.85); }
 
-  /* TEAMS ROW — equal halves, "at" stays centered on seam regardless of name length */
-  .gc-teams { position: relative; z-index: 3; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
-  .gc-team-side { min-width: 0; }   /* allows overflow ellipsis if names get huge */
-  .gc-team-side.away { text-align: right; padding-right: 16px; }
-  .gc-team-side.home { text-align: left;  padding-left: 16px; }
-  .gc-team-name { font-family: var(--serif); font-weight: 700; color: var(--cream); letter-spacing: -0.5px; line-height: 1.05; text-shadow: 0 1px 8px rgba(0,0,0,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gc-team-name em { font-style: italic; }
-  .gc-team-sub { display: flex; align-items: center; gap: 10px; font-family: var(--sans); color: rgba(248,245,238,0.78); margin-top: 4px; }
+  /* TEAMS ROW — equal halves, "at" stays centered on seam */
+  .gc-teams {
+    position: relative; z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+  }
+  .gc-team-side { min-width: 0; }
+  .gc-team-side.away { text-align: right; padding-right: 14px; }
+  .gc-team-side.home { text-align: left;  padding-left: 14px; }
+  .gc-team-name {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-style: italic;
+    color: var(--cream);
+    line-height: 1.1;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  }
+  .gc-team-sub { display: flex; align-items: center; gap: 10px; font-family: var(--sans); color: rgba(248,245,238,0.78); margin-top: 6px; }
   .gc-team-side.away .gc-team-sub { justify-content: flex-end; }
   .gc-team-side.home .gc-team-sub { justify-content: flex-start; }
-  .gc-team-rank { font-weight: 700; color: var(--gold-light); letter-spacing: 0.3px; }
+  .gc-team-rank { font-weight: 700; color: var(--gold-light); }
   .gc-team-conf { font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; }
 
-  /* CENTER "at" — sized per density */
+  /* CENTER "at" */
   .gc-at {
     font-family: var(--serif); font-style: italic; font-weight: 400;
     color: var(--gold-light);
@@ -148,7 +165,7 @@
     flex-shrink: 0;
   }
 
-  /* BOTTOM STRIP — pick info or "why" narrative */
+  /* BOTTOM STRIP */
   .gc-foot { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
   .gc-why { font-family: var(--sans); font-weight: 400; color: rgba(248,245,238,0.92); line-height: 1.5; }
   .gc-why strong { font-weight: 700; color: var(--gold-light); }
@@ -157,39 +174,49 @@
   .gc-link:hover .gc-cta::after { transform: translateX(4px); }
 
   /* Pick bar inside card */
-  .gc-pickbar { position: relative; z-index: 3; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.55); padding: 8px 14px; border-radius: 3px; backdrop-filter: blur(2px); }
-  .gc-pickbar-lbl { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(248,245,238,0.7); }
-  .gc-pickbar-val { font-family: var(--serif); font-weight: 700; color: var(--cream); flex: 1; }
-  .gc-pickbar-book { font-family: var(--sans); font-size: 10px; font-weight: 500; color: rgba(248,245,238,0.65); text-align: right; white-space: nowrap; }
+  .gc-pickbar { position: relative; z-index: 3; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.55); padding: 8px 14px; border-radius: 3px; }
+  .gc-pickbar-lbl { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(248,245,238,0.7); flex-shrink: 0; }
+  .gc-pickbar-val { font-family: var(--serif); font-weight: 700; color: var(--cream); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gc-pickbar-book { font-family: var(--sans); font-size: 10px; font-weight: 500; color: rgba(248,245,238,0.65); text-align: right; white-space: nowrap; flex-shrink: 0; }
   .gc-pickbar.waiting { background: rgba(107,100,85,0.7); justify-content: center; }
   .gc-pickbar.waiting .gc-pickbar-val { font-family: var(--sans); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; font-size: 11px; color: rgba(248,245,238,0.85); flex: none; }
 
-  /* ── HERO DENSITY (GotW + Featured Products + Top Picks) ── */
-  .gc.hero { min-height: 280px; }
-  .gc.hero .gc-content { padding: 24px 32px 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; gap: 14px; position: relative; z-index: 3; }
+  /* ── HERO DENSITY (A+/A, Smart, Lottery cards) ── */
+  .gc.hero { min-height: 240px; }
+  .gc.hero .gc-content { padding: 24px 28px 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 240px; gap: 16px; position: relative; z-index: 3; }
   .gc.hero .gc-ribbon { font-size: 10px; }
   .gc.hero .gc-meta { font-size: 12px; }
-  .gc.hero .gc-team-name { font-size: 34px; }
+  .gc.hero .gc-team-name { font-size: 30px; }
   .gc.hero .gc-team-sub { font-size: 11px; }
-  .gc.hero .gc-at { font-size: 20px; padding: 0 14px; }
-  .gc.hero .gc-why { font-size: 14px; max-width: 520px; }
-  .gc.hero .gc-cta { font-size: 11px; }
+  .gc.hero .gc-at { font-size: 18px; padding: 0 12px; }
 
-  /* GotW is the largest hero */
-  .gc.gotw-card { min-height: 340px; }
-  .gc.gotw-card .gc-content { min-height: 340px; padding: 28px 36px 28px; }
-  .gc.gotw-card .gc-team-name { font-size: 46px; }
+  /* ── GOTW (biggest) ── */
+  .gc.gotw-card { min-height: 320px; }
+  .gc.gotw-card .gc-content { min-height: 320px; padding: 28px 36px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; position: relative; z-index: 3; }
+  .gc.gotw-card .gc-ribbon { font-size: 11px; }
+  .gc.gotw-card .gc-team-name { font-size: 44px; }
+  .gc.gotw-card .gc-team-sub { font-size: 11px; }
   .gc.gotw-card .gc-at { font-size: 26px; padding: 0 18px; }
-  .gc.gotw-card .gc-team-sub { margin-top: 6px; }
+  .gc.gotw-card .gc-why { font-size: 14px; max-width: 520px; }
+  .gc.gotw-card .gc-cta { font-size: 11px; }
 
-  /* Featured products (POTW/TOTW/Parlay) — 3-up row of heroes */
-  .gc.featured-card { min-height: 240px; }
-  .gc.featured-card .gc-content { min-height: 240px; padding: 22px 24px 20px; }
-  .gc.featured-card .gc-team-name { font-size: 22px; }
-  .gc.featured-card .gc-team-sub { font-size: 10px; margin-top: 4px; }
-  .gc.featured-card .gc-at { font-size: 14px; padding: 0 10px; }
+  /* ── FEATURED PRODUCTS (POTW/TOTW/Parlay 3-up) ── */
+  /* The cards are narrower (1/3 width), so text needs to scale down */
+  .gc.featured-card { min-height: 220px; }
+  .gc.featured-card .gc-content { min-height: 220px; padding: 22px 16px 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; position: relative; z-index: 3; }
+  .gc.featured-card .gc-ribbon { font-size: 9px; padding: 4px 10px; }
+  .gc.featured-card .gc-meta { font-size: 10px; }
+  .gc.featured-card .gc-team-name { font-size: 19px; line-height: 1.1; }
+  .gc.featured-card .gc-team-sub { font-size: 9px; gap: 6px; margin-top: 4px; }
+  .gc.featured-card .gc-team-side.away { padding-right: 8px; }
+  .gc.featured-card .gc-team-side.home { padding-left: 8px; }
+  .gc.featured-card .gc-at { font-size: 14px; padding: 0 6px; }
+  .gc.featured-card .gc-pickbar { padding: 7px 10px; gap: 8px; }
+  .gc.featured-card .gc-pickbar-lbl { font-size: 8px; letter-spacing: 1.2px; }
+  .gc.featured-card .gc-pickbar-val { font-size: 13px; }
+  .gc.featured-card .gc-pickbar-book { font-size: 9px; }
 
-  /* ── MEDIUM DENSITY (Ranked + Conference) ── */
+  /* ── MEDIUM (Ranked + Conference) ── */
   .gc.medium { min-height: 130px; }
   .gc.medium .gc-content { padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between; min-height: 130px; gap: 10px; position: relative; z-index: 3; }
   .gc.medium .gc-ribbon { font-size: 9px; padding: 4px 9px 4px 10px; }
@@ -203,14 +230,14 @@
   .gc.medium .gc-pickbar-lbl { font-size: 8px; }
   .gc.medium .gc-pickbar-val { font-size: 13px; }
 
-  /* ── COMPACT DENSITY (The Rest) ── */
+  /* ── COMPACT (The Rest) ── */
   .gc.compact { min-height: 56px; }
   .gc.compact .gc-content { padding: 8px 14px; display: grid; grid-template-columns: 70px 1fr 70px; align-items: center; gap: 10px; min-height: 56px; position: relative; z-index: 3; }
   .gc.compact .gc-meta { font-size: 10px; color: rgba(248,245,238,0.85); }
-  .gc.compact .gc-team-name { font-size: 13px; }
+  .gc.compact .gc-team-name { font-size: 14px; }
   .gc.compact .gc-team-side.away .gc-team-rank, .gc.compact .gc-team-side.home .gc-team-rank { font-size: 10px; }
   .gc.compact .gc-team-sub { display: none; }
-  .gc.compact .gc-at { font-size: 11px; padding: 0 6px; }
+  .gc.compact .gc-at { font-size: 12px; padding: 0 6px; }
   .gc.compact .gc-team-side.away { padding-right: 6px; }
   .gc.compact .gc-team-side.home { padding-left: 6px; }
   .gc.compact .gc-ribbon { font-size: 8px; padding: 3px 7px 3px 8px; }
@@ -267,17 +294,20 @@
     .picks-grid { grid-template-columns: 1fr; gap: 12px; }
     .ranked-grid { grid-template-columns: 1fr; gap: 10px; }
 
-    .gc.gotw-card .gc-team-name { font-size: 28px; }
+    .gc.gotw-card .gc-team-name { font-size: 26px; }
     .gc.gotw-card .gc-at { font-size: 18px; padding: 0 10px; }
-    .gc.gotw-card .gc-content { padding: 22px 22px 20px; min-height: 280px; }
-    .gc.gotw-card { min-height: 280px; }
+    .gc.gotw-card .gc-content { padding: 22px 22px; min-height: 260px; }
+    .gc.gotw-card { min-height: 260px; }
 
-    .gc.hero .gc-team-name { font-size: 24px; }
+    .gc.featured-card .gc-team-name { font-size: 24px; }
+    .gc.featured-card .gc-at { font-size: 16px; padding: 0 8px; }
+    .gc.featured-card .gc-content { padding: 22px 22px; min-height: 220px; }
+    .gc.featured-card { min-height: 220px; }
+
+    .gc.hero .gc-team-name { font-size: 22px; }
     .gc.hero .gc-at { font-size: 14px; padding: 0 8px; }
-    .gc.hero .gc-content { padding: 20px 20px; min-height: 240px; }
-    .gc.hero { min-height: 240px; }
-
-    .gc.featured-card .gc-team-name { font-size: 20px; }
+    .gc.hero .gc-content { padding: 20px 20px; min-height: 220px; }
+    .gc.hero { min-height: 220px; }
 
     .gc.medium .gc-team-name { font-size: 16px; }
     .gc.medium .gc-at { font-size: 12px; padding: 0 6px; }
@@ -292,12 +322,6 @@
     .page-header-inner { padding: 0 16px; }
     .section { padding: 36px 0 0; }
     .section-title { font-size: 22px; }
-  }
-  @media (max-width: 600px) {
-    .gc.gotw-card .gc-team-name { font-size: 22px; }
-    .gc.gotw-card .gc-at { font-size: 14px; }
-    .gc.hero .gc-team-name { font-size: 18px; }
-    .gc.medium .gc-team-name { font-size: 14px; }
   }
 </style>
 </head>
@@ -375,6 +399,9 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
   <div id="loadingState" class="loading">Loading games…</div>
   <div id="content" style="display:none;">
+
+    <!-- DATA HEALTH WARNING (only shown if anomalies detected) -->
+    <div id="dataWarning" style="display:none; margin-top: 24px; padding: 14px 18px; background: rgba(184,90,42,0.1); border: 1px solid rgba(184,90,42,0.3); border-radius: 4px; font-family: var(--sans); font-size: 12px; color: var(--rust);"></div>
 
     <!-- GAME OF THE WEEK -->
     <div class="section" id="gotwSection" style="display:none;">
@@ -528,7 +555,7 @@ let picksByGameId = {};
 let weeksList = [];
 let currentWeek = 1;
 let currentConf = 'all';
-let firstAvailableWeek = 1;   // the "current" week — anything beyond shows waiting
+let firstAvailableWeek = 1;
 
 async function init() {
   const [rankRes, colorsRes, gamesRes, picksRes] = await Promise.all([
@@ -553,16 +580,48 @@ async function init() {
   if (picksRes && picksRes.picks) picksByGameId = picksRes.picks;
 
   buildWeekTabs(gamesRes);
+  checkDataHealth();
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   renderWeek(currentWeek);
 }
 
+// Check for any obvious data anomalies and surface them
+function checkDataHealth() {
+  const issues = [];
+
+  // Count team appearances per week
+  const perWeekTeams = {};
+  allGames.forEach(g => {
+    const w = g.week;
+    if (!perWeekTeams[w]) perWeekTeams[w] = {};
+    [g.home_team, g.away_team].forEach(t => {
+      if (!perWeekTeams[w][t]) perWeekTeams[w][t] = 0;
+      perWeekTeams[w][t]++;
+    });
+  });
+
+  // Find teams that appear more than once in a week
+  Object.keys(perWeekTeams).forEach(w => {
+    Object.entries(perWeekTeams[w]).forEach(([team, count]) => {
+      if (count > 1) {
+        issues.push(`Week ${w}: ${team} appears in ${count} games (possible duplicate / week mislabel)`);
+      }
+    });
+  });
+
+  if (issues.length) {
+    const el = document.getElementById('dataWarning');
+    el.style.display = 'block';
+    el.innerHTML = '<strong>⚠ Data Health:</strong> ' + issues.slice(0, 5).join(' · ');
+  }
+}
+
 function buildWeekTabs(data) {
-  if (!data || !data.weeks) return;
-  // Sort weeks numerically, INCLUDE Week 0 if it's present
+  if (!data || !data.weeks || !data.weeks.length) return;
+  // Include all weeks. Sort numerically ascending; Week 0 stays first if present.
   weeksList = [...data.weeks].sort((a, b) => a - b);
-  firstAvailableWeek = weeksList[0] != null ? weeksList[0] : 1;
+  firstAvailableWeek = weeksList[0];
   currentWeek = firstAvailableWeek;
   const tabsEl = document.getElementById('weekTabs');
   tabsEl.innerHTML = weeksList.map(w => `
@@ -584,13 +643,10 @@ function pickFor(game) {
   return picksByGameId[game.game_id] || null;
 }
 
-// Show picks only for the most immediate (first available) week.
-// Future weeks show flagship cards with "waiting for lines" treatment.
 function isCurrentWeek() {
   return currentWeek === firstAvailableWeek;
 }
 
-// Sort games alphabetically by AWAY team
 function sortByAwayTeam(games) {
   return [...games].sort((a, b) => {
     const an = (a.away_team || '').toLowerCase();
@@ -624,27 +680,19 @@ function selectGameOfWeek(games) {
 }
 
 function selectFlagshipGames(games, gotwId) {
-  // POTW: highest-tier spread/total pick that isn't the GotW
-  // TOTW: highest-tier total pick (could be the POTW if it's a total)
-  // Parlay: not really a single game, but for now we pick the best A/A+ pick
-
   const tierWeight = { 'ap': 4, 'a': 3, 'sm': 2, 'ls': 1 };
   const withPicks = games
     .map(g => ({ game: g, pick: pickFor(g) }))
     .filter(x => x.pick && x.game.game_id !== gotwId);
 
-  // POTW — best spread pick
   const spreadPicks = withPicks.filter(x => x.pick.type === 'Spread')
     .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
   const potw = spreadPicks[0];
 
-  // TOTW — best total pick
   const totalPicks = withPicks.filter(x => x.pick.type === 'Total')
     .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
   const totw = totalPicks[0];
 
-  // Parlay — for now, treat as best A+ pick (parlay involves multiple games but
-  // we render it as a single "featured" card pointing to the parlay-of-the-week game)
   const apicks = withPicks.filter(x => x.pick.tier === 'ap')
     .sort((a, b) => {
       const aMargin = Math.abs((teamScores[a.game.home_team] || 0) - (teamScores[a.game.away_team] || 0));
@@ -659,7 +707,7 @@ function selectFlagshipGames(games, gotwId) {
 function renderWeek(week) {
   let games = allGames.filter(g => g.week === week && g.is_fbs_matchup);
 
-  // Defensive dedupe by game_id (in case of CFBD data issues)
+  // Defensive dedupe — within a week, ensure no game_id appears twice
   const seenIds = new Set();
   games = games.filter(g => {
     if (seenIds.has(g.game_id)) return false;
@@ -689,8 +737,7 @@ function renderWeek(week) {
     document.getElementById('gotwSection').style.display = 'none';
   }
 
-  // ─── FEATURED PRODUCTS (POTW, TOTW, Parlay) ───
-  // These always show — if future week or no picks yet, show "waiting for lines"
+  // ─── FEATURED PRODUCTS ───
   document.getElementById('featuredSection').style.display = 'block';
   const flagship = isFuture ? { potw: null, totw: null, parlay: null }
                             : selectFlagshipGames(games, gotw ? gotw.game_id : null);
@@ -745,7 +792,7 @@ function renderWeek(week) {
     document.getElementById('lotterySection').style.display = 'none';
   }
 
-  // ─── RANKED MATCHUPS (no pick, has ranked team) ───
+  // ─── RANKED MATCHUPS ───
   const pickedIds = new Set([
     ...(gotw ? [gotw.game_id] : []),
     ...apicks.map(g => g.game_id),
@@ -847,7 +894,6 @@ function bgHTML(awayColor, homeColor) {
   `;
 }
 
-// ── GOTW ──
 function renderGotW(g) {
   const homeColor = colorFor(g.home_team);
   const awayColor = colorFor(g.away_team);
@@ -886,18 +932,16 @@ function renderGotW(g) {
   `;
 }
 
-// ── FEATURED PRODUCT ROW (POTW/TOTW/Parlay) ──
 function renderFeaturedRow(flagship, isFuture) {
   const cards = [
-    { product: 'Pick of the Week',  short: 'POTW',  entry: flagship.potw },
-    { product: 'Total of the Week', short: 'TOTW',  entry: flagship.totw },
-    { product: 'Parlay of the Week', short: 'Parlay', entry: flagship.parlay }
+    { product: 'POTW',  full: 'Pick of the Week',   entry: flagship.potw },
+    { product: 'TOTW',  full: 'Total of the Week',  entry: flagship.totw },
+    { product: 'Parlay', full: 'Parlay of the Week', entry: flagship.parlay }
   ];
-  return cards.map(c => renderFeaturedCard(c.product, c.short, c.entry, isFuture)).join('');
+  return cards.map(c => renderFeaturedCard(c.product, c.full, c.entry, isFuture)).join('');
 }
 
-function renderFeaturedCard(product, shortName, entry, isFuture) {
-  // If we have an entry, use the entry's game. Otherwise show waiting placeholder.
+function renderFeaturedCard(productShort, productFull, entry, isFuture) {
   if (!entry || isFuture) {
     return `
       <div class="gc-link" style="cursor: default; pointer-events: none;">
@@ -908,7 +952,7 @@ function renderFeaturedCard(product, shortName, entry, isFuture) {
           </div>
           <div class="gc-overlay"></div>
           <div class="gc-seam"></div>
-          <div class="gc-ribbon waiting">${product}</div>
+          <div class="gc-ribbon waiting">${productShort}</div>
           <div class="gc-content">
             <div class="gc-strip"><span class="gc-meta">${isFuture ? 'Future Week' : 'Coming this week'}</span></div>
             <div class="gc-teams">
@@ -937,7 +981,7 @@ function renderFeaturedCard(product, shortName, entry, isFuture) {
     <a class="gc-link" href="/game.html?id=${g.game_id}">
       <div class="gc featured-card">
         ${bgHTML(awayColor, homeColor)}
-        <div class="gc-ribbon featured">${product}</div>
+        <div class="gc-ribbon featured">${productShort}</div>
         <div class="gc-content">
           <div class="gc-strip">
             <span class="gc-meta">${time}</span>
@@ -950,7 +994,6 @@ function renderFeaturedCard(product, shortName, entry, isFuture) {
           <div class="gc-pickbar">
             <span class="gc-pickbar-lbl">${(pick.type || '').toUpperCase()}</span>
             <span class="gc-pickbar-val">${pick.pick_text}</span>
-            <span class="gc-pickbar-book">${pick.best_book || ''}${pick.best_odds ? ' · ' + (pick.best_odds > 0 ? '+' : '') + pick.best_odds : ''}</span>
           </div>
         </div>
       </div>
@@ -958,7 +1001,6 @@ function renderFeaturedCard(product, shortName, entry, isFuture) {
   `;
 }
 
-// ── HERO CARD (used by A+/A, Smart Money, Lottery sections) ──
 function renderHeroCard(g, pick) {
   const homeColor = colorFor(g.home_team);
   const awayColor = colorFor(g.away_team);
@@ -991,7 +1033,6 @@ function renderHeroCard(g, pick) {
   `;
 }
 
-// ── MEDIUM (Ranked + Conference) ──
 function renderMediumCard(g) {
   const pick = pickFor(g);
   const homeColor = colorFor(g.home_team);
@@ -1026,7 +1067,6 @@ function renderMediumCard(g) {
   `;
 }
 
-// ── COMPACT (The Rest) ──
 function renderCompactCard(g) {
   const pick = pickFor(g);
   const homeColor = colorFor(g.home_team);
@@ -1054,8 +1094,6 @@ function renderCompactCard(g) {
     </a>
   `;
 }
-
-// ────── HELPERS ──────
 
 function colorFor(team) {
   return (teamColors[team] && teamColors[team].primary) || '#3A3328';
