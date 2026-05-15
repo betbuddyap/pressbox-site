@@ -87,6 +87,7 @@
   .ctx-breadcrumb a { color: rgba(248,245,238,0.75); text-decoration: none; }
   .ctx-breadcrumb a:hover { color: var(--gold-light); }
   .ctx-breadcrumb-sep { color: rgba(248,245,238,0.4); }
+  .ctx-sim-badge { background: rgba(200,132,30,0.18); color: var(--gold-light); border: 1px solid rgba(200,132,30,0.35); padding: 2px 8px; border-radius: 2px; font-size: 9px; font-weight: 700; letter-spacing: 1px; }
 
   .ctx-ribbon { position: absolute; top: 0; left: 0; z-index: 5; font-family: var(--sans); font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.35); font-size: 11px; display: flex; align-items: center; gap: 6px; white-space: nowrap; background: var(--tier-bg); color: var(--tier-fg); }
   .ctx-ribbon::after { content: ''; position: absolute; left: 100%; top: 0; bottom: 0; width: 10px; background: linear-gradient(135deg, var(--tier-bg) 50%, transparent 50%); }
@@ -224,23 +225,67 @@
   .lifecycle-empty { padding: 24px; text-align: center; font-family: var(--sans); font-size: 13px; color: var(--text-light); font-style: italic; }
 
   /* ── ZONE 5: STAT BARS ── */
-  .stat-bars { display: flex; flex-direction: column; gap: 14px; }
-  .stat-bar { background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 14px 22px; }
-  .stat-bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-  .stat-bar-lbl { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-mid); }
+  .stat-bars { display: flex; flex-direction: column; gap: 12px; }
+  .stat-bar { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 16px 22px 18px; }
+  .stat-bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .stat-bar-lbl { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-mid); }
   .stat-bar-note { font-family: var(--sans); font-size: 9px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; text-transform: uppercase; }
-  .stat-bar-row { display: grid; grid-template-columns: 1fr 100px 1fr; align-items: center; gap: 14px; padding: 4px 0; }
-  .stat-bar-team { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .stat-bar-team.away { justify-content: flex-end; text-align: right; }
-  .stat-bar-team.home { justify-content: flex-start; }
-  .stat-bar-val { font-family: var(--serif); font-weight: 700; font-size: 15px; color: var(--text); }
-  .stat-bar-val.winner { color: var(--sage); }
-  .stat-bar-track { display: grid; grid-template-columns: 1fr 2px 1fr; align-items: center; height: 16px; }
-  .stat-bar-fill { height: 8px; border-radius: 4px; transition: width 0.3s; }
-  .stat-bar-fill.away { justify-self: end; background: var(--gold-light); margin-right: 4px; }
-  .stat-bar-fill.home { justify-self: start; background: var(--gold); margin-left: 4px; }
-  .stat-bar-fill.dimmed { background: var(--border); }
-  .stat-bar-center { background: var(--text-mid); width: 2px; height: 16px; }
+
+  /* Row layout: [number] [team-name] [bar] [center] [bar] [team-name] [number]
+     Numbers anchor to the far edges; team names live next to numbers. */
+  .stat-bar-row {
+    display: grid;
+    grid-template-columns: auto auto 1fr 2px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 0;
+  }
+  .stat-bar-val {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .stat-bar-val.away { text-align: left; }
+  .stat-bar-val.home { text-align: right; }
+
+  .stat-bar-team {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .stat-bar-team.away { text-align: left; padding-left: 4px; }
+  .stat-bar-team.home { text-align: right; padding-right: 4px; }
+
+  .stat-bar-fill {
+    height: 14px;
+    border-radius: 7px;
+    transition: width 0.3s ease, background 0.2s;
+    min-width: 4px;
+  }
+  .stat-bar-fill.away { justify-self: end; margin-right: 4px; }
+  .stat-bar-fill.home { justify-self: start; margin-left: 4px; }
+  .stat-bar-center { background: var(--text-mid); width: 2px; height: 18px; opacity: 0.4; }
+
+  /* Percentile quality label sits below each value, dimmer */
+  .stat-bar-qual {
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .stat-bar-qual.away { text-align: left; }
+  .stat-bar-qual.home { text-align: right; }
 
   /* ── LOADING / ERROR ── */
   .loading-page { padding: 120px 24px; text-align: center; }
@@ -297,9 +342,158 @@
     .ctx-premier-pick-text { font-size: 17px; }
     .pick-row-text { font-size: 16px; }
     .pg-score-num { font-size: 36px; }
-    .stat-bar-row { grid-template-columns: 1fr 70px 1fr; gap: 8px; }
-    .stat-bar-team { font-size: 11px; gap: 6px; }
-    .stat-bar-val { font-size: 13px; }
+    .stat-bar { padding: 14px 14px 16px; }
+    .stat-bar-row { grid-template-columns: auto 1fr 2px 1fr auto; gap: 8px; }
+    .stat-bar-team { display: none; }
+    .stat-bar-val { font-size: 16px; }
+    .stat-bar-fill { height: 12px; }
+  }
+
+  /* ── ZONE 6: MATCHUP HISTORY ── */
+  .history-summary {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 24px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+  .history-side { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .history-side.away { align-items: flex-end; }
+  .history-side.home { align-items: flex-start; }
+  .history-team {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-mid);
+  }
+  .history-wins {
+    font-family: var(--serif);
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+  .history-wins.lead { color: var(--gold); }
+  .history-wins-lbl {
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  .history-center { text-align: center; }
+  .history-series-lbl {
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .history-series-val {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--gold);
+  }
+  .history-empty {
+    padding: 32px 24px;
+    text-align: center;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-row {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: border-color 0.15s;
+  }
+  .history-row:hover { border-color: var(--text-mid); }
+  .history-row-date {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-mid);
+  }
+  .history-row-date-year {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .history-row-date-meta { color: var(--text-light); font-size: 10px; margin-top: 2px; }
+  .history-row-matchup {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .history-row-side { display: flex; align-items: center; gap: 10px; font-family: var(--sans); font-size: 13px; }
+  .history-row-side.away { justify-content: flex-end; }
+  .history-row-side.home { justify-content: flex-start; }
+  .history-row-team { font-weight: 600; color: var(--text); }
+  .history-row-team.loser { color: var(--text-light); font-weight: 500; }
+  .history-row-score {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--text);
+    min-width: 28px;
+    text-align: center;
+  }
+  .history-row-score.loser { color: var(--text-light); font-weight: 500; }
+  .history-row-at {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  .history-row-tag {
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .history-row-tag.bowl { background: var(--gold-pale); color: var(--gold); border-color: var(--gold-pale); }
+  .history-row-tag.neutral { background: var(--cream-dark); color: var(--text-mid); }
+  @media (max-width: 720px) {
+    .history-row { grid-template-columns: 64px 1fr; gap: 10px; padding: 10px 14px; }
+    .history-row-tag { display: none; }
+    .history-row-date-year { font-size: 14px; }
+    .history-row-date-meta { font-size: 9px; }
+    .history-row-side { font-size: 12px; gap: 6px; }
+    .history-row-score { font-size: 15px; min-width: 22px; }
+    .history-summary { padding: 16px 14px; gap: 12px; }
+    .history-wins { font-size: 32px; }
+    .history-team { font-size: 10px; letter-spacing: 1px; }
   }
 </style>
 </head>
@@ -452,6 +646,18 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="section-meta" id="statsMeta"></div>
       </div>
       <div class="stat-bars" id="statBars"></div>
+    </div>
+
+    <!-- ZONE 6: MATCHUP HISTORY -->
+    <div class="section" id="historySection" style="display:none;">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">The Series</div>
+          <h2 class="section-title">Matchup <em>History</em></h2>
+        </div>
+        <div class="section-meta" id="historyMeta"></div>
+      </div>
+      <div id="historyContent"></div>
     </div>
 
   </div>
@@ -676,6 +882,7 @@ function renderGame(gameData, teamColors, rankings) {
     <a href="/upcoming.html">Upcoming</a>
     <span class="ctx-breadcrumb-sep">›</span>
     <span>${m.season} · ${seasonType}</span>
+    ${(gameData.market && gameData.market.simulated) ? '<span class="ctx-breadcrumb-sep">·</span><span class="ctx-sim-badge">⚠ Simulated Lines</span>' : ''}
   `;
   document.getElementById('ctxAwayName').textContent = at;
   document.getElementById('ctxHomeName').textContent = ht;
@@ -702,6 +909,7 @@ function renderGame(gameData, teamColors, rankings) {
   renderAllPicks(picks);
   renderHistory(picks);
   renderStatBars(gameData);
+  renderMatchupHistory(gameData);
 }
 
 function teamSubHTML(team, conf, rank) {
@@ -958,18 +1166,21 @@ function renderStatBars(gameData) {
   const meta = document.getElementById('statsMeta');
   meta.textContent = ts.stats_season ? `${ts.stats_season} season stats` : '';
 
+  const hPct = h.percentiles || {};
+  const aPctMap = a.percentiles || {};
+
   // All metrics we have, ordered by importance
-  // For each: label, away value, home value, "lower is better" flag
+  // For each: label, away value, home value, percentile key, "lower is better" flag, format
   const metrics = [
-    { lbl: 'SP+ Rating',           a: a.sp_rating,      h: h.sp_rating,      lowerBetter: false },
-    { lbl: 'Offensive PPA',        a: a.ppa_offense,    h: h.ppa_offense,    lowerBetter: false },
-    { lbl: 'Defensive PPA',        a: a.ppa_defense,    h: h.ppa_defense,    lowerBetter: true,  note: 'lower = better' },
-    { lbl: 'Passing PPA',          a: a.ppa_pass,       h: h.ppa_pass,       lowerBetter: false },
-    { lbl: 'Rushing PPA',          a: a.ppa_rush,       h: h.ppa_rush,       lowerBetter: false },
-    { lbl: 'Explosiveness',        a: a.explosiveness,  h: h.explosiveness,  lowerBetter: false },
-    { lbl: 'Success Rate',         a: a.success_rate,   h: h.success_rate,   lowerBetter: false, format: 'pct' },
-    { lbl: 'Stuff Rate',           a: a.stuff_rate,     h: h.stuff_rate,     lowerBetter: true,  note: 'lower = better', format: 'pct' },
-    { lbl: 'Havoc (Defense)',      a: a.havoc,          h: h.havoc,          lowerBetter: false, format: 'pct' }
+    { lbl: 'SP+ Rating',     a: a.sp_rating,     h: h.sp_rating,     key: 'sp_rating',     lowerBetter: false },
+    { lbl: 'Offensive PPA',  a: a.ppa_offense,   h: h.ppa_offense,   key: 'ppa_offense',   lowerBetter: false },
+    { lbl: 'Defensive PPA',  a: a.ppa_defense,   h: h.ppa_defense,   key: 'ppa_defense',   lowerBetter: true,  note: 'lower = better' },
+    { lbl: 'Passing PPA',    a: a.ppa_pass,      h: h.ppa_pass,      key: 'ppa_pass',      lowerBetter: false },
+    { lbl: 'Rushing PPA',    a: a.ppa_rush,      h: h.ppa_rush,      key: 'ppa_rush',      lowerBetter: false },
+    { lbl: 'Explosiveness',  a: a.explosiveness, h: h.explosiveness, key: 'explosiveness', lowerBetter: false },
+    { lbl: 'Success Rate',   a: a.success_rate,  h: h.success_rate,  key: 'success_rate',  lowerBetter: false, format: 'pct' },
+    { lbl: 'Stuff Rate',     a: a.stuff_rate,    h: h.stuff_rate,    key: 'stuff_rate',    lowerBetter: true,  note: 'lower = better', format: 'pct' },
+    { lbl: 'Havoc (Defense)',a: a.havoc,         h: h.havoc,         key: 'havoc',         lowerBetter: false, format: 'pct' }
   ];
 
   const available = metrics.filter(x => x.a != null || x.h != null);
@@ -977,18 +1188,27 @@ function renderStatBars(gameData) {
   document.getElementById('statBars').innerHTML = available.map(metric => {
     const aVal = metric.a;
     const hVal = metric.h;
-    const aWins = metric.lowerBetter
-      ? (aVal != null && (hVal == null || aVal < hVal))
-      : (aVal != null && (hVal == null || aVal > hVal));
-    const hWins = metric.lowerBetter
-      ? (hVal != null && (aVal == null || hVal < aVal))
-      : (hVal != null && (aVal == null || hVal > aVal));
 
-    // Bar widths — scale to a baseline so visualization is meaningful
-    // Use the larger absolute value as the 100% reference
-    const maxAbs = Math.max(Math.abs(aVal || 0), Math.abs(hVal || 0)) || 1;
-    const aPct = aVal != null ? Math.min(100, (Math.abs(aVal) / maxAbs) * 100) : 0;
-    const hPct = hVal != null ? Math.min(100, (Math.abs(hVal) / maxAbs) * 100) : 0;
+    // Percentiles from the backend, fallback to relative-only if missing
+    const aPercentile = aPctMap[metric.key];
+    const hPercentile = hPct[metric.key];
+
+    // Bar widths — use percentile if available (anchors to league-wide context).
+    // Fall back to relative scale if not.
+    let aBarWidth, hBarWidth;
+    if (aPercentile != null && hPercentile != null) {
+      aBarWidth = aPercentile;
+      hBarWidth = hPercentile;
+    } else {
+      const maxAbs = Math.max(Math.abs(aVal || 0), Math.abs(hVal || 0)) || 1;
+      aBarWidth = aVal != null ? Math.min(100, (Math.abs(aVal) / maxAbs) * 100) : 0;
+      hBarWidth = hVal != null ? Math.min(100, (Math.abs(hVal) / maxAbs) * 100) : 0;
+    }
+
+    const aColor = barColor(aPercentile);
+    const hColor = barColor(hPercentile);
+    const aQual = qualLabel(aPercentile);
+    const hQual = qualLabel(hPercentile);
 
     return `
       <div class="stat-bar">
@@ -997,23 +1217,46 @@ function renderStatBars(gameData) {
           ${metric.note ? `<span class="stat-bar-note">${metric.note}</span>` : ''}
         </div>
         <div class="stat-bar-row">
-          <div class="stat-bar-team away">
-            <span class="stat-bar-val ${aWins ? 'winner' : ''}">${fmtStat(aVal, metric.format)}</span>
-            <span>${m.away_team}</span>
+          <div>
+            <div class="stat-bar-val away">${fmtStat(aVal, metric.format)}</div>
+            ${aQual ? `<div class="stat-bar-qual away" style="color:${aColor};">${aQual}</div>` : ''}
           </div>
-          <div class="stat-bar-track">
-            <div class="stat-bar-fill away ${aWins ? '' : 'dimmed'}" style="width: ${aPct}%;"></div>
-            <div class="stat-bar-center"></div>
-            <div class="stat-bar-fill home ${hWins ? '' : 'dimmed'}" style="width: ${hPct}%;"></div>
-          </div>
-          <div class="stat-bar-team home">
-            <span>${m.home_team}</span>
-            <span class="stat-bar-val ${hWins ? 'winner' : ''}">${fmtStat(hVal, metric.format)}</span>
+          <div class="stat-bar-team away">${shortTeam(m.away_team)}</div>
+          <div class="stat-bar-fill away" style="width: ${aBarWidth}%; background: ${aColor};"></div>
+          <div class="stat-bar-center"></div>
+          <div class="stat-bar-fill home" style="width: ${hBarWidth}%; background: ${hColor};"></div>
+          <div class="stat-bar-team home">${shortTeam(m.home_team)}</div>
+          <div>
+            <div class="stat-bar-val home">${fmtStat(hVal, metric.format)}</div>
+            ${hQual ? `<div class="stat-bar-qual home" style="color:${hColor};">${hQual}</div>` : ''}
           </div>
         </div>
       </div>
     `;
   }).join('') || '<div class="all-picks-empty"><div class="all-picks-empty-title">No stats available yet</div><div class="all-picks-empty-sub">Team performance data will populate after games are played this season.</div></div>';
+}
+
+// Match team page: percentile → color + qualitative label
+function barColor(pct) {
+  if (pct == null) return 'var(--text-light)';
+  if (pct >= 75) return '#4A7A4A';   // green - elite/strong
+  if (pct >= 50) return '#B8922A';   // gold - above average
+  if (pct >= 25) return '#C5A878';   // tan - below average
+  return '#7A4A4A';                  // rust - weak
+}
+function qualLabel(pct) {
+  if (pct == null) return '';
+  if (pct >= 90) return 'Elite';
+  if (pct >= 75) return 'Strong';
+  if (pct >= 50) return 'Above Avg';
+  if (pct >= 25) return 'Below Avg';
+  return 'Weak';
+}
+function shortTeam(name) {
+  if (!name) return '';
+  // Keep short names as-is, truncate long ones
+  if (name.length <= 12) return name;
+  return name.replace(/(State|University)$/, '').trim();
 }
 
 function fmtStat(val, format) {
@@ -1028,6 +1271,118 @@ function darken(hex, amt) {
   const g = parseInt(hex.slice(3,5), 16);
   const b = parseInt(hex.slice(5,7), 16);
   return '#' + [r,g,b].map(v => Math.max(0, Math.round(v * (1 - amt))).toString(16).padStart(2, '0')).join('');
+}
+
+// ── ZONE 6: MATCHUP HISTORY ──
+function renderMatchupHistory(gameData) {
+  const hist = gameData.history || { games: [], summary: {} };
+  const games = hist.games || [];
+  const summary = hist.summary || {};
+  const m = gameData.matchup;
+  const section = document.getElementById('historySection');
+
+  if (!games.length) {
+    // Hide the section if there's no prior history
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  document.getElementById('historyMeta').textContent =
+    `${games.length} prior ${games.length === 1 ? 'meeting' : 'meetings'}`;
+
+  const htWins = summary.home_team_wins || 0;
+  const atWins = summary.away_team_wins || 0;
+  const total  = summary.total_meetings || (htWins + atWins);
+
+  // Determine series lead text
+  let seriesText = '';
+  if (htWins === atWins) {
+    seriesText = `Series tied ${htWins}-${atWins}`;
+  } else if (htWins > atWins) {
+    seriesText = `${shortTeam(m.home_team)} leads ${htWins}-${atWins}`;
+  } else {
+    seriesText = `${shortTeam(m.away_team)} leads ${atWins}-${htWins}`;
+  }
+
+  // Summary card: away wins | center label | home wins
+  const summaryHTML = `
+    <div class="history-summary">
+      <div class="history-side away">
+        <div class="history-team">${shortTeam(m.away_team)}</div>
+        <div class="history-wins ${atWins > htWins ? 'lead' : ''}">${atWins}</div>
+        <div class="history-wins-lbl">${atWins === 1 ? 'Win' : 'Wins'}</div>
+      </div>
+      <div class="history-center">
+        <div class="history-series-lbl">All-Time Series</div>
+        <div class="history-series-val">${seriesText}</div>
+      </div>
+      <div class="history-side home">
+        <div class="history-team">${shortTeam(m.home_team)}</div>
+        <div class="history-wins ${htWins > atWins ? 'lead' : ''}">${htWins}</div>
+        <div class="history-wins-lbl">${htWins === 1 ? 'Win' : 'Wins'}</div>
+      </div>
+    </div>
+  `;
+
+  // List of past meetings
+  const listHTML = `
+    <div class="history-list">
+      ${games.map(g => {
+        const hp = g.home_points != null ? g.home_points : 0;
+        const ap = g.away_points != null ? g.away_points : 0;
+        const homeWon = hp > ap;
+        const awayWon = ap > hp;
+        const tie = hp === ap;
+
+        // Game-side label: was this game's away team also the away team in the current matchup?
+        // We label sides relative to the historical game, not the upcoming one
+        const isBowl = g.season_type === 'postseason';
+        const isNeutral = g.neutral_site;
+        const dateMeta = formatHistoryDateMeta(g);
+
+        return `
+          <a class="history-row" href="/game.html?id=${g.game_id}" style="text-decoration:none;color:inherit;">
+            <div class="history-row-date">
+              <div class="history-row-date-year">${g.season}</div>
+              <div class="history-row-date-meta">${dateMeta}</div>
+            </div>
+            <div class="history-row-matchup">
+              <div class="history-row-side away">
+                <span class="history-row-team ${homeWon ? 'loser' : ''}">${shortTeam(g.away_team)}</span>
+                <span class="history-row-score ${homeWon ? 'loser' : ''}">${ap}</span>
+              </div>
+              <div class="history-row-at">${isNeutral ? 'vs' : 'at'}</div>
+              <div class="history-row-side home">
+                <span class="history-row-score ${awayWon ? 'loser' : ''}">${hp}</span>
+                <span class="history-row-team ${awayWon ? 'loser' : ''}">${shortTeam(g.home_team)}</span>
+              </div>
+            </div>
+            <div>
+              ${isBowl ? '<span class="history-row-tag bowl">Bowl</span>' :
+                isNeutral ? '<span class="history-row-tag neutral">Neutral</span>' :
+                `<span class="history-row-tag">Wk ${g.week || '?'}</span>`}
+            </div>
+          </a>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  document.getElementById('historyContent').innerHTML = summaryHTML + listHTML;
+}
+
+function formatHistoryDateMeta(g) {
+  // Try to get month/day from start_date
+  if (g.start_date) {
+    try {
+      const d = new Date(g.start_date);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+    } catch (e) { /* fall through */ }
+  }
+  return g.season_type === 'postseason' ? 'Postseason' : `Week ${g.week || '?'}`;
 }
 
 init().catch(err => { console.error('Fatal:', err); showError(); });
