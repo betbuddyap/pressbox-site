@@ -1301,7 +1301,8 @@ function renderStatBars(gameData) {
         return renderBarRow(s.label, s.lowerBetter ? 'lower = better' : '', aDisplay, hDisplay, aPct, hPct, aColor, hColor, '', '');
       }).join('');
     } else {
-      // Other groups — use stat_ranks with percentiles
+      // Other groups — use stat_ranks with value-anchored scaling
+      // (min → 0%, median → 50%, max → 100%)
       rowsHtml = group.keys.map(key => {
         const aRec = aRanks[key];
         const hRec = hRanks[key];
@@ -1312,8 +1313,53 @@ function renderStatBars(gameData) {
         const label = (aRec && aRec.label) || (hRec && hRec.label) || key;
         const lowerBetter = (aRec && !aRec.higher_better) || (hRec && !hRec.higher_better);
 
-        const aBarWidth = aPct != null ? aPct : (aRec ? 5 : 0);
-        const hBarWidth = hPct != null ? hPct : (hRec ? 5 : 0);
+        // Value-anchored bar width: min=0, median=50, max=100.
+        // Below median scales 0-50; above median scales 50-100. For lower-better
+        // metrics, the scale flips so a low (good) value still produces a long bar.
+        const refRec = aRec || hRec;
+        const lmin = refRec.league_min;
+        const lmax = refRec.league_max;
+        const lmed = refRec.league_median;
+
+        function valueWidth(v) {
+          if (v == null) return 0;
+          if (lmin == null || lmax == null || lmed == null) {
+            // No league context — fall back to percentile
+            return null;
+          }
+          if (lmax === lmin) return 50;
+
+          let pct;
+          // Anchored scaling: split at median
+          if (lowerBetter) {
+            // Lower is better, so invert: max value → 0%, min value → 100%
+            if (v <= lmed) {
+              // Better than median → 50%-100%
+              const denom = (lmed - lmin) || 1;
+              pct = 50 + ((lmed - v) / denom) * 50;
+            } else {
+              // Worse than median → 0%-50%
+              const denom = (lmax - lmed) || 1;
+              pct = 50 - ((v - lmed) / denom) * 50;
+            }
+          } else {
+            // Higher is better: max value → 100%, min value → 0%
+            if (v >= lmed) {
+              const denom = (lmax - lmed) || 1;
+              pct = 50 + ((v - lmed) / denom) * 50;
+            } else {
+              const denom = (lmed - lmin) || 1;
+              pct = 50 - ((lmed - v) / denom) * 50;
+            }
+          }
+          return Math.max(2, Math.min(100, pct));
+        }
+
+        let aBarWidth = aRec ? valueWidth(aRec.value) : 0;
+        let hBarWidth = hRec ? valueWidth(hRec.value) : 0;
+        // Fallback to percentile if league context missing
+        if (aBarWidth === null) aBarWidth = aPct != null ? aPct : (aRec ? 5 : 0);
+        if (hBarWidth === null) hBarWidth = hPct != null ? hPct : (hRec ? 5 : 0);
 
         return renderBarRow(
           label,
