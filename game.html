@@ -1396,11 +1396,29 @@ function renderStatBars(gameData) {
           return Math.max(2, Math.min(100, pct));
         }
 
+        // Quality (for color + label) — derive from where the value sits relative
+        // to league min/median/max, then invert for lowerBetter so a low (good)
+        // value gets high quality. This is more accurate than stat_ranks.percentile
+        // when the underlying league sample is sparse for a given metric.
+        function qualityPct(v) {
+          if (v == null || lmin == null || lmax == null || lmax === lmin) return null;
+          let pos = ((v - lmin) / (lmax - lmin)) * 100;
+          if (lowerBetter) pos = 100 - pos;
+          return Math.max(0, Math.min(100, pos));
+        }
+
         let aBarWidth = aRec ? valueWidth(aRec.value) : 0;
         let hBarWidth = hRec ? valueWidth(hRec.value) : 0;
         // Fallback to percentile if league context missing
         if (aBarWidth === null) aBarWidth = aPct != null ? aPct : (aRec ? 5 : 0);
         if (hBarWidth === null) hBarWidth = hPct != null ? hPct : (hRec ? 5 : 0);
+
+        // Color and label come from the league-position quality, falling back
+        // to stat_ranks percentile if no league context.
+        let aQualityPct = aRec ? qualityPct(aRec.value) : null;
+        let hQualityPct = hRec ? qualityPct(hRec.value) : null;
+        if (aQualityPct == null) aQualityPct = aPct;
+        if (hQualityPct == null) hQualityPct = hPct;
 
         return renderBarRow(
           label,
@@ -1408,8 +1426,8 @@ function renderStatBars(gameData) {
           fmtRankVal(aRec),
           fmtRankVal(hRec),
           aBarWidth, hBarWidth,
-          barColor(aPct), barColor(hPct),
-          qualLabel(aPct), qualLabel(hPct)
+          barColor(aQualityPct), barColor(hQualityPct),
+          qualLabel(aQualityPct), qualLabel(hQualityPct)
         );
       }).join('');
     }
