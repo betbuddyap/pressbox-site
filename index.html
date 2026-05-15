@@ -706,7 +706,27 @@
   .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
   .footer-legal-links a:hover { color: var(--text-mid); }
 
-</style>
+
+
+  /* ── MOBILE POLISH ── */
+  @media (max-width: 600px) {
+    .hero-headline { font-size: 28px; letter-spacing: -0.5px; }
+    .hero-sub { font-size: 15px; }
+    .hero-actions { flex-direction: column; align-items: stretch; gap: 12px; }
+    .hero-actions .btn-primary { text-align: center; }
+    .waitlist-title { font-size: 30px; letter-spacing: -0.3px; }
+    .product-num { font-size: 44px; }
+    .product-card { padding: 24px 20px; }
+    .ticker { font-size: 9px; letter-spacing: 1.5px; }
+    .ticker-track span { margin: 0 18px; }
+  }
+  @media (max-width: 400px) {
+    .hero-headline { font-size: 24px; }
+    .waitlist-title { font-size: 26px; }
+    .section-title { font-size: 26px !important; }
+  }
+
+  </style>
 </head>
 <body>
 
