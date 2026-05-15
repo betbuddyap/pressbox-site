@@ -249,7 +249,24 @@
   .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
   .footer-legal-links a:hover { color: var(--text-mid); }
 
-</style>
+
+
+  /* ── MOBILE POLISH ── */
+  @media (max-width: 700px) {
+    .table-header, .rank-row { grid-template-columns: 40px 1fr 90px; padding: 0 12px; }
+    .player-table-header, .player-row { grid-template-columns: 40px 1fr 60px 80px; padding: 0 12px; }
+    .rank-team-name { font-size: 15px; }
+    .main { padding: 24px 16px 60px; }
+    .view-tab { font-size: 11px; padding: 10px 12px; }
+  }
+  @media (max-width: 480px) {
+    .table-header, .rank-row { grid-template-columns: 32px 1fr 70px; }
+    .player-table-header, .player-row { grid-template-columns: 32px 1fr 50px 60px; gap: 4px; }
+    .rank-team-name { font-size: 13px; }
+    .rank-num { font-size: 14px; }
+  }
+
+  </style>
 </head>
 <body>
 
