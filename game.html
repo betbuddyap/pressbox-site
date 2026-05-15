@@ -225,9 +225,9 @@
   .lifecycle-empty { padding: 24px; text-align: center; font-family: var(--sans); font-size: 13px; color: var(--text-light); font-style: italic; }
 
   /* ── ZONE 5: STAT BARS ── */
-  .stat-bars { display: flex; flex-direction: column; gap: 12px; }
-  .stat-bar { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 16px 22px 18px; }
-  .stat-bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .stat-bars { display: flex; flex-direction: column; gap: 8px; }
+  .stat-bar { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 10px 22px 12px; }
+  .stat-bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
   .stat-bar-lbl { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-mid); }
   .stat-bar-note { font-family: var(--sans); font-size: 9px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; text-transform: uppercase; }
 
@@ -238,14 +238,15 @@
     grid-template-columns: auto auto 1fr 2px 1fr auto auto;
     align-items: center;
     gap: 10px;
-    padding: 2px 0;
+    padding: 0;
   }
   .stat-bar-val {
     font-family: var(--serif);
     font-weight: 700;
-    font-size: 18px;
+    font-size: 17px;
     color: var(--text);
     white-space: nowrap;
+    line-height: 1.1;
   }
   .stat-bar-val.away { text-align: left; }
   .stat-bar-val.home { text-align: right; }
@@ -266,23 +267,24 @@
   .stat-bar-team.home { text-align: right; padding-right: 4px; }
 
   .stat-bar-fill {
-    height: 14px;
-    border-radius: 7px;
+    height: 12px;
+    border-radius: 6px;
     transition: width 0.3s ease, background 0.2s;
     min-width: 4px;
   }
   .stat-bar-fill.away { justify-self: end; margin-right: 4px; }
   .stat-bar-fill.home { justify-self: start; margin-left: 4px; }
-  .stat-bar-center { background: var(--text-mid); width: 2px; height: 18px; opacity: 0.4; }
+  .stat-bar-center { background: var(--text-mid); width: 2px; height: 16px; opacity: 0.4; }
 
-  /* Percentile quality label sits below each value, dimmer */
+  /* Percentile quality label — inline next to the number, dimmer */
   .stat-bar-qual {
     font-family: var(--sans);
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
-    margin-top: 2px;
+    margin-top: 1px;
+    line-height: 1;
   }
   .stat-bar-qual.away { text-align: left; }
   .stat-bar-qual.home { text-align: right; }
