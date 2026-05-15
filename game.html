@@ -225,69 +225,82 @@
   .lifecycle-empty { padding: 24px; text-align: center; font-family: var(--sans); font-size: 13px; color: var(--text-light); font-style: italic; }
 
   /* ── ZONE 5: STAT BARS ── */
-  .stat-bars { display: flex; flex-direction: column; gap: 8px; }
-  .stat-bar { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 10px 22px 12px; }
-  .stat-bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-  .stat-bar-lbl { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-mid); }
-  .stat-bar-note { font-family: var(--sans); font-size: 9px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; text-transform: uppercase; }
+  .stat-bars { display: flex; flex-direction: column; gap: 3px; }
+  .stat-bar { background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 6px 16px 7px; }
+  .stat-bar-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+  .stat-bar-lbl { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: var(--text-mid); }
+  .stat-bar-note { font-family: var(--sans); font-size: 8px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; text-transform: uppercase; }
 
-  /* Row layout: [number] [team-name] [bar] [center] [bar] [team-name] [number]
+  /* Group header label between metric clusters */
+  .stat-group-label {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 16px;
+    margin-bottom: 5px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-group-label:first-child { margin-top: 0; }
+
+  /* Row layout: [number+qual] [team-name] [bar] [center] [bar] [team-name] [number+qual]
      Numbers anchor to the far edges; team names live next to numbers. */
   .stat-bar-row {
     display: grid;
     grid-template-columns: auto auto 1fr 2px 1fr auto auto;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 0;
   }
+  .stat-bar-num-block { display: flex; flex-direction: column; gap: 0; }
+  .stat-bar-num-block.home { align-items: flex-end; }
   .stat-bar-val {
     font-family: var(--serif);
     font-weight: 700;
-    font-size: 17px;
+    font-size: 14px;
     color: var(--text);
     white-space: nowrap;
-    line-height: 1.1;
+    line-height: 1.05;
   }
-  .stat-bar-val.away { text-align: left; }
-  .stat-bar-val.home { text-align: right; }
 
   .stat-bar-team {
     font-family: var(--sans);
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 600;
     color: var(--text-mid);
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
     white-space: nowrap;
-    max-width: 90px;
+    max-width: 80px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .stat-bar-team.away { text-align: left; padding-left: 4px; }
-  .stat-bar-team.home { text-align: right; padding-right: 4px; }
+  .stat-bar-team.away { text-align: left; padding-left: 2px; }
+  .stat-bar-team.home { text-align: right; padding-right: 2px; }
 
   .stat-bar-fill {
-    height: 12px;
-    border-radius: 6px;
+    height: 8px;
+    border-radius: 4px;
     transition: width 0.3s ease, background 0.2s;
     min-width: 4px;
   }
-  .stat-bar-fill.away { justify-self: end; margin-right: 4px; }
-  .stat-bar-fill.home { justify-self: start; margin-left: 4px; }
-  .stat-bar-center { background: var(--text-mid); width: 2px; height: 16px; opacity: 0.4; }
+  .stat-bar-fill.away { justify-self: end; margin-right: 3px; }
+  .stat-bar-fill.home { justify-self: start; margin-left: 3px; }
+  .stat-bar-center { background: var(--text-mid); width: 2px; height: 12px; opacity: 0.4; }
 
-  /* Percentile quality label — inline next to the number, dimmer */
+  /* Percentile quality label — sits below the number, very compact */
   .stat-bar-qual {
     font-family: var(--sans);
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
-    margin-top: 1px;
+    margin-top: 0;
     line-height: 1;
   }
-  .stat-bar-qual.away { text-align: left; }
-  .stat-bar-qual.home { text-align: right; }
 
   /* ── LOADING / ERROR ── */
   .loading-page { padding: 120px 24px; text-align: center; }
@@ -1165,77 +1178,165 @@ function renderStatBars(gameData) {
   const h = ts.home || {};
   const a = ts.away || {};
   const m = gameData.matchup;
+  const hRanks = h.stat_ranks || {};
+  const aRanks = a.stat_ranks || {};
+
   const meta = document.getElementById('statsMeta');
   meta.textContent = ts.stats_season ? `${ts.stats_season} season stats` : '';
 
-  const hPct = h.percentiles || {};
-  const aPctMap = a.percentiles || {};
-
-  // All metrics we have, ordered by importance
-  // For each: label, away value, home value, percentile key, "lower is better" flag, format
-  const metrics = [
-    { lbl: 'SP+ Rating',     a: a.sp_rating,     h: h.sp_rating,     key: 'sp_rating',     lowerBetter: false },
-    { lbl: 'Offensive PPA',  a: a.ppa_offense,   h: h.ppa_offense,   key: 'ppa_offense',   lowerBetter: false },
-    { lbl: 'Defensive PPA',  a: a.ppa_defense,   h: h.ppa_defense,   key: 'ppa_defense',   lowerBetter: true,  note: 'lower = better' },
-    { lbl: 'Passing PPA',    a: a.ppa_pass,      h: h.ppa_pass,      key: 'ppa_pass',      lowerBetter: false },
-    { lbl: 'Rushing PPA',    a: a.ppa_rush,      h: h.ppa_rush,      key: 'ppa_rush',      lowerBetter: false },
-    { lbl: 'Explosiveness',  a: a.explosiveness, h: h.explosiveness, key: 'explosiveness', lowerBetter: false },
-    { lbl: 'Success Rate',   a: a.success_rate,  h: h.success_rate,  key: 'success_rate',  lowerBetter: false, format: 'pct' },
-    { lbl: 'Stuff Rate',     a: a.stuff_rate,    h: h.stuff_rate,    key: 'stuff_rate',    lowerBetter: true,  note: 'lower = better', format: 'pct' },
-    { lbl: 'Havoc (Defense)',a: a.havoc,         h: h.havoc,         key: 'havoc',         lowerBetter: false, format: 'pct' }
+  // Stat groups — same buckets the team page uses, in the same order.
+  // We render a group header before each section.
+  const groups = [
+    {
+      label: 'Power Ratings',
+      stats: [
+        { key: 'sp_rating',     label: 'SP+ Overall',  fmt: v => (v >= 0 ? '+' : '') + v.toFixed(1), src: 'topLevel' },
+        { key: 'sp_offense',    label: 'SP+ Offense',  fmt: v => (v >= 0 ? '+' : '') + v.toFixed(1), src: 'topLevel' },
+        { key: 'sp_defense',    label: 'SP+ Defense',  fmt: v => (v >= 0 ? '+' : '') + v.toFixed(1), src: 'topLevel', lowerBetter: true },
+        { key: 'elo',           label: 'Elo',          fmt: v => v.toFixed(0),                       src: 'topLevel' },
+      ]
+    },
+    {
+      label: 'Offense',
+      keys: [
+        'points_per_game', 'yards_per_game', 'yards_per_play',
+        'pass_yards_per_game', 'rush_yards_per_game',
+        'first_downs_per_game', 'third_down_pct', 'red_zone_pct',
+        'plays_per_game', 'top_pct', 'seconds_per_play',
+        'off_success_rate', 'off_explosiveness'
+      ]
+    },
+    {
+      label: 'Defense',
+      keys: [
+        'points_allowed_per_game', 'yards_allowed_per_game', 'yards_allowed_per_play',
+        'pass_yards_allowed_per_game', 'rush_yards_allowed_per_game',
+        'opp_third_down_pct', 'opp_red_zone_pct', 'opp_plays_per_game',
+        'def_success_rate', 'def_explosiveness', 'def_havoc_total', 'def_stuff_rate'
+      ]
+    },
+    {
+      label: 'Turnovers & Special Teams',
+      keys: [
+        'turnovers_per_game', 'takeaways_per_game', 'st_points_per_game',
+        'penalties_per_game', 'penalty_yards_per_game'
+      ]
+    }
   ];
 
-  const available = metrics.filter(x => x.a != null || x.h != null);
-
-  document.getElementById('statBars').innerHTML = available.map(metric => {
-    const aVal = metric.a;
-    const hVal = metric.h;
-
-    // Percentiles from the backend, fallback to relative-only if missing
-    const aPercentile = aPctMap[metric.key];
-    const hPercentile = hPct[metric.key];
-
-    // Bar widths — use percentile if available (anchors to league-wide context).
-    // Fall back to relative scale if not.
-    let aBarWidth, hBarWidth;
-    if (aPercentile != null && hPercentile != null) {
-      aBarWidth = aPercentile;
-      hBarWidth = hPercentile;
-    } else {
-      const maxAbs = Math.max(Math.abs(aVal || 0), Math.abs(hVal || 0)) || 1;
-      aBarWidth = aVal != null ? Math.min(100, (Math.abs(aVal) / maxAbs) * 100) : 0;
-      hBarWidth = hVal != null ? Math.min(100, (Math.abs(hVal) / maxAbs) * 100) : 0;
+  // Format an advanced rate value like 0.513 → "51.3%"
+  const fmtRate = v => (v == null ? '—' : (v * 100).toFixed(1) + '%');
+  // Generic value formatter for stat_ranks rows
+  const fmtRankVal = (rec) => {
+    if (!rec || rec.value == null) return '—';
+    const v = rec.value;
+    const unit = rec.unit || '';
+    const label = (rec.label || '').toLowerCase();
+    if (label.includes('rate') || label.includes('explosiveness') || label.includes('havoc') || label.includes('stuff')) {
+      return (v * 100).toFixed(1) + '%';
     }
+    if (unit === '%') return (typeof v === 'number' ? v.toFixed(1) : v) + '%';
+    if (unit === 's') return (typeof v === 'number' ? v.toFixed(2) : v) + 's';
+    return typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(1)) : v;
+  };
 
-    const aColor = barColor(aPercentile);
-    const hColor = barColor(hPercentile);
-    const aQual = qualLabel(aPercentile);
-    const hQual = qualLabel(hPercentile);
-
+  // Render a single bar row, given values and percentiles
+  function renderBarRow(label, note, aVal, hVal, aPct, hPct, aColor, hColor, aQual, hQual) {
     return `
       <div class="stat-bar">
         <div class="stat-bar-head">
-          <span class="stat-bar-lbl">${metric.lbl}</span>
-          ${metric.note ? `<span class="stat-bar-note">${metric.note}</span>` : ''}
+          <span class="stat-bar-lbl">${label}</span>
+          ${note ? `<span class="stat-bar-note">${note}</span>` : ''}
         </div>
         <div class="stat-bar-row">
           <div>
-            <div class="stat-bar-val away">${fmtStat(aVal, metric.format)}</div>
+            <div class="stat-bar-val away">${aVal}</div>
             ${aQual ? `<div class="stat-bar-qual away" style="color:${aColor};">${aQual}</div>` : ''}
           </div>
           <div class="stat-bar-team away">${shortTeam(m.away_team)}</div>
-          <div class="stat-bar-fill away" style="width: ${aBarWidth}%; background: ${aColor};"></div>
+          <div class="stat-bar-fill away" style="width: ${aPct}%; background: ${aColor};"></div>
           <div class="stat-bar-center"></div>
-          <div class="stat-bar-fill home" style="width: ${hBarWidth}%; background: ${hColor};"></div>
+          <div class="stat-bar-fill home" style="width: ${hPct}%; background: ${hColor};"></div>
           <div class="stat-bar-team home">${shortTeam(m.home_team)}</div>
           <div>
-            <div class="stat-bar-val home">${fmtStat(hVal, metric.format)}</div>
+            <div class="stat-bar-val home">${hVal}</div>
             ${hQual ? `<div class="stat-bar-qual home" style="color:${hColor};">${hQual}</div>` : ''}
           </div>
         </div>
       </div>
     `;
-  }).join('') || '<div class="all-picks-empty"><div class="all-picks-empty-title">No stats available yet</div><div class="all-picks-empty-sub">Team performance data will populate after games are played this season.</div></div>';
+  }
+
+  const html = groups.map(group => {
+    let rowsHtml = '';
+
+    if (group.stats) {
+      // Power Ratings — uses top-level fields, percentiles aren't ranked league-wide here
+      // so we just color by relative position.
+      rowsHtml = group.stats.map(s => {
+        const aVal = a[s.key];
+        const hVal = h[s.key];
+        if (aVal == null && hVal == null) return '';
+
+        const aDisplay = aVal != null ? s.fmt(aVal) : '—';
+        const hDisplay = hVal != null ? s.fmt(hVal) : '—';
+
+        // Relative percentile: whichever team has higher (or lower if lowerBetter) gets 100, other scales relative
+        let aPct = 50, hPct = 50;
+        if (aVal != null && hVal != null) {
+          const aBetter = s.lowerBetter ? aVal < hVal : aVal > hVal;
+          const ratio = Math.min(1, Math.abs((aVal - hVal)) / Math.max(Math.abs(aVal), Math.abs(hVal), 1));
+          if (aBetter) { aPct = 100; hPct = 100 - ratio * 70; }
+          else if (aVal !== hVal) { hPct = 100; aPct = 100 - ratio * 70; }
+        } else if (aVal != null) { aPct = 100; hPct = 0; }
+        else if (hVal != null) { hPct = 100; aPct = 0; }
+
+        const aColor = aVal != null && hVal != null
+          ? ((s.lowerBetter ? aVal < hVal : aVal > hVal) ? '#4A7A4A' : '#C5A878')
+          : 'var(--text-light)';
+        const hColor = aVal != null && hVal != null
+          ? ((s.lowerBetter ? hVal < aVal : hVal > aVal) ? '#4A7A4A' : '#C5A878')
+          : 'var(--text-light)';
+
+        return renderBarRow(s.label, s.lowerBetter ? 'lower = better' : '', aDisplay, hDisplay, aPct, hPct, aColor, hColor, '', '');
+      }).join('');
+    } else {
+      // Other groups — use stat_ranks with percentiles
+      rowsHtml = group.keys.map(key => {
+        const aRec = aRanks[key];
+        const hRec = hRanks[key];
+        if (!aRec && !hRec) return '';
+
+        const aPct = aRec ? aRec.percentile : null;
+        const hPct = hRec ? hRec.percentile : null;
+        const label = (aRec && aRec.label) || (hRec && hRec.label) || key;
+        const lowerBetter = (aRec && !aRec.higher_better) || (hRec && !hRec.higher_better);
+
+        const aBarWidth = aPct != null ? aPct : (aRec ? 5 : 0);
+        const hBarWidth = hPct != null ? hPct : (hRec ? 5 : 0);
+
+        return renderBarRow(
+          label,
+          lowerBetter ? 'lower = better' : '',
+          fmtRankVal(aRec),
+          fmtRankVal(hRec),
+          aBarWidth, hBarWidth,
+          barColor(aPct), barColor(hPct),
+          qualLabel(aPct), qualLabel(hPct)
+        );
+      }).join('');
+    }
+
+    if (!rowsHtml.trim()) return '';
+
+    return `
+      <div class="stat-group-label">${group.label}</div>
+      ${rowsHtml}
+    `;
+  }).join('');
+
+  document.getElementById('statBars').innerHTML = html ||
+    '<div class="all-picks-empty"><div class="all-picks-empty-title">No stats available yet</div><div class="all-picks-empty-sub">Team performance data will populate after games are played this season.</div></div>';
 }
 
 // Match team page: percentile → color + qualitative label
