@@ -194,9 +194,9 @@
   .gc.gotw-card { min-height: 320px; }
   .gc.gotw-card .gc-content { min-height: 320px; padding: 28px 36px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; position: relative; z-index: 3; }
   .gc.gotw-card .gc-ribbon { font-size: 11px; }
-  .gc.gotw-card .gc-team-name { font-size: 44px; }
+  .gc.gotw-card .gc-team-name { font-size: 56px; }
   .gc.gotw-card .gc-team-sub { font-size: 11px; }
-  .gc.gotw-card .gc-at { font-size: 26px; padding: 0 18px; }
+  .gc.gotw-card .gc-at { font-size: 32px; padding: 0 22px; }
   .gc.gotw-card .gc-why { font-size: 14px; max-width: 520px; }
   .gc.gotw-card .gc-cta { font-size: 11px; }
 
@@ -206,7 +206,7 @@
   .gc.featured-card .gc-content { min-height: 220px; padding: 22px 16px 18px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; position: relative; z-index: 3; }
   .gc.featured-card .gc-ribbon { font-size: 9px; padding: 4px 10px; }
   .gc.featured-card .gc-meta { font-size: 10px; }
-  .gc.featured-card .gc-team-name { font-size: 19px; line-height: 1.1; }
+  .gc.featured-card .gc-team-name { font-size: 22px; line-height: 1.1; }
   .gc.featured-card .gc-team-sub { font-size: 9px; gap: 6px; margin-top: 4px; }
   .gc.featured-card .gc-team-side.away { padding-right: 8px; }
   .gc.featured-card .gc-team-side.home { padding-left: 8px; }
@@ -216,9 +216,81 @@
   .gc.featured-card .gc-pickbar-val { font-size: 13px; }
   .gc.featured-card .gc-pickbar-book { font-size: 9px; }
 
+  /* ── PARLAY CARD (3-leg list view) ── */
+  .gc.parlay-card .parlay-content {
+    position: relative; z-index: 3;
+    padding: 22px 18px 18px;
+    min-height: 220px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .parlay-title {
+    font-family: var(--serif); font-style: italic;
+    font-size: 14px; font-weight: 700;
+    color: var(--gold-light);
+    text-align: center;
+    padding-top: 22px;   /* clears the ribbon */
+  }
+  .parlay-legs {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .parlay-leg {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.45);
+    border-radius: 3px;
+    font-family: var(--serif); font-weight: 700;
+    color: var(--cream);
+    font-size: 13px;
+    line-height: 1.2;
+  }
+  .parlay-leg-tier {
+    font-family: var(--sans);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .parlay-leg-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .parlay-leg-tier.tier-a  { background: var(--gold-light); color: var(--ink); }
+  .parlay-leg-tier.tier-sm { background: var(--sage); color: #fff; }
+  .parlay-leg-tier.tier-ls { background: var(--rust); color: #fff; }
+  .parlay-leg-pick {
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .parlay-leg-placeholder {
+    justify-content: center; color: rgba(248,245,238,0.5);
+    font-style: italic; font-weight: 400; font-size: 12px;
+  }
+  .parlay-odds {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(184,146,42,0.18);
+    border: 1px solid rgba(184,146,42,0.4);
+    border-radius: 3px;
+    margin-top: 2px;
+  }
+  .parlay-odds-lbl {
+    font-family: var(--sans); font-size: 9px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--gold-light);
+  }
+  .parlay-odds-val {
+    font-family: var(--serif); font-style: italic; font-weight: 700;
+    font-size: 22px; color: var(--gold-light);
+    line-height: 1;
+  }
+
   /* ── MEDIUM (Ranked + Conference) ── */
   .gc.medium { min-height: 130px; }
-  .gc.medium .gc-content { padding: 14px 18px; display: flex; flex-direction: column; justify-content: space-between; min-height: 130px; gap: 10px; position: relative; z-index: 3; }
+  .gc.medium .gc-content { padding: 14px 18px; min-height: 130px; position: relative; z-index: 3; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  .gc.medium .gc-strip { position: absolute; top: 10px; right: 14px; left: 14px; }
+  .gc.medium .gc-teams { padding: 2px 0; }
+  .gc.medium .gc-pickbar { margin-top: 0; }
   .gc.medium .gc-ribbon { font-size: 9px; padding: 4px 9px 4px 10px; }
   .gc.medium .gc-meta { font-size: 11px; }
   .gc.medium .gc-team-name { font-size: 20px; }
@@ -693,13 +765,14 @@ function selectFlagshipGames(games, gotwId) {
     .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
   const totw = totalPicks[0];
 
-  const apicks = withPicks.filter(x => x.pick.tier === 'ap')
-    .sort((a, b) => {
-      const aMargin = Math.abs((teamScores[a.game.home_team] || 0) - (teamScores[a.game.away_team] || 0));
-      const bMargin = Math.abs((teamScores[b.game.home_team] || 0) - (teamScores[b.game.away_team] || 0));
-      return bMargin - aMargin;
-    });
-  const parlay = apicks[0] || withPicks[Math.min(2, withPicks.length - 1)];
+  // Parlay: 3 distinct legs from the best A+/A picks. Pick from different games.
+  // Exclude POTW + TOTW + GotW to keep parlay independent of the other flagships.
+  const excludedIds = new Set([gotwId, potw && potw.game.game_id, totw && totw.game.game_id].filter(Boolean));
+  const parlayPool = withPicks
+    .filter(x => !excludedIds.has(x.game.game_id))
+    .filter(x => x.pick.tier === 'ap' || x.pick.tier === 'a')
+    .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
+  const parlay = parlayPool.slice(0, 3);
 
   return { potw, totw, parlay };
 }
@@ -834,20 +907,28 @@ function renderWeek(week) {
 }
 
 function buildConfFilter(games) {
+  // Count games per conference where THAT conference appears on either side
   const confs = {};
   games.forEach(g => {
-    const c = g.home_conference;
-    if (c) confs[c] = (confs[c] || 0) + 1;
+    const hc = g.home_conference;
+    const ac = g.away_conference;
+    if (hc) confs[hc] = (confs[hc] || 0) + 1;
+    // Only count once per game even if both teams are in the same conference
+    if (ac && ac !== hc) confs[ac] = (confs[ac] || 0) + 1;
   });
+  // Order by count descending
   const sorted = Object.entries(confs).sort((a, b) => b[1] - a[1]);
-  const html = ['<button class="conf-pill ' + (currentConf === 'all' ? 'active' : '') + '" onclick="setConf(\'all\')">All</button>']
-    .concat(sorted.map(([c, n]) =>
-      `<button class="conf-pill ${currentConf === c ? 'active' : ''}" onclick="setConf('${c.replace(/'/g, "\\'")}')">${CONF_SHORT[c] || c}</button>`
-    )).join('');
+
+  // If we haven't picked a conference yet, default to the biggest
+  if (currentConf === 'all' && sorted.length) {
+    currentConf = sorted[0][0];
+  }
+
+  const html = sorted.map(([c, n]) =>
+    `<button class="conf-pill ${currentConf === c ? 'active' : ''}" onclick="setConf('${c.replace(/'/g, "\\'")}')">${CONF_SHORT[c] || c} <span style="opacity:0.6;font-weight:500;margin-left:4px;">${n}</span></button>`
+  ).join('');
   document.getElementById('confFilter').innerHTML = html;
-  document.getElementById('confMeta').textContent = currentConf === 'all'
-    ? `${games.length} games`
-    : `${confs[currentConf] || 0} games · ${currentConf}`;
+  document.getElementById('confMeta').textContent = `${confs[currentConf] || 0} games · ${currentConf}`;
 }
 
 function setConf(conf) {
@@ -858,10 +939,10 @@ function setConf(conf) {
 }
 
 function renderConfGames(games) {
-  let list = sortByAwayTeam(games);
-  if (currentConf !== 'all') {
-    list = list.filter(g => g.home_conference === currentConf);
-  }
+  // Include games where the conference appears on EITHER side
+  let list = sortByAwayTeam(
+    games.filter(g => g.home_conference === currentConf || g.away_conference === currentConf)
+  );
   if (!list.length) {
     document.getElementById('confContent').innerHTML = '<div class="empty">No games in this view.</div>';
     return;
@@ -933,12 +1014,77 @@ function renderGotW(g) {
 }
 
 function renderFeaturedRow(flagship, isFuture) {
-  const cards = [
-    { product: 'POTW',  full: 'Pick of the Week',   entry: flagship.potw },
-    { product: 'TOTW',  full: 'Total of the Week',  entry: flagship.totw },
-    { product: 'Parlay', full: 'Parlay of the Week', entry: flagship.parlay }
-  ];
-  return cards.map(c => renderFeaturedCard(c.product, c.full, c.entry, isFuture)).join('');
+  return [
+    renderFeaturedCard('POTW', 'Pick of the Week',  flagship.potw, isFuture),
+    renderFeaturedCard('TOTW', 'Total of the Week', flagship.totw, isFuture),
+    renderParlayCard(flagship.parlay, isFuture)
+  ].join('');
+}
+
+function renderParlayCard(legs, isFuture) {
+  if (isFuture || !legs || !legs.length) {
+    return `
+      <div class="gc-link" style="cursor: default; pointer-events: none;">
+        <div class="gc featured-card parlay-card">
+          <div class="gc-bg">
+            <div class="gc-bg-half" style="background: linear-gradient(135deg, #2A2520 0%, #1A1705 100%);"></div>
+            <div class="gc-bg-half" style="background: linear-gradient(225deg, #2A2520 0%, #1A1705 100%);"></div>
+          </div>
+          <div class="gc-overlay" style="background: linear-gradient(180deg, rgba(15,14,10,0.15) 0%, rgba(15,14,10,0.55) 100%);"></div>
+          <div class="gc-ribbon waiting">Parlay</div>
+          <div class="parlay-content">
+            <div class="parlay-title">3-Leg Parlay of the Week</div>
+            <div class="parlay-legs">
+              <div class="parlay-leg parlay-leg-placeholder">— Waiting for lines —</div>
+              <div class="parlay-leg parlay-leg-placeholder">— Waiting for lines —</div>
+              <div class="parlay-leg parlay-leg-placeholder">— Waiting for lines —</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Compute combined parlay odds (American → decimal → product → American)
+  function amToDec(am) {
+    if (am === null || am === undefined) return 1;
+    return am > 0 ? (am / 100) + 1 : (100 / Math.abs(am)) + 1;
+  }
+  function decToAm(dec) {
+    if (dec >= 2) return `+${Math.round((dec - 1) * 100)}`;
+    return `${Math.round(-100 / (dec - 1))}`;
+  }
+  const combinedDecimal = legs.reduce((acc, x) =>
+    acc * amToDec(x.pick.best_odds || -110), 1);
+  const combinedAmerican = decToAm(combinedDecimal);
+
+  const legHtml = legs.map(x => `
+    <div class="parlay-leg">
+      <span class="parlay-leg-tier tier-${x.pick.tier}">${TIER_LABEL_SHORT[x.pick.tier]}</span>
+      <span class="parlay-leg-pick">${x.pick.pick_text}</span>
+    </div>
+  `).join('');
+
+  return `
+    <a class="gc-link" href="/game.html?parlay=week">
+      <div class="gc featured-card parlay-card">
+        <div class="gc-bg">
+          <div class="gc-bg-half" style="background: linear-gradient(135deg, #2A2520 0%, #1A1705 100%);"></div>
+          <div class="gc-bg-half" style="background: linear-gradient(225deg, #2A2520 0%, #1A1705 100%);"></div>
+        </div>
+        <div class="gc-overlay" style="background: linear-gradient(180deg, rgba(15,14,10,0.15) 0%, rgba(15,14,10,0.55) 100%);"></div>
+        <div class="gc-ribbon featured">Parlay</div>
+        <div class="parlay-content">
+          <div class="parlay-title">3-Leg Parlay of the Week</div>
+          <div class="parlay-legs">${legHtml}</div>
+          <div class="parlay-odds">
+            <span class="parlay-odds-lbl">Combined</span>
+            <span class="parlay-odds-val">${combinedAmerican}</span>
+          </div>
+        </div>
+      </div>
+    </a>
+  `;
 }
 
 function renderFeaturedCard(productShort, productFull, entry, isFuture) {
