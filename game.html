@@ -246,16 +246,20 @@
   }
   .stat-group-label:first-child { margin-top: 0; }
 
-  /* Row layout: [number+qual] [team-name] [bar] [center] [bar] [team-name] [number+qual]
-     Numbers anchor to the far edges; team names live next to numbers. */
+  /* Row layout: symmetric two-sided bars with track lanes.
+     [number+qual] [team-name] [TRACK with fill] [center] [TRACK with fill] [team-name] [number+qual]
+     Both sides use fixed-width number/team columns so the bar tracks are equal width.
+     Each track is a full-width lane; the fill grows from the outer edge toward center
+     (away grows right-to-left toward center, home grows left-to-right toward center). */
   .stat-bar-row {
     display: grid;
-    grid-template-columns: auto auto 1fr 2px 1fr auto auto;
+    grid-template-columns: 60px 80px 1fr 2px 1fr 80px 60px;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     padding: 0;
   }
-  .stat-bar-num-block { display: flex; flex-direction: column; gap: 0; }
+  .stat-bar-num-block { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+  .stat-bar-num-block.away { align-items: flex-start; }
   .stat-bar-num-block.home { align-items: flex-end; }
   .stat-bar-val {
     font-family: var(--serif);
@@ -274,21 +278,34 @@
     text-transform: uppercase;
     letter-spacing: 0.6px;
     white-space: nowrap;
-    max-width: 80px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .stat-bar-team.away { text-align: left; padding-left: 2px; }
   .stat-bar-team.home { text-align: right; padding-right: 2px; }
 
-  .stat-bar-fill {
+  /* Bar track — full lane background. Fill is positioned absolutely inside. */
+  .stat-bar-track {
+    position: relative;
     height: 8px;
+    background: var(--cream-dark);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .stat-bar-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    height: 100%;
     border-radius: 4px;
     transition: width 0.3s ease, background 0.2s;
     min-width: 4px;
   }
-  .stat-bar-fill.away { justify-self: end; margin-right: 3px; }
-  .stat-bar-fill.home { justify-self: start; margin-left: 3px; }
+  /* Away fill grows from the RIGHT edge (closest to center) toward the left */
+  .stat-bar-fill.away { right: 0; }
+  /* Home fill grows from the LEFT edge (closest to center) toward the right */
+  .stat-bar-fill.home { left: 0; }
+
   .stat-bar-center { background: var(--text-mid); width: 2px; height: 12px; opacity: 0.4; }
 
   /* Percentile quality label — sits below the number, very compact */
@@ -1249,18 +1266,22 @@ function renderStatBars(gameData) {
           ${note ? `<span class="stat-bar-note">${note}</span>` : ''}
         </div>
         <div class="stat-bar-row">
-          <div>
-            <div class="stat-bar-val away">${aVal}</div>
-            ${aQual ? `<div class="stat-bar-qual away" style="color:${aColor};">${aQual}</div>` : ''}
+          <div class="stat-bar-num-block away">
+            <div class="stat-bar-val">${aVal}</div>
+            ${aQual ? `<div class="stat-bar-qual" style="color:${aColor};">${aQual}</div>` : ''}
           </div>
           <div class="stat-bar-team away">${shortTeam(m.away_team)}</div>
-          <div class="stat-bar-fill away" style="width: ${aPct}%; background: ${aColor};"></div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill away" style="width: ${aPct}%; background: ${aColor};"></div>
+          </div>
           <div class="stat-bar-center"></div>
-          <div class="stat-bar-fill home" style="width: ${hPct}%; background: ${hColor};"></div>
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill home" style="width: ${hPct}%; background: ${hColor};"></div>
+          </div>
           <div class="stat-bar-team home">${shortTeam(m.home_team)}</div>
-          <div>
-            <div class="stat-bar-val home">${hVal}</div>
-            ${hQual ? `<div class="stat-bar-qual home" style="color:${hColor};">${hQual}</div>` : ''}
+          <div class="stat-bar-num-block home">
+            <div class="stat-bar-val">${hVal}</div>
+            ${hQual ? `<div class="stat-bar-qual" style="color:${hColor};">${hQual}</div>` : ''}
           </div>
         </div>
       </div>
@@ -1271,8 +1292,10 @@ function renderStatBars(gameData) {
     let rowsHtml = '';
 
     if (group.stats) {
-      // Power Ratings — uses top-level fields, percentiles aren't ranked league-wide here
-      // so we just color by relative position.
+      // Power Ratings — use league-wide context if available, fallback to relative.
+      // Bar width tracks raw magnitude. Color tracks quality (better = green).
+      const pCtx = (ts.power_ratings_context) || {};
+
       rowsHtml = group.stats.map(s => {
         const aVal = a[s.key];
         const hVal = h[s.key];
@@ -1281,28 +1304,62 @@ function renderStatBars(gameData) {
         const aDisplay = aVal != null ? s.fmt(aVal) : '—';
         const hDisplay = hVal != null ? s.fmt(hVal) : '—';
 
-        // Relative percentile: whichever team has higher (or lower if lowerBetter) gets 100, other scales relative
-        let aPct = 50, hPct = 50;
-        if (aVal != null && hVal != null) {
-          const aBetter = s.lowerBetter ? aVal < hVal : aVal > hVal;
-          const ratio = Math.min(1, Math.abs((aVal - hVal)) / Math.max(Math.abs(aVal), Math.abs(hVal), 1));
-          if (aBetter) { aPct = 100; hPct = 100 - ratio * 70; }
-          else if (aVal !== hVal) { hPct = 100; aPct = 100 - ratio * 70; }
-        } else if (aVal != null) { aPct = 100; hPct = 0; }
-        else if (hVal != null) { hPct = 100; aPct = 0; }
+        const ctx = pCtx[s.key]; // {min, max, median}
+        let aPct, hPct;
+        if (ctx && ctx.min != null && ctx.max != null && ctx.median != null && ctx.max !== ctx.min) {
+          // Value-anchored scaling using league min/median/max.
+          // Bar width tracks raw magnitude — does NOT invert for lowerBetter.
+          // (A team with high SP+ defense still has the bigger number, so bigger bar.)
+          const scale = v => {
+            if (v == null) return 0;
+            let pct;
+            if (v >= ctx.median) {
+              const denom = (ctx.max - ctx.median) || 1;
+              pct = 50 + ((v - ctx.median) / denom) * 50;
+            } else {
+              const denom = (ctx.median - ctx.min) || 1;
+              pct = 50 - ((ctx.median - v) / denom) * 50;
+            }
+            return Math.max(2, Math.min(100, pct));
+          };
+          aPct = scale(aVal);
+          hPct = scale(hVal);
+        } else {
+          // Fallback: relative comparison
+          aPct = 50; hPct = 50;
+          if (aVal != null && hVal != null) {
+            const ratio = Math.min(1, Math.abs(aVal - hVal) / Math.max(Math.abs(aVal), Math.abs(hVal), 1));
+            if (aVal > hVal) { aPct = 100; hPct = 100 - ratio * 70; }
+            else if (aVal < hVal) { hPct = 100; aPct = 100 - ratio * 70; }
+          } else if (aVal != null) { aPct = 100; hPct = 0; }
+          else if (hVal != null) { hPct = 100; aPct = 0; }
+        }
 
-        const aColor = aVal != null && hVal != null
-          ? ((s.lowerBetter ? aVal < hVal : aVal > hVal) ? '#4A7A4A' : '#C5A878')
-          : 'var(--text-light)';
-        const hColor = aVal != null && hVal != null
-          ? ((s.lowerBetter ? hVal < aVal : hVal > aVal) ? '#4A7A4A' : '#C5A878')
-          : 'var(--text-light)';
+        // Color tracks QUALITY (good vs bad), not magnitude.
+        // For lowerBetter metrics, a low value = good = green.
+        // We compute a "quality percentile" inverted for lowerBetter so barColor() picks correctly.
+        const qualityPercentile = (val, lowerBetter) => {
+          if (val == null || !ctx || ctx.min == null || ctx.max == null || ctx.max === ctx.min) return null;
+          // Position in league: 0 = bottom, 100 = top of the raw value scale
+          let pos = ((val - ctx.min) / (ctx.max - ctx.min)) * 100;
+          // For lowerBetter, invert so low values get high quality
+          if (lowerBetter) pos = 100 - pos;
+          return Math.max(0, Math.min(100, pos));
+        };
 
-        return renderBarRow(s.label, s.lowerBetter ? 'lower = better' : '', aDisplay, hDisplay, aPct, hPct, aColor, hColor, '', '');
+        const aQualPct = qualityPercentile(aVal, s.lowerBetter);
+        const hQualPct = qualityPercentile(hVal, s.lowerBetter);
+        const aColor = aVal != null ? (aQualPct != null ? barColor(aQualPct) : 'var(--text-light)') : 'var(--text-light)';
+        const hColor = hVal != null ? (hQualPct != null ? barColor(hQualPct) : 'var(--text-light)') : 'var(--text-light)';
+        const aQual = aQualPct != null ? qualLabel(aQualPct) : '';
+        const hQual = hQualPct != null ? qualLabel(hQualPct) : '';
+
+        return renderBarRow(s.label, s.lowerBetter ? 'lower = better' : '', aDisplay, hDisplay, aPct, hPct, aColor, hColor, aQual, hQual);
       }).join('');
     } else {
-      // Other groups — use stat_ranks with value-anchored scaling
-      // (min → 0%, median → 50%, max → 100%)
+      // Other groups — value-anchored scaling.
+      // Bar width tracks raw MAGNITUDE (no inversion for lowerBetter).
+      // Color tracks QUALITY via the percentile from stat_ranks (already lowerBetter-aware).
       rowsHtml = group.keys.map(key => {
         const aRec = aRanks[key];
         const hRec = hRanks[key];
@@ -1313,14 +1370,14 @@ function renderStatBars(gameData) {
         const label = (aRec && aRec.label) || (hRec && hRec.label) || key;
         const lowerBetter = (aRec && !aRec.higher_better) || (hRec && !hRec.higher_better);
 
-        // Value-anchored bar width: min=0, median=50, max=100.
-        // Below median scales 0-50; above median scales 50-100. For lower-better
-        // metrics, the scale flips so a low (good) value still produces a long bar.
         const refRec = aRec || hRec;
         const lmin = refRec.league_min;
         const lmax = refRec.league_max;
         const lmed = refRec.league_median;
 
+        // Bar width = raw magnitude position. Higher raw value = wider bar.
+        // We do NOT invert for lowerBetter — a defense allowing 9 yards/play
+        // gets a longer bar than one allowing 5, even though 5 is better.
         function valueWidth(v) {
           if (v == null) return 0;
           if (lmin == null || lmax == null || lmed == null) {
@@ -1328,29 +1385,13 @@ function renderStatBars(gameData) {
             return null;
           }
           if (lmax === lmin) return 50;
-
           let pct;
-          // Anchored scaling: split at median
-          if (lowerBetter) {
-            // Lower is better, so invert: max value → 0%, min value → 100%
-            if (v <= lmed) {
-              // Better than median → 50%-100%
-              const denom = (lmed - lmin) || 1;
-              pct = 50 + ((lmed - v) / denom) * 50;
-            } else {
-              // Worse than median → 0%-50%
-              const denom = (lmax - lmed) || 1;
-              pct = 50 - ((v - lmed) / denom) * 50;
-            }
+          if (v >= lmed) {
+            const denom = (lmax - lmed) || 1;
+            pct = 50 + ((v - lmed) / denom) * 50;
           } else {
-            // Higher is better: max value → 100%, min value → 0%
-            if (v >= lmed) {
-              const denom = (lmax - lmed) || 1;
-              pct = 50 + ((v - lmed) / denom) * 50;
-            } else {
-              const denom = (lmed - lmin) || 1;
-              pct = 50 - ((lmed - v) / denom) * 50;
-            }
+            const denom = (lmed - lmin) || 1;
+            pct = 50 - ((lmed - v) / denom) * 50;
           }
           return Math.max(2, Math.min(100, pct));
         }
