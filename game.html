@@ -205,6 +205,12 @@
   .pick-row.premium-ap { border-color: var(--gold); box-shadow: 0 2px 8px rgba(184,146,42,0.12); }
   .pick-row.premium-sm { border-color: var(--sage); box-shadow: 0 2px 8px rgba(74,122,74,0.12); }
   .pick-row.premium-ls { border-color: var(--rust); box-shadow: 0 2px 8px rgba(184,90,42,0.12); }
+  .pick-row.pending-row { border-style: dashed; background: var(--cream); opacity: 0.92; }
+  .pick-row.pending-row .pick-row-text { color: var(--text-mid); font-style: italic; }
+  .pick-row-pending-action { padding: 14px 22px; background: var(--cream-mid); border-top: 1px solid var(--border); text-align: center; }
+  .pick-row-pending-msg { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); letter-spacing: 0.5px; }
+  .pick-row-pending-bar { margin-top: 8px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; max-width: 240px; margin-left: auto; margin-right: auto; }
+  .pick-row-pending-fill { height: 100%; background: var(--gold); transition: width 0.3s ease; }
   .pick-row-head { padding: 18px 22px; display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; }
   .pick-row-tier { font-family: var(--sans); font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 10px; border-radius: 2px; white-space: nowrap; background: var(--tier-bg); color: var(--tier-fg); }
   .pick-row-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -242,6 +248,8 @@
   .pick-best-book-logo.book-czr { background: #00372C; color: #FFD200; }
   .pick-best-book-logo.book-fan { background: #000; color: #FFCB05; }
   .pick-best-book-logo.book-pb  { background: #FF8200; color: #fff; }
+  .pick-best-book-logo.book-bvd { background: #C8102E; color: #FFD200; }
+  .pick-best-book-logo.book-espn { background: #C8102E; color: #fff; }
   .pick-best-book-logo.book-default { background: var(--ink); color: var(--gold); font-family: var(--serif); font-style: italic; }
   .pick-best-book-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .pick-best-book-name { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); }
@@ -273,6 +281,8 @@
   .other-book-logo.book-mgm { background: #C9A66B; color: #1A1A1A; }
   .other-book-logo.book-czr { background: #00372C; color: #FFD200; }
   .other-book-logo.book-fan { background: #000; color: #FFCB05; }
+  .other-book-logo.book-bvd { background: #C8102E; color: #FFD200; }
+  .other-book-logo.book-espn { background: #C8102E; color: #fff; }
   .other-book-logo.book-default { background: var(--ink); color: var(--gold); font-family: var(--serif); font-style: italic; }
   .other-book-name { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .other-book-line { font-family: var(--serif); font-weight: 700; font-size: 13px; color: var(--text); white-space: nowrap; }
@@ -873,83 +883,100 @@ function showError() { document.getElementById('loadingState').style.display = '
 function showNotFound() { document.getElementById('loadingState').style.display = 'none'; document.getElementById('notFoundState').style.display = 'block'; }
 
 // ── EXTRACT PICKS FROM MODEL OUTPUT ──
-// Returns an array of pick objects, one per bet type that has a real pick.
-// Each pick has: type, tier, tierMeta, picked_team (or "over"/"under"), display, line, status,
-// best_book {name, line, odds}, other_books [{name, line, odds}]
+// Returns an array of pick objects, one per bet type. Each pick has:
+// type, tier, tierMeta, picked_team (or "over"/"under"), display, line, status,
+// best_book {name, short, cls, line, odds, key},
+// other_books [{name, short, cls, line, odds}], book_count, min_books, pending
 function extractPicks(gameData) {
-  // New shape (post-ensemble cleanup): gameData.picks has spread/ou/ml sub-objects
-  // built by the smart-tier classifier. gameData.prediction has predicted_spread,
-  // predicted_total, win_prob_home, etc.
+  // Shape: gameData.picks has spread/ou/ml sub-objects from the smart-tier
+  // classifier. gameData.prediction has predicted values. gameData.market has
+  // book_counts, all_books, min_books for the multi-book path.
   const picksIn  = gameData.picks      || {};
-  const pred     = gameData.prediction || {};
   const market   = gameData.market     || {};
-  const m        = gameData.matchup;
+  const allBooks = market.all_books    || null;
+  const minBooks = market.min_books    || 3;
+  const counts   = market.book_counts  || null;
   const picks    = [];
 
   // Helper: classify any pick (even un-tiered ones) for display.
   // Tiered picks (A+, A, smart_money, lottery_shot) get their tier badge.
   // Untiered picks get a "No Edge" badge — we show our lean but make it clear
   // we don't see enough disagreement with the market to make it actionable.
-  function tierBadge(tier) {
+  // A "pending" status overrides everything when we don't have enough books.
+  function tierBadge(tier, pickStatus) {
+    if (pickStatus === 'pending') return { tier: 'pending', meta: tierMeta('no_edge'), label: 'pending' };
     if (tier) return { tier: tier, meta: tierMeta(tier), label: 'actionable' };
     return { tier: 'no_edge', meta: tierMeta('no_edge'), label: 'no_edge' };
   }
 
-  // SPREAD pick — { tier, pick_team, line, edge, predicted_spread, market_spread, sp_picked_fav }
+  // SPREAD pick — { tier, pick_team, line, edge, predicted_spread, market_spread, sp_picked_fav, best_book, best_book_key, status, book_count }
   const sp = picksIn.spread;
-  if (sp && sp.pick_team && market.spread != null) {
-    const badge = tierBadge(sp.tier);
-    const pickSpread = sp.line;  // already team-relative from backend
-    const display = `${sp.pick_team} ${formatSpread(pickSpread)}`;
+  if (sp && (sp.pick_team || sp.status === 'pending')) {
+    const isPending = sp.status === 'pending';
+    const badge = tierBadge(sp.tier, sp.status);
+    const pickSpread = sp.line;
+    const display = isPending
+      ? 'Lines Pending'
+      : `${sp.pick_team} ${formatSpread(pickSpread)}`;
     picks.push({
       type: 'Spread',
       tier: badge.tier,
       tierMeta: badge.meta,
-      picked: sp.pick_team,
+      picked: sp.pick_team || '',
       display: display,
-      line: formatSpread(pickSpread),
+      line: isPending ? '' : formatSpread(pickSpread),
       edge: sp.edge,
       predicted_value: sp.predicted_spread,
       market_value: sp.market_spread,
       status: badge.label,
-      best_book: mockBestBook('Spread', display),
-      other_books: mockOtherBooks('Spread', display)
+      pending: isPending,
+      book_count: sp.book_count != null ? sp.book_count : (counts ? counts.spread : null),
+      min_books: minBooks,
+      best_book: realBestBook(sp.best_book, sp.best_book_key, display, -110),
+      other_books: realOtherBooks('spread', allBooks, sp.best_book_key, market)
     });
   }
 
-  // TOTAL pick — { tier, pick, total, edge, predicted_total }
+  // TOTAL pick — { tier, pick, total, edge, predicted_total, best_book, status }
   const ou = picksIn.ou;
-  if (ou && ou.pick && market.over_under != null) {
-    const badge = tierBadge(ou.tier);
-    const pickDir = ou.pick;
-    const display = `${pickDir} ${ou.total}`;
+  if (ou && (ou.pick || ou.status === 'pending')) {
+    const isPending = ou.status === 'pending';
+    const badge = tierBadge(ou.tier, ou.status);
+    const display = isPending
+      ? 'Lines Pending'
+      : `${ou.pick} ${ou.total}`;
     picks.push({
       type: 'Total',
       tier: badge.tier,
       tierMeta: badge.meta,
-      picked: pickDir,
+      picked: ou.pick || '',
       display: display,
-      line: `${pickDir} ${ou.total}`,
+      line: isPending ? '' : `${ou.pick} ${ou.total}`,
       edge: ou.edge,
       predicted_value: ou.predicted_total,
       market_value: ou.total,
       status: badge.label,
-      best_book: mockBestBook('Total', display),
-      other_books: mockOtherBooks('Total', display)
+      pending: isPending,
+      book_count: ou.book_count != null ? ou.book_count : (counts ? counts.total : null),
+      min_books: minBooks,
+      best_book: realBestBook(ou.best_book, ou.best_book_key, display, -110),
+      other_books: realOtherBooks('total', allBooks, ou.best_book_key, market, ou.pick)
     });
   }
 
-  // MONEYLINE pick — { tier, pick_team, ml, edge, implied, model_win_prob }
-  // Untiered MLs also surface so users see who we'd take straight up.
+  // MONEYLINE pick — { tier, pick_team, ml, edge, implied, model_win_prob, best_book, status }
   const ml = picksIn.ml;
-  if (ml && ml.pick_team) {
-    const badge = tierBadge(ml.tier);
-    const display = `${ml.pick_team} ML`;
+  if (ml && (ml.pick_team || ml.status === 'pending')) {
+    const isPending = ml.status === 'pending';
+    const badge = tierBadge(ml.tier, ml.status);
+    const display = isPending
+      ? 'Lines Pending'
+      : `${ml.pick_team} ML`;
     picks.push({
       type: 'Moneyline',
       tier: badge.tier,
       tierMeta: badge.meta,
-      picked: ml.pick_team,
+      picked: ml.pick_team || '',
       display: display,
       line: ml.ml != null ? (ml.ml > 0 ? `+${ml.ml}` : `${ml.ml}`) : '',
       edge: ml.edge,
@@ -957,34 +984,81 @@ function extractPicks(gameData) {
       implied_prob: ml.implied,
       model_win_prob: ml.model_win_prob,
       status: badge.label,
-      best_book: mockBestBook('Moneyline', display, ml.ml),
-      other_books: mockOtherBooks('Moneyline', display, ml.ml)
+      pending: isPending,
+      book_count: ml.book_count != null ? ml.book_count : (counts ? counts.ml : null),
+      min_books: minBooks,
+      best_book: realBestBook(ml.best_book, ml.best_book_key, display, ml.ml),
+      other_books: realOtherBooks('ml', allBooks, ml.best_book_key, market, ml.pick_team === (gameData.matchup && gameData.matchup.home_team) ? 'home' : 'away')
     });
   }
 
   return picks;
 }
 
-// ── MOCK SPORTSBOOK DATA ──
-// Placeholder until live odds polling is wired.
-// `cls` maps to a CSS class for the brand-colored logo treatment.
-function mockBestBook(type, display, oddsOverride) {
-  return { name: 'DraftKings', short: 'DK', cls: 'book-dk', line: display, odds: oddsOverride != null ? oddsOverride : -110 };
+// ── REAL BOOK METADATA ──
+// Maps backend book keys (lowercase, from the Odds API) to display + brand
+// color CSS classes. Falls back to a generic dark/gold treatment if unknown.
+const BOOK_BRAND = {
+  draftkings: { short: 'DK',  cls: 'book-dk',  name: 'DraftKings' },
+  fanduel:    { short: 'FD',  cls: 'book-fd',  name: 'FanDuel'    },
+  betmgm:     { short: 'MGM', cls: 'book-mgm', name: 'BetMGM'     },
+  caesars:    { short: 'CZR', cls: 'book-czr', name: 'Caesars'    },
+  bovada:     { short: 'BVD', cls: 'book-bvd', name: 'Bovada'     },
+  espnbet:    { short: 'ESPN',cls: 'book-espn',name: 'ESPN BET'   },
+  fanatics:   { short: 'FAN', cls: 'book-fan', name: 'Fanatics'   },
+};
+
+function bookBrand(key) {
+  if (!key) return { short: '—', cls: 'book-default', name: 'Best Available' };
+  const k = String(key).toLowerCase();
+  return BOOK_BRAND[k] || { short: (key.slice(0,3) || '?').toUpperCase(), cls: 'book-default', name: key };
 }
-function mockOtherBooks(type, display, oddsOverride) {
-  const books = [
-    { name: 'FanDuel',  short: 'FD',  cls: 'book-fd'  },
-    { name: 'BetMGM',   short: 'MGM', cls: 'book-mgm' },
-    { name: 'Caesars',  short: 'CZR', cls: 'book-czr' },
-    { name: 'Fanatics', short: 'FAN', cls: 'book-fan' }
-  ];
-  return books.map(b => ({
-    name: b.name,
-    short: b.short,
-    cls: b.cls,
-    line: display,
-    odds: oddsOverride != null ? oddsOverride - 5 : -115
-  }));
+
+function realBestBook(displayName, key, line, odds) {
+  const brand = bookBrand(key);
+  return {
+    name: displayName || brand.name,
+    short: brand.short,
+    cls: brand.cls,
+    key: key,
+    line: line,
+    odds: odds != null ? odds : -110
+  };
+}
+
+// Build "other books" rows from the raw all_books dict on gameData.market.
+// `marketKey` is 'spread' | 'total' | 'ml'. `bestKey` is the bookmaker key we
+// already picked as best so we skip it. `pickedSide` is 'home'/'away' for ML
+// or 'Over'/'Under' for totals; used to display the correct side per book.
+function realOtherBooks(marketKey, allBooks, bestKey, market, pickedSide) {
+  if (!allBooks) return [];
+  const rows = (marketKey === 'spread' ? allBooks.spread :
+                marketKey === 'total'  ? allBooks.total  :
+                                          allBooks.ml) || [];
+  return rows
+    .filter(r => r.book && r.book !== bestKey)
+    .map(r => {
+      const brand = bookBrand(r.book);
+      let line = '', odds = -110;
+      if (marketKey === 'spread') {
+        // home_spread is the home team's spread; display whatever side we picked
+        // We don't know home/away here without more context; for simplicity show
+        // the home_spread as-is and let user infer
+        line = r.home_spread > 0 ? `Home +${r.home_spread}` : `Home ${r.home_spread}`;
+      } else if (marketKey === 'total') {
+        line = `${pickedSide || 'O/U'} ${r.total}`;
+      } else {
+        odds = pickedSide === 'home' ? r.home_ml : r.away_ml;
+        line = '';
+      }
+      return {
+        name: brand.name,
+        short: brand.short,
+        cls: brand.cls,
+        line: line,
+        odds: odds
+      };
+    });
 }
 
 function formatSpread(s) {
@@ -1222,12 +1296,39 @@ function renderAllPicks(picks) {
 }
 
 function renderPickRow(p, idx) {
+  // Pending row: market doesn't have enough books posted yet.
+  // Skip the "best book / compare" footer entirely — there's no line to show.
+  if (p.pending) {
+    const have = p.book_count || 0;
+    const need = p.min_books || 3;
+    const pct = Math.min(100, Math.round(100 * have / need));
+    return `
+      <div class="pick-row pending-row" id="pickRow-${idx}">
+        <div class="pick-row-head">
+          <span class="pick-row-tier ${p.tierMeta.cls}">Pending</span>
+          <div class="pick-row-body">
+            <span class="pick-row-type">${p.type}</span>
+            <span class="pick-row-text">${p.display}</span>
+          </div>
+          <div class="pick-row-status">
+            <span class="pick-status pending">Pending</span>
+          </div>
+        </div>
+        <div class="pick-row-pending-action">
+          <div class="pick-row-pending-msg">${have} of ${need} books posted · picks unlock at consensus</div>
+          <div class="pick-row-pending-bar"><div class="pick-row-pending-fill" style="width:${pct}%"></div></div>
+        </div>
+      </div>
+    `;
+  }
+
   // Apply tier-specific premium class for distinct border + glow per tier.
   let premiumCls = '';
   if (p.tier === 'A+') premiumCls = 'premium-ap';
   else if (p.tier === 'smart_money') premiumCls = 'premium-sm';
   else if (p.tier === 'lottery_shot') premiumCls = 'premium-ls';
   const oddsStr = p.best_book.odds != null ? (p.best_book.odds > 0 ? `+${p.best_book.odds}` : p.best_book.odds) : '';
+  const hasOtherBooks = p.other_books && p.other_books.length > 0;
 
   return `
     <div class="pick-row ${premiumCls}" id="pickRow-${idx}">
@@ -1252,6 +1353,7 @@ function renderPickRow(p, idx) {
         <span class="pick-best-book-odds">${oddsStr}</span>
         <a href="#" class="pick-best-book-bet" target="_blank" rel="noopener">Bet Now</a>
       </div>
+      ${hasOtherBooks ? `
       <button class="pick-row-expand-btn" onclick="togglePickExpand(${idx})">
         <span class="expand-text">Compare other books</span>
         <span class="chev">▾</span>
@@ -1273,7 +1375,7 @@ function renderPickRow(p, idx) {
             `;
           }).join('')}
         </div>
-      </div>
+      </div>` : ''}
     </div>
   `;
 }
@@ -1291,15 +1393,18 @@ let historyPicks = [];
 let activeHistoryPick = 0;
 
 function renderHistory(picks) {
-  historyPicks = picks;
-  if (!picks.length) {
+  // Lifecycle history only applies to actionable picks. Pending picks have no
+  // posted-at moment yet, so they don't get a lifecycle entry.
+  const livePicks = (picks || []).filter(p => !p.pending);
+  historyPicks = livePicks;
+  if (!livePicks.length) {
     document.getElementById('historyToggle').innerHTML = '';
     document.getElementById('lifecycleList').innerHTML = '<div class="lifecycle-empty">No pick history — no picks posted on this game.</div>';
     return;
   }
 
   // Toggle tabs
-  document.getElementById('historyToggle').innerHTML = picks.map((p, i) => `
+  document.getElementById('historyToggle').innerHTML = livePicks.map((p, i) => `
     <button class="history-tab ${i === 0 ? 'active' : ''}" onclick="setHistoryPick(${i})">
       <span class="history-tab-tier ${p.tierMeta.cls}"></span>${p.type}
     </button>
