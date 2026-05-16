@@ -782,76 +782,76 @@ function showNotFound() { document.getElementById('loadingState').style.display 
 // Each pick has: type, tier, tierMeta, picked_team (or "over"/"under"), display, line, status,
 // best_book {name, line, odds}, other_books [{name, line, odds}]
 function extractPicks(gameData) {
-  const ens = gameData.ensemble || {};
-  const market = gameData.market || {};
-  const m = gameData.matchup;
-  const picks = [];
+  // New shape (post-ensemble cleanup): gameData.picks has spread/ou/ml sub-objects
+  // built by the smart-tier classifier. gameData.prediction has predicted_spread,
+  // predicted_total, win_prob_home, etc.
+  const picksIn  = gameData.picks      || {};
+  const pred     = gameData.prediction || {};
+  const market   = gameData.market     || {};
+  const m        = gameData.matchup;
+  const picks    = [];
 
-  // SPREAD pick
-  if (ens.spread_pick && market.spread != null) {
-    const tier = ens.spread_tier;
-    if (tier && tier !== 'C') {  // skip C-tier (no edge)
-      const pickedHome = ens.spread_pick === m.home_team;
-      const pickSpread = pickedHome ? market.spread : -market.spread;
-      const display = `${ens.spread_pick} ${formatSpread(pickSpread)}`;
-      picks.push({
-        type: 'Spread',
-        tier: tier,
-        tierMeta: tierMeta(tier),
-        picked: ens.spread_pick,
-        display: display,
-        line: formatSpread(pickSpread),
-        edge: ens.edge_spread,
-        agreement: ens.spread_agreement,
-        ensemble_value: ens.ensemble_spread,
-        market_value: market.spread,
-        status: 'actionable',  // mock — real comes from live odds
-        best_book: mockBestBook('Spread', display),
-        other_books: mockOtherBooks('Spread', display)
-      });
-    }
+  // SPREAD pick — { tier, pick_team, line, edge, predicted_spread, market_spread, sp_picked_fav }
+  const sp = picksIn.spread;
+  if (sp && sp.tier && market.spread != null) {
+    const pickSpread = sp.line;  // already team-relative from backend
+    const display = `${sp.pick_team} ${formatSpread(pickSpread)}`;
+    picks.push({
+      type: 'Spread',
+      tier: sp.tier,
+      tierMeta: tierMeta(sp.tier),
+      picked: sp.pick_team,
+      display: display,
+      line: formatSpread(pickSpread),
+      edge: sp.edge,
+      predicted_value: sp.predicted_spread,
+      market_value: sp.market_spread,
+      status: 'actionable',
+      best_book: mockBestBook('Spread', display),
+      other_books: mockOtherBooks('Spread', display)
+    });
   }
 
-  // TOTAL pick
-  if (ens.ou_pick && market.over_under != null) {
-    const tier = ens.ou_tier;
-    if (tier && tier !== 'C') {
-      const pickDir = ens.ou_pick.toLowerCase() === 'over' ? 'Over' : 'Under';
-      const display = `${pickDir} ${market.over_under}`;
-      picks.push({
-        type: 'Total',
-        tier: tier,
-        tierMeta: tierMeta(tier),
-        picked: pickDir,
-        display: display,
-        line: `${pickDir} ${market.over_under}`,
-        edge: ens.edge_total,
-        ensemble_value: ens.ensemble_total,
-        market_value: market.over_under,
-        status: 'actionable',
-        best_book: mockBestBook('Total', display),
-        other_books: mockOtherBooks('Total', display)
-      });
-    }
+  // TOTAL pick — { tier, pick, total, edge, predicted_total }
+  const ou = picksIn.ou;
+  if (ou && ou.tier && market.over_under != null) {
+    const pickDir = ou.pick;  // "Over" or "Under"
+    const display = `${pickDir} ${ou.total}`;
+    picks.push({
+      type: 'Total',
+      tier: ou.tier,
+      tierMeta: tierMeta(ou.tier),
+      picked: pickDir,
+      display: display,
+      line: `${pickDir} ${ou.total}`,
+      edge: ou.edge,
+      predicted_value: ou.predicted_total,
+      market_value: ou.total,
+      status: 'actionable',
+      best_book: mockBestBook('Total', display),
+      other_books: mockOtherBooks('Total', display)
+    });
   }
 
-  // MONEYLINE pick
-  if (ens.ml_pick && (ens.ml_tier === 'smart_money' || ens.ml_tier === 'lottery_shot')) {
-    const pickedTeam = ens.ml_pick === 'home' ? m.home_team : m.away_team;
-    const odds = ens.ml_pick === 'home' ? market.home_moneyline : market.away_moneyline;
-    const display = `${pickedTeam} ML`;
+  // MONEYLINE pick — { tier, pick_team, ml, edge, implied, model_win_prob }
+  // Only tiered ML picks (smart_money / lottery_shot) make it to the page.
+  const ml = picksIn.ml;
+  if (ml && (ml.tier === 'smart_money' || ml.tier === 'lottery_shot')) {
+    const display = `${ml.pick_team} ML`;
     picks.push({
       type: 'Moneyline',
-      tier: ens.ml_tier,
-      tierMeta: tierMeta(ens.ml_tier),
-      picked: pickedTeam,
+      tier: ml.tier,
+      tierMeta: tierMeta(ml.tier),
+      picked: ml.pick_team,
       display: display,
-      line: odds != null ? (odds > 0 ? `+${odds}` : `${odds}`) : '',
-      edge: ens.ml_edge,
-      market_odds: odds,
+      line: ml.ml != null ? (ml.ml > 0 ? `+${ml.ml}` : `${ml.ml}`) : '',
+      edge: ml.edge,
+      market_odds: ml.ml,
+      implied_prob: ml.implied,
+      model_win_prob: ml.model_win_prob,
       status: 'actionable',
-      best_book: mockBestBook('Moneyline', display, odds),
-      other_books: mockOtherBooks('Moneyline', display, odds)
+      best_book: mockBestBook('Moneyline', display, ml.ml),
+      other_books: mockOtherBooks('Moneyline', display, ml.ml)
     });
   }
 
@@ -1017,26 +1017,34 @@ function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 // ── ZONE 2: NARRATIVE ──
 function renderNarrative(gameData) {
   const m = gameData.matchup;
-  const isHistorical = gameData.is_played;
-
-  // For 2026 games we don't have narratives yet — show a stub
-  // For played games, we may have narratives in the future
-  // For now: minimal model-derived blurb + stub for full narrative
-
-  const ens = gameData.ensemble || {};
+  const pred = gameData.prediction || {};
   const market = gameData.market || {};
 
   let text = '';
 
-  if (ens.ensemble_spread != null && market.spread != null) {
-    const edge = market.spread - ens.ensemble_spread;
-    const edgeAbs = Math.abs(edge).toFixed(1);
-    const direction = edge > 0 ? m.home_team : m.away_team;
-    const projMargin = -ens.ensemble_spread;
-    const mktMargin = -market.spread;
-    const projText = projMargin > 0 ? `${m.home_team} by ${projMargin.toFixed(1)}` : `${m.away_team} by ${Math.abs(projMargin).toFixed(1)}`;
-    const mktText = mktMargin > 0 ? `${m.home_team} by ${mktMargin.toFixed(1)}` : `${m.away_team} by ${Math.abs(mktMargin).toFixed(1)}`;
-    text += `<p>Our ensemble projects <strong>${projText}</strong>. The market has it <strong>${mktText}</strong>. That's <strong>${edgeAbs} points</strong> of disagreement, with our model favoring <em>${direction}</em>.</p>`;
+  if (pred.predicted_spread != null && market.spread != null) {
+    // predicted_spread is from home team's POV: negative = home favored
+    const projMargin = -pred.predicted_spread;
+    const mktMargin  = -market.spread;
+    const edge       = market.spread - pred.predicted_spread;
+    const edgeAbs    = Math.abs(edge).toFixed(1);
+    // Direction the model leans vs the market
+    const direction  = edge > 0 ? m.home_team : m.away_team;
+    const projText = projMargin > 0
+      ? `${m.home_team} by ${projMargin.toFixed(1)}`
+      : `${m.away_team} by ${Math.abs(projMargin).toFixed(1)}`;
+    const mktText = mktMargin > 0
+      ? `${m.home_team} by ${mktMargin.toFixed(1)}`
+      : `${m.away_team} by ${Math.abs(mktMargin).toFixed(1)}`;
+    text += `<p>SP+ projects <strong>${projText}</strong>. The market has it <strong>${mktText}</strong>. That's <strong>${edgeAbs} points</strong> of disagreement, with the model favoring <em>${direction}</em>.</p>`;
+  }
+
+  // Total projection if available
+  if (pred.predicted_total != null && market.over_under != null) {
+    const totalEdge = pred.predicted_total - market.over_under;
+    const totalEdgeAbs = Math.abs(totalEdge).toFixed(1);
+    const totalDir = totalEdge > 0 ? 'over' : 'under';
+    text += `<p>Total projection: <strong>${pred.predicted_total.toFixed(1)}</strong> vs. market line of <strong>${market.over_under}</strong> — model leans <em>${totalDir}</em> by ${totalEdgeAbs} points.</p>`;
   }
 
   text += `
