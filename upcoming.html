@@ -805,9 +805,10 @@ function selectGameOfWeek(games) {
 
 function selectFlagshipGames(games, gotwId) {
   const tierWeight = { 'ap': 4, 'a': 3, 'sm': 2, 'ls': 1 };
+  // Only consider tiered picks — pending or untiered picks can't anchor a flagship.
   const withPicks = games
     .map(g => ({ game: g, pick: pickFor(g) }))
-    .filter(x => x.pick && x.game.game_id !== gotwId);
+    .filter(x => x.pick && x.pick.tier && x.game.game_id !== gotwId);
 
   const spreadPicks = withPicks.filter(x => x.pick.type === 'Spread')
     .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
@@ -866,7 +867,10 @@ function renderWeek(week) {
   // Only show the flagship row on the CURRENT week (no future-week speculation)
   // AND only when the slate is big enough to support POTW + TOTW + 3-leg Parlay.
   // Week 0 typically has 4-6 games — too few to assemble flagships.
-  const totalPicksThisWeek = games.filter(g => pickFor(g) != null).length;
+  const totalPicksThisWeek = games.filter(g => {
+    const p = pickFor(g);
+    return p && p.tier;
+  }).length;
   const flagshipEligible = !isFuture && totalPicksThisWeek >= 8;
   if (flagshipEligible) {
     const flagship = selectFlagshipGames(games, gotw ? gotw.game_id : null);
@@ -1252,11 +1256,16 @@ function renderMediumCard(g) {
   const awayRank = powerRankings[g.away_team];
   const time = g.time && g.time !== 'TBD' ? `${formatDate(g.date)} · ${g.time}` : formatDate(g.date);
 
+  // Pending: real game but not enough books posted yet
+  const isPending = pick && pick.current_status === 'pending';
+  // Tiered pick: A+, A, Smart $, Lottery
+  const hasTier = pick && pick.tier;
+
   return `
     <a class="gc-link" href="/game.html?id=${g.game_id}">
       <div class="gc medium">
         ${bgHTML(awayColor, homeColor)}
-        ${pick ? `<div class="gc-ribbon tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</div>` : ''}
+        ${hasTier ? `<div class="gc-ribbon tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</div>` : ''}
         <div class="gc-content">
           <div class="gc-strip">
             <span class="gc-meta">${time}</span>
@@ -1266,11 +1275,15 @@ function renderMediumCard(g) {
             <span class="gc-at">at</span>
             ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
           </div>
-          ${pick ? `
+          ${hasTier ? `
             <div class="gc-pickbar">
               <span class="gc-pickbar-lbl">${(pick.type || '').toUpperCase()}</span>
               <span class="gc-pickbar-val">${pick.pick_text}</span>
               <span class="gc-pickbar-book">${pick.best_book || ''}${pick.best_odds ? ' · ' + (pick.best_odds > 0 ? '+' : '') + pick.best_odds : ''}</span>
+            </div>` : ''}
+          ${(!hasTier && isPending) ? `
+            <div class="gc-pickbar waiting">
+              <span class="gc-pickbar-val">${pick.book_count || 0}/${pick.min_books || 3} Books Posted</span>
             </div>` : ''}
         </div>
       </div>
@@ -1285,6 +1298,7 @@ function renderCompactCard(g) {
   const homeRank = powerRankings[g.home_team];
   const awayRank = powerRankings[g.away_team];
   const time = g.time && g.time !== 'TBD' ? g.time : '';
+  const hasTier = pick && pick.tier;
 
   return `
     <a class="gc-link" href="/game.html?id=${g.game_id}">
@@ -1298,7 +1312,7 @@ function renderCompactCard(g) {
             ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
           </div>
           <div class="gc-tag-compact">
-            ${pick ? `<span class="gc-pill-tier tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</span>` : ''}
+            ${hasTier ? `<span class="gc-pill-tier tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</span>` : ''}
           </div>
         </div>
       </div>
