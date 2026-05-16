@@ -75,6 +75,7 @@
   .tier-ls { --tier-bg: var(--rust);       --tier-fg: #fff; }
   .tier-b  { --tier-bg: var(--text-light); --tier-fg: var(--ink); }
   .tier-c  { --tier-bg: var(--border);     --tier-fg: var(--text-mid); }
+  .tier-no-edge { --tier-bg: rgba(160,154,138,0.35); --tier-fg: var(--cream); }
 
   /* ── ZONE 1: CONTEXT HERO ── */
   .ctx { position: relative; background: var(--ink); overflow: hidden; min-height: 380px; }
@@ -109,6 +110,51 @@
   .ctx-meta-item strong { color: var(--cream); font-weight: 600; }
   .ctx-meta-dot { width: 4px; height: 4px; background: rgba(212,168,58,0.5); border-radius: 50%; }
 
+  /* Projected score block (pre-game) — mirrors pg-score layout but italicized
+     and labeled as a projection. Sits between teams and meta. */
+  .ctx-projected {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    max-width: 560px;
+    margin: 0 auto 16px;
+    padding: 14px 24px;
+    background: rgba(248,245,238,0.04);
+    border: 1px solid rgba(212,168,58,0.18);
+    border-radius: 4px;
+  }
+  .ctx-projected-eyebrow {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2px;
+  }
+  .ctx-projected-side { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .ctx-projected-num {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--cream);
+    line-height: 1;
+  }
+  .ctx-projected-num.winner { color: var(--gold-light); }
+  .ctx-projected-label {
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(248,245,238,0.5);
+  }
+  .ctx-projected-dash { font-family: var(--serif); font-size: 24px; color: rgba(248,245,238,0.4); font-style: italic; }
+
   /* Premier pick highlight block (1-2 A+ picks OR ML if no A+) */
   .ctx-premier { display: flex; flex-direction: column; gap: 16px; }
   .ctx-premier-header { display: flex; align-items: center; gap: 12px; }
@@ -131,6 +177,8 @@
   .ctx-status.withdrawn::before { background: #E68080; }
   .ctx-status.pending { background: rgba(160,154,138,0.22); color: rgba(248,245,238,0.85); }
   .ctx-status.pending::before { background: rgba(248,245,238,0.7); }
+  .ctx-status.lean, .ctx-status.no_edge { background: rgba(160,154,138,0.18); color: rgba(248,245,238,0.7); }
+  .ctx-status.lean::before, .ctx-status.no_edge::before { background: rgba(248,245,238,0.5); }
   @keyframes pulse-status { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
   /* ── ZONE 2: NARRATIVE ── */
@@ -172,6 +220,8 @@
   .pick-status.withdrawn::before { background: var(--red); }
   .pick-status.pending { background: var(--cream-mid); color: var(--text-mid); border: 1px solid var(--border); }
   .pick-status.pending::before { background: var(--text-light); }
+  .pick-status.lean, .pick-status.no_edge { background: var(--cream-mid); color: var(--text-mid); border: 1px solid var(--border); font-style: italic; }
+  .pick-status.lean::before, .pick-status.no_edge::before { background: var(--text-light); }
 
   /* Best book line area */
   .pick-row-action { padding: 14px 22px; background: var(--cream-dark); border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; }
@@ -619,6 +669,18 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       </div>
 
       <div id="preGameContent">
+        <div class="ctx-projected" id="ctxProjected" style="display:none;">
+          <div class="ctx-projected-eyebrow">Our Projection</div>
+          <div class="ctx-projected-side">
+            <div class="ctx-projected-num" id="ctxProjAway">—</div>
+            <div class="ctx-projected-label" id="ctxProjAwayLbl"></div>
+          </div>
+          <div class="ctx-projected-dash">—</div>
+          <div class="ctx-projected-side">
+            <div class="ctx-projected-num" id="ctxProjHome">—</div>
+            <div class="ctx-projected-label" id="ctxProjHomeLbl"></div>
+          </div>
+        </div>
         <div class="ctx-meta" id="ctxMeta"></div>
         <div id="ctxPremier"></div>
       </div>
@@ -746,6 +808,7 @@ function tierMeta(tier) {
   if (tier === 'smart_money') return { cls: 'tier-sm', label: 'Smart $',  short: 'Smart $' };
   if (tier === 'lottery_shot')return { cls: 'tier-ls', label: 'Lottery',  short: 'Lottery' };
   if (tier === 'B')           return { cls: 'tier-b',  label: 'B',        short: 'B' };
+  if (tier === 'no_edge')     return { cls: 'tier-no-edge', label: 'No Edge', short: 'No Edge' };
   return { cls: 'tier-c', label: 'C', short: 'C' };
 }
 
@@ -791,22 +854,32 @@ function extractPicks(gameData) {
   const m        = gameData.matchup;
   const picks    = [];
 
+  // Helper: classify any pick (even un-tiered ones) for display.
+  // Tiered picks (A+, A, smart_money, lottery_shot) get their tier badge.
+  // Untiered picks get a "No Edge" badge — we show our lean but make it clear
+  // we don't see enough disagreement with the market to make it actionable.
+  function tierBadge(tier) {
+    if (tier) return { tier: tier, meta: tierMeta(tier), label: 'actionable' };
+    return { tier: 'no_edge', meta: tierMeta('no_edge'), label: 'no_edge' };
+  }
+
   // SPREAD pick — { tier, pick_team, line, edge, predicted_spread, market_spread, sp_picked_fav }
   const sp = picksIn.spread;
-  if (sp && sp.tier && market.spread != null) {
+  if (sp && sp.pick_team && market.spread != null) {
+    const badge = tierBadge(sp.tier);
     const pickSpread = sp.line;  // already team-relative from backend
     const display = `${sp.pick_team} ${formatSpread(pickSpread)}`;
     picks.push({
       type: 'Spread',
-      tier: sp.tier,
-      tierMeta: tierMeta(sp.tier),
+      tier: badge.tier,
+      tierMeta: badge.meta,
       picked: sp.pick_team,
       display: display,
       line: formatSpread(pickSpread),
       edge: sp.edge,
       predicted_value: sp.predicted_spread,
       market_value: sp.market_spread,
-      status: 'actionable',
+      status: badge.label,
       best_book: mockBestBook('Spread', display),
       other_books: mockOtherBooks('Spread', display)
     });
@@ -814,34 +887,36 @@ function extractPicks(gameData) {
 
   // TOTAL pick — { tier, pick, total, edge, predicted_total }
   const ou = picksIn.ou;
-  if (ou && ou.tier && market.over_under != null) {
-    const pickDir = ou.pick;  // "Over" or "Under"
+  if (ou && ou.pick && market.over_under != null) {
+    const badge = tierBadge(ou.tier);
+    const pickDir = ou.pick;
     const display = `${pickDir} ${ou.total}`;
     picks.push({
       type: 'Total',
-      tier: ou.tier,
-      tierMeta: tierMeta(ou.tier),
+      tier: badge.tier,
+      tierMeta: badge.meta,
       picked: pickDir,
       display: display,
       line: `${pickDir} ${ou.total}`,
       edge: ou.edge,
       predicted_value: ou.predicted_total,
       market_value: ou.total,
-      status: 'actionable',
+      status: badge.label,
       best_book: mockBestBook('Total', display),
       other_books: mockOtherBooks('Total', display)
     });
   }
 
   // MONEYLINE pick — { tier, pick_team, ml, edge, implied, model_win_prob }
-  // Only tiered ML picks (smart_money / lottery_shot) make it to the page.
+  // Untiered MLs also surface so users see who we'd take straight up.
   const ml = picksIn.ml;
-  if (ml && (ml.tier === 'smart_money' || ml.tier === 'lottery_shot')) {
+  if (ml && ml.pick_team) {
+    const badge = tierBadge(ml.tier);
     const display = `${ml.pick_team} ML`;
     picks.push({
       type: 'Moneyline',
-      tier: ml.tier,
-      tierMeta: tierMeta(ml.tier),
+      tier: badge.tier,
+      tierMeta: badge.meta,
       picked: ml.pick_team,
       display: display,
       line: ml.ml != null ? (ml.ml > 0 ? `+${ml.ml}` : `${ml.ml}`) : '',
@@ -849,7 +924,7 @@ function extractPicks(gameData) {
       market_odds: ml.ml,
       implied_prob: ml.implied,
       model_win_prob: ml.model_win_prob,
-      status: 'actionable',
+      status: badge.label,
       best_book: mockBestBook('Moneyline', display, ml.ml),
       other_books: mockOtherBooks('Moneyline', display, ml.ml)
     });
@@ -890,10 +965,12 @@ function formatSpread(s) {
 //   - If no A+, all moneyline picks (smart_money or lottery_shot)
 //   - Otherwise nothing
 function selectPremierPicks(picks) {
+  // Premier = A+ picks if any, else tiered ML picks (smart_money / lottery_shot).
+  // Never includes no-edge picks — those are shown only in the All Picks list.
   const aplus = picks.filter(p => p.tier === 'A+');
   if (aplus.length) return aplus;
-  const ml = picks.filter(p => p.type === 'Moneyline');
-  if (ml.length) return ml;
+  const tieredMl = picks.filter(p => p.type === 'Moneyline' && (p.tier === 'smart_money' || p.tier === 'lottery_shot'));
+  if (tieredMl.length) return tieredMl;
   return [];
 }
 
@@ -965,6 +1042,27 @@ function renderPreGame(gameData, m, premier) {
     ${venue ? `<span class="ctx-meta-dot"></span><div class="ctx-meta-item">${venue}</div>` : ''}
     ${m.neutral_site ? `<span class="ctx-meta-dot"></span><div class="ctx-meta-item">Neutral Site</div>` : ''}
   `;
+
+  // Projected score from SP+: derive home/away points from predicted_total + predicted_margin
+  // predicted_margin = home_pts - away_pts
+  const pred = gameData.prediction || {};
+  if (pred.predicted_total != null && pred.predicted_margin != null) {
+    const homePts = (pred.predicted_total + pred.predicted_margin) / 2;
+    const awayPts = (pred.predicted_total - pred.predicted_margin) / 2;
+    const awayDisplay = Math.max(0, awayPts).toFixed(1);
+    const homeDisplay = Math.max(0, homePts).toFixed(1);
+    document.getElementById('ctxProjAway').textContent = awayDisplay;
+    document.getElementById('ctxProjHome').textContent = homeDisplay;
+    document.getElementById('ctxProjAwayLbl').textContent = shortTeam(m.away_team);
+    document.getElementById('ctxProjHomeLbl').textContent = shortTeam(m.home_team);
+    // Bold the projected winner in gold
+    document.getElementById('ctxProjAway').classList.toggle('winner', awayPts > homePts);
+    document.getElementById('ctxProjHome').classList.toggle('winner', homePts > awayPts);
+    document.getElementById('ctxProjected').style.display = 'grid';
+  } else {
+    document.getElementById('ctxProjected').style.display = 'none';
+  }
+
   renderPremier(premier);
 }
 
@@ -1012,7 +1110,14 @@ function renderPostGame(gameData) {
   document.getElementById('pgAwayNum').classList.toggle('loser', homeWon);
   document.getElementById('pgHomeNum').classList.toggle('loser', awayWon);
 }
-function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function cap(s) {
+  if (!s) return '';
+  // Special-case underscored statuses so "no_edge" → "No Edge"
+  if (s.includes('_')) {
+    return s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 // ── ZONE 2: NARRATIVE ──
 function renderNarrative(gameData) {
@@ -1036,7 +1141,7 @@ function renderNarrative(gameData) {
     const mktText = mktMargin > 0
       ? `${m.home_team} by ${mktMargin.toFixed(1)}`
       : `${m.away_team} by ${Math.abs(mktMargin).toFixed(1)}`;
-    text += `<p>SP+ projects <strong>${projText}</strong>. The market has it <strong>${mktText}</strong>. That's <strong>${edgeAbs} points</strong> of disagreement, with the model favoring <em>${direction}</em>.</p>`;
+    text += `<p>We project <strong>${projText}</strong>. The market has it <strong>${mktText}</strong>. That's <strong>${edgeAbs} points</strong> of disagreement, with our model favoring <em>${direction}</em>.</p>`;
   }
 
   // Total projection if available
@@ -1044,7 +1149,7 @@ function renderNarrative(gameData) {
     const totalEdge = pred.predicted_total - market.over_under;
     const totalEdgeAbs = Math.abs(totalEdge).toFixed(1);
     const totalDir = totalEdge > 0 ? 'over' : 'under';
-    text += `<p>Total projection: <strong>${pred.predicted_total.toFixed(1)}</strong> vs. market line of <strong>${market.over_under}</strong> — model leans <em>${totalDir}</em> by ${totalEdgeAbs} points.</p>`;
+    text += `<p>Total projection: <strong>${pred.predicted_total.toFixed(1)}</strong> vs. market line of <strong>${market.over_under}</strong> — we lean <em>${totalDir}</em> by ${totalEdgeAbs} points.</p>`;
   }
 
   text += `
@@ -1065,8 +1170,8 @@ function renderAllPicks(picks) {
   if (!picks.length) {
     body.innerHTML = `
       <div class="all-picks-empty">
-        <div class="all-picks-empty-title">No actionable picks on this matchup</div>
-        <div class="all-picks-empty-sub">Our model didn't find a meaningful edge here. We don't force picks where there isn't one.</div>
+        <div class="all-picks-empty-title">No picks available</div>
+        <div class="all-picks-empty-sub">Market data isn't available for this game yet.</div>
       </div>
     `;
     meta.textContent = '';
