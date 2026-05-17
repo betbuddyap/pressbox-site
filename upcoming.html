@@ -842,70 +842,72 @@ function renderSlate(games) {
 // ─── Date / time helpers ───────────────────────────────────────────────
 
 function gameIsoTime(g) {
-  // Returns ISO string usable for comparison. Combines g.date + g.time.
-  if (!g.date) return null;
-  if (g.time && g.time !== 'TBD') {
-    // Try to parse "7:30 PM ET" etc. Best-effort.
-    return `${g.date}T${parseTimeToISO(g.time)}`;
+  // raw_date is the canonical ISO timestamp from the API (e.g. "2026-08-29T04:00:00+00:00").
+  // g.date is a pre-formatted display string ("Fri, Aug 29") — don't parse it.
+  if (g.raw_date) return g.raw_date;
+  if (g.date) {
+    // Last-resort fallback: let JS try to parse whatever string we got.
+    try {
+      const d = new Date(g.date);
+      if (!isNaN(d.getTime())) return d.toISOString();
+    } catch (e) {}
   }
-  return `${g.date}T23:59`;  // TBD games sort last within their date
+  return null;
 }
 
-function parseTimeToISO(t) {
-  // Accept "7:30 PM", "12:00 PM", "7 PM" etc. Returns "HH:MM:00".
-  const m = t.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
-  if (!m) return '00:00:00';
-  let h = parseInt(m[1], 10);
-  const min = m[2] ? parseInt(m[2], 10) : 0;
-  const ampm = (m[3] || '').toUpperCase();
-  if (ampm === 'PM' && h < 12) h += 12;
-  if (ampm === 'AM' && h === 12) h = 0;
-  return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}:00`;
+function parseDateOnly(g) {
+  // Returns a Date object representing the game's kickoff, or null.
+  if (!g.raw_date) return null;
+  try {
+    const d = new Date(g.raw_date);
+    return isNaN(d.getTime()) ? null : d;
+  } catch (e) { return null; }
 }
 
 function dateKey(g) {
-  return g.date || 'TBD';
+  // YYYY-MM-DD in local timezone — used as the grouping key.
+  const d = parseDateOnly(g);
+  if (!d) return 'TBD';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
 }
 
 function dayOfWeekName(g) {
-  if (!g.date) return 'TBD';
-  try {
-    const d = new Date(g.date + 'T12:00');  // midday to avoid TZ edge cases
-    return d.toLocaleDateString('en-US', { weekday: 'long' });
-  } catch (e) { return ''; }
+  const d = parseDateOnly(g);
+  if (!d) return 'TBD';
+  return d.toLocaleDateString('en-US', { weekday: 'long' });
 }
 
 function prettyDate(g) {
-  if (!g.date) return '';
-  try {
-    const d = new Date(g.date + 'T12:00');
-    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-  } catch (e) { return ''; }
+  const d = parseDateOnly(g);
+  if (!d) return '';
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 }
 
-// Saturday time bins. Hours are local-display hours; we just look at "g.time"
-// after parsing. Slots:
-//   Noon       : 11:00 - 13:59
+// Saturday time bins. Reads kickoff hour from raw_date in local timezone.
+// Slots:
+//   Noon       : kickoffs before 14:00 local
 //   Afternoon  : 14:00 - 17:29
 //   Primetime  : 17:30 - 21:29
 //   Late       : 21:30+
-//   TBD        : games without a posted time
+//   TBD        : games without a posted time (or 04:00 UTC sentinel)
 function binSaturdayByTime(games) {
   const bins = [
-    { label: 'Noon',      key: 'noon',  games: [] },
-    { label: 'Afternoon', key: 'aft',   games: [] },
-    { label: 'Primetime', key: 'prime', games: [] },
-    { label: 'Late',      key: 'late',  games: [] },
-    { label: 'Kickoff TBD', key: 'tbd', games: [] },
+    { label: 'Noon',         key: 'noon',  games: [] },
+    { label: 'Afternoon',    key: 'aft',   games: [] },
+    { label: 'Primetime',    key: 'prime', games: [] },
+    { label: 'Late',         key: 'late',  games: [] },
+    { label: 'Kickoff TBD',  key: 'tbd',   games: [] },
   ];
   games.forEach(g => {
+    // g.time is "TBD" when backend couldn't determine kickoff (typically 04:00 UTC sentinel).
     if (!g.time || g.time === 'TBD') { bins[4].games.push(g); return; }
-    const iso = parseTimeToISO(g.time);   // "HH:MM:00"
-    const hh = parseInt(iso.slice(0, 2), 10);
-    const mm = parseInt(iso.slice(3, 5), 10);
-    const minutes = hh * 60 + mm;
-    if (minutes < 11 * 60)            bins[0].games.push(g);   // very early → fold into Noon
-    else if (minutes < 14 * 60)       bins[0].games.push(g);
+    const d = parseDateOnly(g);
+    if (!d) { bins[4].games.push(g); return; }
+    const minutes = d.getHours() * 60 + d.getMinutes();
+    if (minutes < 14 * 60)            bins[0].games.push(g);   // before 2 PM = Noon
     else if (minutes < 17 * 60 + 30)  bins[1].games.push(g);
     else if (minutes < 21 * 60 + 30)  bins[2].games.push(g);
     else                              bins[3].games.push(g);
