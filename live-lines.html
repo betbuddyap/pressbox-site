@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Lines — PressBox Analytics</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PressBox Analytics">
+<meta property="og:url" content="https://pressboxanalytics.com/live-lines.html">
+<meta property="og:title" content="Live Lines — PressBox Analytics">
+<meta property="og:description" content="Every active pick. Grades that update as the line moves. The truth at your moment of decision.">
+<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0F0E0A">
+<meta name="description" content="Every active pick. Grades that update as the line moves. The truth at your moment of decision.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream: #F8F5EE; --cream-dark: #EFE9DC; --cream-mid: #E8E1D3;
+    --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
+    --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
+    --gold-pale: #F5EDD0; --ink: #0F0E0A;
+    --sage: #4A7A4A; --sage-light: #6BA06B; --sage-pale: #E8F0E8;
+    --rust: #B85A2A; --rust-light: #D17A4A; --rust-pale: #FBEFE0;
+    --serif: 'Libre Baskerville', Georgia, serif;
+    --sans: 'Source Sans 3', system-ui, sans-serif;
+    --max: 1200px;
+  }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  /* ── TICKER ── */
+  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
+  .ticker-track span { margin: 0 28px; color: #2A2A20; }
+  .ticker-track b { color: var(--gold-light); }
+  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+  /* ── NAV ── */
+  nav { background: var(--ink); border-bottom: 1px solid #1F1B0F; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .nav-logo { display: block; }
+  .nav-links { list-style: none; display: flex; align-items: center; gap: 28px; }
+  .nav-links a { color: #BFB69F; text-decoration: none; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--gold-light); }
+  .btn-nav { background: var(--gold); color: var(--ink) !important; padding: 10px 18px; border-radius: 4px; }
+  .btn-nav:hover { background: var(--gold-light); }
+  .hamburger { display: none; background: transparent; border: 0; cursor: pointer; padding: 8px; }
+  .hamburger span { display: block; width: 22px; height: 2px; margin: 4px 0; background: var(--gold-light); }
+  .mobile-menu { display: none; position: fixed; inset: 0; background: var(--ink); z-index: 1000; padding: 80px 32px; flex-direction: column; gap: 22px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { color: var(--gold-light); text-decoration: none; font-family: var(--serif); font-size: 22px; }
+  .close-btn { position: absolute; top: 20px; right: 22px; background: transparent; border: 0; color: var(--gold-light); font-size: 28px; cursor: pointer; }
+
+  /* ── PAGE LAYOUT ── */
+  .page { max-width: var(--max); margin: 0 auto; padding: 32px 24px 64px; }
+
+  /* ── HERO STRIP ── */
+  .hero-strip { background: var(--ink); color: var(--cream); border-radius: 8px; padding: 22px 26px; margin-bottom: 18px; }
+  .hero-eyebrow { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold-light); margin-bottom: 4px; }
+  .hero-title { font-family: var(--serif); font-size: 26px; line-height: 1.15; font-style: italic; color: var(--cream); }
+  .hero-sub { margin-top: 4px; font-size: 13px; color: #BFB69F; }
+
+  /* ── PRIMER ── */
+  .primer { background: var(--gold-pale); border: 1px solid var(--gold-light); border-radius: 6px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; line-height: 1.5; color: var(--text); position: relative; }
+  .primer b { color: var(--ink); }
+  .primer-dismiss { position: absolute; top: 8px; right: 12px; background: transparent; border: 0; color: var(--text-mid); cursor: pointer; font-size: 16px; line-height: 1; padding: 4px; }
+
+  /* ── PICK TYPE FILTER ── */
+  .filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .filter-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-mid); margin-right: 4px; }
+  .filter-pill { background: transparent; border: 1px solid var(--border); color: var(--text-mid); padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .filter-pill:hover { border-color: var(--gold-light); color: var(--text); }
+  .filter-pill.active { background: var(--ink); color: var(--gold-light); border-color: var(--ink); }
+
+  /* ── TIER SECTION ── */
+  .tier-section { margin-bottom: 36px; }
+  .tier-section-head { display: flex; align-items: baseline; gap: 10px; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 2px solid var(--ink); }
+  .tier-section-title { font-family: var(--serif); font-size: 22px; font-style: italic; color: var(--text); }
+  .tier-section-count { font-size: 12px; color: var(--text-light); font-weight: 600; letter-spacing: 1px; }
+  .tier-section-title.t-aplus  { color: var(--gold); }
+  .tier-section-title.t-a      { color: var(--text); }
+  .tier-section-title.t-smart  { color: var(--sage); }
+  .tier-section-title.t-lottery { color: var(--rust); }
+  .tier-section-title.t-noedge { color: var(--text-mid); }
+  .tier-section-title.t-fade   { color: var(--rust); }
+
+  /* ── PICK ROW ── */
+  .pick-list { display: flex; flex-direction: column; gap: 8px; }
+  .pick-row { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; transition: border-color 0.15s; }
+  .pick-row.t-aplus  { border-color: var(--gold); box-shadow: 0 1px 4px rgba(184,146,42,0.10); }
+  .pick-row.t-a      { border-color: var(--gold-light); }
+  .pick-row.t-smart  { border-color: var(--sage); box-shadow: 0 1px 4px rgba(74,122,74,0.10); }
+  .pick-row.t-lottery { border-color: var(--rust); }
+  .pick-row.t-noedge { border-style: dashed; }
+  .pick-row.t-fade   { border-color: var(--rust); background: var(--rust-pale); }
+
+  /* ── HEADLINE (always visible) ── */
+  .pick-summary { padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; cursor: pointer; }
+  .pick-body { min-width: 0; }
+  .pick-meta { font-size: 11px; color: var(--text-mid); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pick-type-tag { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); background: var(--cream-mid); padding: 2px 7px; border-radius: 3px; }
+  .pick-product-tag { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 2px 7px; border-radius: 3px; }
+  .pick-product-tag.p-potw  { background: var(--gold-pale); color: var(--gold); }
+  .pick-product-tag.p-totw  { background: var(--gold-pale); color: var(--gold); }
+  .pick-product-tag.p-smart { background: var(--sage-pale); color: var(--sage); }
+  .pick-product-tag.p-lottery { background: var(--rust-pale); color: var(--rust); }
+  .pick-matchup { font-size: 11px; color: var(--text-light); }
+  .pick-call { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.2; margin-top: 2px; }
+  .pick-bookline { font-size: 11px; color: var(--text-mid); margin-top: 3px; }
+  .pick-bookline b { font-weight: 700; color: var(--text); }
+  .pick-bookline .edge { color: var(--gold); font-weight: 700; }
+
+  .pick-grade-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 76px; }
+  .grade-pill { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; font-family: var(--sans); white-space: nowrap; }
+  .grade-pill.g-aplus    { background: var(--gold); color: var(--ink); }
+  .grade-pill.g-a        { background: var(--gold-light); color: var(--ink); }
+  .grade-pill.g-smart    { background: var(--sage); color: #fff; }
+  .grade-pill.g-lottery  { background: var(--rust); color: #fff; }
+  .grade-pill.g-noedge   { background: var(--cream-mid); color: var(--text-mid); border: 1px solid var(--border); }
+  .grade-pill.g-fade     { background: var(--rust-light); color: #fff; }
+  .expand-chevron { font-size: 10px; color: var(--text-light); transition: transform 0.2s; }
+
+  /* ── EXPANDER ── */
+  .pick-detail { display: none; padding: 0 16px 14px; border-top: 1px solid var(--border); }
+  .pick-row.expanded .pick-detail { display: block; padding-top: 14px; }
+  .pick-row.expanded .expand-chevron { transform: rotate(180deg); }
+  .detail-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); font-weight: 700; margin-bottom: 6px; margin-top: 14px; }
+  .detail-section-label:first-child { margin-top: 0; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; padding: 10px 12px; background: var(--cream-dark); border-radius: 4px; }
+  .detail-cell { display: flex; flex-direction: column; gap: 1px; }
+  .detail-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); font-weight: 700; }
+  .detail-value { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
+  .detail-sub { font-size: 11px; color: var(--text-mid); }
+
+  /* Change-event list */
+  .changes-list { display: flex; flex-direction: column; gap: 4px; }
+  .change-item { padding: 8px 12px; background: var(--cream); border: 1px solid var(--border); border-radius: 4px; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; font-size: 12px; }
+  .change-item.release-event { background: var(--gold-pale); border-color: var(--gold-light); }
+  .change-when { font-size: 10px; color: var(--text-light); white-space: nowrap; }
+  .change-text { color: var(--text); }
+  .change-text b { font-weight: 700; }
+  .change-line { font-family: var(--serif); font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; }
+
+  .no-changes-note { font-size: 12px; color: var(--text-light); font-style: italic; padding: 8px 12px; }
+
+  .detail-link { display: inline-block; margin-top: 14px; font-size: 12px; color: var(--gold); text-decoration: none; font-weight: 600; }
+  .detail-link:hover { color: var(--gold-light); }
+
+  /* ── EMPTY STATE ── */
+  .empty { background: var(--cream); border: 1px dashed var(--border); border-radius: 8px; padding: 48px 24px; text-align: center; }
+  .empty-title { font-family: var(--serif); font-size: 18px; font-style: italic; color: var(--text-mid); margin-bottom: 8px; }
+  .empty-sub { font-size: 13px; color: var(--text-light); }
+
+  /* ── LOADING ── */
+  .loading { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 32px; text-align: center; color: var(--text-light); font-size: 13px; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 720px) {
+    .nav-links { display: none; }
+    .hamburger { display: block; }
+    .page { padding: 16px 12px 48px; }
+    .hero-strip { padding: 16px 18px; }
+    .hero-title { font-size: 20px; }
+    .filter-row { gap: 6px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-pill { flex-shrink: 0; padding: 5px 12px; }
+    .tier-section-title { font-size: 18px; }
+    .pick-summary { padding: 12px 14px; gap: 10px; }
+    .pick-call { font-size: 14px; }
+    .detail-grid { grid-template-columns: 1fr; gap: 8px; }
+    .change-item { grid-template-columns: 1fr; gap: 2px; }
+    .change-when { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    Pick of the Week <b>50-8</b> · 86.2% Hit Rate across 4 seasons<span>·</span>
+    Smart Money ML <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
+    A+ Board <b>600-192</b> · 75.8% across 4 seasons<span>·</span>
+    Parlay of the Week <b>+178% ROI</b> · +$9,600 on $100/wk<span>·</span>
+    Picks: live. Grades: live. Odds: shopped. History: complete.<span>·</span>
+    Pick of the Week <b>50-8</b> · 86.2% Hit Rate across 4 seasons<span>·</span>
+    Smart Money ML <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
+    A+ Board <b>600-192</b> · 75.8% across 4 seasons<span>·</span>
+    Parlay of the Week <b>+178% ROI</b> · +$9,600 on $100/wk<span>·</span>
+    Picks: live. Grades: live. Odds: shopped. History: complete.<span>·</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/index.html" class="nav-logo">
+      <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
+    </a>
+    <ul class="nav-links">
+      <li><a href="/live-lines.html" class="active">Live Lines</a></li>
+      <li><a href="/upcoming.html">Upcoming</a></li>
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/rankings.html">Rankings</a></li>
+      <li><a href="/teams.html">Teams</a></li>
+      <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
+  <a href="/index.html">Home</a>
+  <a href="/live-lines.html">Live Lines</a>
+  <a href="/upcoming.html">Upcoming</a>
+  <a href="/results.html">Results</a>
+  <a href="/rankings.html">Rankings</a>
+  <a href="/teams.html">Teams</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/about.html">About</a>
+</div>
+
+<div class="page">
+
+  <div class="hero-strip">
+    <div class="hero-eyebrow">Live Lines</div>
+    <div class="hero-title" id="heroTitle">Loading...</div>
+    <div class="hero-sub" id="heroSub">Every active pick. Graded against the current best line, every 30 minutes.</div>
+  </div>
+
+  <div class="primer" id="primer">
+    <button class="primer-dismiss" onclick="dismissPrimer()" aria-label="Dismiss">✕</button>
+    <b>The grade you see now is the bet you'd make now.</b> Picks lock at release with a line, book, and tier. As the market moves, we re-grade against the current best number. The "Now" tier is what matters for what you're about to bet. Tap any pick to see release info and what's changed since.
+  </div>
+
+  <div class="filter-row" id="filterRow" style="display:none">
+    <span class="filter-label">Pick Type</span>
+    <button class="filter-pill active" data-type="all"    onclick="selectType('all')">All</button>
+    <button class="filter-pill"        data-type="spread" onclick="selectType('spread')">Spread</button>
+    <button class="filter-pill"        data-type="total"  onclick="selectType('total')">O/U</button>
+    <button class="filter-pill"        data-type="ml"     onclick="selectType('ml')">Moneyline</button>
+  </div>
+
+  <div id="content">
+    <div class="loading">Loading picks...</div>
+  </div>
+
+</div>
+
+<script>
+const API_BASE = 'https://betbuddyservice-production.up.railway.app';
+const SEASON = 2026;
+
+let allPicks = [];
+let typeFilter = 'all';
+
+const TIER_SECTIONS = [
+  { tier: 'A+',           label: 'A+ Picks',      cls: 't-aplus'   },
+  { tier: 'A',            label: 'A Picks',       cls: 't-a'       },
+  { tier: 'Smart Money',  label: 'Smart Money',   cls: 't-smart'   },
+  { tier: 'Lottery Shot', label: 'Lottery Shots', cls: 't-lottery' },
+  { tier: 'No Edge',      label: 'No Edge',       cls: 't-noedge'  },
+  { tier: 'Fade',         label: 'Fade',          cls: 't-fade'    },
+];
+
+const TIER_PILL_CLASS = {
+  'A+':           'g-aplus',
+  'A':            'g-a',
+  'Smart Money':  'g-smart',
+  'Lottery Shot': 'g-lottery',
+  'No Edge':      'g-noedge',
+  'Fade':         'g-fade'
+};
+
+const TIER_BORDER_CLASS = {
+  'A+':           't-aplus',
+  'A':            't-a',
+  'Smart Money':  't-smart',
+  'Lottery Shot': 't-lottery',
+  'No Edge':      't-noedge',
+  'Fade':         't-fade'
+};
+
+const PRODUCT_LABELS = {
+  'potw':         'POTW',
+  'totw':         'TOTW',
+  'smart_ml':     'Smart $',
+  'lottery_ml':   'Lottery',
+  'parlay_leg':   'Parlay',
+  'weekly_aplus': null   // A+ board picks: no product tag (they ARE the board)
+};
+
+const PRODUCT_CLASS = {
+  'potw':       'p-potw',
+  'totw':       'p-totw',
+  'smart_ml':   'p-smart',
+  'lottery_ml': 'p-lottery',
+};
+
+const BOOK_DISPLAY = {
+  draftkings: 'DraftKings',
+  fanduel:    'FanDuel',
+  betmgm:     'BetMGM',
+  caesars:    'Caesars',
+  bovada:     'Bovada',
+  espnbet:    'ESPN BET',
+  fanatics:   'Fanatics',
+};
+
+// ── HELPERS ──
+function toggleMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+function dismissPrimer() {
+  document.getElementById('primer').style.display = 'none';
+  try { localStorage.setItem('pba_primer_dismissed', '1'); } catch(e) {}
+}
+function maybeHidePrimer() {
+  try {
+    if (localStorage.getItem('pba_primer_dismissed') === '1') {
+      document.getElementById('primer').style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+function bookName(key) {
+  if (!key) return '—';
+  return BOOK_DISPLAY[key.toLowerCase()] || key;
+}
+
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+function fmtKickoff(iso) {
+  if (!iso) return 'TBD';
+  try {
+    const d = new Date(iso);
+    const now = new Date();
+    const daysOut = Math.floor((d - now) / (1000 * 60 * 60 * 24));
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    if (daysOut === 0)  return `today ${time}`;
+    if (daysOut === 1)  return `tomorrow ${time}`;
+    if (daysOut < 7)    return `${dayName} ${time}`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ` ${time}`;
+  } catch(e) { return ''; }
+}
+
+function fmtSpread(n) {
+  if (n == null) return '—';
+  if (n === 0) return 'PK';
+  const v = +n;
+  return v > 0 ? `+${v.toFixed(1).replace('.0','')}` : `${v.toFixed(1).replace('.0','')}`;
+}
+
+function fmtML(n) {
+  if (n == null) return '—';
+  return n > 0 ? `+${n}` : `${n}`;
+}
+
+function fmtAgo(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    const mins = Math.round((new Date() - d) / 60000);
+    if (mins < 1)    return 'just now';
+    if (mins < 60)   return `${mins} min ago`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24)    return `${hrs}h ago`;
+    const days = Math.round(hrs / 24);
+    return `${days}d ago`;
+  } catch(e) { return ''; }
+}
+
+function pickCallText(p) {
+  if (p.pick_type === 'spread') {
+    const line = p.current.line != null ? p.current.line : p.released.line;
+    return `${p.side} ${fmtSpread(line)}`;
+  }
+  if (p.pick_type === 'total') {
+    const total = p.current.line != null ? p.current.line : p.released.line;
+    return `${cap(p.side)} ${total}`;
+  }
+  if (p.pick_type === 'ml') {
+    return `${p.side} ML`;
+  }
+  return '';
+}
+
+function edgeText(p) {
+  if (p.current.edge == null) return '';
+  if (p.pick_type === 'ml') {
+    return `${((+p.current.edge) * 100).toFixed(1)}% edge`;
+  }
+  return `${(+p.current.edge).toFixed(1)} pt edge`;
+}
+
+// ── RENDER ──
+function renderPage(data) {
+  const picks = data.picks || [];
+  allPicks = picks;
+
+  const weekLabel = data.week ? `Week ${data.week}` : `Season ${data.season}`;
+  document.getElementById('heroTitle').textContent = picks.length
+    ? `${weekLabel} · ${picks.length} active pick${picks.length === 1 ? '' : 's'}`
+    : `${weekLabel} · No picks published yet`;
+
+  if (data.updated_at) {
+    document.getElementById('heroSub').textContent =
+      `Last graded ${fmtAgo(data.updated_at)}. Every active pick. Graded against the current best line, every 30 minutes.`;
+  }
+
+  document.getElementById('filterRow').style.display = picks.length ? 'flex' : 'none';
+  applyFilter();
+}
+
+function selectType(t) {
+  typeFilter = t;
+  document.querySelectorAll('.filter-pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.type === t);
+  });
+  applyFilter();
+}
+
+function applyFilter() {
+  let rows = allPicks.slice();
+  if (typeFilter !== 'all') {
+    rows = rows.filter(p => p.pick_type === typeFilter);
+  }
+
+  if (!rows.length) {
+    if (allPicks.length === 0) {
+      document.getElementById('content').innerHTML = `
+        <div class="empty">
+          <div class="empty-title">No picks published yet.</div>
+          <div class="empty-sub">Picks for the upcoming slate post Sunday morning. Check back then.</div>
+        </div>
+      `;
+    } else {
+      document.getElementById('content').innerHTML = `
+        <div class="empty">
+          <div class="empty-title">No picks of that type right now.</div>
+          <div class="empty-sub"><button class="filter-pill" onclick="selectType('all')">Show all</button></div>
+        </div>
+      `;
+    }
+    return;
+  }
+
+  // Group by current tier
+  const bySection = {};
+  rows.forEach(p => {
+    const tier = p.current.tier || 'No Edge';
+    bySection[tier] = bySection[tier] || [];
+    bySection[tier].push(p);
+  });
+
+  // Sort each section by current edge desc
+  Object.keys(bySection).forEach(tier => {
+    bySection[tier].sort((a, b) => (b.current.edge || 0) - (a.current.edge || 0));
+  });
+
+  // Render in section order, hide empty
+  const html = TIER_SECTIONS
+    .filter(s => (bySection[s.tier] || []).length > 0)
+    .map(s => {
+      const items = bySection[s.tier];
+      return `
+        <section class="tier-section">
+          <div class="tier-section-head">
+            <h2 class="tier-section-title ${s.cls}">${s.label}</h2>
+            <span class="tier-section-count">${items.length} pick${items.length === 1 ? '' : 's'}</span>
+          </div>
+          <div class="pick-list">
+            ${items.map(renderRow).join('')}
+          </div>
+        </section>
+      `;
+    }).join('');
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderRow(p) {
+  const tier      = p.current.tier || 'No Edge';
+  const pillCls   = TIER_PILL_CLASS[tier] || 'g-noedge';
+  const borderCls = TIER_BORDER_CLASS[tier] || 't-noedge';
+
+  const productLabel = PRODUCT_LABELS[p.product];
+  const productCls   = PRODUCT_CLASS[p.product] || '';
+  const productTag   = productLabel
+    ? `<span class="pick-product-tag ${productCls}">${productLabel}</span>`
+    : '';
+
+  const typeLabel = p.pick_type === 'spread' ? 'Spread'
+                  : p.pick_type === 'total'  ? 'O/U'
+                  : 'Moneyline';
+
+  const call = pickCallText(p);
+  const matchup = `${p.game.away_team} @ ${p.game.home_team}`;
+  const kickoff = fmtKickoff(p.game.start_date);
+  const edge = edgeText(p);
+  const bookText = p.current.book
+    ? `at <b>${bookName(p.current.book)}</b>`
+    : '';
+  const bookLineParts = [bookText, edge ? `<span class="edge">${edge}</span>` : ''].filter(Boolean);
+
+  return `
+    <div class="pick-row ${borderCls}" id="pick-${p.pick_id}">
+      <div class="pick-summary" onclick="toggleRow(${p.pick_id})">
+        <div class="pick-body">
+          <div class="pick-meta">
+            <span class="pick-type-tag">${typeLabel}</span>
+            ${productTag}
+            <span class="pick-matchup">${matchup} · ${kickoff}</span>
+          </div>
+          <div class="pick-call">${call}</div>
+          <div class="pick-bookline">${bookLineParts.join(' · ')}</div>
+        </div>
+        <div class="pick-grade-cell">
+          <span class="grade-pill ${pillCls}">${tier}</span>
+          <span class="expand-chevron">▾</span>
+        </div>
+      </div>
+      <div class="pick-detail">${renderDetail(p)}</div>
+    </div>
+  `;
+}
+
+function renderDetail(p) {
+  // ── Release event (always first, locked snapshot) ──
+  const releaseLine = p.pick_type === 'ml' ? fmtML(p.released.line) : fmtSpread(p.released.line);
+  const releaseEvent = `
+    <div class="change-item release-event">
+      <span class="change-when">${fmtAgo(p.released.at)}</span>
+      <span class="change-text">
+        <b>Released</b> as <b>${p.released.tier || '—'}</b> at <b>${bookName(p.released.book)}</b>
+      </span>
+      <span class="change-line">${releaseLine}</span>
+    </div>
+  `;
+
+  // ── Change events (tier flips and book flips only) ──
+  // History is oldest→newest; for display we reverse so newest is at top.
+  const changes = (p.history || []).filter(r => r.is_tier_change || r.is_book_change);
+  const changesNewestFirst = changes.slice().reverse();
+
+  const changeRows = changesNewestFirst.map((r, i) => {
+    // The "prior" state is the next older change event (i+1 in our reversed
+    // array). If there are no older changes, the prior state is the release.
+    const olderChange = changesNewestFirst[i + 1];
+    const priorTier = olderChange ? olderChange.tier        : p.released.tier;
+    const priorBook = olderChange ? olderChange.market_book : p.released.book;
+
+    const parts = [];
+    if (r.is_tier_change) {
+      parts.push(`Grade <b>${priorTier}</b> → <b>${r.tier}</b>`);
+    }
+    if (r.is_book_change) {
+      parts.push(`Best book <b>${bookName(priorBook)}</b> → <b>${bookName(r.market_book)}</b>`);
+    }
+    const line = p.pick_type === 'ml' ? fmtML(r.market_line) : fmtSpread(+r.market_line);
+
+    return `
+      <div class="change-item">
+        <span class="change-when">${fmtAgo(r.observed_at)}</span>
+        <span class="change-text">${parts.join(' · ')}</span>
+        <span class="change-line">${line}</span>
+      </div>
+    `;
+  }).join('');
+
+  const changesBlock = changes.length === 0
+    ? `<div class="no-changes-note">No changes since release.</div>`
+    : changeRows;
+
+  // ── At-a-glance: our projection + current line ──
+  const modelStr = p.pick_type === 'ml'
+    ? `${(+p.model_line * 100).toFixed(1)}% win prob`
+    : fmtSpread(p.model_line);
+  const currentLineStr = p.pick_type === 'ml'
+    ? fmtML(p.current.line)
+    : fmtSpread(p.current.line);
+
+  return `
+    <div class="detail-section-label">At a glance</div>
+    <div class="detail-grid">
+      <div class="detail-cell">
+        <span class="detail-label">Our projection</span>
+        <span class="detail-value">${modelStr}</span>
+      </div>
+      <div class="detail-cell">
+        <span class="detail-label">Current best line</span>
+        <span class="detail-value">${currentLineStr}</span>
+        <span class="detail-sub">at ${bookName(p.current.book)}</span>
+      </div>
+    </div>
+
+    <div class="detail-section-label">Release & changes</div>
+    <div class="changes-list">
+      ${changesBlock}
+      ${releaseEvent}
+    </div>
+
+    <a class="detail-link" href="/game.html?id=${p.game.game_id}">Full game breakdown →</a>
+  `;
+}
+
+function toggleRow(pickId) {
+  const el = document.getElementById('pick-' + pickId);
+  if (el) el.classList.toggle('expanded');
+}
+
+// ── BOOT ──
+async function init() {
+  maybeHidePrimer();
+  try {
+    const resp = await fetch(`${API_BASE}/live-lines/feed?season=${SEASON}`);
+    const data = await resp.json();
+    if (data.error) {
+      document.getElementById('content').innerHTML =
+        `<div class="empty"><div class="empty-title">Could not load picks.</div><div class="empty-sub">${data.error}</div></div>`;
+      return;
+    }
+    renderPage(data);
+  } catch (e) {
+    document.getElementById('content').innerHTML =
+      `<div class="empty"><div class="empty-title">Could not load picks.</div><div class="empty-sub">${e.message}</div></div>`;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
