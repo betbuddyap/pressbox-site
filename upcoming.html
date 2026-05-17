@@ -116,6 +116,23 @@
   .section-title em { font-style: italic; color: var(--gold); }
   .section-meta { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); letter-spacing: 0.5px; text-transform: uppercase; }
 
+  /* ── SLATE GROUPING — date + time bin headers ── */
+  .date-group { margin-bottom: 36px; }
+  .date-group:last-child { margin-bottom: 0; }
+  .date-head { display: flex; align-items: baseline; gap: 12px; padding-bottom: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .date-head-day { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--text); }
+  .date-head-day em { font-style: italic; color: var(--gold); }
+  .date-head-meta { font-family: var(--sans); font-size: 11px; color: var(--text-light); letter-spacing: 0.5px; text-transform: uppercase; }
+  .time-bin { margin-bottom: 22px; }
+  .time-bin:last-child { margin-bottom: 0; }
+  .time-bin-head { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-mid); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); }
+  .slate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  @media (max-width: 720px) {
+    .slate-grid { grid-template-columns: 1fr; gap: 10px; }
+    .date-head-day { font-size: 17px; }
+    .time-bin-head { font-size: 9px; letter-spacing: 2px; }
+  }
+
   /* ─────────────────────────────────────────────────────────
      UNIFIED SPLIT-CARD DESIGN SYSTEM
      ───────────────────────────────────────────────────────── */
@@ -539,18 +556,6 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <div id="gotwContent"></div>
     </div>
 
-    <!-- FEATURED PRODUCTS — POTW / TOTW / Parlay -->
-    <div class="section" id="featuredSection" style="display:none;">
-      <div class="section-head">
-        <div>
-          <div class="section-eyebrow">Flagship Picks</div>
-          <h2 class="section-title">Pick · Total · <em>Parlay</em></h2>
-        </div>
-        <div class="section-meta" id="featuredMeta"></div>
-      </div>
-      <div class="featured-grid" id="featuredContent"></div>
-    </div>
-
     <!-- LEGEND -->
     <div class="section">
       <div class="legend">
@@ -561,77 +566,16 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       </div>
     </div>
 
-    <!-- A+ AND A PICKS -->
-    <div class="section" id="apicksSection" style="display:none;">
+    <!-- THE SLATE — full schedule grouped by date + day-of-week + time bin -->
+    <div class="section" id="slateSection" style="display:none;">
       <div class="section-head">
         <div>
-          <div class="section-eyebrow">Sharp Edges</div>
-          <h2 class="section-title">A+ &amp; A <em>Picks</em></h2>
+          <div class="section-eyebrow">The Slate</div>
+          <h2 class="section-title">Every <em>Matchup</em></h2>
         </div>
-        <div class="section-meta" id="apicksMeta"></div>
+        <div class="section-meta" id="slateMeta"></div>
       </div>
-      <div class="picks-grid" id="apicksContent"></div>
-    </div>
-
-    <!-- SMART MONEY -->
-    <div class="section" id="smartSection" style="display:none;">
-      <div class="section-head">
-        <div>
-          <div class="section-eyebrow">Plus Money</div>
-          <h2 class="section-title">Smart <em>Money</em></h2>
-        </div>
-        <div class="section-meta" id="smartMeta"></div>
-      </div>
-      <div class="picks-grid" id="smartContent"></div>
-    </div>
-
-    <!-- LOTTERY SHOTS -->
-    <div class="section" id="lotterySection" style="display:none;">
-      <div class="section-head">
-        <div>
-          <div class="section-eyebrow">Long Shots</div>
-          <h2 class="section-title">Lottery <em>Shots</em></h2>
-        </div>
-        <div class="section-meta" id="lotteryMeta"></div>
-      </div>
-      <div class="picks-grid" id="lotteryContent"></div>
-    </div>
-
-    <!-- RANKED MATCHUPS -->
-    <div class="section" id="rankedSection" style="display:none;">
-      <div class="section-head">
-        <div>
-          <div class="section-eyebrow">Headliners</div>
-          <h2 class="section-title">Ranked <em>Matchups</em></h2>
-        </div>
-        <div class="section-meta" id="rankedMeta"></div>
-      </div>
-      <div class="ranked-grid" id="rankedContent"></div>
-    </div>
-
-    <!-- CONFERENCE SHOWCASE -->
-    <div class="section">
-      <div class="section-head">
-        <div>
-          <div class="section-eyebrow">By Conference</div>
-          <h2 class="section-title">Conference <em>Showcase</em></h2>
-        </div>
-        <div class="section-meta" id="confMeta"></div>
-      </div>
-      <div class="conf-filter-bar" id="confFilter"></div>
-      <div class="ranked-grid" id="confContent"></div>
-    </div>
-
-    <!-- THE REST -->
-    <div class="section" id="restSection" style="display:none;">
-      <div class="section-head">
-        <div>
-          <div class="section-eyebrow">Full Slate</div>
-          <h2 class="section-title">The <em>Rest</em></h2>
-        </div>
-        <div class="section-meta" id="restMeta"></div>
-      </div>
-      <div class="compact-list" id="restContent"></div>
+      <div id="slateContent"></div>
     </div>
 
   </div>
@@ -678,7 +622,6 @@ let teamScores = {};
 let picksByGameId = {};
 let weeksList = [];
 let currentWeek = 1;
-let currentConf = 'all';
 let firstAvailableWeek = 1;
 
 async function init() {
@@ -771,14 +714,6 @@ function isCurrentWeek() {
   return currentWeek === firstAvailableWeek;
 }
 
-function sortByAwayTeam(games) {
-  return [...games].sort((a, b) => {
-    const an = (a.away_team || '').toLowerCase();
-    const bn = (b.away_team || '').toLowerCase();
-    return an < bn ? -1 : an > bn ? 1 : 0;
-  });
-}
-
 function selectGameOfWeek(games) {
   const ranked = games.filter(g => {
     const hr = powerRankings[g.home_team];
@@ -803,33 +738,6 @@ function selectGameOfWeek(games) {
   })[0];
 }
 
-function selectFlagshipGames(games, gotwId) {
-  const tierWeight = { 'ap': 4, 'a': 3, 'sm': 2, 'ls': 1 };
-  // Only consider tiered picks — pending or untiered picks can't anchor a flagship.
-  const withPicks = games
-    .map(g => ({ game: g, pick: pickFor(g) }))
-    .filter(x => x.pick && x.pick.tier && x.game.game_id !== gotwId);
-
-  const spreadPicks = withPicks.filter(x => x.pick.type === 'Spread')
-    .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
-  const potw = spreadPicks[0];
-
-  const totalPicks = withPicks.filter(x => x.pick.type === 'Total')
-    .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
-  const totw = totalPicks[0];
-
-  // Parlay: 3 distinct legs from the best A+/A picks. Pick from different games.
-  // Exclude POTW + TOTW + GotW to keep parlay independent of the other flagships.
-  const excludedIds = new Set([gotwId, potw && potw.game.game_id, totw && totw.game.game_id].filter(Boolean));
-  const parlayPool = withPicks
-    .filter(x => !excludedIds.has(x.game.game_id))
-    .filter(x => x.pick.tier === 'ap' || x.pick.tier === 'a')
-    .sort((a, b) => (tierWeight[b.pick.tier] || 0) - (tierWeight[a.pick.tier] || 0));
-  const parlay = parlayPool.slice(0, 3);
-
-  return { potw, totw, parlay };
-}
-
 function renderWeek(week) {
   let games = allGames.filter(g => g.week === week && g.is_fbs_matchup);
 
@@ -842,15 +750,13 @@ function renderWeek(week) {
   });
 
   if (!games.length) {
-    ['gotwSection', 'featuredSection', 'apicksSection', 'smartSection', 'lotterySection',
-     'rankedSection', 'restSection'].forEach(id => {
-      document.getElementById(id).style.display = 'none';
-    });
-    document.getElementById('confContent').innerHTML = '<div class="empty"><div class="empty-title">No FBS matchups</div>No games found for this week.</div>';
+    document.getElementById('gotwSection').style.display = 'none';
+    document.getElementById('slateSection').style.display = 'block';
+    document.getElementById('slateContent').innerHTML =
+      '<div class="empty"><div class="empty-title">No FBS matchups</div>No games found for this week.</div>';
+    document.getElementById('slateMeta').textContent = '';
     return;
   }
-
-  const isFuture = !isCurrentWeek();
 
   // ─── GAME OF THE WEEK ───
   const gotw = selectGameOfWeek(games);
@@ -863,160 +769,185 @@ function renderWeek(week) {
     document.getElementById('gotwSection').style.display = 'none';
   }
 
-  // ─── FEATURED PRODUCTS ───
-  // Only show the flagship row on the CURRENT week (no future-week speculation)
-  // AND only when the slate is big enough to support POTW + TOTW + 3-leg Parlay.
-  // Week 0 typically has 4-6 games — too few to assemble flagships.
-  const totalPicksThisWeek = games.filter(g => {
-    const p = pickFor(g);
-    return p && p.tier;
-  }).length;
-  const flagshipEligible = !isFuture && totalPicksThisWeek >= 8;
-  if (flagshipEligible) {
-    const flagship = selectFlagshipGames(games, gotw ? gotw.game_id : null);
-    // Only show if we actually got at least the POTW (spread pick) OR TOTW
-    if (flagship.potw || flagship.totw || (flagship.parlay && flagship.parlay.length)) {
-      document.getElementById('featuredSection').style.display = 'block';
-      document.getElementById('featuredContent').innerHTML = renderFeaturedRow(flagship, false);
-      document.getElementById('featuredMeta').textContent = 'Live for this week';
-    } else {
-      document.getElementById('featuredSection').style.display = 'none';
-    }
-  } else {
-    document.getElementById('featuredSection').style.display = 'none';
-  }
-
-  // ─── A+ AND A PICKS ───
-  let apicks = isFuture ? [] : sortByAwayTeam(
-    games.filter(g => {
-      if (gotw && g.game_id === gotw.game_id) return false;
-      const p = pickFor(g);
-      return p && (p.tier === 'ap' || p.tier === 'a');
-    })
-  );
-  if (apicks.length) {
-    document.getElementById('apicksSection').style.display = 'block';
-    document.getElementById('apicksContent').innerHTML = apicks.map(g => renderHeroCard(g, pickFor(g))).join('');
-    document.getElementById('apicksMeta').textContent = `${apicks.length} picks`;
-  } else {
-    document.getElementById('apicksSection').style.display = 'none';
-  }
-
-  // ─── SMART MONEY ───
-  let smartPicks = isFuture ? [] : sortByAwayTeam(
-    games.filter(g => {
-      if (gotw && g.game_id === gotw.game_id) return false;
-      const p = pickFor(g);
-      return p && p.tier === 'sm';
-    })
-  );
-  if (smartPicks.length) {
-    document.getElementById('smartSection').style.display = 'block';
-    document.getElementById('smartContent').innerHTML = smartPicks.map(g => renderHeroCard(g, pickFor(g))).join('');
-    document.getElementById('smartMeta').textContent = `${smartPicks.length} plays`;
-  } else {
-    document.getElementById('smartSection').style.display = 'none';
-  }
-
-  // ─── LOTTERY SHOTS ───
-  let lotteryPicks = isFuture ? [] : sortByAwayTeam(
-    games.filter(g => {
-      if (gotw && g.game_id === gotw.game_id) return false;
-      const p = pickFor(g);
-      return p && p.tier === 'ls';
-    })
-  );
-  if (lotteryPicks.length) {
-    document.getElementById('lotterySection').style.display = 'block';
-    document.getElementById('lotteryContent').innerHTML = lotteryPicks.map(g => renderHeroCard(g, pickFor(g))).join('');
-    document.getElementById('lotteryMeta').textContent = `${lotteryPicks.length} tickets`;
-  } else {
-    document.getElementById('lotterySection').style.display = 'none';
-  }
-
-  // ─── RANKED MATCHUPS ───
-  const pickedIds = new Set([
-    ...(gotw ? [gotw.game_id] : []),
-    ...apicks.map(g => g.game_id),
-    ...smartPicks.map(g => g.game_id),
-    ...lotteryPicks.map(g => g.game_id)
-  ]);
-  const rankedMatchups = sortByAwayTeam(
-    games.filter(g => {
-      if (pickedIds.has(g.game_id)) return false;
-      const hr = powerRankings[g.home_team];
-      const ar = powerRankings[g.away_team];
-      return (hr && hr <= 25) || (ar && ar <= 25);
-    })
-  );
-  if (rankedMatchups.length) {
-    document.getElementById('rankedSection').style.display = 'block';
-    document.getElementById('rankedContent').innerHTML = rankedMatchups.map(g => renderMediumCard(g)).join('');
-    document.getElementById('rankedMeta').textContent = `${rankedMatchups.length} games`;
-  } else {
-    document.getElementById('rankedSection').style.display = 'none';
-  }
-
-  // ─── CONFERENCE SHOWCASE ───
-  buildConfFilter(games);
-  renderConfGames(games);
-
-  // ─── THE REST ───
-  const rankedIds = new Set(rankedMatchups.map(g => g.game_id));
-  const rest = sortByAwayTeam(
-    games.filter(g => !pickedIds.has(g.game_id) && !rankedIds.has(g.game_id))
-  );
-  if (rest.length) {
-    document.getElementById('restSection').style.display = 'block';
-    document.getElementById('restContent').innerHTML = rest.map(g => renderCompactCard(g)).join('');
-    document.getElementById('restMeta').textContent = `${rest.length} games`;
-  } else {
-    document.getElementById('restSection').style.display = 'none';
-  }
+  // ─── THE SLATE ───
+  // The whole slate goes here — every FBS matchup, sorted by kickoff,
+  // grouped by date and time bin. The GotW still appears in the slate too;
+  // the hero card above is a duplicate by design (it's a marketing surface
+  // for the same game).
+  document.getElementById('slateSection').style.display = 'block';
+  document.getElementById('slateContent').innerHTML = renderSlate(games);
+  document.getElementById('slateMeta').textContent = `${games.length} games`;
 }
 
-function buildConfFilter(games) {
-  // Count games per conference where THAT conference appears on either side
-  const confs = {};
-  games.forEach(g => {
-    const hc = g.home_conference;
-    const ac = g.away_conference;
-    if (hc) confs[hc] = (confs[hc] || 0) + 1;
-    // Only count once per game even if both teams are in the same conference
-    if (ac && ac !== hc) confs[ac] = (confs[ac] || 0) + 1;
+// ── SLATE RENDER ──
+// Sort all games by kickoff, group by date, sub-group Saturdays by time bin.
+function renderSlate(games) {
+  // Sort by kickoff ascending. TBD games sort to the end of their date.
+  const sorted = games.slice().sort((a, b) => {
+    const aIso = gameIsoTime(a);
+    const bIso = gameIsoTime(b);
+    if (!aIso && !bIso) return 0;
+    if (!aIso) return 1;
+    if (!bIso) return -1;
+    return aIso < bIso ? -1 : aIso > bIso ? 1 : 0;
   });
-  // Order by count descending
-  const sorted = Object.entries(confs).sort((a, b) => b[1] - a[1]);
 
-  // If we haven't picked a conference yet, default to the biggest
-  if (currentConf === 'all' && sorted.length) {
-    currentConf = sorted[0][0];
+  // Group by calendar date (YYYY-MM-DD). Keep insertion order.
+  const byDate = new Map();
+  sorted.forEach(g => {
+    const key = dateKey(g);
+    if (!byDate.has(key)) byDate.set(key, []);
+    byDate.get(key).push(g);
+  });
+
+  // Render each date block
+  const blocks = [];
+  for (const [key, dateGames] of byDate.entries()) {
+    const dayName = dayOfWeekName(dateGames[0]);
+    const datePretty = prettyDate(dateGames[0]);
+
+    // For Saturdays, sub-bin by time slot. Otherwise show all games as one block.
+    const isSaturday = dayName === 'Saturday';
+    let body = '';
+    if (isSaturday) {
+      const bins = binSaturdayByTime(dateGames);
+      body = bins
+        .filter(b => b.games.length > 0)
+        .map(b => `
+          <div class="time-bin">
+            <div class="time-bin-head">${b.label}</div>
+            <div class="slate-grid">
+              ${b.games.map(renderSlateCard).join('')}
+            </div>
+          </div>
+        `).join('');
+    } else {
+      body = `<div class="slate-grid">${dateGames.map(renderSlateCard).join('')}</div>`;
+    }
+
+    blocks.push(`
+      <div class="date-group">
+        <div class="date-head">
+          <span class="date-head-day"><em>${dayName}</em>, ${datePretty}</span>
+          <span class="date-head-meta">${dateGames.length} ${dateGames.length === 1 ? 'game' : 'games'}</span>
+        </div>
+        ${body}
+      </div>
+    `);
   }
 
-  const html = sorted.map(([c, n]) =>
-    `<button class="conf-pill ${currentConf === c ? 'active' : ''}" onclick="setConf('${c.replace(/'/g, "\\'")}')">${CONF_SHORT[c] || c} <span style="opacity:0.6;font-weight:500;margin-left:4px;">${n}</span></button>`
-  ).join('');
-  document.getElementById('confFilter').innerHTML = html;
-  document.getElementById('confMeta').textContent = `${confs[currentConf] || 0} games · ${currentConf}`;
+  return blocks.join('');
 }
 
-function setConf(conf) {
-  currentConf = conf;
-  const games = allGames.filter(g => g.week === currentWeek && g.is_fbs_matchup);
-  buildConfFilter(games);
-  renderConfGames(games);
-}
+// ─── Date / time helpers ───────────────────────────────────────────────
 
-function renderConfGames(games) {
-  // Include games where the conference appears on EITHER side
-  let list = sortByAwayTeam(
-    games.filter(g => g.home_conference === currentConf || g.away_conference === currentConf)
-  );
-  if (!list.length) {
-    document.getElementById('confContent').innerHTML = '<div class="empty">No games in this view.</div>';
-    return;
+function gameIsoTime(g) {
+  // Returns ISO string usable for comparison. Combines g.date + g.time.
+  if (!g.date) return null;
+  if (g.time && g.time !== 'TBD') {
+    // Try to parse "7:30 PM ET" etc. Best-effort.
+    return `${g.date}T${parseTimeToISO(g.time)}`;
   }
-  document.getElementById('confContent').innerHTML = list.map(g => renderMediumCard(g)).join('');
+  return `${g.date}T23:59`;  // TBD games sort last within their date
+}
+
+function parseTimeToISO(t) {
+  // Accept "7:30 PM", "12:00 PM", "7 PM" etc. Returns "HH:MM:00".
+  const m = t.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
+  if (!m) return '00:00:00';
+  let h = parseInt(m[1], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
+  const ampm = (m[3] || '').toUpperCase();
+  if (ampm === 'PM' && h < 12) h += 12;
+  if (ampm === 'AM' && h === 12) h = 0;
+  return `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}:00`;
+}
+
+function dateKey(g) {
+  return g.date || 'TBD';
+}
+
+function dayOfWeekName(g) {
+  if (!g.date) return 'TBD';
+  try {
+    const d = new Date(g.date + 'T12:00');  // midday to avoid TZ edge cases
+    return d.toLocaleDateString('en-US', { weekday: 'long' });
+  } catch (e) { return ''; }
+}
+
+function prettyDate(g) {
+  if (!g.date) return '';
+  try {
+    const d = new Date(g.date + 'T12:00');
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  } catch (e) { return ''; }
+}
+
+// Saturday time bins. Hours are local-display hours; we just look at "g.time"
+// after parsing. Slots:
+//   Noon       : 11:00 - 13:59
+//   Afternoon  : 14:00 - 17:29
+//   Primetime  : 17:30 - 21:29
+//   Late       : 21:30+
+//   TBD        : games without a posted time
+function binSaturdayByTime(games) {
+  const bins = [
+    { label: 'Noon',      key: 'noon',  games: [] },
+    { label: 'Afternoon', key: 'aft',   games: [] },
+    { label: 'Primetime', key: 'prime', games: [] },
+    { label: 'Late',      key: 'late',  games: [] },
+    { label: 'Kickoff TBD', key: 'tbd', games: [] },
+  ];
+  games.forEach(g => {
+    if (!g.time || g.time === 'TBD') { bins[4].games.push(g); return; }
+    const iso = parseTimeToISO(g.time);   // "HH:MM:00"
+    const hh = parseInt(iso.slice(0, 2), 10);
+    const mm = parseInt(iso.slice(3, 5), 10);
+    const minutes = hh * 60 + mm;
+    if (minutes < 11 * 60)            bins[0].games.push(g);   // very early → fold into Noon
+    else if (minutes < 14 * 60)       bins[0].games.push(g);
+    else if (minutes < 17 * 60 + 30)  bins[1].games.push(g);
+    else if (minutes < 21 * 60 + 30)  bins[2].games.push(g);
+    else                              bins[3].games.push(g);
+  });
+  return bins;
+}
+
+// ─── Slate card ───────────────────────────────────────────────────────
+// One uniform card per game in the slate. Compact, with team-color halves
+// for visual continuity, kickoff time, and 0-3 tier badges.
+function renderSlateCard(g) {
+  const pick = pickFor(g);
+  const homeColor = colorFor(g.home_team);
+  const awayColor = colorFor(g.away_team);
+  const homeRank = powerRankings[g.home_team];
+  const awayRank = powerRankings[g.away_team];
+  const time = g.time && g.time !== 'TBD' ? g.time : 'TBD';
+
+  // Pick badges. We only show tiered picks (A+ / A / Smart $ / Lottery).
+  // No-edge picks and pending-line picks don't get a badge.
+  const tieredPick = pick && pick.tier ? pick : null;
+
+  return `
+    <a class="gc-link" href="/game.html?id=${g.game_id}">
+      <div class="gc compact">
+        ${bgHTML(awayColor, homeColor)}
+        <div class="gc-content">
+          <span class="gc-meta">${time}</span>
+          <div class="gc-teams">
+            ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
+            <span class="gc-at">at</span>
+            ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
+          </div>
+          <div class="gc-tag-compact">
+            ${tieredPick
+              ? `<span class="gc-pill-tier tier-${tieredPick.tier}">${TIER_LABEL_SHORT[tieredPick.tier]}</span>`
+              : ''}
+          </div>
+        </div>
+      </div>
+    </a>
+  `;
 }
 
 // ────── RENDERERS ──────
@@ -1082,243 +1013,6 @@ function renderGotW(g) {
   `;
 }
 
-function renderFeaturedRow(flagship, isFuture) {
-  return [
-    renderFeaturedCard('POTW', 'Pick of the Week',  flagship.potw, isFuture),
-    renderFeaturedCard('TOTW', 'Total of the Week', flagship.totw, isFuture),
-    renderParlayCard(flagship.parlay, isFuture)
-  ].join('');
-}
-
-function renderParlayCard(legs, isFuture) {
-  if (isFuture || !legs || !legs.length) {
-    return `
-      <div class="gc-link" style="cursor: default; pointer-events: none;">
-        <div class="gc featured-card parlay-card">
-          <div class="gc-bg">
-            <div class="gc-bg-half" style="background: linear-gradient(135deg, #2A2520 0%, #1A1705 100%);"></div>
-            <div class="gc-bg-half" style="background: linear-gradient(225deg, #2A2520 0%, #1A1705 100%);"></div>
-          </div>
-          <div class="gc-overlay" style="background: linear-gradient(180deg, rgba(15,14,10,0.15) 0%, rgba(15,14,10,0.55) 100%);"></div>
-          <div class="gc-ribbon waiting">Parlay</div>
-          <div class="parlay-content">
-            <div class="parlay-title">3-Leg Parlay of the Week</div>
-            <div class="parlay-legs">
-              <div class="parlay-leg parlay-leg-placeholder">— Waiting for lines —</div>
-              <div class="parlay-leg parlay-leg-placeholder">— Waiting for lines —</div>
-              <div class="parlay-leg parlay-leg-placeholder">— Waiting for lines —</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // Compute combined parlay odds (American → decimal → product → American)
-  function amToDec(am) {
-    if (am === null || am === undefined) return 1;
-    return am > 0 ? (am / 100) + 1 : (100 / Math.abs(am)) + 1;
-  }
-  function decToAm(dec) {
-    if (dec >= 2) return `+${Math.round((dec - 1) * 100)}`;
-    return `${Math.round(-100 / (dec - 1))}`;
-  }
-  const combinedDecimal = legs.reduce((acc, x) =>
-    acc * amToDec(x.pick.best_odds || -110), 1);
-  const combinedAmerican = decToAm(combinedDecimal);
-
-  const legHtml = legs.map(x => `
-    <div class="parlay-leg">
-      <span class="parlay-leg-tier tier-${x.pick.tier}">${TIER_LABEL_SHORT[x.pick.tier]}</span>
-      <span class="parlay-leg-pick">${x.pick.pick_text}</span>
-    </div>
-  `).join('');
-
-  return `
-    <a class="gc-link" href="/game.html?parlay=week">
-      <div class="gc featured-card parlay-card">
-        <div class="gc-bg">
-          <div class="gc-bg-half" style="background: linear-gradient(135deg, #2A2520 0%, #1A1705 100%);"></div>
-          <div class="gc-bg-half" style="background: linear-gradient(225deg, #2A2520 0%, #1A1705 100%);"></div>
-        </div>
-        <div class="gc-overlay" style="background: linear-gradient(180deg, rgba(15,14,10,0.15) 0%, rgba(15,14,10,0.55) 100%);"></div>
-        <div class="gc-ribbon featured">Parlay</div>
-        <div class="parlay-content">
-          <div class="parlay-title">3-Leg Parlay of the Week</div>
-          <div class="parlay-legs">${legHtml}</div>
-          <div class="parlay-odds">
-            <span class="parlay-odds-lbl">Combined</span>
-            <span class="parlay-odds-val">${combinedAmerican}</span>
-          </div>
-        </div>
-      </div>
-    </a>
-  `;
-}
-
-function renderFeaturedCard(productShort, productFull, entry, isFuture) {
-  if (!entry || isFuture) {
-    return `
-      <div class="gc-link" style="cursor: default; pointer-events: none;">
-        <div class="gc featured-card">
-          <div class="gc-bg">
-            <div class="gc-bg-half" style="background: linear-gradient(135deg, #3A3328 0%, #1A1705 100%);"></div>
-            <div class="gc-bg-half" style="background: linear-gradient(225deg, #3A3328 0%, #1A1705 100%);"></div>
-          </div>
-          <div class="gc-overlay"></div>
-          <div class="gc-seam"></div>
-          <div class="gc-ribbon waiting">${productShort}</div>
-          <div class="gc-content">
-            <div class="gc-strip"><span class="gc-meta">${isFuture ? 'Future Week' : 'Coming this week'}</span></div>
-            <div class="gc-teams">
-              <div class="gc-team-side away"><div class="gc-team-name" style="opacity:0.6;">—</div></div>
-              <span class="gc-at">at</span>
-              <div class="gc-team-side home"><div class="gc-team-name" style="opacity:0.6;">—</div></div>
-            </div>
-            <div class="gc-pickbar waiting">
-              <span class="gc-pickbar-val">Waiting for Lines</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  const g = entry.game;
-  const pick = entry.pick;
-  const homeColor = colorFor(g.home_team);
-  const awayColor = colorFor(g.away_team);
-  const homeRank = powerRankings[g.home_team];
-  const awayRank = powerRankings[g.away_team];
-  const time = g.time && g.time !== 'TBD' ? formatDate(g.date) + ' · ' + g.time : formatDate(g.date);
-
-  return `
-    <a class="gc-link" href="/game.html?id=${g.game_id}">
-      <div class="gc featured-card">
-        ${bgHTML(awayColor, homeColor)}
-        <div class="gc-ribbon featured">${productShort}</div>
-        <div class="gc-content">
-          <div class="gc-strip">
-            <span class="gc-meta">${time}</span>
-          </div>
-          <div class="gc-teams">
-            ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
-            <span class="gc-at">at</span>
-            ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
-          </div>
-          <div class="gc-pickbar">
-            <span class="gc-pickbar-lbl">${(pick.type || '').toUpperCase()}</span>
-            <span class="gc-pickbar-val">${pick.pick_text}</span>
-          </div>
-        </div>
-      </div>
-    </a>
-  `;
-}
-
-function renderHeroCard(g, pick) {
-  const homeColor = colorFor(g.home_team);
-  const awayColor = colorFor(g.away_team);
-  const homeRank = powerRankings[g.home_team];
-  const awayRank = powerRankings[g.away_team];
-  const time = g.time && g.time !== 'TBD' ? formatDate(g.date) + ' · ' + g.time : formatDate(g.date);
-
-  return `
-    <a class="gc-link" href="/game.html?id=${g.game_id}">
-      <div class="gc hero">
-        ${bgHTML(awayColor, homeColor)}
-        <div class="gc-ribbon tier-${pick.tier}">${TIER_LABEL[pick.tier]}</div>
-        <div class="gc-content">
-          <div class="gc-strip">
-            <span class="gc-meta">${time}</span>
-          </div>
-          <div class="gc-teams">
-            ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
-            <span class="gc-at">at</span>
-            ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
-          </div>
-          <div class="gc-pickbar">
-            <span class="gc-pickbar-lbl">${(pick.type || '').toUpperCase()}</span>
-            <span class="gc-pickbar-val">${pick.pick_text}</span>
-            <span class="gc-pickbar-book">${pick.best_book || ''}${pick.best_odds ? ' · ' + (pick.best_odds > 0 ? '+' : '') + pick.best_odds : ''}</span>
-          </div>
-        </div>
-      </div>
-    </a>
-  `;
-}
-
-function renderMediumCard(g) {
-  const pick = pickFor(g);
-  const homeColor = colorFor(g.home_team);
-  const awayColor = colorFor(g.away_team);
-  const homeRank = powerRankings[g.home_team];
-  const awayRank = powerRankings[g.away_team];
-  const time = g.time && g.time !== 'TBD' ? `${formatDate(g.date)} · ${g.time}` : formatDate(g.date);
-
-  // Pending: real game but not enough books posted yet
-  const isPending = pick && pick.current_status === 'pending';
-  // Tiered pick: A+, A, Smart $, Lottery
-  const hasTier = pick && pick.tier;
-
-  return `
-    <a class="gc-link" href="/game.html?id=${g.game_id}">
-      <div class="gc medium">
-        ${bgHTML(awayColor, homeColor)}
-        ${hasTier ? `<div class="gc-ribbon tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</div>` : ''}
-        <div class="gc-content">
-          <div class="gc-strip">
-            <span class="gc-meta">${time}</span>
-          </div>
-          <div class="gc-teams">
-            ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
-            <span class="gc-at">at</span>
-            ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
-          </div>
-          ${hasTier ? `
-            <div class="gc-pickbar">
-              <span class="gc-pickbar-lbl">${(pick.type || '').toUpperCase()}</span>
-              <span class="gc-pickbar-val">${pick.pick_text}</span>
-              <span class="gc-pickbar-book">${pick.best_book || ''}${pick.best_odds ? ' · ' + (pick.best_odds > 0 ? '+' : '') + pick.best_odds : ''}</span>
-            </div>` : ''}
-          ${(!hasTier && isPending) ? `
-            <div class="gc-pickbar waiting">
-              <span class="gc-pickbar-val">${pick.book_count || 0}/${pick.min_books || 3} Books Posted</span>
-            </div>` : ''}
-        </div>
-      </div>
-    </a>
-  `;
-}
-
-function renderCompactCard(g) {
-  const pick = pickFor(g);
-  const homeColor = colorFor(g.home_team);
-  const awayColor = colorFor(g.away_team);
-  const homeRank = powerRankings[g.home_team];
-  const awayRank = powerRankings[g.away_team];
-  const time = g.time && g.time !== 'TBD' ? g.time : '';
-  const hasTier = pick && pick.tier;
-
-  return `
-    <a class="gc-link" href="/game.html?id=${g.game_id}">
-      <div class="gc compact">
-        ${bgHTML(awayColor, homeColor)}
-        <div class="gc-content">
-          <span class="gc-meta">${time}</span>
-          <div class="gc-teams">
-            ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
-            <span class="gc-at">at</span>
-            ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
-          </div>
-          <div class="gc-tag-compact">
-            ${hasTier ? `<span class="gc-pill-tier tier-${pick.tier}">${TIER_LABEL_SHORT[pick.tier]}</span>` : ''}
-          </div>
-        </div>
-      </div>
-    </a>
-  `;
-}
 
 function colorFor(team) {
   return (teamColors[team] && teamColors[team].primary) || '#3A3328';
