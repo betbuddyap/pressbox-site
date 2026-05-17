@@ -149,7 +149,7 @@
   .time-bin { margin-bottom: 22px; }
   .time-bin:last-child { margin-bottom: 0; }
   .time-bin-head { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-mid); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); }
-  .slate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .slate-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
   @media (max-width: 720px) {
     .slate-grid { grid-template-columns: 1fr; gap: 10px; }
     .date-head-day { font-size: 17px; }
@@ -388,7 +388,84 @@
   .gc.compact .gc-pill-tier.tier-sm { background: var(--sage); color: #fff; }
   .gc.compact .gc-pill-tier.tier-ls { background: var(--rust); color: #fff; }
 
-  /* ── GRIDS ── */
+  /* ── SLATE CARD — the primary card for the new Upcoming page ── */
+  /* Roomy enough for live state to be added later. Team names + kickoff/status
+     up top, three pick slots at the bottom (Spread / Total / ML), with blank
+     slots when no pick exists. */
+  .gc.slate { min-height: 168px; }
+  .gc.slate .gc-content {
+    padding: 14px 18px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 168px;
+    gap: 8px;
+    position: relative;
+    z-index: 3;
+  }
+  .gc.slate .gc-strip { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .gc.slate .gc-meta { font-size: 11px; color: rgba(248,245,238,0.85); }
+  .gc.slate .gc-status {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(248,245,238,0.70);
+  }
+  .gc.slate .gc-status.live { color: var(--rust-light); }
+  .gc.slate .gc-status.final { color: var(--gold-light); }
+  .gc.slate .gc-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
+  .gc.slate .gc-team-name { font-size: 19px; line-height: 1.15; }
+  .gc.slate .gc-team-sub { font-size: 10px; gap: 8px; margin-top: 3px; }
+  .gc.slate .gc-at { font-size: 13px; padding: 0 6px; color: rgba(248,245,238,0.55); }
+
+  /* Pick slots row — always shows three slots; empty if no pick */
+  .gc.slate .gc-picks {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(248,245,238,0.12);
+  }
+  .gc.slate .gc-pick-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 6px;
+    min-height: 22px;
+  }
+  .gc.slate .gc-pick-label {
+    font-family: var(--sans);
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(248,245,238,0.45);
+  }
+  .gc.slate .gc-pick-slot.empty .gc-pick-label { color: rgba(248,245,238,0.25); }
+  .gc.slate .gc-pick-tier {
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+  .gc.slate .gc-pick-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-a  { background: var(--gold-light); color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-sm { background: var(--sage); color: #fff; }
+  .gc.slate .gc-pick-tier.tier-ls { background: var(--rust); color: #fff; }
+
+  @media (max-width: 720px) {
+    .gc.slate { min-height: 156px; }
+    .gc.slate .gc-content { min-height: 156px; padding: 12px 14px 10px; }
+    .gc.slate .gc-team-name { font-size: 16px; }
+  }
+
+  /* ── GRIDS (legacy, mostly unused now) ── */
   .featured-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .picks-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .ranked-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -881,7 +958,24 @@ function gameIsoTime(g) {
 }
 
 function parseDateOnly(g) {
-  // Returns a Date object representing the game's kickoff, or null.
+  // Returns a Date object representing the game's local kickoff date, or null.
+  //
+  // CRITICAL: the backend uses 04:00 UTC as a sentinel for "kickoff TBD" —
+  // not a real time. Parsing raw_date directly for those games would shift them
+  // by ~5 hours (back into the previous day in any timezone west of UTC).
+  // When time is TBD, parse g.date ("Sat, Sep 12") which is already the right
+  // calendar date as computed on the server. Otherwise, use the real ISO.
+  if (g.time === 'TBD' && g.date) {
+    // g.date format is "Sat, Sep 12" — drop the weekday prefix, append year from raw_date.
+    try {
+      let yr = null;
+      if (g.raw_date) yr = new Date(g.raw_date).getUTCFullYear();
+      if (!yr) yr = new Date().getFullYear();
+      const monthDay = g.date.replace(/^[A-Za-z]+,\s*/, '');   // "Sep 12"
+      const d = new Date(`${monthDay} ${yr} 12:00:00`);
+      return isNaN(d.getTime()) ? null : d;
+    } catch (e) {}
+  }
   if (!g.raw_date) return null;
   try {
     const d = new Date(g.raw_date);
@@ -941,35 +1035,64 @@ function binSaturdayByTime(games) {
 }
 
 // ─── Slate card ───────────────────────────────────────────────────────
-// One uniform card per game in the slate. Compact, with team-color halves
-// for visual continuity, kickoff time, and 0-3 tier badges.
+// Roomy primary card. Three pick slots always rendered (Spread / Total / ML),
+// blank when no pick exists on that type. Currently the API only returns the
+// game's headline pick (the highest-tier across types), so we can only fill
+// one slot per card today. Future API change: return all three picks per game.
 function renderSlateCard(g) {
   const pick = pickFor(g);
   const homeColor = colorFor(g.home_team);
   const awayColor = colorFor(g.away_team);
   const homeRank = powerRankings[g.home_team];
   const awayRank = powerRankings[g.away_team];
-  const time = g.time && g.time !== 'TBD' ? g.time : 'TBD';
 
-  // Pick badges. We only show tiered picks (A+ / A / Smart $ / Lottery).
-  // No-edge picks and pending-line picks don't get a badge.
-  const tieredPick = pick && pick.tier ? pick : null;
+  // Time / status. Live and final states will hook in here once we have a
+  // live-score feed.
+  let statusHTML = '';
+  const timeText = g.time && g.time !== 'TBD' ? g.time : 'Kickoff TBD';
+  if (g.has_score) {
+    // Played game — show final score
+    statusHTML = `<span class="gc-status final">Final · ${g.away_team.substring(0,4).toUpperCase()} ${g.away_points} ${g.home_team.substring(0,4).toUpperCase()} ${g.home_points}</span>`;
+  } else {
+    statusHTML = `<span class="gc-meta">${timeText}</span>`;
+  }
+
+  // Determine which slot the headline pick goes in, if any.
+  // pick.type is "Spread" | "Total" | "Moneyline" | "Pending" | undefined
+  // pick.tier is "ap" | "a" | "sm" | "ls" | "" (empty = no edge / pending)
+  const pickType = pick && pick.tier ? pick.type : null;
+  const slot = (label, isPickedSlot, tier) => {
+    if (isPickedSlot && tier) {
+      return `
+        <div class="gc-pick-slot">
+          <span class="gc-pick-tier tier-${tier}">${TIER_LABEL_SHORT[tier] || tier}</span>
+        </div>
+      `;
+    }
+    return `
+      <div class="gc-pick-slot empty">
+        <span class="gc-pick-label">${label}</span>
+      </div>
+    `;
+  };
 
   return `
     <a class="gc-link" href="/game.html?id=${g.game_id}">
-      <div class="gc compact">
+      <div class="gc slate">
         ${bgHTML(awayColor, homeColor)}
         <div class="gc-content">
-          <span class="gc-meta">${time}</span>
+          <div class="gc-strip">
+            ${statusHTML}
+          </div>
           <div class="gc-teams">
             ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
             <span class="gc-at">at</span>
             ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
           </div>
-          <div class="gc-tag-compact">
-            ${tieredPick
-              ? `<span class="gc-pill-tier tier-${tieredPick.tier}">${TIER_LABEL_SHORT[tieredPick.tier]}</span>`
-              : ''}
+          <div class="gc-picks">
+            ${slot('Spread', pickType === 'Spread', pickType === 'Spread' ? pick.tier : null)}
+            ${slot('Total',  pickType === 'Total',  pickType === 'Total'  ? pick.tier : null)}
+            ${slot('ML',     pickType === 'Moneyline', pickType === 'Moneyline' ? pick.tier : null)}
           </div>
         </div>
       </div>
