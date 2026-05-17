@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Team — PressBox Analytics</title>
+<title>About — PressBox Analytics</title>
 <!-- Favicon -->
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -13,9 +13,9 @@
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PressBox Analytics">
-<meta property="og:url" content="https://pressboxanalytics.com/team.html">
-<meta property="og:title" content="Team — PressBox Analytics">
-<meta property="og:description" content="PressBox Analytics team profile, ratings, and schedule.">
+<meta property="og:url" content="https://pressboxanalytics.com/about.html">
+<meta property="og:title" content="About — PressBox Analytics">
+<meta property="og:description" content="Why PressBox exists, and what makes our picks different.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -23,155 +23,136 @@
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Team — PressBox Analytics">
-<meta name="twitter:description" content="PressBox Analytics team profile, ratings, and schedule.">
+<meta name="twitter:title" content="About — PressBox Analytics">
+<meta name="twitter:description" content="Why PressBox exists, and what makes our picks different.">
 <meta name="twitter:image" content="https://pressboxanalytics.com/og-image.png">
 
 <!-- Theme color (mobile browser chrome) -->
 <meta name="theme-color" content="#0F0E0A">
 
 <!-- Description (general SEO) -->
-<meta name="description" content="PressBox Analytics team profile, ratings, and schedule.">
+<meta name="description" content="Why PressBox exists, and what makes our picks different.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #F8F5EE; min-height: 100vh; }
+  html, body { background-color: #F8F5EE; min-height: 100vh; }
   :root {
-    --cream: #F8F5EE; --cream-dark: #EFE9DC; --cream-mid: #E8E1D3;
-    --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
-    --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
-    --gold-pale: #F5EDD0; --ink: #0F0E0A;
-    --win: #4A7A4A; --loss: #7A4A4A;
-    --serif: 'Libre Baskerville', Georgia, serif;
-    --sans: 'Source Sans 3', system-ui, sans-serif;
-    --max: 1200px;
+    --cream:      #F8F5EE;
+    --cream-dark: #EFE9DC;
+    --cream-mid:  #E8E1D3;
+    --border:     #DDD6C8;
+    --text:       #1A1705;
+    --text-mid:   #6B6455;
+    --text-light: #A39A88;
+    --gold:       #B8922A;
+    --gold-light: #D4A83A;
+    --gold-pale:  #F5EDD0;
+    --ink:        #0F0E0A;
+    --serif:      'Libre Baskerville', Georgia, serif;
+    --sans:       'Source Sans 3', system-ui, sans-serif;
+    --max:        1200px;
   }
   body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-  /* TICKER */
+  /* ── TICKER ── */
   .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
   .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
-  .ticker-track span { margin: 0 28px; color: #6A6A58; }
+  .ticker-track span { margin: 0 28px; color: #2A2A20; }
   .ticker-track b { color: var(--gold-light); }
   @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-  /* NAV */
+  /* ── NAV ── */
   nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
   .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
   .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--text); }
-  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; }
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: transparent; border: 0; padding: 4px; }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
+
+  /* ── MOBILE NAV ── */
+  .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; outline: 0; -webkit-appearance: none; appearance: none; border-radius: 0; box-shadow: none; width: 32px; height: 32px; }
   .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
   .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
   .mobile-menu.open { display: flex !important; }
   .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
-  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); line-height: 1; }
   .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
   @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
 
-  /* PAGE HEADER */
-  .page-header { background: var(--ink); padding: 52px 0 44px; }
-  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
-  .header-left { }
-  .breadcrumb { font-size: 11px; color: #8A8A76; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  .breadcrumb a { color: #8A8A76; text-decoration: none; }
-  .breadcrumb a:hover { color: var(--gold); }
-  .page-conference { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .page-conference::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
-  .page-team { font-family: var(--serif); font-size: 48px; font-weight: 700; color: var(--cream); line-height: 1.05; }
-  .header-right { text-align: right; flex-shrink: 0; }
-  .rank-display { font-family: var(--serif); font-size: 72px; font-weight: 700; color: var(--gold-light); line-height: 1; }
-  .rank-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #8A8A76; margin-top: 4px; }
+  /* ── PAGE HEADER ── */
+  .page-header { background: var(--ink); padding: 80px 0 72px; }
+  .page-header-inner { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--serif); font-size: 48px; font-weight: 700; line-height: 1.1; color: var(--cream); margin-bottom: 20px; }
+  .page-title em { font-style: italic; color: var(--gold-light); }
+  .page-sub { font-family: var(--sans); font-size: 17px; font-weight: 300; color: #8A8A7A; line-height: 1.7; }
 
-  /* MAIN LAYOUT */
-  .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
-  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+  /* ── CONTENT ── */
+  .content { max-width: 760px; margin: 0 auto; padding: 72px 32px 96px; }
 
-  /* SECTION LABELS */
-  .section-label { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--text-light); display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  /* Founder card */
+  .founder-card { display: flex; gap: 40px; align-items: flex-start; margin-bottom: 64px; padding-bottom: 64px; border-bottom: 1px solid var(--border); }
+  .founder-photo { width: 140px; height: 140px; border-radius: 4px; background: var(--cream-dark); border: 1px solid var(--border); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .founder-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .founder-photo-placeholder { font-family: var(--serif); font-size: 48px; font-weight: 700; color: var(--border); }
+  .founder-info { flex: 1; }
+  .founder-name { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .founder-title { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--gold); letter-spacing: 0.5px; margin-bottom: 16px; }
+  .founder-bio { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.8; margin-bottom: 20px; }
+  .founder-links { display: flex; gap: 12px; }
+  .founder-link { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); text-decoration: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 3px; transition: all 0.15s; letter-spacing: 0.5px; }
+  .founder-link:hover { border-color: var(--text-mid); color: var(--text); }
+
+  /* Sections */
+  .section { margin-bottom: 56px; }
+  .section-label { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 16px; }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .section-body { font-family: var(--sans); font-size: 16px; font-weight: 300; color: var(--text-mid); line-height: 1.8; }
+  .section-body p + p { margin-top: 16px; }
+  .section-body strong { font-weight: 600; color: var(--text); }
 
-  /* SCHEDULE */
-  .schedule-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-  .schedule-table th { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
-  .schedule-table th.r { text-align: right; }
-  .schedule-row { border-bottom: 1px solid var(--border); }
-  .schedule-row:last-child { border-bottom: none; }
-  .schedule-row:hover { background: var(--cream-dark); }
-  .schedule-row td { padding: 12px; vertical-align: middle; }
-  .week-cell { font-size: 11px; color: var(--text-light); width: 44px; }
-  .date-cell { font-size: 12px; color: var(--text-light); width: 80px; white-space: nowrap; }
-  .opp-cell { }
-  .opp-ha { font-size: 10px; color: var(--text-light); font-style: italic; margin-right: 4px; }
-  .opp-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); }
-  .opp-conf { font-size: 10px; color: var(--text-light); margin-left: 6px; }
-  .neutral-tag { font-size: 9px; color: #7060A8; background: #EDE8F5; padding: 1px 6px; border-radius: 2px; margin-left: 6px; }
-  .conf-tag { font-size: 9px; color: #5A4010; background: var(--gold-pale); padding: 1px 6px; border-radius: 2px; margin-left: 6px; }
-  .result-cell { text-align: right; width: 100px; }
-  .result-win { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--win); }
-  .result-loss { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--loss); }
-  .result-score { font-size: 12px; color: var(--text-mid); margin-left: 6px; }
-  .result-upcoming { font-size: 11px; color: var(--text-light); }
-  .venue-cell { font-size: 11px; color: var(--text-light); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Commitment list */
+  .commitment-list { margin-top: 24px; display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .commitment { display: flex; gap: 20px; align-items: flex-start; padding: 20px 24px; border-bottom: 1px solid var(--border); }
+  .commitment:last-child { border-bottom: none; }
+  .commitment-icon { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--gold); flex-shrink: 0; width: 24px; margin-top: 2px; }
+  .commitment-text { font-family: var(--sans); font-size: 14px; font-weight: 300; color: var(--text-mid); line-height: 1.7; }
+  .commitment-text strong { font-weight: 600; color: var(--text); }
 
-  /* SIDEBAR CARDS */
-  .sidebar { display: flex; flex-direction: column; gap: 20px; }
-  .sidebar-card { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 22px; }
-  .card-title { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .card-title em { font-style: italic; color: var(--gold); }
+  /* Stats bar */
+  .stats-bar { background: var(--ink); border-radius: 4px; padding: 32px 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 28px; }
+  .stat-item { text-align: center; padding: 0 20px; border-right: 1px solid #2A2A20; }
+  .stat-item:last-child { border-right: none; }
+  .stat-val { font-family: var(--serif); font-size: 32px; font-weight: 700; color: var(--gold-light); margin-bottom: 4px; }
+  .stat-lbl { font-family: var(--sans); font-size: 11px; font-weight: 500; color: #4A4A3A; letter-spacing: 0.5px; }
 
-  /* STAT ROWS */
-  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-name { font-size: 12px; color: var(--text-mid); }
-  .stat-val { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
-  .stat-val.good { color: var(--win); }
-  .stat-val.bad { color: var(--loss); }
+  /* CTA */
+  .cta-section { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 48px; text-align: center; margin-top: 80px; }
+  .cta-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .cta-title em { font-style: italic; color: var(--gold); }
+  .cta-sub { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); margin-bottom: 28px; line-height: 1.6; }
+  .btn-primary { background: var(--ink); color: var(--cream); font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; padding: 14px 28px; border-radius: 4px; border: none; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 12px; }
+  .btn-secondary { background: none; color: var(--text-mid); font-family: var(--sans); font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
 
-  /* FULL STAT ROWS WITH PERCENTILE */
-  .stats-group { margin-bottom: 20px; }
-  .stats-group-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); padding: 8px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
-  .stat-row-full { padding: 7px 0; border-bottom: 1px solid #EFE9DC; }
-  .stat-row-full:last-child { border-bottom: none; }
-  .stat-row-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
-  .stat-right { display: flex; align-items: baseline; gap: 10px; }
-  .stat-rank-label { font-size: 10px; color: var(--text-light); }
-  .stat-val-main { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
-  .stat-bar-wrap { display: flex; align-items: center; gap: 10px; }
-  .stat-bar-track { flex: 1; height: 8px; background: var(--cream-dark); border-radius: 4px; overflow: hidden; }
-  .stat-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease, background 0.2s; min-width: 4px; }
-  .stat-pct { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; width: 70px; text-align: right; flex-shrink: 0; }
+  /* Mobile */
+  @media (max-width: 680px) {
+    .founder-card { flex-direction: column; gap: 24px; }
+    .founder-photo { width: 100px; height: 100px; }
+    .page-title { font-size: 32px; }
+    .stats-bar { grid-template-columns: 1fr; gap: 16px; padding: 24px; }
+    .stat-item { border-right: none; border-bottom: 1px solid #2A2A20; padding-bottom: 16px; }
+    .stat-item:last-child { border-bottom: none; }
+    .cta-section { padding: 32px 24px; }
+  }
 
-  /* RATINGS HISTORY */
-  .ratings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .rating-item { text-align: center; padding: 12px 8px; background: var(--cream); border: 1px solid var(--border); border-radius: 3px; }
-  .rating-season { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); margin-bottom: 4px; }
-  .rating-val { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); }
-  .rating-val.gold { color: var(--gold); }
-  .rating-label { font-size: 9px; color: var(--text-light); margin-top: 2px; }
-
-  /* RECORD DISPLAY */
-  .record-big { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
-  .record-num { font-family: var(--serif); font-size: 36px; font-weight: 700; }
-  .record-w { color: var(--win); }
-  .record-l { color: var(--loss); }
-  .record-dash { color: var(--border); font-size: 28px; }
-  .record-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
-
-  .stats-main-card { margin-bottom: 40px; }
-
-  /* LOADING */
-  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; grid-column: 1 / -1; }
-  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-light); }
-
-  /* FOOTER */
+  /* ── FOOTER ── */
   footer { background: var(--ink); padding: 32px 0; }
   .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
   .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
@@ -283,15 +264,7 @@
   .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
   .footer-legal-links a:hover { color: var(--text-mid); }
 
-
-
-  /* ── MOBILE POLISH ── */
-  @media (max-width: 480px) {
-    .main { padding: 24px 16px 60px; }
-    .team-hero { padding: 24px 16px; }
-  }
-
-  </style>
+</style>
 </head>
 <body>
 
@@ -299,13 +272,13 @@
 <div class="ticker">
   <div class="ticker-track">
     Pick of the Week <b>50-8</b> · 86.2% Hit Rate across 4 seasons<span>·</span>
-    Smart Money ML <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
+    Lock of the Week <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
     2025 POTW <b>15-0</b> · 100% Hit Rate · undefeated season<span>·</span>
     Parlay of the Week <b>+178% ROI</b> · +$9,600 on $100/wk<span>·</span>
     Never a losing season<span>·</span>
     <b>2026 SEASON</b> picks coming August — join the waitlist<span>·</span>
     Pick of the Week <b>50-8</b> · 86.2% Hit Rate across 4 seasons<span>·</span>
-    Smart Money ML <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
+    Lock of the Week <b>54-3</b> · perfect 15-0 in 2023<span>·</span>
     2025 POTW <b>15-0</b> · 100% Hit Rate · undefeated season<span>·</span>
     Parlay of the Week <b>+178% ROI</b> · +$9,600 on $100/wk<span>·</span>
     Never a losing season<span>·</span>
@@ -324,7 +297,7 @@
       <li><a href="/upcoming.html" class="">Upcoming</a></li>
       <li><a href="/results.html" class="">Results</a></li>
       <li><a href="/rankings.html" class="">Rankings</a></li>
-      <li><a href="/teams.html" class="active">Teams</a></li>
+      <li><a href="/teams.html" class="">Teams</a></li>
       <li><a href="/index.html#waitlist" class="btn-nav">Join Waitlist</a></li>
     </ul>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
@@ -354,28 +327,112 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
 
 <!-- PAGE HEADER -->
-<div class="page-header" id="pageHeader">
+<div class="page-header">
   <div class="page-header-inner">
-    <div class="header-left">
-      <div class="breadcrumb">
-        <a href="/teams.html">← Teams</a>
-      </div>
-      <div class="page-conference" id="headerConf">Loading...</div>
-      <div class="page-team" id="headerTeam">—</div>
-    </div>
-    <div class="header-right" id="headerRank" style="display:none;">
-      <div class="rank-display" id="rankNum">—</div>
-      <div class="rank-label">PressBox Ranking</div>
-    </div>
+    <div class="page-eyebrow">The story</div>
+    <h1 class="page-title">Built by someone who wants to help you <em>look before you jump.</em></h1>
+    <p class="page-sub">I spent years building and breaking models so you don't have to. There's nothing I enjoy more than putting that work in someone else's hands.</p>
   </div>
 </div>
 
-<!-- MAIN -->
-<div class="main" id="mainContent">
-  <div class="loading" id="loadingState">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading team data...</div>
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- Founder -->
+  <div class="founder-card">
+    <div class="founder-photo">
+      <img src="austin-park.jpg" alt="Austin Park">
+    </div>
+    <div class="founder-info">
+      <div class="founder-name">Austin Park</div>
+      <div class="founder-title">Founder & CFO · PressBox Analytics</div>
+      <p class="founder-bio">Austin spent his career as a CFO — building financial models, translating complex data into clear decisions, and cutting through the noise that clouds most business judgment. He applied the same discipline to college football betting and built something that actually works.</p>
+      <div class="founder-links">
+        <a href="https://www.linkedin.com/in/austinpark161/" target="_blank" class="founder-link">LinkedIn ↗</a>
+        <a href="mailto:austin@pressboxanalytics.com" class="founder-link">Email</a>
+      </div>
+    </div>
   </div>
+
+  <!-- Why -->
+  <div class="section">
+    <div class="section-label">The origin</div>
+    <h2 class="section-title">I got tired of watching people lose money on <em>other people's opinions.</em></h2>
+    <div class="section-body">
+      <p>I've bet on college football. I've also lost money on it — early on, chasing gut feelings and half-built models that weren't ready. Being a CFO teaches you quickly that a bad model is worse than no model at all, because it gives you false confidence.</p>
+      <p>What I kept noticing around me was how many people were getting swept up in sports betting — and how consistently they were losing. Not because they weren't smart, but because they were making decisions based on instinct, narratives, and whoever they'd heard on a podcast that week. The sportsbook is very good at exploiting exactly that.</p>
+      <p><strong>So I started asking whether an edge could actually be quantified.</strong> Over the last few years I've spent a lot of time — and a little bit of money — building, breaking, and refining models to find out. Nothing would make me happier than to see that work provide real value to the people out there who love wagering on sports but have never had a serious, data-driven source of analysis to lean on.</p>
+    </div>
+  </div>
+
+  <!-- What PressBox is not -->
+  <div class="section">
+    <div class="section-label">Transparency</div>
+    <h2 class="section-title">What PressBox is <em>not.</em></h2>
+    <div class="section-body">
+      <p>There are a lot of people selling picks on the internet. Most of them cherry-pick their wins, hide their losses, and charge a monthly fee for the privilege. PressBox is built on a different premise entirely.</p>
+    </div>
+    <div class="commitment-list">
+      <div class="commitment">
+        <div class="commitment-icon">✕</div>
+        <div class="commitment-text"><strong>Not a tout service.</strong> Every pick we've ever made is published — wins, losses, pushes. Four full seasons. You can verify every number on the Results page yourself.</div>
+      </div>
+      <div class="commitment">
+        <div class="commitment-icon">✕</div>
+        <div class="commitment-text"><strong>Not a gambling addiction enabler.</strong> We publish one Pick of the Week and a small set of high-conviction plays. We're not trying to get you to bet every game every week.</div>
+      </div>
+      <div class="commitment">
+        <div class="commitment-icon">✕</div>
+        <div class="commitment-text"><strong>Not a black box.</strong> The How It Works page explains the methodology in plain English. You'll understand what we're measuring and why — just not the exact weights and thresholds.</div>
+      </div>
+      <div class="commitment">
+        <div class="commitment-icon">✕</div>
+        <div class="commitment-text"><strong>Not infallible.</strong> We lose weeks. We lose games. The model is wrong sometimes. What it isn't is consistently wrong — and over four seasons, that difference has added up.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The numbers -->
+  <div class="section">
+    <div class="section-label">The record</div>
+    <h2 class="section-title">Four seasons. The numbers speak for themselves.</h2>
+    <div class="section-body">
+      <p>Every stat below is backtested against real opening lines from real sportsbooks. No look-ahead bias, no favorable assumptions, no cherry-picking the good weeks.</p>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-val">77.8%</div>
+        <div class="stat-lbl">A+ Spread Hit Rate · 4 seasons · 418 picks</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">4/4</div>
+        <div class="stat-lbl">Profitable seasons · no exceptions</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val">86.2%</div>
+        <div class="stat-lbl">Pick of the Week · 50-8 record · 15-0 in 2025</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- What's coming -->
+  <div class="section">
+    <div class="section-label">What's next</div>
+    <h2 class="section-title">The 2026 season is coming.<br><em>Get in early.</em></h2>
+    <div class="section-body">
+      <p>PressBox is launching as a subscription product for the 2026 college football season. Members will get the weekly Pick of the Week, Total of the Week, Lock of the Week, Longshot of the Week, the Parlay of the Week, and the full A+ board — everything that's been backtested here, delivered live.</p>
+      <p>The waitlist is free. Early members will get a discounted rate locked in for life. We're not doing a big public launch — just opening it up to people who found us early and wanted to be part of it.</p>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2 class="cta-title">Join the waitlist.<br><em>2026 season picks start in August.</em></h2>
+    <p class="cta-sub">Free to join. Early members get a lifetime discounted rate.</p>
+    <a href="/index.html#waitlist" class="btn-primary">Join the Waitlist</a>
+    <a href="/results.html" class="btn-secondary">See the full record first</a>
+  </div>
+
 </div>
 
 <!-- FOOTER -->
@@ -399,289 +456,5 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 </footer>
 
 
-<script>
-const API = 'https://betbuddyservice-production.up.railway.app';
-
-const CONF_SHORT = {
-  'ACC': 'ACC', 'Big 12': 'B12', 'Big Ten': 'B1G', 'SEC': 'SEC',
-  'American Athletic': 'AAC', 'Mountain West': 'MW', 'Sun Belt': 'SBC',
-  'Conference USA': 'CUSA', 'Mid-American': 'MAC', 'Pac-12': 'P12',
-  'FBS Independents': 'IND'
-};
-
-function buildScheduleCompact(schedule, record) {
-  if (!schedule.length) return '<div style="padding:8px 0;font-size:12px;color:var(--text-light);">No schedule available.</div>';
-  return schedule.map(g => {
-    const ha = g.neutral_site ? 'N' : (g.is_home ? 'vs' : '@');
-    const resultHtml = g.result
-      ? `<span class="result-${g.result === 'W' ? 'win' : 'loss'}" style="font-family:var(--serif);font-size:13px;font-weight:700;">${g.result} ${g.team_points}–${g.opp_points}</span>`
-      : `<span style="font-size:11px;color:var(--text-light);">TBD</span>`;
-    return `
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:10px;color:var(--text-light);width:28px;flex-shrink:0;">W${g.week}</span>
-        <span style="font-size:10px;font-style:italic;color:var(--text-light);width:20px;flex-shrink:0;">${ha}</span>
-        <a href="/team.html?team=${encodeURIComponent(g.opponent)}" style="font-family:var(--serif);font-size:13px;font-weight:700;color:var(--text);text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${g.opponent}</a>
-        <div style="text-align:right;flex-shrink:0;">${resultHtml}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-async function init() {
-  const params = new URLSearchParams(window.location.search);
-  const team = params.get('team');
-  if (!team) { window.location.href = '/teams.html'; return; }
-
-  document.title = `${team} — PressBox Analytics`;
-
-  // Load team data and rankings in parallel
-  const [teamRes, rankRes] = await Promise.all([
-    fetch(`${API}/teams/${encodeURIComponent(team)}?season=2026`),
-    fetch(`${API}/rankings/power?season=2025&limit=200`)
-  ]);
-
-  const teamData = await teamRes.json();
-  const rankData = await rankRes.json();
-
-  // Find this team's ranking
-  const allRanked = rankData.full || [];
-  const myRank = allRanked.find(t => t.team === team);
-
-  // Update header
-  document.getElementById('headerTeam').textContent = team;
-  document.getElementById('headerConf').textContent = teamData.conference || '';
-  if (myRank) {
-    document.getElementById('rankNum').textContent = `#${myRank.rank}`;
-    document.getElementById('headerRank').style.display = 'block';
-  }
-
-  // Build page
-  const main = document.getElementById('mainContent');
-  main.innerHTML = buildPage(teamData, myRank, allRanked);
-}
-
-function buildPage(data, myRank, allRanked) {
-  const schedule = data.schedule || [];
-  const stats    = data.stats || {};
-  const ratings  = data.ratings || {};
-  const record   = data.record || { wins: 0, losses: 0 };
-
-  const statSeason = data.stat_season || 2025;
-  const statRanks  = data.stat_ranks || {};
-
-  return `
-    <!-- LEFT: Stats -->
-    <div>
-      ${Object.keys(statRanks).length ? `
-        <div class="section-label">${statSeason} Stats vs FBS</div>
-        <div class="stats-main-card">
-          ${buildStatsCard(statRanks, statSeason)}
-        </div>
-      ` : ''}
-      ${buildRatingsHistory(ratings)}
-    </div>
-
-    <!-- RIGHT: Sidebar -->
-    <div class="sidebar">
-      ${myRank ? buildRankCard(myRank, allRanked) : ''}
-      <div class="sidebar-card" style="padding:0;">
-        <div class="card-title" style="padding:22px 22px 12px;">2026 <em>Schedule</em></div>
-        <div style="padding:0 12px 12px;">
-          ${buildScheduleCompact(schedule, record)}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function buildSchedule(schedule, record) {
-  if (!schedule.length) return '<div style="color:var(--text-light);font-size:13px;padding:20px 0;">No schedule data available.</div>';
-
-  const rows = schedule.map(g => {
-    const ha = g.neutral_site ? '' : (g.is_home ? '' : '@');
-    const resultHtml = g.result
-      ? `<span class="result-${g.result === 'W' ? 'win' : 'loss'}">${g.result}</span><span class="result-score">${g.team_points}–${g.opp_points}</span>`
-      : `<span class="result-upcoming">TBD</span>`;
-
-    return `
-      <tr class="schedule-row">
-        <td class="week-cell">Wk ${g.week}</td>
-        <td class="date-cell">${g.date}</td>
-        <td class="opp-cell">
-          <span class="opp-ha">${ha}</span>
-          <a class="opp-name" href="/team.html?team=${encodeURIComponent(g.opponent)}" style="text-decoration:none;color:inherit;">${g.opponent}</a>
-          <span class="opp-conf">${CONF_SHORT[g.opp_conference] || g.opp_conference || ''}</span>
-          ${g.neutral_site ? '<span class="neutral-tag">N</span>' : ''}
-          ${g.conference_game ? '<span class="conf-tag">Conf</span>' : ''}
-        </td>
-        <td class="result-cell">${resultHtml}</td>
-        <td class="venue-cell">${g.neutral_site ? g.venue || '' : ''}</td>
-      </tr>
-    `;
-  }).join('');
-
-  return `
-    <table class="schedule-table">
-      <thead>
-        <tr>
-          <th>Wk</th>
-          <th>Date</th>
-          <th>Opponent</th>
-          <th class="r">Result</th>
-          <th>Venue</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
-}
-
-function buildRatingsHistory(ratings) {
-  const seasons = [2025, 2024, 2023];
-  const hasSome = seasons.some(s => ratings[s]);
-  if (!hasSome) return '';
-
-  return `
-    <div class="section-label" style="margin-top:32px;">SP+ History</div>
-    <div class="ratings-grid">
-      ${seasons.map(s => {
-        const r = ratings[s];
-        const sp = r?.sp_overall;
-        return `
-          <div class="rating-item">
-            <div class="rating-season">${s}</div>
-            <div class="rating-val ${sp > 10 ? 'gold' : ''}">${sp != null ? (sp >= 0 ? '+' : '') + sp.toFixed(1) : '—'}</div>
-            <div class="rating-label">SP+</div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
-
-function buildRankCard(myRank, allRanked) {
-  const confTeams = allRanked.filter(t => t.conference === myRank.conference);
-  const score = myRank.score;
-
-  return `
-    <div class="sidebar-card">
-      <div class="card-title">PressBox <em>Ranking</em></div>
-      <div class="stat-row">
-        <span class="stat-name">Overall Rank</span>
-        <span class="stat-val">#${myRank.rank} of ${allRanked.length}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-name">Conference Rank</span>
-        <span class="stat-val">#${myRank.conference_rank} in ${myRank.conference}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-name">Model Score</span>
-        <span class="stat-val ${score >= 0 ? 'good' : 'bad'}">${score >= 0 ? '+' : ''}${score.toFixed(1)}</span>
-      </div>
-      ${myRank.sp_overall != null ? `
-      <div class="stat-row">
-        <span class="stat-name">SP+ Overall</span>
-        <span class="stat-val">${myRank.sp_overall >= 0 ? '+' : ''}${myRank.sp_overall.toFixed(1)}</span>
-      </div>` : ''}
-    </div>
-  `;
-}
-
-function buildStatsCard(statRanks, statSeason) {
-  if (!statRanks || !Object.keys(statRanks).length) return '';
-
-  // Group stats into categories
-  const groups = [
-    { label: 'Offense', keys: ['points_per_game','yards_per_game','yards_per_play','pass_yards_per_game','rush_yards_per_game','first_downs_per_game','third_down_pct','red_zone_pct','plays_per_game','top_pct','seconds_per_play','off_success_rate','off_explosiveness'] },
-    { label: 'Defense', keys: ['points_allowed_per_game','yards_allowed_per_game','yards_allowed_per_play','pass_yards_allowed_per_game','rush_yards_allowed_per_game','opp_third_down_pct','opp_red_zone_pct','opp_plays_per_game','def_success_rate','def_explosiveness','def_havoc_total','def_stuff_rate'] },
-    { label: 'Turnover & Special Teams', keys: ['turnovers_per_game','takeaways_per_game','st_points_per_game','penalties_per_game','penalty_yards_per_game'] },
-  ];
-
-  const fmt = (v, unit, key) => {
-    if (v == null) return '—';
-    // Advanced rates are decimals like 0.513 — show as percentage
-    const isRate = key && (key.includes('success_rate') || key.includes('explosiveness') || key.includes('havoc') || key.includes('stuff_rate'));
-    if (isRate) return (v * 100).toFixed(1) + '%';
-    const n = typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(1)) : v;
-    return unit === '%' ? n + '%' : unit === 's' ? n + 's' : n;
-  };
-
-  const barColor = pct => pct >= 75 ? '#4A7A4A' : pct >= 50 ? '#B8922A' : pct >= 25 ? '#C5A878' : '#7A4A4A';
-  const qualLabel = pct => pct >= 90 ? 'Elite' : pct >= 75 ? 'Strong' : pct >= 50 ? 'Above Avg' : pct >= 25 ? 'Below Avg' : 'Weak';
-
-  // Bar width tracks raw MAGNITUDE (min=2%, median=50%, max=100%), NOT inverted for lowerBetter.
-  // Color tracks QUALITY derived from league position (low=good for lowerBetter metrics).
-  function valueWidth(s) {
-    const v = s.value;
-    if (v == null) return 0;
-    const lmin = s.league_min, lmax = s.league_max, lmed = s.league_median;
-    if (lmin == null || lmax == null || lmed == null || lmax === lmin) {
-      return s.percentile != null ? s.percentile : 5;
-    }
-    let pct;
-    if (v >= lmed) {
-      const denom = (lmax - lmed) || 1;
-      pct = 50 + ((v - lmed) / denom) * 50;
-    } else {
-      const denom = (lmed - lmin) || 1;
-      pct = 50 - ((lmed - v) / denom) * 50;
-    }
-    return Math.max(2, Math.min(100, pct));
-  }
-
-  // Quality percentile for color/label — derived from league min/max position.
-  // Inverts for lowerBetter so a low (good) value gets high quality.
-  // Falls back to s.percentile if no league context available.
-  function qualityPct(s) {
-    if (!s) return null;
-    const v = s.value;
-    const lmin = s.league_min, lmax = s.league_max;
-    if (v == null || lmin == null || lmax == null || lmax === lmin) {
-      return s.percentile != null ? s.percentile : null;
-    }
-    let pos = ((v - lmin) / (lmax - lmin)) * 100;
-    if (!s.higher_better) pos = 100 - pos;
-    return Math.max(0, Math.min(100, pos));
-  }
-
-  const statRow = (s) => {
-    // Width = magnitude position. Color/label = rank percentile (matches the
-    // #N of M label so they don't disagree).
-    return `
-    <div class="stat-row-full">
-      <div class="stat-row-top">
-        <span class="stat-name">${s.label}</span>
-        <div class="stat-right">
-          <span class="stat-rank-label">#${s.rank} of ${s.of}</span>
-          <span class="stat-val-main">${fmt(s.value, s.unit, s.label.toLowerCase().replace(/ /g,'_'))}</span>
-        </div>
-      </div>
-      <div class="stat-bar-wrap">
-        <div class="stat-bar-track">
-          <div class="stat-bar-fill" style="width:${valueWidth(s)}%;background:${barColor(s.percentile)};"></div>
-        </div>
-        <span class="stat-pct" style="color:${barColor(s.percentile)};">${qualLabel(s.percentile)}</span>
-      </div>
-    </div>
-  `;
-  };
-
-  return groups.map(g => {
-    const rows = g.keys.map(k => statRanks[k]).filter(Boolean);
-    if (!rows.length) return '';
-    return `
-      <div class="stats-group">
-        <div class="stats-group-label">${g.label}</div>
-        ${rows.map(statRow).join('')}
-      </div>
-    `;
-  }).join('');
-}
-
-init().catch(e => {
-  console.error(e);
-  document.getElementById('loadingState').innerHTML = '<div class="loading-text" style="color:#B87878;">Failed to load team data. Please refresh.</div>';
-});
-</script>
 </body>
 </html>
