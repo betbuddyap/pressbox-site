@@ -165,35 +165,37 @@
   @media (min-width: 961px) { .hamburger { display: none !important; } }
   @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
 
-  /* ── UPCOMING NAV TREATMENT ── */
-  /* Distinctive styling for the primary in-season destination */
-  .nav-links a.nav-upcoming {
-    color: var(--gold) !important;
+  /* ── LIVE LINES NAV TREATMENT ── */
+  /* Live Lines is the "what's actionable right now" surface — rust pulsing dot
+     signals "we have live picks." The dot stays on every page; on the Live Lines
+     page itself, .active turns it dark to indicate "you are here." */
+  .nav-links a.nav-live {
+    color: var(--rust) !important;
     font-weight: 700;
     letter-spacing: 0.3px;
     position: relative;
     text-transform: uppercase;
     font-size: 11px;
   }
-  .nav-links a.nav-upcoming::before {
+  .nav-links a.nav-live::before {
     content: '';
     display: inline-block;
     width: 6px;
     height: 6px;
-    background: var(--gold);
+    background: var(--rust);
     border-radius: 50%;
     margin-right: 7px;
     vertical-align: 2px;
-    animation: pulse-gold 2.4s ease-in-out infinite;
+    animation: pulse-live 2.4s ease-in-out infinite;
   }
-  .nav-links a.nav-upcoming:hover { color: var(--gold-light) !important; }
-  .nav-links a.nav-upcoming.active { color: var(--text) !important; }
-  .nav-links a.nav-upcoming.active::before { background: var(--text); animation: none; }
-  @keyframes pulse-gold {
+  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
+  .nav-links a.nav-live.active { color: var(--text) !important; }
+  .nav-links a.nav-live.active::before { background: var(--text); animation: none; }
+  @keyframes pulse-live {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.5; transform: scale(0.85); }
   }
-  .mobile-menu a.nav-upcoming-mobile { color: var(--gold) !important; }
+  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
 
   /* ── HAMBURGER (consistent) ── */
   .hamburger {
@@ -297,7 +299,8 @@
       <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
     </a>
     <ul class="nav-links">
-      <li><a href="/upcoming.html" class="nav-upcoming ">Upcoming</a></li>
+      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
+      <li><a href="/upcoming.html" class="">Upcoming</a></li>
       <li><a href="/results.html" class="">Results</a></li>
       <li><a href="/rankings.html" class="">Rankings</a></li>
       <li><a href="/teams.html" class="">Teams</a></li>
@@ -313,7 +316,8 @@
 <div class="mobile-menu" id="mobileMenu">
   <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
   <a href="/index.html">Home</a>
-  <a href="/upcoming.html" class="nav-upcoming-mobile">Upcoming</a>
+  <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
+  <a href="/upcoming.html">Upcoming</a>
   <a href="/results.html">Results</a>
   <a href="/rankings.html">Rankings</a>
   <a href="/teams.html">Teams</a>
