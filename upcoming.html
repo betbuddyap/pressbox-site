@@ -1063,15 +1063,26 @@ function renderSlateCard(g) {
     statusHTML = `<span class="gc-meta">${timeText}</span>`;
   }
 
-  // Determine which slot the headline pick goes in, if any.
-  // pick.type is "Spread" | "Total" | "Moneyline" | "Pending" | undefined
-  // pick.tier is "ap" | "a" | "sm" | "ls" | "" (empty = no edge / pending)
-  const pickType = pick && pick.tier ? pick.type : null;
-  const slot = (label, isPickedSlot, tier) => {
-    if (isPickedSlot && tier) {
+  // Each slot renders independently from pick.slots = {spread, total, ml}.
+  // A slot with a tiered pick shows the tier badge; otherwise shows the
+  // faded label. pick.slots may be undefined if no pick record exists for
+  // this game (e.g. no odds posted yet), in which case all slots fall
+  // through to the empty label state.
+  const slots = (pick && pick.slots) || {};
+  const slot = (label, slotData) => {
+    const tierFull = slotData && slotData.tier_full;
+    // Map tier_full ("A+", "A", "smart_money", "lottery_shot") → short key
+    // used by TIER_LABEL_SHORT and the CSS class .tier-*
+    const tierKey = ({
+      'A+':           'ap',
+      'A':            'a',
+      'smart_money':  'sm',
+      'lottery_shot': 'ls',
+    })[tierFull];
+    if (tierKey) {
       return `
         <div class="gc-pick-slot">
-          <span class="gc-pick-tier tier-${tier}">${TIER_LABEL_SHORT[tier] || tier}</span>
+          <span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span>
         </div>
       `;
     }
@@ -1096,9 +1107,9 @@ function renderSlateCard(g) {
             ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
           </div>
           <div class="gc-picks">
-            ${slot('Spread', pickType === 'Spread', pickType === 'Spread' ? pick.tier : null)}
-            ${slot('Total',  pickType === 'Total',  pickType === 'Total'  ? pick.tier : null)}
-            ${slot('ML',     pickType === 'Moneyline', pickType === 'Moneyline' ? pick.tier : null)}
+            ${slot('Spread', slots.spread)}
+            ${slot('Total',  slots.total)}
+            ${slot('ML',     slots.ml)}
           </div>
         </div>
       </div>
