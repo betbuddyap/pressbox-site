@@ -723,6 +723,19 @@ const CONF_SHORT = {
 const TIER_LABEL = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
 const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'Smart$', ls: 'Lottery' };
 
+// Preview flag — when true, /picks/upcoming synthesizes stand-in lines
+// for games with no real odds posted yet (pre-July preview). Toggle
+// off once sportsbooks start publishing real Week 1 lines, or read
+// from the URL via ?preview=1 for a manual override.
+const SIMULATE_PICKS = (() => {
+  const url = new URLSearchParams(window.location.search);
+  if (url.get('preview') === '0') return false;
+  if (url.get('preview') === '1') return true;
+  // Default behavior: simulate until Aug 1, 2026 when real lines should
+  // be widely posted. Adjust this date as the season approaches.
+  return new Date() < new Date('2026-08-01T00:00:00-05:00');
+})();
+
 let allGames = [];
 let powerRankings = {};
 let teamColors = {};
@@ -733,11 +746,12 @@ let currentWeek = 1;
 let firstAvailableWeek = 1;
 
 async function init() {
+  const picksUrl = `${API}/picks/upcoming?season=${SEASON}${SIMULATE_PICKS ? '&simulate=true' : ''}`;
   const [rankRes, colorsRes, gamesRes, picksRes] = await Promise.all([
     fetch(`${API}/rankings/power?season=2025&limit=200`).then(r => r.json()).catch(() => null),
     fetch(`${API}/teams/colors`).then(r => r.json()).catch(() => null),
     fetch(`${API}/games/upcoming?season=${SEASON}`).then(r => r.json()).catch(() => null),
-    fetch(`${API}/picks/upcoming?season=${SEASON}`).then(r => r.json()).catch(() => null)
+    fetch(picksUrl).then(r => r.json()).catch(() => null)
   ]);
 
   if (rankRes && rankRes.rankings) {
