@@ -242,7 +242,9 @@
   .pick-row-tier { font-family: var(--sans); font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 10px; border-radius: 2px; white-space: nowrap; background: var(--tier-bg); color: var(--tier-fg); }
   .pick-row-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .pick-row-type { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
-  .pick-row-text { font-family: var(--serif); font-style: italic; font-weight: 700; font-size: 20px; color: var(--text); line-height: 1.25; }
+  .pick-row-text { font-family: var(--serif); font-weight: 700; font-size: 20px; color: var(--text); line-height: 1.25; }
+  .pick-row-projection { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text-mid); margin-top: 4px; letter-spacing: 0.3px; }
+  .pick-row-projection b { color: var(--text); font-weight: 700; }
   .pick-row-meta { font-family: var(--sans); font-size: 11px; color: var(--text-mid); margin-top: 2px; }
   .pick-row-status { flex-shrink: 0; }
   .pick-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 2px; font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
@@ -958,6 +960,7 @@ function extractPicks(gameData) {
       tier: badge.tier,
       tierMeta: badge.meta,
       picked: sp.pick_team || '',
+      pickedHome: pickedHome,
       display: display,
       line: isPending ? '' : formatSpread(pickSpread),
       edge: sp.edge,
@@ -1429,6 +1432,31 @@ function renderAllPicks(picks) {
   `;
 }
 
+// Build the "Our projection" annotation that sits under each pick.
+// For spread/total picks we show our predicted value alongside the market
+// line so the user sees the edge at a glance. For ML we show our model's
+// win probability vs the no-vig implied probability.
+function buildProjectionHTML(p) {
+  if (p.type === 'Spread') {
+    if (p.predicted_value == null) return '';
+    // predicted_value is home-POV (negative = home favored). Flip if the
+    // pick is the away side so the projection reads in the picked POV.
+    const projFromPicked = p.pickedHome ? p.predicted_value : -p.predicted_value;
+    const projStr = projFromPicked > 0 ? `+${projFromPicked.toFixed(1)}` : projFromPicked.toFixed(1);
+    return `<span class="pick-row-projection">Our projection: <b>${p.picked} ${projStr}</b></span>`;
+  }
+  if (p.type === 'Total') {
+    if (p.predicted_value == null) return '';
+    return `<span class="pick-row-projection">Our projection: <b>${p.predicted_value.toFixed(1)}</b></span>`;
+  }
+  if (p.type === 'Moneyline') {
+    if (p.model_win_prob == null) return '';
+    const pct = Math.round(p.model_win_prob * 100);
+    return `<span class="pick-row-projection">Our projection: <b>${p.picked} wins ${pct}%</b></span>`;
+  }
+  return '';
+}
+
 function renderPickRow(p, idx) {
   // Pending row: market doesn't have enough books posted yet.
   if (p.pending) {
@@ -1463,6 +1491,7 @@ function renderPickRow(p, idx) {
   const oddsStr = p.best_book.odds != null ? (p.best_book.odds > 0 ? `+${p.best_book.odds}` : p.best_book.odds) : '';
   const hasComparison = p.all_books && p.all_books.length > 0;
   const bestUrl = p.best_book.url || '#';
+  const projectionHTML = buildProjectionHTML(p);
 
   return `
     <div class="pick-row ${premiumCls}" id="pickRow-${idx}">
@@ -1471,6 +1500,7 @@ function renderPickRow(p, idx) {
         <div class="pick-row-body">
           <span class="pick-row-type">${p.type}</span>
           <span class="pick-row-text">${p.display}</span>
+          ${projectionHTML}
         </div>
         <div class="pick-row-status">
           <span class="pick-status ${p.status}">${cap(p.status)}</span>
