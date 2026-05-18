@@ -434,7 +434,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 6px;
     padding: 4px 6px;
     min-height: 24px;
   }
@@ -447,17 +447,30 @@
     color: rgba(248,245,238,0.55);
   }
   .gc.slate .gc-pick-slot.empty .gc-pick-label { color: rgba(248,245,238,0.30); }
+  /* When the slot has a tier badge, fade the label slightly so the badge
+     reads as the dominant element. */
+  .gc.slate .gc-pick-slot.has-tier .gc-pick-label { color: rgba(248,245,238,0.45); }
   .gc.slate .gc-pick-tier {
     font-family: var(--sans);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
-    padding: 3px 8px;
+    padding: 2px 6px;
     border-radius: 2px;
+    line-height: 1.3;
   }
-  .gc.slate .gc-pick-tier.tier-ap { background: var(--gold); color: var(--ink); }
-  .gc.slate .gc-pick-tier.tier-a  { background: var(--gold-light); color: var(--ink); }
+  /* A+ = filled gold (top conviction). A = outlined gold (strong edge). */
+  .gc.slate .gc-pick-tier.tier-ap {
+    background: var(--gold);
+    color: var(--ink);
+  }
+  .gc.slate .gc-pick-tier.tier-a {
+    background: transparent;
+    color: var(--gold-light);
+    border: 1px solid var(--gold-light);
+    padding: 1px 5px;  /* compensate for border so total size matches A+ */
+  }
   .gc.slate .gc-pick-tier.tier-sm { background: var(--sage); color: #fff; }
   .gc.slate .gc-pick-tier.tier-ls { background: var(--rust); color: #fff; }
 
@@ -468,7 +481,10 @@
     .gc.slate .gc-team-sub { font-size: 10px; }
     .gc.slate .gc-at { font-size: 13px; }
     .gc.slate .gc-meta { font-size: 12px; }
-    .gc.slate .gc-pick-label, .gc.slate .gc-pick-tier { font-size: 10px; }
+    .gc.slate .gc-pick-label { font-size: 10px; }
+    .gc.slate .gc-pick-tier { font-size: 9px; padding: 2px 5px; }
+    .gc.slate .gc-pick-tier.tier-a { padding: 1px 4px; }
+    .gc.slate .gc-pick-slot { gap: 4px; }
   }
 
   /* ── GRIDS (legacy, mostly unused now) ── */
@@ -1078,15 +1094,11 @@ function renderSlateCard(g) {
   }
 
   // Each slot renders independently from pick.slots = {spread, total, ml}.
-  // A slot with a tiered pick shows the tier badge; otherwise shows the
-  // faded label. pick.slots may be undefined if no pick record exists for
-  // this game (e.g. no odds posted yet), in which case all slots fall
-  // through to the empty label state.
+  // Label is always visible; tier badge appears next to it when present.
+  // pick.slots may be undefined if no pick record exists for this game.
   const slots = (pick && pick.slots) || {};
   const slot = (label, slotData) => {
     const tierFull = slotData && slotData.tier_full;
-    // Map tier_full ("A+", "A", "smart_money", "lottery_shot") → short key
-    // used by TIER_LABEL_SHORT and the CSS class .tier-*
     const tierKey = ({
       'A+':           'ap',
       'A':            'a',
@@ -1095,7 +1107,8 @@ function renderSlateCard(g) {
     })[tierFull];
     if (tierKey) {
       return `
-        <div class="gc-pick-slot">
+        <div class="gc-pick-slot has-tier">
+          <span class="gc-pick-label">${label}</span>
           <span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span>
         </div>
       `;
