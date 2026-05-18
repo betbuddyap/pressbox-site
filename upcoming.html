@@ -460,17 +460,9 @@
     border-radius: 2px;
     line-height: 1.3;
   }
-  /* A+ = filled gold (top conviction). A = outlined gold (strong edge). */
-  .gc.slate .gc-pick-tier.tier-ap {
-    background: var(--gold);
-    color: var(--ink);
-  }
-  .gc.slate .gc-pick-tier.tier-a {
-    background: transparent;
-    color: var(--gold-light);
-    border: 1px solid var(--gold-light);
-    padding: 1px 5px;  /* compensate for border so total size matches A+ */
-  }
+  /* A+ = filled gold (top conviction). A = filled silver (strong edge). */
+  .gc.slate .gc-pick-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-a  { background: #C0C5CC; color: var(--ink); }
   .gc.slate .gc-pick-tier.tier-sm { background: var(--sage); color: #fff; }
   .gc.slate .gc-pick-tier.tier-ls { background: var(--rust); color: #fff; }
 
@@ -483,7 +475,6 @@
     .gc.slate .gc-meta { font-size: 12px; }
     .gc.slate .gc-pick-label { font-size: 10px; }
     .gc.slate .gc-pick-tier { font-size: 9px; padding: 2px 5px; }
-    .gc.slate .gc-pick-tier.tier-a { padding: 1px 4px; }
     .gc.slate .gc-pick-slot { gap: 4px; }
   }
 
@@ -737,7 +728,7 @@ const CONF_SHORT = {
 };
 
 const TIER_LABEL = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
-const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'Smart$', ls: 'Lottery' };
+const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
 
 // Preview flag — when true, /picks/upcoming synthesizes stand-in lines
 // for games with no real odds posted yet (pre-July preview). Toggle
