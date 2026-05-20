@@ -39,7 +39,7 @@
   const STATS_ENDPOINT =
     window.PRESSBOX_API_BASE
       ? window.PRESSBOX_API_BASE + '/stats/headline'
-      : 'https://betbuddyservice-production.up.railway.app/stats/headline';
+      : 'https://betbuddy-backend.onrender.com/stats/headline';
 
   function resolvePath(obj, path) {
     // "lock.record" → obj.lock.record
