@@ -1,7 +1,7 @@
 /* ──────────────────────────────────────────────────────────────────────
    PressBox Analytics — live stats loader
    ────────────────────────────────────────────────────────────────────
-   Fetches /stats/headline on page load and populates every element
+   Fetches /canonical/stats/headline on page load and populates every element
    with a data-stat attribute. Each attribute is a dotted path into
    the JSON response, e.g.:
 
@@ -38,8 +38,8 @@
   // fall back to the Railway URL.
   const STATS_ENDPOINT =
     window.PRESSBOX_API_BASE
-      ? window.PRESSBOX_API_BASE + '/stats/headline'
-      : 'https://betbuddy-backend.onrender.com/stats/headline';
+      ? window.PRESSBOX_API_BASE + '/canonical/stats/headline'
+      : 'https://betbuddy-backend.onrender.com/canonical/stats/headline';
 
   function resolvePath(obj, path) {
     // "lock.record" → obj.lock.record
