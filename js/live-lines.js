@@ -21,7 +21,7 @@
   const API_BASE = 'https://betbuddy-backend.onrender.com';
   const FEED_URL = `${API_BASE}/canonical/live-lines/feed`;
   const HISTORY_URL = (pickId) => `${API_BASE}/canonical/live-lines/history/${pickId}`;
-  const POLL_INTERVAL_MS = 30000;
+  const POLL_INTERVAL_MS = 120000;   // 2 min — backend updates every 30 min
   const SEASON = 2026;
 
   // ── App state ───────────────────────────────────────────────
@@ -534,7 +534,7 @@
       </div>
 
       ${booksHtml ? `
-        <details class="ll-other-books" open>
+        <details class="ll-other-books">
           <summary class="ll-other-books-header" style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
             <span class="ll-accordion-section-label" style="margin:0;">Other books</span>
             <svg class="ll-other-books-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -777,9 +777,18 @@
   function startPolling() {
     if (state.pollTimer) clearInterval(state.pollTimer);
     state.pollTimer = setInterval(() => {
+      // Pause polling when tab is hidden to save bandwidth + battery
+      if (document.visibilityState !== 'visible') return;
       loadFeed().catch(e => console.error('poll failed', e));
     }, POLL_INTERVAL_MS);
   }
+
+  // Refresh immediately when the tab regains focus, even between polls
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && state.picks) {
+      loadFeed().catch(e => console.error('visibility refresh failed', e));
+    }
+  });
 
   // ── Boot ─────────────────────────────────────────────────────
   async function init() {
@@ -811,7 +820,7 @@
     }
   }
 
-  // Refresh meta line every 30s even without new data
+  // Refresh meta line ("X min ago") every minute even without new data
   setInterval(() => {
     if (state.picks && state.picks.length > 0 && !state.filters.market && !state.filters.aplusOnly) {
       const metaEl = document.querySelector('.ll-meta span:first-child');
@@ -820,7 +829,7 @@
         if (metaEl.textContent !== text) metaEl.textContent = text;
       }
     }
-  }, 30000);
+  }, 60000);
 
   // Boot when DOM is ready
   if (document.readyState === 'loading') {
