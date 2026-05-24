@@ -434,22 +434,16 @@
   }
 
   // ── Accordion body (history + other books + bet button) ──────
+  // Renders a SKELETON only. After fetchHistory resolves,
+  // renderHistoryInto replaces this with the real timeline + books +
+  // bet button + game link.
   function renderAccordionBody(p) {
-    // Loaded async — show skeleton, then patch when history arrives
     return `
       <div data-history-for="${esc(p.pick_id)}">
         <div class="ll-accordion-section-label">History</div>
         <div class="ll-skeleton" style="display:block;width:80%;height:12px;margin-bottom:var(--space-2);"></div>
         <div class="ll-skeleton" style="display:block;width:60%;height:12px;margin-bottom:var(--space-4);"></div>
       </div>
-      <a class="ll-bet-button" href="${esc(p.book?.url || '#')}"
-         target="_blank" rel="noopener noreferrer"
-         aria-label="Bet at ${esc(p.book?.name || 'book')} (opens in new tab)">
-        Bet at ${esc(p.book?.name || 'book')} →
-      </a>
-      <a class="ll-game-link" href="/game/${esc(p.game_id || '')}">
-        Full game breakdown →
-      </a>
     `;
   }
 
