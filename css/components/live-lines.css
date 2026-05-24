@@ -514,9 +514,9 @@
   color: var(--ink);
 }
 
-.ll-book-delta--worse { color: var(--rust); font-weight: var(--weight-regular); }
-.ll-book-delta--match { color: var(--text-light); font-weight: var(--weight-regular); }
-.ll-book-delta--better { color: var(--sage); font-weight: var(--weight-regular); }
+.ll-book-delta--worse  { color: var(--rust); font-weight: var(--weight-regular); font-size: var(--text-base); }
+.ll-book-delta--match  { color: var(--text-light); font-weight: var(--weight-regular); font-size: var(--text-base); }
+.ll-book-delta--better { color: var(--sage); font-weight: var(--weight-regular); font-size: var(--text-base); }
 
 
 /* ============================================================
