@@ -476,13 +476,18 @@
     const currentTier = pick.tier || '';
     const currentBookUrl = pick.book?.url || '#';
 
-    // Other books: exclude the one already shown on the row above (the
-    // "current best" book that matches pick.book). Rest of books shown
-    // in best→worst order via the backend.
+    // Other books: exclude only the one already shown as the primary on
+    // the row above. Multiple books can tie for "best" — we don't want
+    // to hide them all, just the one we picked as the headline.
     const allBooks = history.current_books || [];
-    const otherBooks = allBooks.filter(b =>
-      !(b.book && b.book.name === currentBook && b.is_best)
-    );
+    let primaryHidden = false;
+    const otherBooks = allBooks.filter(b => {
+      if (!primaryHidden && b.book && b.book.name === currentBook) {
+        primaryHidden = true;
+        return false;
+      }
+      return true;
+    });
 
     const booksHtml = otherBooks.length ? otherBooks.map(b => {
       const url = b.book?.url || '#';
