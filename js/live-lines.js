@@ -463,9 +463,6 @@
     const releasedDate = released?.at ? formatHistoryTime(released.at) : '';
 
     let eventsHtml = events.map(e => {
-      // Use is_book_change / is_tier_change / is_side_change to pick the
-      // appropriate visual. For best-book changes we don't have promotion/
-      // demotion semantics in the current API, so render a neutral dot.
       const isBookChange = e.is_book_change && !e.is_tier_change && !e.is_side_change;
       const dot = isBookChange
         ? `<span class="ll-event-dot" style="background:var(--text-mid);"></span>`
@@ -483,6 +480,40 @@
     const currentLine = pick.line || '';
     const currentSide = pick.side || '';
     const currentTier = pick.tier || '';
+    const currentBookUrl = pick.book?.url || '#';
+
+    // Other books: exclude the one already shown on the row above (the
+    // "current best" book that matches pick.book). Rest of books shown
+    // in best→worst order via the backend.
+    const allBooks = history.current_books || [];
+    const otherBooks = allBooks.filter(b =>
+      !(b.book && b.book.name === currentBook && b.is_best)
+    );
+
+    const booksHtml = otherBooks.length ? otherBooks.map(b => {
+      const url = b.book?.url || '#';
+      const name = esc(b.book?.name || '?');
+      const line = esc(b.line || '');
+      const deltaClass =
+        b.delta === 'match' ? 'll-book-delta--match' :
+        (b.delta && b.delta.startsWith('+')) ? 'll-book-delta--better' :
+        'll-book-delta--worse';
+      return `
+        <a class="ll-book-row" href="${esc(url)}" target="_blank" rel="noopener noreferrer"
+           aria-label="Bet at ${name} (opens in new tab)">
+          <span class="ll-book-name">
+            ${name}
+            <svg class="ll-book-name-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M6 4h6v6M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>
+            <span class="ll-book-line">${line}</span>
+            <span class="${deltaClass}"> (${esc(b.delta)})</span>
+          </span>
+        </a>
+      `;
+    }).join('') : '';
 
     target.innerHTML = `
       <div class="ll-accordion-section-label">History</div>
@@ -507,6 +538,30 @@
           <div class="ll-event-time">Now</div>
         </div>
       </div>
+
+      ${booksHtml ? `
+        <details class="ll-other-books" open>
+          <summary class="ll-other-books-header" style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+            <span class="ll-accordion-section-label" style="margin:0;">Other books</span>
+            <svg class="ll-other-books-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </summary>
+          <div class="ll-other-books-rows" style="display:block;margin-top:var(--space-2);">
+            ${booksHtml}
+          </div>
+        </details>
+      ` : ''}
+
+      <a class="ll-bet-button" href="${esc(currentBookUrl)}"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="Bet at ${esc(currentBook)} (opens in new tab)"
+         style="margin-top:var(--space-4);">
+        Bet at ${esc(currentBook)} →
+      </a>
+      <a class="ll-game-link" href="/game/${esc(pick.game_id || '')}">
+        Full game breakdown →
+      </a>
     `;
   }
 
