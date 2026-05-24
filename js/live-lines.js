@@ -551,11 +551,7 @@
             ${booksHtml}
           </div>
         </div>
-      ` : `
-        <div style="font-size:11px;color:var(--text-light);padding:var(--space-2) 0;border-top:0.5px solid var(--cream-mid);">
-          DEBUG: allBooks=${allBooks.length}, otherBooks=${otherBooks.length}, currentBook="${esc(currentBook)}"
-        </div>
-      `}
+      ` : ''}
 
       <a class="ll-bet-button" href="${esc(currentBookUrl)}"
          target="_blank" rel="noopener noreferrer"
