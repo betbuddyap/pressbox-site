@@ -191,11 +191,11 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-light);
-  margin: var(--space-3) 0 var(--space-1) 0;
+  margin: var(--space-4) 0 var(--space-2) 0;
 }
 
 .ll-time-header:first-of-type {
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
 }
 
 
@@ -207,7 +207,7 @@
   background: #FFFFFF;
   border: 0.5px solid var(--border);
   border-radius: var(--radius-md);
-  margin-bottom: var(--space-1);
+  margin-bottom: var(--space-2);
   overflow: hidden;
   transition: background var(--transition-base);
 }
@@ -224,7 +224,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-4) var(--space-4);
   cursor: pointer;
   width: 100%;
   background: transparent;
@@ -247,15 +247,14 @@
   font-size: var(--text-base);
   font-weight: var(--weight-semi);
   color: var(--ink);
-  line-height: 1.2;
-  margin: 0;
+  line-height: 1.3;
+  margin: 0 0 var(--space-1) 0;
 }
 
 .ll-row-pick {
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   color: var(--text-mid);
-  line-height: 1.2;
-  margin-top: 2px;
+  line-height: 1.3;
 }
 
 .ll-row-pick-num {
@@ -281,8 +280,8 @@
  * ============================================================ */
 
 .ll-badge {
-  width: 32px;
-  height: 28px;
+  width: 36px;
+  height: 32px;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
