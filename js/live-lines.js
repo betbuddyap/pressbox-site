@@ -405,23 +405,18 @@
   }
 
   function renderBadge(tier) {
-    const label =
-      tier === 'A+'          ? 'A+' :
-      tier === 'A'           ? 'A'  :
-      tier === 'smart_money' ? 'SM' :
-      tier === 'goldilocks'  ? 'GL' :
-      tier === 'lottery'     ? 'LT' :
-      tier === 'no_edge'     ? '—'  :
-      esc(tier);
-    const aria =
-      tier === 'A+'          ? 'A plus tier'        :
-      tier === 'A'           ? 'A tier'             :
-      tier === 'smart_money' ? 'Smart Money tier'   :
-      tier === 'goldilocks'  ? 'Goldilocks tier'    :
-      tier === 'lottery'     ? 'Lottery tier'       :
-      tier === 'no_edge'     ? 'No edge — line has moved out of cell' :
-      esc(tier);
-    return `<span class="ll-badge ll-badge--${esc(tier)}" aria-label="${aria}">${label}</span>`;
+    // Map tier value to (label, ariaLabel, cssKey). CSS class names are
+    // case-sensitive, so we use a sanitized key that matches the CSS.
+    const map = {
+      'A+':          { label: 'A+', aria: 'A plus tier',      key: 'aplus' },
+      'A':           { label: 'A',  aria: 'A tier',           key: 'a' },
+      'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
+      'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
+      'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
+      'no_edge':     { label: '—',  aria: 'No edge — line has moved out of cell', key: 'no_edge' },
+    };
+    const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
   }
 
   function renderPickLine(p) {
@@ -569,14 +564,14 @@
       <div class="ll-paywall-blur">
         ${rowsHtml || `
           <article class="ll-row"><div class="ll-row-header">
-            <span class="ll-badge ll-badge--A+">A+</span>
+            <span class="ll-badge ll-badge--aplus">A+</span>
             <div class="ll-row-content">
               <div class="ll-row-matchup">Sample Matchup A</div>
               <div class="ll-row-pick">Team +7 · FanDuel</div>
             </div>
           </div></article>
           <article class="ll-row"><div class="ll-row-header">
-            <span class="ll-badge ll-badge--A">A</span>
+            <span class="ll-badge ll-badge--a">A</span>
             <div class="ll-row-content">
               <div class="ll-row-matchup">Sample Matchup B</div>
               <div class="ll-row-pick">Team -3.5 · DraftKings</div>
