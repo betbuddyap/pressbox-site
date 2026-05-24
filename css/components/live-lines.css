@@ -454,19 +454,15 @@
   padding: 0;
   width: 100%;
   font-family: inherit;
-  margin-bottom: var(--space-2);
+  color: inherit;
+  text-align: left;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.ll-other-books-rows {
-  display: none;
-}
-
-.ll-other-books[aria-expanded="true"] .ll-other-books-rows {
-  display: block;
-}
-
-.ll-other-books[aria-expanded="true"] .ll-other-books-chevron {
-  transform: rotate(180deg);
+.ll-other-books-header:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 .ll-other-books-chevron {
