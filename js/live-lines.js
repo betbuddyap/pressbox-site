@@ -539,17 +539,18 @@
       </div>
 
       ${booksHtml ? `
-        <details class="ll-other-books">
-          <summary class="ll-other-books-header" style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+        <div class="ll-other-books" data-other-books="${esc(pickId)}">
+          <button type="button" class="ll-other-books-header" data-action="toggle-books"
+                  aria-expanded="false">
             <span class="ll-accordion-section-label" style="margin:0;">Other books</span>
             <svg class="ll-other-books-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </summary>
-          <div class="ll-other-books-rows" style="display:block;margin-top:var(--space-2);">
+          </button>
+          <div class="ll-other-books-rows" style="display:none;margin-top:var(--space-2);">
             ${booksHtml}
           </div>
-        </details>
+        </div>
       ` : ''}
 
       <a class="ll-bet-button" href="${esc(currentBookUrl)}"
@@ -562,6 +563,22 @@
         Full game breakdown →
       </a>
     `;
+
+    // Attach Other Books toggle handler
+    const obToggle = target.querySelector('[data-action="toggle-books"]');
+    if (obToggle) {
+      obToggle.addEventListener('click', () => {
+        const wrap = obToggle.closest('.ll-other-books');
+        const rows = wrap?.querySelector('.ll-other-books-rows');
+        if (!rows) return;
+        const isOpen = obToggle.getAttribute('aria-expanded') === 'true';
+        obToggle.setAttribute('aria-expanded', String(!isOpen));
+        rows.style.display = isOpen ? 'none' : 'block';
+        // Rotate chevron
+        const chev = obToggle.querySelector('.ll-other-books-chevron');
+        if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+      });
+    }
   }
 
   function formatHistoryTime(iso) {
