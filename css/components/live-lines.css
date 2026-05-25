@@ -70,6 +70,59 @@
   50%      { opacity: 0.4; }
 }
 
+
+/* ============================================================
+ * WEEK BAR (horizontal tab strip below the header)
+ * ============================================================ */
+
+.ll-week-bar {
+  background: var(--cream-dark);
+  border-bottom: 1px solid var(--border);
+  margin: 0 calc(-1 * var(--space-4));
+  padding: 0 var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+
+.ll-week-bar::-webkit-scrollbar { display: none; }
+
+@media (min-width: 768px) {
+  .ll-week-bar {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.ll-week-bar-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.ll-week-tab {
+  font-family: var(--sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  color: var(--text-light);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.ll-week-tab:hover {
+  color: var(--text-mid);
+}
+
+.ll-week-tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+}
+
 .ll-headline {
   font-family: var(--serif);
   font-size: var(--text-xl);
