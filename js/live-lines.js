@@ -107,6 +107,20 @@
     'no_edge':     0,
   };
 
+  // ── Utility: tier display name (raw slug → customer-facing label) ─
+  const TIER_DISPLAY = {
+    'A+':          'A+',
+    'A':           'A',
+    'smart_money': 'Smart Money',
+    'goldilocks':  'Goldilocks',
+    'lottery':     'Lottery',
+    'no_edge':     'No edge',
+  };
+  function tierLabel(tier) {
+    if (!tier) return '—';
+    return TIER_DISPLAY[tier] || tier;
+  }
+
   // ── Utility: HTML escape ─────────────────────────────────────
   function esc(s) {
     if (s == null) return '';
@@ -527,7 +541,7 @@
         <div class="ll-event">
           <span class="ll-event-dot"></span>
           <div class="ll-event-title">
-            <strong>Released ${esc(released?.tier || '—')}</strong>
+            <strong>Released ${esc(tierLabel(released?.tier))}</strong>
             · ${esc(released?.side || '—')} ${esc(released?.line || '')}
             at ${esc(released?.book?.name || '—')}
           </div>
@@ -538,7 +552,7 @@
           <span class="ll-event-dot"></span>
           <div class="ll-event-title">
             <strong>Current</strong>
-            · ${esc(currentTier === 'no_edge' ? 'No edge' : currentTier + ' holding')}
+            · ${esc(currentTier === 'no_edge' ? 'No edge' : tierLabel(currentTier) + ' holding')}
             · ${esc(currentSide)} ${esc(currentLine)} at ${esc(currentBook)}
           </div>
           <div class="ll-event-time">Now</div>
@@ -702,7 +716,6 @@
           Every active pick across all seven tiers, regraded every 30 minutes against the
           current best market line.
         </p>
-        <a class="ll-paywall-after-link" href="/results">See past results →</a>
       </div>
     `;
   }
