@@ -420,17 +420,24 @@
   }
 
   function renderPickLine(p) {
-    // For total: "Over 54.5 · FanDuel"
-    // For spread: "Memphis +3 · DraftKings"
-    // For ml: "Clemson ML +365 · FanDuel"
+    // Format the per-row pick line. Examples:
+    //   "Memphis +3 · DraftKings"          (single book)
+    //   "Memphis +3 · DraftKings + 1 other"  (one tied book)
+    //   "Under 54.5 · FanDuel + 2 others"    (multiple tied books)
     if (!p.side) return '<span class="ll-row-pick-num">—</span>';
+    const bookName = esc(p.book?.name || '');
+    const tied = Number(p.tied_books_count || 0);
+    let bookText = bookName;
+    if (tied === 1) bookText = `${bookName} + 1 other`;
+    else if (tied > 1) bookText = `${bookName} + ${tied} others`;
+
     if (p.market === 'total') {
-      return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span> · ${esc(p.book?.name || '')}`;
+      return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span> · ${bookText}`;
     }
     if (p.market === 'ml') {
-      return `${esc(p.side)} ML <span class="ll-row-pick-num">${esc(p.line)}</span> · ${esc(p.book?.name || '')}`;
+      return `${esc(p.side)} ML <span class="ll-row-pick-num">${esc(p.line)}</span> · ${bookText}`;
     }
-    return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span> · ${esc(p.book?.name || '')}`;
+    return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span> · ${bookText}`;
   }
 
   // ── Accordion body (history + other books + bet button) ──────
