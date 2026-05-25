@@ -296,7 +296,6 @@
     </a>
     <ul class="nav-links">
       <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
-      <li><a href="/results.html" class="">Results</a></li>
       <li><a href="/how-it-works.html" class="active">How It Works</a></li>
       <li><a href="/about.html" class="">About</a></li>
     </ul>
@@ -310,7 +309,6 @@
 <div class="mobile-menu" id="mobileMenu">
   <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
   <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
-  <a href="/results.html">Results</a>
   <a href="/how-it-works.html">How It Works</a>
   <a href="/about.html">About</a>
 </div>
@@ -328,7 +326,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <div class="page-header-inner">
     <div class="page-eyebrow">Methodology</div>
     <h1 class="page-title">The model doesn't care<br>about <em>the narrative.</em></h1>
-    <p class="page-sub">One sharp predictive signal. Situational context where it matters. No gut feelings, no hot takes, no bias toward name brands. Here's how it actually works — enough to understand it, not enough to copy it.</p>
+    <p class="page-sub">Five independent models. Live grading. No gut feelings, no hot takes, no bias toward name brands. Here's how it actually works — enough to understand it, not enough to copy it.</p>
   </div>
 </div>
 
@@ -353,20 +351,22 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <!-- Section 2: The Model -->
   <div class="section">
     <div class="section-num">02</div>
-    <h2 class="section-title">Start with the sharpest signal. <em>Sharpen it from there.</em></h2>
+    <h2 class="section-title">Five reads. <em>One question.</em></h2>
     <div class="section-body">
-      <p>Most betting systems try to combine many mediocre models and hope the convergence produces an edge. We did the opposite. We built around the single most accurate predictive system in college football — the kind institutional analysts use — and then layered on the situational context that actually moves outcomes.</p>
-      <p>The base prediction generates a margin and total for every game. Then we adjust for rest, short weeks, conference dynamics, pace, explosiveness, and defensive havoc — the factors that change what a number actually means. <strong>The result is a prediction the market can't easily replicate, because most public models are anchored on the same handful of consensus inputs.</strong></p>
+      <p>SP+ measures efficiency. Elo measures head-to-head record. PPA measures expected points per play. Advanced stats measure the things the box score misses. Pace+, our in-house model, projects how much time each team will spend with the ball and what they can do with it.</p>
+      <p>Each model answers the same question — what does the data say this game should look like — and they answer it differently. <strong>We don't look for agreement. We look at how each model reads the game in the context of the other four. The disagreement is part of the signal.</strong></p>
     </div>
   </div>
 
   <!-- Section 3: The Tier System -->
   <div class="section">
     <div class="section-num">03</div>
-    <h2 class="section-title">Edge alone isn't enough. <em>Confirmation matters.</em></h2>
+    <h2 class="section-title">The market mispricing <em>comes first.</em></h2>
     <div class="section-body">
-      <p>Every game gets filtered through two questions: how large is our edge vs the market, and does the market agree with us on the basic shape of the game? A pick where the model loves the side that the market also leans toward — but at a different number — is the cleanest possible signal. Both independent sources point the same direction.</p>
-      <p>Games where the model wildly disagrees with the market on who should win are <em>usually</em> the model being wrong, not the market. <strong>We only publish picks where the math and the market line up on direction and disagree on magnitude.</strong></p>
+      <p>Picks don't start with the models. They start with the market.</p>
+      <p>We've spent years studying where the market consistently misprices certain types of college football games. Specific kinds of matchups, specific tempo profiles, specific spread or total ranges where the public's intuition reliably points one way and the data reliably points the other. Those are the situations we hunt.</p>
+      <p>Once we've found a game in one of those situations, we look at how the five models are reading it. The models aren't searching for picks — they're confirming whether the mispricing we expect is actually there. <strong>The market gap is the why. The model read is the how.</strong></p>
+      <p>A pick is published only when the situation, the line, and the model read all line up.</p>
     </div>
 
     <table class="tier-table">
@@ -374,19 +374,32 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <tr>
           <th>Tier</th>
           <th>What it means</th>
-          <th>Used in</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td><span class="tier-badge tier-ap">A+</span></td>
-          <td><span class="tier-td-name">Highest conviction</span><br>The model and market agree on direction, with a meaningful gap on the number. The cleanest, most repeatable edge we publish.</td>
-          <td>Weekly A+, POTW, ToTW, Lock of the Week, Parlay</td>
+          <td><span class="tier-td-name">Highest conviction</span><br>The models and market agree on direction with a meaningful gap on the number. The cleanest, most repeatable edge we publish.</td>
         </tr>
         <tr>
           <td><span class="tier-badge tier-a">A</span></td>
-          <td><span class="tier-td-name">Strong signal</span><br>Large standalone edge present, slightly looser confirmation. Lower volume than A+ but still in profitable territory across 4 seasons.</td>
-          <td>Weekly A+ board</td>
+          <td><span class="tier-td-name">Strong signal</span><br>Large standalone edge present, slightly looser confirmation. Lower volume than A+ but still in profitable territory across the locked backtest.</td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-a">SM</span></td>
+          <td><span class="tier-td-name">Smart Money 💰</span><br>Moneyline value. Favorites where the models and market agree, with edge built into the odds.</td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-a">GL</span></td>
+          <td><span class="tier-td-name">Goldilocks 🐻</span><br>Mid-conviction moneyline plays. Neither too cautious nor too speculative — the middle ground.</td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-a">LT</span></td>
+          <td><span class="tier-td-name">Lottery 🎟</span><br>Long-shot moneyline picks. Hits less than a third of the time. The win rate is the feature, not the bug — the payouts are large enough to make the math work.</td>
+        </tr>
+        <tr>
+          <td><span class="tier-badge tier-a">—</span></td>
+          <td><span class="tier-td-name">No Edge</span><br>The pick was released, but the line has since moved out of our band. We don't hide these. They show on the board with the rest.</td>
         </tr>
       </tbody>
     </table>
@@ -415,17 +428,16 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       </div>
       <div class="principle">
         <div class="principle-icon">✕</div>
-        <div class="principle-text"><strong>Brand names.</strong> Alabama, Georgia, Ohio State — the public always overvalues them. The model doesn't know or care what the ESPN narrative is.</div>
+        <div class="principle-text"><strong>Brand names.</strong> Alabama, Georgia, Ohio State — the public always overvalues them. The models don't know or care what the ESPN narrative is.</div>
       </div>
     </div>
   </div>
 
   <!-- CTA -->
   <div class="cta-section">
-    <h2 class="cta-title">See the model in action.</h2>
-    <p class="cta-sub">Four seasons of every pick, every week, every result. No cherry-picking.</p>
-    <a href="/results.html" class="btn-primary">View Full Results</a>
-    <a href="/index.html#waitlist" class="btn-secondary">Join the waitlist</a>
+    <h2 class="cta-title">See the models in action.</h2>
+    <p class="cta-sub">Every pick, every week, every result — the full record, no cherry-picking.</p>
+    <a href="#" class="btn-primary">Get the picks →</a>
   </div>
 
 </div>
