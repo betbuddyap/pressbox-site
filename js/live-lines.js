@@ -26,8 +26,9 @@
 
   // ── App state ───────────────────────────────────────────────
   const state = {
-    week:        null,            // current week (from URL or computed)
-    picks:       [],              // last-fetched list of picks
+    week:        null,            // currently selected week (from tab bar or URL)
+    weeks:       [],              // all weeks present in open picks (for tab bar)
+    picks:       [],              // ALL open picks (across all weeks)
     filters: {
       market:    null,            // 'spread' | 'total' | 'ml' | null
       tier:      null,            // 'A+' | 'A' | 'smart_money' | ... | null
@@ -88,13 +89,11 @@
     return { dayLabel, timeLabel, dateKey, timeKey };
   }
 
-  // ── Utility: which week to fetch ────────────────────────────
-  // Read from ?week=N, else fall back to backend's earliest open-pick week.
-  function getRequestedWeek() {
-    const p = new URLSearchParams(location.search);
-    const w = parseInt(p.get('week'), 10);
-    if (!isNaN(w) && w > 0) return w;
-    return state.week || 1;
+  // ── Utility: format a week number for display ─────────────────
+  // Matches /upcoming convention: "Week 0" for opening Saturday, then "Week N".
+  function weekLabel(w) {
+    if (w === 0) return 'Week 0';
+    return `Week ${w}`;
   }
 
   // ── Utility: tier sort rank (for ordering within time bucket) ─
@@ -134,19 +133,39 @@
 
   // ── Network: fetch the feed ──────────────────────────────────
   async function fetchFeed() {
-    const week = getRequestedWeek();
-    const params = new URLSearchParams({ season: SEASON, week: week });
-    // Don't push market/tier/status to server — we filter client-side so
-    // toggling filters doesn't require round-trips and so we always have
-    // the "filtered from N" denominator.
+    // Fetch ALL open picks across all weeks. We filter by week
+    // client-side based on state.week (set by the week-tab bar).
+    // Why client-side: switching weeks is instant + we have the
+    // full week-tab list from a single response.
+    const params = new URLSearchParams({ season: SEASON });
     const url = `${FEED_URL}?${params.toString()}`;
 
     const res = await fetch(url, { credentials: 'omit' });
     if (!res.ok) throw new Error(`feed HTTP ${res.status}`);
     const payload = await res.json();
     if (payload.error) throw new Error(payload.error);
-    state.week = payload.week || week;
+
+    // Update weeks list. Default selected week to earliest if not set.
+    state.weeks = (payload.weeks || []).slice().sort((a, b) => a - b);
+    if (state.week === null && state.weeks.length > 0) {
+      // Honor ?week=N from URL if it's in the list
+      const urlWeek = getRequestedWeekFromUrl();
+      if (urlWeek !== null && state.weeks.includes(urlWeek)) {
+        state.week = urlWeek;
+      } else {
+        state.week = state.weeks[0];
+      }
+    }
     return payload.picks || [];
+  }
+
+  // Read ?week=N from URL. Returns null if not present or invalid.
+  function getRequestedWeekFromUrl() {
+    const p = new URLSearchParams(location.search);
+    const v = p.get('week');
+    if (v === null) return null;
+    const n = parseInt(v, 10);
+    return isNaN(n) ? null : n;
   }
 
   // ── Network: fetch history for one pick ──────────────────────
@@ -185,7 +204,7 @@
           <span class="ll-eyebrow-dot"></span>
           Live Lines
         </div>
-        <h1 class="ll-headline">Week ${esc(state.week || 1)}</h1>
+        <h1 class="ll-headline">${esc(state.week !== null ? weekLabel(state.week) : 'Loading')}</h1>
         <div class="ll-meta"><span class="ll-skeleton ll-skeleton--meta"></span></div>
       </header>
 
@@ -209,7 +228,7 @@
 
   // ── Render: empty state ──────────────────────────────────────
   function renderEmpty() {
-    const week = state.week || 1;
+    const w = state.week ?? 0;
     const kickoffDate = new Date(`2026-08-22T12:00:00-04:00`); // Week 0 kickoff
     const countdown = formatCountdown(kickoffDate);
 
@@ -224,7 +243,7 @@
 
       <div class="ll-empty">
         <div class="ll-empty-card">
-          <div class="ll-empty-label">Week ${esc(week)} kicks off in</div>
+          <div class="ll-empty-label">${esc(weekLabel(w))} kicks off in</div>
           <div class="ll-empty-countdown" id="ll-countdown">${esc(countdown)}</div>
           <div class="ll-empty-date">${esc(kickoffDate.toLocaleDateString('en-US', {
             weekday: 'long', month: 'short', day: 'numeric', timeZone: 'America/New_York'
@@ -232,15 +251,11 @@
         </div>
 
         <p class="ll-empty-message">
-          First picks for <strong>Week ${esc(week)}</strong> drop Tuesday, Aug 18.
+          First picks for <strong>${esc(weekLabel(w))}</strong> drop Tuesday, Aug 18.
           Until then, the board is quiet.
         </p>
 
         <div class="ll-empty-ctas">
-          <a class="ll-empty-cta" href="/results">
-            <div class="ll-empty-cta-label">Past Results</div>
-            <div class="ll-empty-cta-body">See the full 2024-25 record</div>
-          </a>
           <a class="ll-empty-cta" href="/about">
             <div class="ll-empty-cta-label">How it works</div>
             <div class="ll-empty-cta-body">Methodology + five-model breakdown</div>
@@ -290,16 +305,39 @@
     `;
   }
 
+  // ── Render: week tab bar ─────────────────────────────────────
+  // Horizontal scrolling tab strip showing every week that has open
+  // picks. Click a tab → state.week changes → re-render filters picks.
+  function renderWeekTabs() {
+    if (!state.weeks || state.weeks.length === 0) return '';
+    if (state.weeks.length === 1) return '';  // no tab bar for a single week
+    return `
+      <div class="ll-week-bar">
+        <div class="ll-week-bar-inner" role="tablist" aria-label="Pick week">
+          ${state.weeks.map(w => `
+            <button class="ll-week-tab ${w === state.week ? 'active' : ''}"
+                    data-week="${w}" role="tab"
+                    aria-selected="${w === state.week ? 'true' : 'false'}">
+              ${esc(weekLabel(w))}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   // ── Render: the populated feed ────────────────────────────────
   function renderFeed() {
     const filtered = applyFilters(state.picks);
-    const totalCount = state.picks.length;
+    // Count of picks JUST in the current week (denominator for "filtered from N")
+    const inWeek = state.picks.filter(p => state.week === null || p.week === state.week);
+    const totalInWeek = inWeek.length;
     const filteredCount = filtered.length;
     const anyActive = !!(state.filters.market || state.filters.aplusOnly);
 
     const metaText = anyActive
-      ? `${filteredCount} pick${filteredCount === 1 ? '' : 's'} · filtered from ${totalCount}`
-      : `${totalCount} open pick${totalCount === 1 ? '' : 's'} · last updated ${relativeTimeFrom(state.lastFetchedAt)}`;
+      ? `${filteredCount} pick${filteredCount === 1 ? '' : 's'} · filtered from ${totalInWeek}`
+      : `${totalInWeek} open pick${totalInWeek === 1 ? '' : 's'} · last updated ${relativeTimeFrom(state.lastFetchedAt)}`;
 
     const grouped = groupPicks(filtered);
 
@@ -309,12 +347,14 @@
           <span class="ll-eyebrow-dot"></span>
           Live Lines
         </div>
-        <h1 class="ll-headline">Week ${esc(state.week || 1)}</h1>
+        <h1 class="ll-headline">${esc(weekLabel(state.week ?? 0))}</h1>
         <div class="ll-meta">
           <span>${esc(metaText)}</span>
           <button class="ll-meta-refresh" id="ll-refresh-btn">refresh</button>
         </div>
       </header>
+
+      ${renderWeekTabs()}
 
       ${renderFilters()}
 
@@ -330,6 +370,8 @@
   function applyFilters(picks) {
     const f = state.filters;
     return picks.filter(p => {
+      // Filter by selected week (week-tab bar)
+      if (state.week !== null && p.week !== state.week) return false;
       if (f.aplusOnly && p.tier !== 'A+') return false;
       if (f.market && p.market !== f.market) return false;
       if (f.tier && p.tier !== f.tier) return false;
@@ -722,6 +764,21 @@
 
   // ── Event handlers ──────────────────────────────────────────
   function attachFeedHandlers() {
+    // Week tabs
+    $app().querySelectorAll('.ll-week-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const w = parseInt(btn.getAttribute('data-week'), 10);
+        if (isNaN(w) || w === state.week) return;
+        state.week = w;
+        // Close any expanded row when switching weeks
+        state.expandedPickId = null;
+        render();
+        // Scroll to top of the feed so the user sees the new week's
+        // header rather than wherever they happened to be scrolled.
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
     // Filter pills
     $app().querySelectorAll('.ll-filter-pill').forEach(btn => {
       btn.addEventListener('click', () => {
