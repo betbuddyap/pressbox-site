@@ -24,8 +24,22 @@
   const POLL_INTERVAL_MS = 120000;   // 2 min — backend updates every 30 min
   const SEASON = 2026;
 
+  // ── Supabase auth client ────────────────────────────────────
+  // Loaded from CDN script tag in live-lines.html. The anon key is
+  // safe to expose — RLS protects data server-side.
+  const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
+  const SUPABASE_ANON = 'REPLACE_ME_WITH_ANON_KEY';
+  const sb = (typeof supabase !== 'undefined')
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+    : null;
+
+  // Cached access token (refreshed via getAccessToken below).
+  // Stored on state, not in module scope, so it survives the
+  // initial paint and updates if the session refreshes.
+
   // ── App state ───────────────────────────────────────────────
   const state = {
+    authMode:    null,            // 'paid' | 'anon' | 'auth-no-sub'; resolved on init
     week:        null,            // currently selected week (from tab bar or URL)
     weeks:       [],              // all weeks present in open picks (for tab bar)
     picks:       [],              // ALL open picks (across all weeks)
@@ -40,13 +54,55 @@
     historyCache:  {},            // pick_id → history payload
   };
 
-  // ── Authentication mode (?auth=paid|anon) ───────────────────
-  // Until real auth is wired in, allow query param override for testing.
+  // ── Authentication ──────────────────────────────────────────
+  // Resolved on init() and cached on state. Synchronous reads via
+  // getAuthMode() once the page has booted.
+  //
+  // Three states:
+  //   'paid'  — logged-in user with active subscription. Sees the board.
+  //   'anon'  — not logged in. Sees paywall preview.
+  //   'auth-no-sub' — logged in but no active subscription. Sees paywall
+  //                   with a slightly different message and link to
+  //                   manage subscription.
+  //
+  // Backward-compat: `?auth=anon` query param forces anonymous view for
+  // testing the paywall, even when a session exists.
   function getAuthMode() {
+    return state.authMode || 'anon';
+  }
+
+  // Get the current Supabase access token (JWT) if any. Returns null
+  // for anonymous users.
+  async function getAccessToken() {
+    if (!sb) return null;
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      return session?.access_token || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Resolve the auth mode on boot. Returns the mode string.
+  async function resolveAuthMode() {
+    // Manual override via query param (?auth=anon) — for paywall testing.
     const p = new URLSearchParams(location.search);
-    const v = p.get('auth');
-    if (v === 'anon') return 'anon';
-    return 'paid';   // default to paid for v1
+    if (p.get('auth') === 'anon') return 'anon';
+
+    // No Supabase client loaded means SDK didn't load — treat as anon.
+    if (!sb) return 'anon';
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return 'anon';
+      // Has a session — distinguish subscriber from logged-in-no-sub
+      // based on what the feed endpoint returns. We default to 'paid'
+      // here; if the first fetchFeed returns 402, we downgrade to
+      // 'auth-no-sub' there.
+      return 'paid';
+    } catch (e) {
+      return 'anon';
+    }
   }
 
   // ── Utility: query the app container ────────────────────────
@@ -132,6 +188,12 @@
   }
 
   // ── Network: fetch the feed ──────────────────────────────────
+  // Custom error class for paywall responses (HTTP 402) so callers
+  // can distinguish "show paywall" from "actually broken."
+  class PaywallError extends Error {
+    constructor(msg) { super(msg); this.name = 'PaywallError'; }
+  }
+
   async function fetchFeed() {
     // Fetch ALL open picks across all weeks. We filter by week
     // client-side based on state.week (set by the week-tab bar).
@@ -140,7 +202,18 @@
     const params = new URLSearchParams({ season: SEASON });
     const url = `${FEED_URL}?${params.toString()}`;
 
-    const res = await fetch(url, { credentials: 'omit' });
+    const headers = {};
+    const token = await getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(url, { credentials: 'omit', headers });
+    if (res.status === 402) {
+      throw new PaywallError('subscription required');
+    }
+    if (res.status === 401) {
+      // JWT expired or invalid. Treat as anon — frontend will rerender.
+      throw new PaywallError('not authenticated');
+    }
     if (!res.ok) throw new Error(`feed HTTP ${res.status}`);
     const payload = await res.json();
     if (payload.error) throw new Error(payload.error);
@@ -172,7 +245,14 @@
   async function fetchHistory(pickId) {
     if (state.historyCache[pickId]) return state.historyCache[pickId];
     const url = HISTORY_URL(pickId);
-    const res = await fetch(url, { credentials: 'omit' });
+
+    const headers = {};
+    const token = await getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(url, { credentials: 'omit', headers });
+    if (res.status === 402) throw new PaywallError('subscription required');
+    if (res.status === 401) throw new PaywallError('not authenticated');
     if (!res.ok) throw new Error(`history HTTP ${res.status}`);
     const payload = await res.json();
     state.historyCache[pickId] = payload;
@@ -847,7 +927,20 @@
 
   // ── Polling ──────────────────────────────────────────────────
   async function loadFeed() {
-    const newPicks = await fetchFeed();
+    let newPicks;
+    try {
+      newPicks = await fetchFeed();
+    } catch (e) {
+      if (e instanceof PaywallError) {
+        // Session expired or sub lapsed mid-session. Switch to paywall
+        // and stop polling.
+        state.authMode = 'auth-no-sub';
+        stopPolling();
+        renderPaywall();
+        return;
+      }
+      throw e;
+    }
     const oldPicks = state.picks || [];
     // Track which rows changed for the flash animation
     const oldById = new Map(oldPicks.map(p => [p.pick_id, p]));
@@ -882,6 +975,13 @@
     }, POLL_INTERVAL_MS);
   }
 
+  function stopPolling() {
+    if (state.pollTimer) {
+      clearInterval(state.pollTimer);
+      state.pollTimer = null;
+    }
+  }
+
   // Refresh immediately when the tab regains focus, even between polls
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && state.picks) {
@@ -891,19 +991,20 @@
 
   // ── Boot ─────────────────────────────────────────────────────
   async function init() {
-    if (getAuthMode() === 'anon') {
-      // Render paywall, attempt feed for the blurred preview
+    // Resolve auth mode first. This is async (calls Supabase session API)
+    // so we await it before any render decisions.
+    state.authMode = await resolveAuthMode();
+
+    // ANON path: render paywall immediately. Don't bother fetching the
+    // feed — backend will 402. The paywall view is self-contained.
+    if (state.authMode === 'anon') {
       renderPaywall();
-      try {
-        state.picks = await fetchFeed();
-        renderPaywall();
-      } catch (e) {
-        console.error('paywall preview failed', e);
-      }
       return;
     }
 
-    // Authenticated path
+    // PAID path: try to fetch the feed. If backend returns 402, the
+    // user is signed in but doesn't have an active subscription —
+    // downgrade to paywall view.
     state.picks = null; // signals loading
     renderLoading();
     try {
@@ -912,6 +1013,12 @@
       render();
       startPolling();
     } catch (e) {
+      if (e instanceof PaywallError) {
+        // Signed in but no active sub (or token rejected). Show paywall.
+        state.authMode = 'auth-no-sub';
+        renderPaywall();
+        return;
+      }
       console.error('initial feed failed', e);
       $app().innerHTML = `<p style="padding:var(--space-8) 0;color:var(--rust);">
         Couldn't load Live Lines right now. Refresh to try again.
