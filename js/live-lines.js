@@ -28,7 +28,7 @@
   // Loaded from CDN script tag in live-lines.html. The anon key is
   // safe to expose — RLS protects data server-side.
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
-  const SUPABASE_ANON = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
+  const SUPABASE_ANON = 'REPLACE_ME_WITH_ANON_KEY';
   const sb = (typeof supabase !== 'undefined')
     ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
     : null;
@@ -549,7 +549,7 @@
       'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
       'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
       'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
-      'no_edge':     { label: '—',  aria: 'No edge — line has moved out of cell', key: 'no_edge' },
+      'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
     };
     const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
     return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
