@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You're in — PressBox Analytics</title>
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<meta property="og:title" content="Welcome to PressBox Analytics">
+<meta property="og:description" content="Your subscription is active. Check your email to set your password.">
+<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
+<meta name="theme-color" content="#0F0E0A">
+<meta name="robots" content="noindex,nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background-color: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream:      #F8F5EE;
+    --cream-dark: #EFE9DC;
+    --cream-mid:  #E8E1D3;
+    --border:     #DDD6C8;
+    --text:       #1A1705;
+    --text-mid:   #6B6455;
+    --text-light: #A39A88;
+    --gold:       #B8922A;
+    --gold-light: #D4A83A;
+    --gold-pale:  #F5EDD0;
+    --ink:        #0F0E0A;
+    --serif:      'Libre Baskerville', Georgia, serif;
+    --sans:       'Source Sans 3', system-ui, sans-serif;
+    --max:        1200px;
+  }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Minimal nav (logo only) ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); }
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 80px;
+  }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+
+  /* ── Page layout ── */
+  .page {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 64px 32px;
+  }
+
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  .sub {
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--text-mid);
+    margin-bottom: 32px;
+  }
+
+  /* ── "What happens next" card ── */
+  .next-card {
+    background: var(--cream-dark);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+    margin-bottom: 32px;
+  }
+  .next-card-eyebrow {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step-num {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 14px;
+    margin-top: 2px;
+  }
+  .step-text {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .step-text strong { color: var(--ink); font-weight: 600; }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 4px;
+    padding: 16px 28px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+
+  .btn-ghost {
+    display: inline-block;
+    color: var(--text-mid);
+    background: none;
+    border: none;
+    padding: 16px 20px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    margin-left: 8px;
+    transition: color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--ink); }
+
+  /* ── Subscriber-already-logged-in state ── */
+  .state { display: none; }
+  .state.show { display: block; }
+
+  /* ── Mobile ── */
+  @media (max-width: 480px) {
+    .nav-inner { padding: 0 20px; height: 64px; }
+    .nav-logo img { height: 52px; }
+    .page { padding: 40px 20px; }
+    h1 { font-size: 28px; }
+    .next-card { padding: 22px; }
+    .btn-ghost { display: block; margin: 12px 0 0 0; padding: 12px 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Minimal nav -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="/pressbox-w2a-ink-cropped.png" alt="PressBox Analytics">
+    </a>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- Default: post-checkout from Stripe -->
+  <div id="welcome-state" class="state show">
+    <div class="eyebrow">Payment received</div>
+    <h1>You're in. <em>Welcome aboard.</em></h1>
+    <p class="sub">
+      Your subscription is active. Founding-member pricing is locked in for as long as you're a subscriber.
+    </p>
+
+    <div class="next-card">
+      <div class="next-card-eyebrow">What happens next</div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Check your email.</strong> We just sent you a link to set your password.
+          (If you don't see it in a minute, check spam or promotions.)
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Set your password.</strong> Click the link to finish setting up your account.
+          Takes about 30 seconds.
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>You'll land on the live board.</strong> The first picks are already up.
+          The full Week 0 slate finalizes in early August as the rest of the opening lines come in.
+        </div>
+      </div>
+    </div>
+
+    <p class="sub" style="font-size:13px; color:var(--text-light); margin-bottom:8px;">
+      Receipt sent to your email. Manage your subscription anytime from your account.
+    </p>
+  </div>
+
+  <!-- Already-signed-in state: customer already has a session -->
+  <div id="signed-in-state" class="state">
+    <div class="eyebrow">You're already signed in</div>
+    <h1>Welcome back to <em>PressBox.</em></h1>
+    <p class="sub">
+      Your subscription is active. Head to the live board to see the current picks.
+    </p>
+    <a href="/live-lines.html" class="btn-primary">Open Live Lines →</a>
+  </div>
+
+</main>
+
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL  = "https://brwalcuodwxsynrpiqjc.supabase.co";
+  const SUPABASE_ANON = "sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // ── On page load: detect signed-in state ────────────────────────────
+  // If the user is already authenticated when they hit this page, they
+  // came back later (bookmark, etc.) — show the "welcome back" state
+  // instead of the "set your password" instructions.
+  async function init() {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        document.getElementById('welcome-state').classList.remove('show');
+        document.getElementById('signed-in-state').classList.add('show');
+      }
+    } catch (err) {
+      // No session — default state is correct, leave it
+    }
+  }
+  init();
+</script>
+
+</body>
+</html>
