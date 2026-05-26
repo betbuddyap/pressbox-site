@@ -800,35 +800,35 @@
           See every pick.<br>Graded live, all week.
         </h2>
         <p class="ll-paywall-card-subhead">
-          Release pricing through Aug 22 kickoff. 25% off, locked for as long as you're subscribed.
+          Founding-member pricing through Aug 22 kickoff. ~30% off, locked for as long as you're subscribed.
         </p>
 
         <div class="ll-paywall-plans">
           <div class="ll-paywall-plan">
             <div class="ll-paywall-plan-name">Weekly</div>
             <div class="ll-paywall-plan-price">
-              $6.99/wk<br>
-              <span class="ll-paywall-plan-release">release $4.99</span>
+              $5.99/wk<br>
+              <span class="ll-paywall-plan-release">release $3.99</span>
             </div>
           </div>
           <div class="ll-paywall-plan ll-paywall-plan--featured">
             <div class="ll-paywall-plan-badge">Most Picked</div>
             <div class="ll-paywall-plan-name">Monthly</div>
             <div class="ll-paywall-plan-price">
-              $19.99/mo<br>
-              <span class="ll-paywall-plan-release">release $14.99</span>
+              $18.99/mo<br>
+              <span class="ll-paywall-plan-release">release $11.99</span>
             </div>
           </div>
           <div class="ll-paywall-plan">
             <div class="ll-paywall-plan-name">Season Pass</div>
             <div class="ll-paywall-plan-price">
-              $54.99<br>
-              <span class="ll-paywall-plan-release">release $39.99</span>
+              $49.99<br>
+              <span class="ll-paywall-plan-release">release $34.99</span>
             </div>
           </div>
         </div>
 
-        <a class="ll-paywall-cta" href="/subscribe">Get the picks →</a>
+        <a class="ll-paywall-cta" href="/subscribe.html">Get the picks →</a>
         <div class="ll-paywall-footer">Cancel anytime. No upsells. Same access on every plan.</div>
       </div>
 
