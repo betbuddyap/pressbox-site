@@ -150,6 +150,8 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <!-- All page content renders here via JS based on state -->
 </main>
 
+<!-- Supabase JS client (loaded BEFORE live-lines.js, which uses it for auth) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/live-lines.js"></script>
 
 </body>
