@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — PressBox Analytics</title>
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<meta property="og:title" content="Sign In — PressBox Analytics">
+<meta property="og:description" content="Sign in to your PressBox subscription.">
+<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
+<meta name="theme-color" content="#0F0E0A">
+<meta name="robots" content="noindex,nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background-color: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream:      #F8F5EE;
+    --cream-dark: #EFE9DC;
+    --cream-mid:  #E8E1D3;
+    --border:     #DDD6C8;
+    --text:       #1A1705;
+    --text-mid:   #6B6455;
+    --text-light: #A39A88;
+    --gold:       #B8922A;
+    --gold-light: #D4A83A;
+    --gold-pale:  #F5EDD0;
+    --ink:        #0F0E0A;
+    --error:      #B83A2A;
+    --serif:      'Libre Baskerville', Georgia, serif;
+    --sans:       'Source Sans 3', system-ui, sans-serif;
+    --max:        1200px;
+  }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Minimal nav (logo only) ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); }
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 80px;
+  }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+
+  /* ── Page layout ── */
+  .page {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 64px 32px;
+  }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+  .sub {
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-mid);
+    margin-bottom: 32px;
+  }
+
+  /* ── Form ── */
+  .field { margin-bottom: 20px; }
+  label {
+    display: block;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin-bottom: 8px;
+  }
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 16px;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink);
+    transition: border-color 0.15s;
+  }
+  input[type="email"]:focus,
+  input[type="password"]:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  /* ── Forgot password link ── */
+  .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .label-row label { margin-bottom: 0; }
+  .forgot-link {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gold);
+    text-decoration: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .forgot-link:hover { text-decoration: underline; }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    display: block;
+    width: 100%;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 4px;
+    padding: 16px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 8px;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ── Footer link ── */
+  .footer-link {
+    text-align: center;
+    margin-top: 32px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text-mid);
+  }
+  .footer-link a {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .footer-link a:hover { color: var(--gold); }
+
+  /* ── Message banners ── */
+  .banner {
+    padding: 14px 18px;
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .banner.show { display: block; }
+  .banner-error {
+    background: #FCE9E5;
+    color: var(--error);
+    border: 1px solid #F0C4BC;
+  }
+  .banner-info {
+    background: var(--gold-pale);
+    color: #6B5318;
+    border: 1px solid #E4C969;
+  }
+
+  /* ── State containers ── */
+  .state { display: none; }
+  .state.show { display: block; }
+
+  /* ── Mobile ── */
+  @media (max-width: 480px) {
+    .nav-inner { padding: 0 20px; height: 64px; }
+    .nav-logo img { height: 52px; }
+    .page { padding: 40px 20px; }
+    h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Minimal nav -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="/pressbox-w2a-ink-cropped.png" alt="PressBox Analytics">
+    </a>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- Default: sign in form -->
+  <div id="signin-state" class="state show">
+    <div class="eyebrow">Welcome back</div>
+    <h1>Sign in to <em>PressBox.</em></h1>
+    <p class="sub">
+      Same email and password you set up. Forgot it? We'll send you a reset link.
+    </p>
+
+    <div id="banner-error" class="banner banner-error"></div>
+
+    <form id="signin-form" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" required>
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="password">Password</label>
+          <button type="button" class="forgot-link" id="forgot-btn">Forgot?</button>
+        </div>
+        <input type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+
+      <button type="submit" class="btn-primary" id="signin-btn">Sign in</button>
+    </form>
+
+    <div class="footer-link">
+      Not a subscriber yet? <a href="/subscribe.html">Get the picks →</a>
+    </div>
+  </div>
+
+  <!-- Forgot password: send reset link -->
+  <div id="forgot-state" class="state">
+    <div class="eyebrow">Reset your password</div>
+    <h1>Send me a <em>new link.</em></h1>
+    <p class="sub">
+      Enter your subscription email. We'll send a link that lets you set a new password.
+    </p>
+
+    <div id="forgot-banner-error" class="banner banner-error"></div>
+
+    <form id="forgot-form" novalidate>
+      <div class="field">
+        <label for="forgot-email">Email</label>
+        <input type="email" id="forgot-email" name="forgot-email" autocomplete="email" required>
+      </div>
+
+      <button type="submit" class="btn-primary" id="forgot-submit-btn">Send reset link</button>
+    </form>
+
+    <div class="footer-link">
+      <button type="button" class="forgot-link" id="back-to-signin">← Back to sign in</button>
+    </div>
+  </div>
+
+  <!-- Reset link sent confirmation -->
+  <div id="forgot-sent-state" class="state">
+    <div class="eyebrow">Check your inbox</div>
+    <h1>Reset link <em>sent.</em></h1>
+    <p class="sub">
+      If an account exists for that email, a reset link is on the way. Click it to set
+      a new password. The link expires in 1 hour.
+    </p>
+    <p class="sub" style="margin-top:-16px;">
+      Don't see it? Check your spam folder, or try again with a different email.
+    </p>
+
+    <a href="/" class="btn-primary" style="text-decoration:none;text-align:center;">Back to homepage</a>
+  </div>
+
+</main>
+
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ── Supabase client setup ───────────────────────────────────────────
+  const SUPABASE_URL  = "https://brwalcuodwxsynrpiqjc.supabase.co";
+  const SUPABASE_ANON = "sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // ── UI helpers ──────────────────────────────────────────────────────
+  function showState(id) {
+    document.querySelectorAll('.state').forEach(el => el.classList.remove('show'));
+    document.getElementById(id).classList.add('show');
+    // Clear any banner errors when switching states
+    document.querySelectorAll('.banner').forEach(el => el.classList.remove('show'));
+  }
+  function showError(bannerId, msg) {
+    const el = document.getElementById(bannerId);
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  // ── On page load: if already signed in, redirect to live-lines ──────
+  async function init() {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        // Already signed in — go straight to live-lines
+        window.location.href = '/live-lines.html';
+      }
+    } catch (err) {
+      // No session, stay on this page
+    }
+  }
+  init();
+
+  // ── Sign in form ────────────────────────────────────────────────────
+  document.getElementById('signin-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('signin-btn');
+
+    if (!email || !password) {
+      showError('banner-error', 'Email and password required.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        // Generic message — don't leak whether the email exists or not
+        showError('banner-error', "Wrong email or password.");
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+        return;
+      }
+      // Success — redirect to live-lines
+      window.location.href = '/live-lines.html';
+    } catch (err) {
+      showError('banner-error', "Network error. Try again.");
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+    }
+  });
+
+  // ── Forgot password flow ────────────────────────────────────────────
+  document.getElementById('forgot-btn').addEventListener('click', () => {
+    // Pre-fill email if user typed one
+    const emailInput = document.getElementById('email').value.trim();
+    if (emailInput) {
+      document.getElementById('forgot-email').value = emailInput;
+    }
+    showState('forgot-state');
+  });
+
+  document.getElementById('back-to-signin').addEventListener('click', () => {
+    showState('signin-state');
+  });
+
+  document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email').value.trim();
+    const btn = document.getElementById('forgot-submit-btn');
+
+    if (!email) {
+      showError('forgot-banner-error', 'Email required.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password.html',
+      });
+      // Whether the email exists or not, show the same confirmation.
+      // (Don't leak existence of email addresses.)
+      showState('forgot-sent-state');
+    } catch (err) {
+      showError('forgot-banner-error', "Network error. Try again.");
+      btn.disabled = false;
+      btn.textContent = 'Send reset link';
+    }
+  });
+
+</script>
+
+</body>
+</html>
