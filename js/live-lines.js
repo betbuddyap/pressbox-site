@@ -169,7 +169,7 @@
     'smart_money': 'Smart Money',
     'goldilocks':  'Goldilocks',
     'lottery':     'Lottery',
-    'no_edge':     'No edge',
+    'no_edge':     'No Edge',
   };
   function tierLabel(tier) {
     if (!tier) return '—';
@@ -674,7 +674,7 @@
           <span class="ll-event-dot"></span>
           <div class="ll-event-title">
             <strong>Current</strong>
-            · ${esc(currentTier === 'no_edge' ? 'No edge' : tierLabel(currentTier) + ' holding')}
+            · ${esc(currentTier === 'no_edge' ? 'No Edge' : tierLabel(currentTier) + ' holding')}
             · ${esc(currentSide)} ${esc(currentLine)} at ${esc(currentBook)}
           </div>
           <div class="ll-event-time">Now</div>
@@ -755,14 +755,15 @@
       <header class="ll-paywall-header">
         <div class="ll-paywall-eyebrow">— Live Picks</div>
         <h1 class="ll-paywall-headline">
-          <span class="ll-paywall-headline-1">Every active pick.</span>
-          <span class="ll-paywall-headline-2">Graded live.</span>
+          <span class="ll-paywall-headline-1">Every game. Every grade.</span>
+          <span class="ll-paywall-headline-2">Live.</span>
         </h1>
         <p class="ll-paywall-body">
-          The grade you see now is the bet you'd make now. Picks lock at release with
-          a line, book, and tier. As the market moves, we re-grade against the current
-          best number every 30 minutes. <strong>The "Now" tier is what matters for
-          what you're about to bet.</strong> ~28 picks every week across seven tiers.
+          The grade you see now is the bet you'd make now. Every FBS game with an open
+          line gets a tier — A+ down to No Edge — and a best book if there's edge to bet.
+          As the market moves, we re-grade every 30 minutes. <strong>The "Now" tier is
+          what matters for what you're about to bet.</strong> A full board every week,
+          across seven tiers.
         </p>
       </header>
 
@@ -800,7 +801,7 @@
           See every pick.<br>Graded live, all week.
         </h2>
         <p class="ll-paywall-card-subhead">
-          Founding-member pricing through Aug 22 kickoff. ~30% off, locked for as long as you're subscribed.
+          Release pricing through Aug 22. Locked for as long as you're subscribed. Same access on every plan.
         </p>
 
         <div class="ll-paywall-plans">
@@ -835,8 +836,8 @@
       <div class="ll-paywall-after">
         <div class="ll-paywall-after-eyebrow">What's behind the gate</div>
         <p class="ll-paywall-after-body">
-          Every active pick across all seven tiers, regraded every 30 minutes against the
-          current best market line.
+          Every FBS game with an open line, graded across all seven tiers and
+          re-graded every 30 minutes against the current best market line.
         </p>
       </div>
     `;
