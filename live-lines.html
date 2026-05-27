@@ -128,7 +128,7 @@
       <li><a href="/live-lines.html" class="nav-live active">Live Lines</a></li>
       <li><a href="/how-it-works.html" class="">How It Works</a></li>
       <li><a href="/about.html" class="">About</a></li>
-      <li><a href="#" id="navSignOut" style="opacity:0.7;">Sign out</a></li>
+      <li><a href="/login.html" id="navAuth" style="opacity:0.7;">Sign in</a></li>
     </ul>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -142,32 +142,51 @@
   <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
   <a href="/how-it-works.html">How It Works</a>
   <a href="/about.html">About</a>
-  <a href="#" id="navSignOutMobile" style="opacity:0.7;">Sign out</a>
+  <a href="/login.html" id="navAuthMobile" style="opacity:0.7;">Sign in</a>
 </div>
 <script>
 function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
 
-// Sign-out handlers — both desktop and mobile links use the same logic.
-// Supabase client is loaded by the SDK script tag below (before live-lines.js)
-// so we wait until DOMContentLoaded to attach handlers.
-document.addEventListener('DOMContentLoaded', () => {
+// Auth-aware nav: defaults to "Sign in" linking to /login.html.
+// If a session exists, swap to "Sign out" with click handler.
+// Supabase SDK is loaded by the script tag below (before live-lines.js).
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!window.supabase) return;
+  const sb = window.supabase.createClient(
+    'https://brwalcuodwxsynrpiqjc.supabase.co',
+    'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE'
+  );
+  let session = null;
+  try {
+    const res = await sb.auth.getSession();
+    session = res?.data?.session || null;
+  } catch (e) {
+    console.warn('nav auth check failed:', e);
+    return;
+  }
+
+  if (!session) {
+    // Signed out — leave nav as "Sign in" links (default state in HTML)
+    return;
+  }
+
+  // Signed in — convert both desktop and mobile links to "Sign out"
   const handleSignOut = async (e) => {
     e.preventDefault();
     try {
-      if (window.supabase) {
-        const sb = window.supabase.createClient(
-          'https://brwalcuodwxsynrpiqjc.supabase.co',
-          'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE'
-        );
-        await sb.auth.signOut();
-      }
+      await sb.auth.signOut();
     } catch (err) {
       console.error('signOut failed:', err);
     }
     window.location.href = '/';
   };
-  document.getElementById('navSignOut')?.addEventListener('click', handleSignOut);
-  document.getElementById('navSignOutMobile')?.addEventListener('click', handleSignOut);
+  ['navAuth', 'navAuthMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = 'Sign out';
+    el.href = '#';
+    el.addEventListener('click', handleSignOut);
+  });
 });
 </script>
 
