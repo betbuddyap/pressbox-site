@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscribe — PressBox Analytics</title>
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<meta property="og:title" content="Subscribe — PressBox Analytics">
+<meta property="og:description" content="Every active pick, graded live. Pick a plan and get the picks.">
+<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
+<meta name="theme-color" content="#0F0E0A">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background-color: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream:      #F8F5EE;
+    --cream-dark: #EFE9DC;
+    --cream-mid:  #E8E1D3;
+    --border:     #DDD6C8;
+    --text:       #1A1705;
+    --text-mid:   #6B6455;
+    --text-light: #A39A88;
+    --gold:       #B8922A;
+    --gold-light: #D4A83A;
+    --gold-pale:  #F5EDD0;
+    --ink:        #0F0E0A;
+    --error:      #B83A2A;
+    --serif:      'Libre Baskerville', Georgia, serif;
+    --sans:       'Source Sans 3', system-ui, sans-serif;
+    --max:        1200px;
+  }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Nav ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); }
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+  }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .nav-right a {
+    color: var(--text-mid);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .nav-right a:hover { color: var(--ink); }
+
+  /* ── Page layout ── */
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+  }
+
+  /* ── Header ── */
+  .hero {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 42px;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+  .lede {
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--text-mid);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  /* ── Auth banner (shown only for signed-in non-subscribers) ── */
+  .auth-banner {
+    background: var(--gold-pale);
+    border: 1px solid #E4C969;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin-bottom: 40px;
+    text-align: center;
+    font-size: 14px;
+    color: #6B5318;
+    display: none;
+  }
+  .auth-banner.show { display: block; }
+  .auth-banner strong { font-weight: 600; }
+
+  /* ── Plan cards ── */
+  .plans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+  .plan {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px 28px 28px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .plan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26, 23, 5, 0.06);
+  }
+  .plan--featured {
+    border: 2px solid var(--ink);
+    transform: scale(1.02);
+  }
+  .plan--featured:hover {
+    transform: scale(1.02) translateY(-2px);
+  }
+  .plan-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+  .plan-name {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  .plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .plan-price-amount {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .plan-price-period {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--text-mid);
+    font-weight: 500;
+  }
+  .plan-price-regular {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 8px;
+  }
+  .plan-price-regular s { text-decoration: line-through; }
+  .plan-release-tag {
+    display: inline-block;
+    background: var(--gold-pale);
+    color: #6B5318;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    align-self: flex-start;
+  }
+  .plan-features {
+    list-style: none;
+    margin-bottom: 28px;
+    flex-grow: 1;
+  }
+  .plan-features li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  .plan-features li::before {
+    content: "✓";
+    color: var(--gold);
+    font-weight: 700;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+  .plan-cta {
+    display: block;
+    width: 100%;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 4px;
+    padding: 14px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .plan-cta:hover { opacity: 0.85; }
+  .plan-cta:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .plan--featured .plan-cta {
+    background: var(--gold);
+  }
+
+  /* ── Footer copy ── */
+  .reassurance {
+    text-align: center;
+    color: var(--text-mid);
+    font-size: 13px;
+    line-height: 1.6;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+  .reassurance a {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  /* ── Already subscribed state ── */
+  .already-subscribed {
+    display: none;
+    text-align: center;
+    padding: 32px;
+    background: var(--cream-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 32px;
+  }
+  .already-subscribed.show { display: block; }
+  .already-subscribed h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .already-subscribed p {
+    color: var(--text-mid);
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+  .already-subscribed-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn-outline {
+    display: inline-block;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 4px;
+    padding: 12px 22px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .btn-outline:hover { background: var(--cream-mid); }
+
+  /* ── Loading / error states ── */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(248, 245, 238, 0.85);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .loading-overlay.show { display: flex; }
+  .loading-content {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px 48px;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--text);
+  }
+  .error-banner {
+    background: #FCE9E5;
+    color: var(--error);
+    border: 1px solid #F0C4BC;
+    padding: 14px 18px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    display: none;
+  }
+  .error-banner.show { display: block; }
+
+  /* ── Mobile ── */
+  @media (max-width: 760px) {
+    .plans {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .plan--featured {
+      transform: none;
+    }
+    .plan--featured:hover {
+      transform: translateY(-2px);
+    }
+    h1 { font-size: 30px; }
+    .lede { font-size: 16px; }
+    .page { padding: 40px 20px 60px; }
+    .nav-inner { padding: 0 20px; height: 64px; }
+    .nav-logo img { height: 52px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="/pressbox-w2a-ink-cropped.png" alt="PressBox Analytics">
+    </a>
+    <div class="nav-right">
+      <a href="/login.html" id="nav-signin">Sign in</a>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+
+  <div class="hero">
+    <div class="eyebrow">Every active pick. Graded live.</div>
+    <h1>Get the <em>picks.</em></h1>
+    <p class="lede">
+      Every active pick across all seven tiers, re-graded every 30 minutes against
+      the current best market line. Founding-member pricing locked in for as long
+      as you're subscribed.
+    </p>
+  </div>
+
+  <!-- Banner shown to signed-in users without an active subscription -->
+  <div id="auth-banner" class="auth-banner">
+    Welcome back, <strong id="auth-banner-email"></strong>. Pick a plan to reactivate your subscription.
+  </div>
+
+  <!-- Banner shown to signed-in users WITH an active subscription -->
+  <div id="already-subscribed" class="already-subscribed">
+    <h2>You're already subscribed.</h2>
+    <p>Head to the live board to see the current picks, or manage your subscription.</p>
+    <div class="already-subscribed-actions">
+      <a href="/live-lines.html" class="plan-cta" style="max-width:240px;">Open Live Lines →</a>
+      <a href="#" id="btn-manage-sub" class="btn-outline">Manage subscription</a>
+    </div>
+  </div>
+
+  <!-- Error banner -->
+  <div id="error-banner" class="error-banner"></div>
+
+  <!-- Plan cards (hidden if already subscribed) -->
+  <div id="plans" class="plans">
+
+    <div class="plan">
+      <div class="plan-name">Weekly</div>
+      <div class="plan-price">
+        <span class="plan-price-amount">$3.99</span>
+        <span class="plan-price-period">/ week</span>
+      </div>
+      <div class="plan-price-regular">Regular: <s>$5.99/wk</s></div>
+      <div class="plan-release-tag">Founding rate</div>
+      <ul class="plan-features">
+        <li>Every active pick</li>
+        <li>Re-graded every 30 minutes</li>
+        <li>All seven tiers</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <button class="plan-cta" data-plan="weekly">Subscribe weekly</button>
+    </div>
+
+    <div class="plan plan--featured">
+      <div class="plan-badge">Most picked</div>
+      <div class="plan-name">Monthly</div>
+      <div class="plan-price">
+        <span class="plan-price-amount">$11.99</span>
+        <span class="plan-price-period">/ month</span>
+      </div>
+      <div class="plan-price-regular">Regular: <s>$18.99/mo</s></div>
+      <div class="plan-release-tag">Founding rate</div>
+      <ul class="plan-features">
+        <li>Every active pick</li>
+        <li>Re-graded every 30 minutes</li>
+        <li>All seven tiers</li>
+        <li>~37% off weekly</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <button class="plan-cta" data-plan="monthly">Subscribe monthly</button>
+    </div>
+
+    <div class="plan">
+      <div class="plan-name">Season Pass</div>
+      <div class="plan-price">
+        <span class="plan-price-amount">$34.99</span>
+        <span class="plan-price-period">total</span>
+      </div>
+      <div class="plan-price-regular">Regular: <s>$49.99</s></div>
+      <div class="plan-release-tag">Founding rate</div>
+      <ul class="plan-features">
+        <li>Every active pick, all season</li>
+        <li>Through the National Championship</li>
+        <li>One payment, no renewal</li>
+        <li>Cheapest per-week price</li>
+      </ul>
+      <button class="plan-cta" data-plan="season">Get Season Pass</button>
+    </div>
+
+  </div>
+
+  <p class="reassurance">
+    No upsells. Same picks on every plan. Cancel anytime from
+    <a href="/login.html">your account</a>.
+    Founding rates lock in for as long as you're subscribed — they end August 22.
+  </p>
+
+</main>
+
+<!-- Loading overlay shown while creating checkout session -->
+<div id="loading-overlay" class="loading-overlay">
+  <div class="loading-content">Opening checkout...</div>
+</div>
+
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  const API_BASE = 'https://betbuddy-backend.onrender.com';
+
+  // ── UI helpers ──────────────────────────────────────────────────────
+  function showLoading() {
+    document.getElementById('loading-overlay').classList.add('show');
+  }
+  function hideLoading() {
+    document.getElementById('loading-overlay').classList.remove('show');
+  }
+  function showError(msg) {
+    const el = document.getElementById('error-banner');
+    el.textContent = msg;
+    el.classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function clearError() {
+    document.getElementById('error-banner').classList.remove('show');
+  }
+
+  // ── Auth-aware initial render ───────────────────────────────────────
+  // Three states to handle:
+  //   1. Anon (not signed in) → show plans, hide banners
+  //   2. Signed in, no active sub → show plans + "welcome back" banner
+  //   3. Signed in, active sub → show "already subscribed" block, hide plans
+  async function init() {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        // Anon — default state, do nothing
+        return;
+      }
+
+      const email = session.user.email;
+
+      // Update nav: show email instead of "Sign in"
+      const navLink = document.getElementById('nav-signin');
+      navLink.textContent = email;
+      navLink.href = '/live-lines.html';
+
+      // Check subscription state by calling the gated feed endpoint
+      const token = session.access_token;
+      const res = await fetch(`${API_BASE}/canonical/live-lines/feed?season=2026`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'omit',
+      });
+
+      if (res.status === 200) {
+        // Active subscriber — show "already subscribed" state
+        document.getElementById('already-subscribed').classList.add('show');
+        document.getElementById('plans').style.display = 'none';
+        document.querySelector('.reassurance').style.display = 'none';
+      } else if (res.status === 402) {
+        // Signed in but no active sub — show welcome-back banner + plans
+        document.getElementById('auth-banner-email').textContent = email;
+        document.getElementById('auth-banner').classList.add('show');
+      }
+      // 401 or other: treat as anon, show default plans
+    } catch (err) {
+      console.error('init failed:', err);
+      // Fall through to anon state
+    }
+  }
+  init();
+
+  // ── Subscribe button handlers ───────────────────────────────────────
+  document.querySelectorAll('.plan-cta[data-plan]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      clearError();
+      const plan = btn.dataset.plan;
+      if (!plan) return;
+
+      // Disable all subscribe buttons during request
+      document.querySelectorAll('.plan-cta[data-plan]').forEach(b => b.disabled = true);
+      showLoading();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/checkout/create-session`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ plan }),
+        });
+
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => ({}));
+          throw new Error(errBody.detail || `Checkout failed (${res.status})`);
+        }
+
+        const { url } = await res.json();
+        if (!url) throw new Error('Checkout URL missing from response');
+
+        // Redirect to Stripe
+        window.location.href = url;
+      } catch (err) {
+        hideLoading();
+        document.querySelectorAll('.plan-cta[data-plan]').forEach(b => b.disabled = false);
+        showError(err.message || 'Something went wrong. Try again.');
+      }
+    });
+  });
+
+  // ── Manage subscription button (Stripe Billing Portal) ──────────────
+  // Placeholder: real implementation requires a backend endpoint that
+  // creates a billing portal session. Linking to a temporary fallback
+  // for now — billing portal endpoint is next on the build list.
+  document.getElementById('btn-manage-sub').addEventListener('click', (e) => {
+    e.preventDefault();
+    showError("Subscription management is coming soon. For now, contact support to make changes.");
+  });
+
+  // ── Handle ?canceled=true (returning from Stripe Checkout cancel) ──
+  if (new URLSearchParams(location.search).get('canceled') === 'true') {
+    showError("Checkout was canceled. Pick a plan when you're ready.");
+  }
+</script>
+
+</body>
+</html>
