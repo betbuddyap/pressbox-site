@@ -607,6 +607,16 @@
   if (new URLSearchParams(location.search).get('canceled') === 'true') {
     showError("Checkout was canceled. Pick a plan when you're ready.");
   }
+
+  // ── Handle browser back navigation from Stripe ──────────────────────
+  // When the user clicks the back arrow on Stripe Checkout, the browser
+  // navigates back to /subscribe and may restore the page from bfcache.
+  // The loading overlay was 'show' when we left, so it's still showing.
+  // Reset interactive state on every pageshow event.
+  window.addEventListener('pageshow', (event) => {
+    hideLoading();
+    document.querySelectorAll('.plan-cta[data-plan]').forEach(b => b.disabled = false);
+  });
 </script>
 
 </body>
