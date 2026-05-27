@@ -232,6 +232,13 @@
     margin-right: 10px;
     flex-shrink: 0;
   }
+  .plan-value-tag {
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-mid);
+    margin-bottom: 28px;
+    flex-grow: 1;
+  }
   .plan-cta {
     display: block;
     width: 100%;
@@ -272,6 +279,26 @@
     color: var(--ink);
     text-decoration: underline;
   }
+  .fine-print-section {
+    max-width: 640px;
+    margin: 56px auto 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+  .fine-print-body {
+    color: var(--text-mid);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .fine-print-body:last-child { margin-bottom: 0; }
+  .support-line {
+    text-align: center;
+    color: var(--gold);
+    font-size: 14px;
+    margin-top: 32px;
+  }
+  .support-line em { font-style: italic; }
 
   /* ── Already subscribed state ── */
   .already-subscribed {
@@ -388,12 +415,11 @@
 <main class="page">
 
   <div class="hero">
-    <div class="eyebrow">Every active pick. Graded live.</div>
-    <h1>Get the <em>picks.</em></h1>
+    <div class="eyebrow">Subscribe</div>
+    <h1>Pick a plan. <em>Lock the rate.</em><br>Release pricing through August 22.</h1>
     <p class="lede">
-      Every active pick across all seven tiers, re-graded every 30 minutes against
-      the current best market line. Founding-member pricing locked in for as long
-      as you're subscribed.
+      Every plan gets the same access — the full live board, every grade, every
+      transition, the math behind every pick. Pick a billing cycle that fits.
     </p>
   </div>
 
@@ -422,17 +448,12 @@
       <div class="plan-name">Weekly</div>
       <div class="plan-price">
         <span class="plan-price-amount">$3.99</span>
-        <span class="plan-price-period">/ week</span>
+        <span class="plan-price-period">/ wk at release</span>
       </div>
       <div class="plan-price-regular">Regular: <s>$5.99/wk</s></div>
-      <div class="plan-release-tag">Founding rate</div>
-      <ul class="plan-features">
-        <li>Every active pick</li>
-        <li>Re-graded every 30 minutes</li>
-        <li>All seven tiers</li>
-        <li>Cancel anytime</li>
-      </ul>
-      <button class="plan-cta" data-plan="weekly">Subscribe weekly</button>
+      <div class="plan-release-tag">Release pricing</div>
+      <p class="plan-value-tag">Try it for a week. No commitment.</p>
+      <button class="plan-cta" data-plan="weekly">Get the picks →</button>
     </div>
 
     <div class="plan plan--featured">
@@ -440,44 +461,36 @@
       <div class="plan-name">Monthly</div>
       <div class="plan-price">
         <span class="plan-price-amount">$11.99</span>
-        <span class="plan-price-period">/ month</span>
+        <span class="plan-price-period">/ mo at release</span>
       </div>
       <div class="plan-price-regular">Regular: <s>$18.99/mo</s></div>
-      <div class="plan-release-tag">Founding rate</div>
-      <ul class="plan-features">
-        <li>Every active pick</li>
-        <li>Re-graded every 30 minutes</li>
-        <li>All seven tiers</li>
-        <li>~37% off weekly</li>
-        <li>Cancel anytime</li>
-      </ul>
-      <button class="plan-cta" data-plan="monthly">Subscribe monthly</button>
+      <div class="plan-release-tag">Release pricing</div>
+      <p class="plan-value-tag">A full month of the board. Best value for active bettors.</p>
+      <button class="plan-cta" data-plan="monthly">Get the picks →</button>
     </div>
 
     <div class="plan">
       <div class="plan-name">Season Pass</div>
       <div class="plan-price">
         <span class="plan-price-amount">$34.99</span>
-        <span class="plan-price-period">total</span>
+        <span class="plan-price-period">at release</span>
       </div>
       <div class="plan-price-regular">Regular: <s>$49.99</s></div>
-      <div class="plan-release-tag">Founding rate</div>
-      <ul class="plan-features">
-        <li>Every active pick, all season</li>
-        <li>Through the National Championship</li>
-        <li>One payment, no renewal</li>
-        <li>Cheapest per-week price</li>
-      </ul>
-      <button class="plan-cta" data-plan="season">Get Season Pass</button>
+      <div class="plan-release-tag">Release pricing</div>
+      <p class="plan-value-tag">Full season + bowls + championship. Access through Feb 1.</p>
+      <button class="plan-cta" data-plan="season">Get the picks →</button>
     </div>
 
   </div>
 
-  <p class="reassurance">
-    No upsells. Same picks on every plan. Cancel anytime from
-    <a href="/login.html">your account</a>.
-    Founding rates lock in for as long as you're subscribed — they end August 22.
-  </p>
+  <section class="fine-print-section">
+    <div class="eyebrow" style="margin-bottom:14px;">— The fine print</div>
+    <p class="fine-print-body">Release pricing locks for the life of your subscription. As long as you stay subscribed, your rate doesn't change — no quarterly hikes, no surprise upgrades. Cancel anytime from your account.</p>
+    <p class="fine-print-body">If you let your subscription lapse and come back later, you'll pay the current rate, not the release rate.</p>
+    <p class="fine-print-body">Season Pass purchases available through September 5. Access runs through February 1, 2027, covering the regular season, conference championships, bowl season, and the National Championship.</p>
+  </section>
+
+  <p class="support-line"><em>Questions about plans? Email us — we read every one.</em></p>
 
 </main>
 
