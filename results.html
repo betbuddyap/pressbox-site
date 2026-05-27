@@ -4,38 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Results — PressBox Analytics</title>
-<!-- Favicon -->
+
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
 
-<!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PressBox Analytics">
 <meta property="og:url" content="https://pressboxanalytics.com/results.html">
 <meta property="og:title" content="Track Record — PressBox Analytics">
-<meta property="og:description" content="Every pick across two seasons under the locked spec. Wins, losses, pushes, and No Edge calls — the full record.">
+<meta property="og:description" content="Two seasons under the locked spec. Every pick, every result, every tier.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="PressBox Analytics">
 
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Track Record — PressBox Analytics">
-<meta name="twitter:description" content="Every pick across two seasons under the locked spec. Wins, losses, pushes, and No Edge calls — the full record.">
-<meta name="twitter:image" content="https://pressboxanalytics.com/og-image.png">
-
-<!-- Theme color (mobile browser chrome) -->
 <meta name="theme-color" content="#0F0E0A">
-
-<!-- Description (general SEO) -->
-<meta name="description" content="Every pick across two seasons under the locked spec. Wins, losses, pushes, and No Edge calls — the full record.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background-color: #F8F5EE; min-height: 100vh; }
@@ -51,348 +40,324 @@
     --gold-light: #D4A83A;
     --gold-pale:  #F5EDD0;
     --ink:        #0F0E0A;
+    --rust:       #B83A2A;
+    --green:      #2D7A3F;
     --serif:      'Libre Baskerville', Georgia, serif;
     --sans:       'Source Sans 3', system-ui, sans-serif;
+    --mono:       'JetBrains Mono', ui-monospace, monospace;
     --max:        1200px;
   }
-  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
 
-  /* ── TICKER ── */
-  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
+  /* ── Ticker ── */
+  .ticker {
+    background: var(--ink);
+    color: var(--cream-mid);
+    overflow: hidden;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
   .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
   .ticker-track span { margin: 0 28px; color: #2A2A20; }
   .ticker-track b { color: var(--gold-light); }
   @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-  /* ── NAV ── */
-  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
-  .nav-logo { text-decoration: none; }
-  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
-  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
-  .nav-links a:hover, .nav-links a.active { color: var(--text); }
-  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
-
-  /* ── PAGE HEADER ── */
-  .page-header { background: var(--cream); border-bottom: 1px solid var(--border); padding: 48px 0 40px; }
-  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
-  .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
-  .page-title { font-family: var(--serif); font-size: 40px; font-weight: 700; line-height: 1.1; letter-spacing: -0.5px; color: var(--text); margin-bottom: 10px; }
-  .page-title em { font-style: italic; color: var(--gold); }
-  .page-sub { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.6; }
-
-  /* ── CONTROLS ── */
-  .controls { background: var(--cream); border-bottom: 1px solid var(--border); padding: 16px 0; position: sticky; top: 80px; z-index: 90; }
-  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; flex-direction: column; gap: 10px; }
-  .control-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .control-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-light); min-width: 64px; }
-  .divider { display: none; }
-  .tab-group { display: flex; gap: 4px; flex-wrap: wrap; }
-  .tab { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: none; border: 1px solid var(--border); padding: 6px 14px; border-radius: 3px; cursor: pointer; transition: all 0.15s; }
-  .tab:hover { border-color: var(--text-mid); color: var(--text); }
-  .tab.active { background: var(--ink); color: var(--cream); border-color: var(--ink); font-weight: 600; }
-
-  /* ── SUMMARY BAR ── */
-  .summary-bar { background: var(--ink); padding: 24px 0; }
-  .summary-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; gap: 0; }
-  .summary-stat { flex: 1; padding: 0 24px; border-right: 1px solid rgba(255,255,255,0.08); }
-  .summary-stat:first-child { padding-left: 0; }
-  .summary-stat:last-child { border-right: none; }
-  .summary-stat-val { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--gold-light); line-height: 1; margin-bottom: 4px; }
-  .summary-stat-lbl { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #AEAE9E; }
-  .summary-stat-val.positive { color: #7BC47F; }
-  .summary-stat-val.neutral { color: #F8F5EE; }
-
-  /* ── RESULTS TABLE ── */
-  .results-section { max-width: var(--max); margin: 0 auto; padding: 40px 32px; }
-
-  /* Weekly A+ table */
-  .week-block { margin-bottom: 40px; }
-  .week-header { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; border-bottom: 2px solid var(--border); margin-bottom: 0; }
-  .week-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); }
-  .week-meta { font-family: var(--sans); font-size: 12px; color: var(--text-light); display: flex; gap: 16px; }
-  .week-meta-item { display: flex; gap: 5px; }
-  .week-meta-val { font-weight: 600; color: var(--text-mid); }
-  .week-meta-val.up { color: #5A9E5E; }
-  .week-meta-val.down { color: #B85A5A; }
-
-  .picks-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  .picks-table th { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); text-align: left; padding: 10px 12px; background: var(--cream-dark); border-bottom: 1px solid var(--border); }
-  .picks-table td { font-family: var(--sans); font-size: 13px; color: var(--text); padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  .picks-table tr:last-child td { border-bottom: none; }
-  .picks-table tr:hover td { background: rgba(184,146,42,0.04); }
-  .picks-table th:nth-child(1), .picks-table td:nth-child(1) { width: 28%; }
-  .picks-table th:nth-child(2), .picks-table td:nth-child(2) { width: 10%; text-align: center; }
-  .picks-table th:nth-child(3), .picks-table td:nth-child(3) { width: 9%; text-align: center; }
-  .picks-table th:nth-child(4), .picks-table td:nth-child(4) { width: 24%; }
-  .picks-table th:nth-child(5), .picks-table td:nth-child(5) { width: 12%; }
-  .picks-table th:nth-child(6), .picks-table td:nth-child(6) { width: 8%; }
-  .picks-table th:nth-child(7), .picks-table td:nth-child(7) { width: 9%; text-align: right; padding-right: 12px; }
-  .picks-table td:nth-child(7) { text-align: right; }
-  .pick-team { font-weight: 600; color: var(--text); }
-  .pick-line { color: var(--text-mid); font-size: 12px; margin-top: 2px; }
-  .badge-type { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 3px 7px; border-radius: 2px; }
-  .badge-spread { background: var(--gold-pale); color: var(--gold); }
-  .badge-ou { background: #E8F0E8; color: #4A7A4A; }
-  .badge-ml { background: #E8EEF5; color: #3A5A8A; }
-  .tier-badge { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 0.8px; padding: 3px 7px; border-radius: 2px; display: inline-block; text-transform: uppercase; }
-  .tier-ap { background: var(--gold); color: #F5EFE0; }
-  .tier-a  { background: var(--gold-pale); color: var(--gold); }
-  .tier-sm { background: #E8F0E8; color: #4A7A4A; }
-  .tier-ls { background: #FBEFE0; color: #B8922A; }
-  .result-hit { display: flex; align-items: center; gap: 6px; }
-  .result-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .result-dot.win { background: #5A9E5E; }
-  .result-dot.loss { background: #B85A5A; }
-  .result-dot.push { background: var(--text-light); }
-  .pnl-pos { color: #5A9E5E; font-weight: 600; }
-  .pnl-neg { color: #B85A5A; font-weight: 600; }
-  .cum-bankroll { font-family: var(--serif); font-size: 13px; color: var(--text-mid); }
-
-  /* POTW cards */
-  .potw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .potw-card { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-  .potw-card-header { background: var(--ink); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .potw-week { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #AEAE9E; }
-  .potw-result-badge { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; }
-  .potw-result-badge.win { background: rgba(90,158,94,0.2); color: #7BC47F; }
-  .potw-result-badge.loss { background: rgba(184,90,90,0.15); color: #D4807F; }
-  .potw-card-body { padding: 20px; }
-  .potw-matchup { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .potw-pick { font-family: var(--sans); font-size: 13px; color: var(--gold); font-weight: 600; margin-bottom: 12px; }
-  .potw-stats { display: flex; gap: 16px; margin-bottom: 14px; }
-  .potw-stat { }
-  .potw-stat-val { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); }
-  .potw-stat-lbl { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); margin-top: 1px; }
-  .potw-actual { font-family: var(--sans); font-size: 12px; color: var(--text-mid); padding-top: 12px; border-top: 1px solid var(--border); }
-  .potw-actual-score { font-weight: 600; color: var(--text); }
-
-  /* Parlay cards */
-  .parlay-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .parlay-card { background: #fff; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(42,42,40,0.04); }
-  .parlay-card.win { border-color: rgba(90,158,94,0.4); }
-  .parlay-card.loss { border-color: var(--border); }
-  .parlay-card-header { background: var(--ink); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .parlay-week-label { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-light); }
-  .parlay-result { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; }
-  .parlay-result.win { background: rgba(90,158,94,0.25); color: #8BCE8F; }
-  .parlay-result.loss { background: rgba(184,90,90,0.18); color: #D89999; }
-  .parlay-card-body { padding: 16px 18px; }
-  .parlay-leg { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
-  .parlay-leg:last-child { border-bottom: none; }
-  .parlay-leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .parlay-leg-dot.win { background: #5A9E5E; }
-  .parlay-leg-dot.loss { background: #B85A5A; }
-  .parlay-leg-text { font-family: var(--sans); font-size: 12px; color: var(--text); flex: 1; }
-  .parlay-leg-odds { font-family: var(--sans); font-size: 11px; color: var(--text-light); }
-  .parlay-payout { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; margin: 8px -18px -16px -18px; background: var(--cream-dark); border-top: 1px solid var(--border); }
-  .parlay-payout-lbl { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
-  .parlay-payout-val { font-family: var(--serif); font-size: 16px; font-weight: 700; }
-  .parlay-payout-val.win { color: #5A9E5E; }
-  .parlay-payout-val.loss { color: var(--text-light); }
-
-  /* Loading state */
-  .loading { display: flex; align-items: center; justify-content: center; padding: 80px; flex-direction: column; gap: 16px; }
-  .loading-spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-family: var(--sans); font-size: 12px; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; }
-
-  /* Empty state */
-  .empty { text-align: center; padding: 80px 32px; }
-  .empty-title { font-family: var(--serif); font-size: 22px; color: var(--text-mid); margin-bottom: 8px; }
-  .empty-sub { font-family: var(--sans); font-size: 14px; color: var(--text-light); }
-
-  /* ── FOOTER ── */
-  footer { background: var(--ink); padding: 32px 0; margin-top: 80px; }
-  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
-  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
-  .footer-links { display: flex; gap: 20px; }
-  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
-
-  /* ── MOBILE: stacked pick cards (hidden on desktop) ── */
-  .picks-mobile { display: none; }
-  .pick-card { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 14px 14px 12px; margin-bottom: 10px; }
-  .pick-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-  .pick-card-matchup { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.25; flex: 1; min-width: 0; }
-  .pick-card-tags { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-  .pick-card-pick { font-family: var(--sans); font-size: 13px; color: var(--text); margin-bottom: 10px; }
-  .pick-card-pick strong { font-weight: 700; color: var(--gold); }
-  .pick-card-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); font-family: var(--sans); font-size: 12px; }
-  .pick-card-result { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-  .pick-card-odds { color: var(--text-mid); font-size: 11px; }
-  .pick-card-payout { font-family: var(--sans); font-weight: 700; font-size: 13px; }
-
-  /* ── MOBILE NAV ── */
-  .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; outline: 0; -webkit-appearance: none; appearance: none; border-radius: 0; box-shadow: none; width: 32px; height: 32px; }
-  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
-  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
-  .mobile-menu.open { display: flex !important; }
-  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
-  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); line-height: 1; }
-  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
-  @media (min-width: 961px) { .hamburger { display: none !important; } }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
-  @media (max-width: 720px) {
-    .controls-inner { flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px 16px; }
-    .control-group { flex-wrap: wrap; }
-    .divider { display: none; }
-    .tab { font-size: 11px; padding: 5px 10px; }
-    .summary-inner { flex-wrap: wrap; padding: 16px; gap: 0; }
-    .summary-stat { flex: 0 0 50%; padding: 8px 12px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .summary-stat:nth-child(odd) { border-right: 1px solid rgba(255,255,255,0.08); }
-    .summary-stat-val { font-size: 20px; }
-    .results-section { padding: 20px 16px; }
-    .week-block { margin-bottom: 28px; }
-    .week-header { flex-direction: column; align-items: flex-start; gap: 6px; padding-bottom: 10px; margin-bottom: 12px; }
-    .week-meta { flex-wrap: wrap; gap: 8px 14px; font-size: 11px; }
-    .picks-table { display: none; }
-    .picks-mobile { display: block; }
-    .potw-grid { grid-template-columns: 1fr; }
-    .parlay-grid { grid-template-columns: 1fr; }
-    .page-header { padding: 32px 0 24px; }
-    .page-header-inner { padding: 0 16px; }
-    .page-title { font-size: 28px; }
-  }
-
-  /* ── LIVE LINES NAV TREATMENT ── */
-  /* Live Lines is the "what's actionable right now" surface — rust pulsing dot
-     signals "we have live picks." The dot stays on every page; on the Live Lines
-     page itself, .active turns it dark to indicate "you are here." */
-  .nav-links a.nav-live {
-    color: var(--rust) !important;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    position: relative;
-    text-transform: uppercase;
-    font-size: 11px;
-  }
-  .nav-links a.nav-live::before {
-    content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: var(--rust);
-    border-radius: 50%;
-    margin-right: 7px;
-    vertical-align: 2px;
-    animation: pulse-live 2.4s ease-in-out infinite;
-  }
-  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
-  .nav-links a.nav-live.active { color: var(--text) !important; }
-  .nav-links a.nav-live.active::before { background: var(--text); animation: none; }
-  @keyframes pulse-live {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-  }
-  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
-
-  /* ── HAMBURGER (consistent) ── */
-  .hamburger {
-    display: none;
-    flex-direction: column !important;
+  /* ── Nav ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); }
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 5px;
-    cursor: pointer;
-    padding: 4px;
-    background: transparent;
-    border: 0;
-    outline: 0;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 0;
-    box-shadow: none;
-    width: 32px;
-    height: 32px;
+    justify-content: space-between;
+    height: 80px;
   }
-  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
-  .mobile-menu {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--cream);
-    z-index: 300;
-    flex-direction: column;
+  .nav-logo img { height: 68px; width: auto; display: block; }
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 32px;
     align-items: center;
-    justify-content: center;
-    gap: 36px;
   }
-  .mobile-menu.open { display: flex !important; }
-  .mobile-menu a {
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text);
+  .nav-links a {
+    color: var(--text-mid);
     text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.15s;
   }
-  .mobile-menu .close-btn {
-    position: absolute;
-    top: 28px; right: 28px;
-    font-size: 28px;
+  .nav-links a.active { color: var(--ink); font-weight: 600; }
+  .nav-links a:hover { color: var(--ink); }
+  .hamburger { display: none; background: none; border: none; padding: 8px; cursor: pointer; }
+  .hamburger span { display: block; width: 24px; height: 2px; background: var(--ink); margin: 5px 0; }
+  .mobile-menu { display: none; }
+
+  /* ── Page layout ── */
+  .page {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 56px 32px 80px;
+  }
+
+  /* ── Hero ── */
+  .hero { margin-bottom: 48px; }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 42px;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 16px;
+    letter-spacing: -0.5px;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+  .lede {
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--text-mid);
+    max-width: 720px;
+  }
+
+  /* ── Filter bars ── */
+  .filters {
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-row:last-child { margin-bottom: 0; }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin-right: 8px;
+    min-width: 60px;
+  }
+  .filter-chip {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-mid);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    background: none;
-    border: none;
-    color: var(--text);
-    line-height: 1;
-  }
-  .mobile-menu .btn-mobile {
-    background: var(--ink);
-    color: var(--cream) !important;
-    padding: 14px 32px;
-    border-radius: 4px;
-    font-family: var(--sans) !important;
-    font-size: 14px !important;
-    font-weight: 600;
-  }
-  @media (min-width: 961px) { .hamburger { display: none !important; } }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
-
-  /* ── UNIFIED FOOTER ── */
-  footer { background: var(--cream-dark); border-top: 1px solid var(--border); margin-top: 80px; padding: 48px 0 32px; }
-  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .footer-logo img { height: 56px; width: auto; display: block; opacity: 0.85; }
-  .footer-meta-links { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
-  .footer-meta-links a { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
-  .footer-meta-links a:hover { color: var(--text); }
-  .footer-note { font-family: var(--sans); font-size: 11px; color: var(--text-light); text-align: center; max-width: 600px; line-height: 1.6; }
-  .footer-legal-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-  .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
-  .footer-legal-links a:hover { color: var(--text-mid); }
-
-
-  /* ── SUB-NAV (Results / Games unified experience) ── */
-  .subnav { background: var(--cream); border-bottom: 1px solid var(--border); }
-  .subnav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; gap: 28px; }
-  .subnav-link {
+    transition: all 0.15s;
     font-family: var(--sans);
-    font-size: 12px;
+  }
+  .filter-chip:hover { color: var(--ink); border-color: var(--text-mid); }
+  .filter-chip[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--cream);
+    border-color: var(--ink);
+  }
+
+  /* ── Summary card ── */
+  .summary {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+  .summary-cell-label {
+    font-size: 10px;
     font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin-bottom: 8px;
+  }
+  .summary-cell-value {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -1px;
+  }
+  .summary-cell-value.green { color: var(--green); }
+  .summary-cell-value.rust  { color: var(--rust); }
+  .summary-cell-sub {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+  .summary-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    padding: 16px 0;
+  }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .results-table thead th {
+    background: var(--cream-dark);
+    color: var(--text-mid);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
     letter-spacing: 1.2px;
     text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .results-table tbody td {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .results-table tbody tr:hover { background: var(--cream); }
+  .col-result { text-align: center; width: 80px; }
+  .col-tier   { width: 90px; }
+  .col-market { width: 90px; }
+  .col-line   { font-family: var(--mono); width: 70px; text-align: right; }
+  .col-week   { width: 70px; color: var(--text-mid); }
+  .col-season { width: 80px; color: var(--text-mid); }
+  .result-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .result-badge.win  { background: #E8F5EC; color: var(--green); }
+  .result-badge.loss { background: #FCE9E5; color: var(--rust); }
+  .result-badge.push { background: var(--cream-mid); color: var(--text-mid); }
+  .result-badge.pending { background: var(--cream-dark); color: var(--text-light); }
+  .tier-badge {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    background: var(--cream-mid);
+    color: var(--text);
+  }
+  .tier-badge.ap { background: var(--gold); color: var(--ink); }
+  .tier-badge.a  { background: var(--gold-pale); color: #6B5318; }
+  .tier-badge.sm { background: #E8F5EC; color: var(--green); }
+  .tier-badge.gl { background: #FFF4DD; color: #7A5A1F; }
+  .tier-badge.lt { background: #F0EBFF; color: #5A3A8A; }
+
+  .matchup { font-weight: 500; }
+  .pick-side { color: var(--ink); font-weight: 500; }
+
+  .empty-state {
+    text-align: center;
+    padding: 64px 32px;
     color: var(--text-light);
-    text-decoration: none;
-    padding: 16px 0;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
   }
-  .subnav-link:hover { color: var(--text); }
-  .subnav-link.active { color: var(--text); border-bottom-color: var(--gold); }
-  @media (max-width: 600px) {
-    .subnav-inner { padding: 0 16px; gap: 20px; }
-    .subnav-link { font-size: 11px; padding: 14px 0; }
+  .empty-state-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--text-mid);
+    margin-bottom: 8px;
   }
 
-
-
-  /* ── MOBILE POLISH ── */
-  @media (max-width: 480px) {
-    .potw-grid, .parlay-grid { gap: 14px; }
-    .main { padding: 24px 16px 60px; }
-    .table-header { font-size: 10px; }
+  .loading-state {
+    text-align: center;
+    padding: 80px 32px;
+    color: var(--text-light);
+    font-style: italic;
   }
 
-  </style>
+  /* ── Footer reminder ── */
+  .footer-note {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-mid);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 860px) {
+    .summary { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .col-week, .col-season { display: none; }
+    .nav-links { display: none; }
+    .hamburger { display: block; }
+    .nav-inner { padding: 0 20px; height: 64px; }
+    .nav-logo img { height: 52px; }
+    h1 { font-size: 30px; }
+    .lede { font-size: 16px; }
+    .page { padding: 32px 16px 60px; }
+    .results-table thead th { padding: 10px 8px; font-size: 10px; }
+    .results-table tbody td { padding: 10px 8px; font-size: 13px; }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--cream);
+      z-index: 100;
+      padding: 80px 32px;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 22px;
+      font-family: var(--serif);
+    }
+    .close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--ink);
+    }
+  }
+</style>
 </head>
 <body>
 
@@ -400,12 +365,14 @@
 <div class="ticker">
   <div class="ticker-track">
     A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b> · Point-in-time backtest<span>·</span>
+    <b>+30.6% ROI</b><span>·</span>
     <b>0.8 percentage points</b> year-over-year stability<span>·</span>
+    <b>Every FBS game</b> graded<span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
     A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b> · Point-in-time backtest<span>·</span>
+    <b>+30.6% ROI</b><span>·</span>
     <b>0.8 percentage points</b> year-over-year stability<span>·</span>
+    <b>Every FBS game</b> graded<span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
   </div>
 </div>
@@ -414,12 +381,13 @@
 <nav>
   <div class="nav-inner">
     <a href="/" class="nav-logo">
-      <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
+      <img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics">
     </a>
     <ul class="nav-links">
-      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
-      <li><a href="/how-it-works.html" class="">How It Works</a></li>
-      <li><a href="/about.html" class="">About</a></li>
+      <li><a href="/live-lines.html">Live Lines</a></li>
+      <li><a href="/results.html" class="active">Results</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+      <li><a href="/about.html">About</a></li>
     </ul>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -430,410 +398,251 @@
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
   <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
-  <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
+  <a href="/live-lines.html">Live Lines</a>
+  <a href="/results.html">Results</a>
   <a href="/how-it-works.html">How It Works</a>
   <a href="/about.html">About</a>
 </div>
-<script>
-function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
-</script>
 
+<main class="page">
 
-
-
-
-
-<!-- PAGE HEADER -->
-<div class="page-header">
-  <div class="page-header-inner">
-    <div class="page-eyebrow">Track Record</div>
-    <h1 class="page-title">Four seasons.<br><em>Zero losing years.</em></h1>
-    <p class="page-sub">Every pick. Every week. Every result. No cherry-picking, no selective memory — the full record.</p>
+  <div class="hero">
+    <div class="eyebrow">Track record</div>
+    <h1>Two seasons under the<br><em>locked spec.</em></h1>
+    <p class="lede">
+      Every pick, every result, every tier. The A+ Board hit
+      <strong style="color:var(--ink);">260-120 for 68.4% and +30.6% ROI</strong> across the 2024
+      and 2025 seasons, with less than one percentage point of variation between years.
+      Filter by season, tier, or market — the numbers don't move based on what you select.
+    </p>
   </div>
-</div>
 
-<!-- SUB-NAV -->
-<div class="subnav">
-  <div class="subnav-inner">
-    <a href="/results.html" class="subnav-link active">Performance</a>
-    <a href="/games.html" class="subnav-link">Game-by-Game</a>
-  </div>
-</div>
-
-<!-- CONTROLS -->
-<div class="controls">
-  <div class="controls-inner">
-    <div class="control-group">
-      <span class="control-label">Season</span>
-      <div class="tab-group" id="season-tabs">
-        <button class="tab" data-season="2022" onclick="setSeason(2022)">2022</button>
-        <button class="tab" data-season="2023" onclick="setSeason(2023)">2023</button>
-        <button class="tab" data-season="2024" onclick="setSeason(2024)">2024</button>
-        <button class="tab active" data-season="2025" onclick="setSeason(2025)">2025</button>
-      </div>
+  <div class="filters">
+    <div class="filter-row">
+      <span class="filter-label">Season</span>
+      <button class="filter-chip" data-filter="season" data-value="all"  aria-pressed="true">All</button>
+      <button class="filter-chip" data-filter="season" data-value="2024" aria-pressed="false">2024</button>
+      <button class="filter-chip" data-filter="season" data-value="2025" aria-pressed="false">2025</button>
     </div>
-    <div class="divider"></div>
-    <div class="control-group">
-      <span class="control-label">Product</span>
-      <div class="tab-group" id="product-tabs">
-        <button class="tab active" data-product="aplus"  onclick="setProduct('aplus')">A+ Board</button>
-        <button class="tab" data-product="potw"          onclick="setProduct('potw')">POTW</button>
-        <button class="tab" data-product="totw"          onclick="setProduct('totw')">TOTW</button>
-        <button class="tab" data-product="smart-money"   onclick="setProduct('smart-money')">Lock of the Week</button>
-        <button class="tab" data-product="lottery-shot"  onclick="setProduct('lottery-shot')">Longshot of the Week</button>
-        <button class="tab" data-product="parlay"        onclick="setProduct('parlay')">Parlay</button>
-      </div>
+    <div class="filter-row">
+      <span class="filter-label">Tier</span>
+      <button class="filter-chip" data-filter="tier" data-value="all"          aria-pressed="true">All</button>
+      <button class="filter-chip" data-filter="tier" data-value="A+"           aria-pressed="false">A+</button>
+      <button class="filter-chip" data-filter="tier" data-value="A"            aria-pressed="false">A</button>
+      <button class="filter-chip" data-filter="tier" data-value="smart_money"  aria-pressed="false">Smart Money</button>
+      <button class="filter-chip" data-filter="tier" data-value="goldilocks"   aria-pressed="false">Goldilocks</button>
+      <button class="filter-chip" data-filter="tier" data-value="lottery"      aria-pressed="false">Lottery</button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Market</span>
+      <button class="filter-chip" data-filter="market" data-value="all"    aria-pressed="true">All</button>
+      <button class="filter-chip" data-filter="market" data-value="spread" aria-pressed="false">Spread</button>
+      <button class="filter-chip" data-filter="market" data-value="total"  aria-pressed="false">Total</button>
+      <button class="filter-chip" data-filter="market" data-value="ml"     aria-pressed="false">Moneyline</button>
     </div>
   </div>
-</div>
 
-<!-- SUMMARY BAR -->
-<div class="summary-bar" id="summary-bar">
-  <div class="summary-inner" id="summary-stats">
-    <div class="summary-stat">
-      <div class="summary-stat-val neutral" id="sum-bets">—</div>
-      <div class="summary-stat-lbl">Total Bets</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-val" id="sum-hits">—</div>
-      <div class="summary-stat-lbl">Hit Rate</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-val positive" id="sum-profit">—</div>
-      <div class="summary-stat-lbl">Profit</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-val positive" id="sum-roi">—</div>
-      <div class="summary-stat-lbl">ROI</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-stat-val neutral" id="sum-record">—</div>
-      <div class="summary-stat-lbl">Record</div>
-    </div>
+  <div id="summary" class="summary">
+    <div class="summary-empty">Loading...</div>
   </div>
-</div>
 
-<!-- RESULTS CONTENT -->
-<div class="results-section" id="results-content">
-  <div class="loading">
-    <div class="loading-spinner"></div>
-    <div class="loading-text">Loading results</div>
+  <div class="table-wrap">
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th class="col-season">Season</th>
+          <th class="col-week">Week</th>
+          <th>Matchup</th>
+          <th class="col-tier">Tier</th>
+          <th class="col-market">Market</th>
+          <th>Pick</th>
+          <th class="col-line">Line</th>
+          <th class="col-result">Result</th>
+        </tr>
+      </thead>
+      <tbody id="results-body">
+        <tr><td colspan="8" class="loading-state">Loading picks...</td></tr>
+      </tbody>
+    </table>
   </div>
-</div>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-logo">
-      <img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics">
-    </div>
-    <div class="footer-meta-links">
-      <a href="/how-it-works.html">How It Works</a>
-      <a href="/about.html">About</a>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Privacy</span>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Terms</span>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Contact</span>
-    </div>
-    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
-    </div>
-</footer>
+  <p class="footer-note">
+    Wins/losses/pushes only — picks that landed in No Edge by kickoff aren't counted in the record, since we didn't recommend a side. The full live board lives at <a href="/live-lines.html" style="color:var(--ink);">Live Lines</a>.
+  </p>
 
+</main>
 
 <script>
-const API = 'https://betbuddy-backend.onrender.com';
-const BET_SIZE = 100;
+(function() {
+  'use strict';
 
-const PRODUCT_CONFIG = {
-  'aplus':        { endpoint: 'aplus-board',  label: 'A+ Board',         render: 'weekly' },
-  'potw':         { endpoint: 'potw',         label: 'Pick of the Week', render: 'weekly' },
-  'totw':         { endpoint: 'totw',         label: 'Total of the Week', render: 'weekly' },
-  'smart-money':  { endpoint: 'smart-money',  label: 'Lock of the Week',   render: 'weekly' },
-  'lottery-shot': { endpoint: 'lottery-shot', label: 'Longshot of the Week',  render: 'weekly' },
-  'parlay':       { endpoint: 'parlay',       label: 'Parlay',           render: 'parlay' },
-};
+  const API_BASE = 'https://betbuddy-backend.onrender.com';
 
-let currentSeason  = 2025;
-let currentProduct = 'aplus';
-let cache = {};
+  // ── State ──────────────────────────────────────────────────────────
+  const state = {
+    season: 'all',
+    tier:   'all',
+    market: 'all',
+    loading: false,
+  };
 
-function setSeason(s) {
-  currentSeason = s;
-  document.querySelectorAll('#season-tabs .tab').forEach(t => {
-    t.classList.toggle('active', parseInt(t.dataset.season) === s);
-  });
-  loadData();
-}
+  // ── Helpers ────────────────────────────────────────────────────────
+  function $(sel) { return document.querySelector(sel); }
+  function $$(sel) { return Array.from(document.querySelectorAll(sel)); }
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+  function fmtPct(v) {
+    if (v == null) return '—';
+    return (v * 100).toFixed(1) + '%';
+  }
+  function fmtRoi(v) {
+    if (v == null) return '—';
+    const sign = v >= 0 ? '+' : '';
+    return sign + (v * 100).toFixed(1) + '%';
+  }
+  function fmtUnits(v) {
+    if (v == null) return '—';
+    const sign = v >= 0 ? '+' : '';
+    return sign + v.toFixed(2) + 'u';
+  }
 
-function setProduct(p) {
-  currentProduct = p;
-  document.querySelectorAll('#product-tabs .tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.product === p);
-  });
-  loadData();
-}
+  function tierCssClass(slug) {
+    if (slug === 'A+') return 'ap';
+    if (slug === 'A')  return 'a';
+    if (slug === 'smart_money') return 'sm';
+    if (slug === 'goldilocks')  return 'gl';
+    if (slug === 'lottery')     return 'lt';
+    return '';
+  }
 
-function fmt(n, prefix='$') {
-  if (n === null || n === undefined) return '—';
-  const abs = Math.abs(n);
-  const str = abs >= 10000
-    ? prefix + (abs/1000).toFixed(1) + 'k'
-    : prefix + abs.toFixed(0);
-  return n < 0 ? '-' + str : str;
-}
-
-function pct(n) { return n !== null && n !== undefined ? n.toFixed(1) + '%' : '—'; }
-
-async function fetchData(url) {
-  if (cache[url]) return cache[url];
-  const r = await fetch(url);
-  const d = await r.json();
-  cache[url] = d;
-  return d;
-}
-
-async function loadData() {
-  const content = document.getElementById('results-content');
-  content.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div class="loading-text">Loading results</div></div>';
-
-  try {
-    const cfg = PRODUCT_CONFIG[currentProduct];
-    const data = await fetchData(`${API}/results/${cfg.endpoint}?season=${currentSeason}&bet_size=${BET_SIZE}`);
-    if (data.error) throw new Error(data.error);
-
-    if (cfg.render === 'parlay') {
-      renderParlay(data);
-    } else {
-      renderWeekly(data);
+  // ── Render ─────────────────────────────────────────────────────────
+  function renderSummary(s) {
+    if (!s || s.total === 0) {
+      $('#summary').innerHTML = `<div class="summary-empty">No graded picks match those filters.</div>`;
+      return;
     }
-  } catch(e) {
-    console.error(e);
-    content.innerHTML = '<div class="empty"><div class="empty-title">Could not load results</div><div class="empty-sub">Please try again in a moment.</div></div>';
-  }
-}
-
-function updateSummary(bets, hitPct, profit, roi, record) {
-  document.getElementById('sum-bets').textContent   = bets || '—';
-  document.getElementById('sum-hits').textContent   = hitPct !== null && hitPct !== undefined ? pct(hitPct) : '—';
-  document.getElementById('sum-profit').textContent = profit !== null && profit !== undefined ? fmt(profit) : '—';
-  document.getElementById('sum-roi').textContent    = roi !== null && roi !== undefined ? pct(roi) : '—';
-  document.getElementById('sum-record').textContent = record || '—';
-
-  const profitEl = document.getElementById('sum-profit');
-  profitEl.className = 'summary-stat-val ' + ((profit || 0) >= 0 ? 'positive' : 'pnl-neg');
-  const roiEl = document.getElementById('sum-roi');
-  roiEl.className = 'summary-stat-val ' + ((roi || 0) >= 0 ? 'positive' : 'pnl-neg');
-}
-
-function renderWeekly(data) {
-  updateSummary(
-    data.total_bets,
-    data.hit_pct,
-    data.total_profit,
-    data.roi,
-    `${data.total_hits}-${data.total_bets - data.total_hits}`
-  );
-
-  const weeks = (data.weekly || []).filter(w => w.bets_detail && w.bets_detail.length > 0);
-  if (!weeks.length) {
-    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No picks for this product in this season</div></div>';
-    return;
+    const roiClass = s.roi > 0 ? 'green' : (s.roi < 0 ? 'rust' : '');
+    const profitClass = s.profit_units > 0 ? 'green' : (s.profit_units < 0 ? 'rust' : '');
+    $('#summary').innerHTML = `
+      <div>
+        <div class="summary-cell-label">Record</div>
+        <div class="summary-cell-value">${esc(s.record)}</div>
+        ${s.pushes > 0 ? `<div class="summary-cell-sub">${s.pushes} pushes</div>` : ''}
+      </div>
+      <div>
+        <div class="summary-cell-label">Hit rate</div>
+        <div class="summary-cell-value">${fmtPct(s.hit_rate)}</div>
+      </div>
+      <div>
+        <div class="summary-cell-label">Profit</div>
+        <div class="summary-cell-value ${profitClass}">${fmtUnits(s.profit_units)}</div>
+        <div class="summary-cell-sub">1u per pick</div>
+      </div>
+      <div>
+        <div class="summary-cell-label">ROI</div>
+        <div class="summary-cell-value ${roiClass}">${fmtRoi(s.roi)}</div>
+      </div>
+    `;
   }
 
-  let html = '';
-  weeks.forEach(week => {
-    const pnlClass = week.week_pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-    const pnlStr   = (week.week_pnl >= 0 ? '+' : '') + '$' + Math.abs(week.week_pnl).toFixed(0);
-    html += `
-      <div class="week-block">
-        <div class="week-header">
-          <div class="week-title">Week ${week.week}</div>
-          <div class="week-meta">
-            <div class="week-meta-item">${week.bets} ${week.bets === 1 ? 'pick' : 'picks'} <span class="week-meta-val">${pct(week.hit_pct)} Hit Rate</span></div>
-            <div class="week-meta-item">Week P&amp;L <span class="week-meta-val ${pnlClass}">${pnlStr}</span></div>
-            <div class="week-meta-item">Bankroll <span class="week-meta-val">$${week.bankroll.toFixed(0)}</span></div>
-          </div>
-        </div>
-        <table class="picks-table">
-          <thead>
-            <tr>
-              <th>Matchup</th>
-              <th>Bet Type</th>
-              <th>Tier</th>
-              <th>Our Pick</th>
-              <th>Result</th>
-              <th>Odds</th>
-              <th style="text-align:right">Payout</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${week.bets_detail.map(b => {
-              const hit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
-              const hitLabel = b.hit === true ? 'Win' : b.hit === false ? 'Loss' : 'Push';
-              const pnlCls = b.pnl > 0 ? 'pnl-pos' : b.pnl < 0 ? 'pnl-neg' : '';
-              const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-              const tierCls = b.tier === 'A+' ? 'tier-ap' : b.tier === 'A' ? 'tier-a' : (b.tier === 'smart_money' ? 'tier-sm' : b.tier === 'lottery_shot' ? 'tier-ls' : '');
-              const tierLabel = b.tier === 'smart_money' ? 'Smart$' : b.tier === 'lottery_shot' ? 'Lottery' : (b.tier || '—');
-              return `
-                <tr>
-                  <td><div class="pick-team">${b.away_team} @ ${b.home_team}</div></td>
-                  <td><span class="badge-type ${typeCls}">${b.type}</span></td>
-                  <td><span class="tier-badge ${tierCls}">${tierLabel}</span></td>
-                  <td><strong>${b.pick}</strong></td>
-                  <td>
-                    <div class="result-hit">
-                      <div class="result-dot ${hit}"></div>
-                      ${hitLabel}
-                    </div>
-                  </td>
-                  <td>${b.odds > 0 ? '+' : ''}${b.odds}</td>
-                  <td style="text-align:right"><span class="${pnlCls}">${b.pnl > 0 ? '+' : ''}$${Math.abs(b.pnl).toFixed(0)}</span></td>
-                </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-        <div class="picks-mobile">
-          ${week.bets_detail.map(b => {
-            const hit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
-            const hitLabel = b.hit === true ? 'Win' : b.hit === false ? 'Loss' : 'Push';
-            const pnlCls = b.pnl > 0 ? 'pnl-pos' : b.pnl < 0 ? 'pnl-neg' : '';
-            const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-            const tierCls = b.tier === 'A+' ? 'tier-ap' : b.tier === 'A' ? 'tier-a' : (b.tier === 'smart_money' ? 'tier-sm' : b.tier === 'lottery_shot' ? 'tier-ls' : '');
-            const tierLabel = b.tier === 'smart_money' ? 'Smart$' : b.tier === 'lottery_shot' ? 'Lottery' : (b.tier || '—');
-            return `
-              <div class="pick-card">
-                <div class="pick-card-top">
-                  <div class="pick-card-matchup">${b.away_team} @ ${b.home_team}</div>
-                  <div class="pick-card-tags">
-                    <span class="tier-badge ${tierCls}">${tierLabel}</span>
-                    <span class="badge-type ${typeCls}">${b.type}</span>
-                  </div>
-                </div>
-                <div class="pick-card-pick">Pick: <strong>${b.pick}</strong></div>
-                <div class="pick-card-foot">
-                  <div class="pick-card-result">
-                    <div class="result-dot ${hit}"></div>
-                    <span>${hitLabel}</span>
-                    <span class="pick-card-odds">· ${b.odds > 0 ? '+' : ''}${b.odds}</span>
-                  </div>
-                  <div class="pick-card-payout ${pnlCls}">${b.pnl > 0 ? '+' : ''}$${Math.abs(b.pnl).toFixed(0)}</div>
-                </div>
-              </div>`;
-          }).join('')}
-        </div>
-      </div>`;
+  function renderRows(rows) {
+    const tbody = $('#results-body');
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="8" class="empty-state">
+          <div class="empty-state-title">No picks match those filters.</div>
+          <div>Try widening the season, tier, or market selection.</div>
+        </td></tr>`;
+      return;
+    }
+
+    const html = rows.map(r => {
+      const resultLabel = r.result || 'pending';
+      const lineDisplay = r.line == null ? '—' : (
+        // For ML show as american (+200 etc.); for spread/total show signed line
+        r.market === 'ml'
+          ? (r.line > 0 ? '+' + r.line : String(r.line))
+          : (r.line > 0 ? '+' + r.line : String(r.line))
+      );
+      return `
+        <tr>
+          <td class="col-season">${esc(r.season)}</td>
+          <td class="col-week">Wk ${esc(r.week ?? '—')}</td>
+          <td class="matchup">${esc(r.matchup)}</td>
+          <td class="col-tier"><span class="tier-badge ${tierCssClass(r.tier)}">${esc(r.tier_display)}</span></td>
+          <td class="col-market">${esc(r.market_display)}</td>
+          <td class="pick-side">${esc(r.pick_side)}</td>
+          <td class="col-line">${esc(lineDisplay)}</td>
+          <td class="col-result"><span class="result-badge ${resultLabel}">${esc(resultLabel)}</span></td>
+        </tr>`;
+    }).join('');
+    tbody.innerHTML = html;
+  }
+
+  // ── Fetch ──────────────────────────────────────────────────────────
+  async function refresh() {
+    if (state.loading) return;
+    state.loading = true;
+
+    const params = new URLSearchParams({
+      season: state.season,
+      tier:   state.tier,
+      market: state.market,
+    });
+
+    $('#summary').innerHTML = `<div class="summary-empty">Loading...</div>`;
+    $('#results-body').innerHTML = `<tr><td colspan="8" class="loading-state">Loading picks...</td></tr>`;
+
+    try {
+      const res = await fetch(`${API_BASE}/canonical/results/summary?${params.toString()}`, {
+        credentials: 'omit',
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      renderSummary(data.summary);
+      renderRows(data.rows);
+    } catch (err) {
+      console.error('Results fetch failed:', err);
+      $('#summary').innerHTML = `<div class="summary-empty">Couldn't load results. Refresh to try again.</div>`;
+      $('#results-body').innerHTML = `<tr><td colspan="8" class="empty-state">
+        <div class="empty-state-title">Couldn't load picks.</div>
+        <div>Refresh to try again.</div>
+      </td></tr>`;
+    } finally {
+      state.loading = false;
+    }
+  }
+
+  // ── Filter chip handlers ───────────────────────────────────────────
+  $$('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filterName = btn.dataset.filter;
+      const value      = btn.dataset.value;
+      if (state[filterName] === value) return;
+      state[filterName] = value;
+
+      // Update aria-pressed states for this filter row only
+      $$(`.filter-chip[data-filter="${filterName}"]`).forEach(b => {
+        b.setAttribute('aria-pressed', b.dataset.value === value ? 'true' : 'false');
+      });
+
+      refresh();
+    });
   });
 
-  document.getElementById('results-content').innerHTML = html;
-}
+  // ── Mobile menu ────────────────────────────────────────────────────
+  window.toggleMenu = function() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+  };
 
-function renderParlay(data) {
-  updateSummary(
-    data.total_bets,
-    data.hit_pct,
-    data.total_profit,
-    data.roi,
-    `${data.total_hits}-${data.total_bets - data.total_hits}`
-  );
-
-  const weeks = (data.weekly || []).filter(w => w.bets_detail && w.bets_detail.length > 0);
-  if (!weeks.length) {
-    document.getElementById('results-content').innerHTML = '<div class="empty"><div class="empty-title">No parlays for this season</div></div>';
-    return;
-  }
-
-  let html = '';
-  weeks.forEach(week => {
-    const pnlClass = week.week_pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-    const pnlStr   = (week.week_pnl >= 0 ? '+' : '') + '$' + Math.abs(week.week_pnl).toFixed(0);
-    const hit = week.parlay_hit;
-    const resultLabel = hit ? 'Parlay Hit ✓' : 'Parlay Miss ✗';
-    const resultMetaCls = hit ? 'pnl-pos' : 'pnl-neg';
-
-    html += `
-      <div class="week-block">
-        <div class="week-header">
-          <div class="week-title">Week ${week.week}</div>
-          <div class="week-meta">
-            <div class="week-meta-item">3-leg parlay <span class="week-meta-val ${resultMetaCls}">${resultLabel}</span></div>
-            <div class="week-meta-item">Week P&amp;L <span class="week-meta-val ${pnlClass}">${pnlStr}</span></div>
-            <div class="week-meta-item">Bankroll <span class="week-meta-val">$${week.bankroll.toFixed(0)}</span></div>
-          </div>
-        </div>
-        <table class="picks-table">
-          <thead>
-            <tr>
-              <th>Matchup</th>
-              <th>Bet Type</th>
-              <th>Tier</th>
-              <th>Our Pick</th>
-              <th>Result</th>
-              <th>Odds</th>
-              <th style="text-align:right">Leg</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${week.bets_detail.map(b => {
-              const legHit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
-              const legLabel = b.hit === true ? 'Win' : b.hit === false ? 'Loss' : 'Push';
-              const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-              const tierCls = b.tier === 'A+' ? 'tier-ap' : b.tier === 'A' ? 'tier-a' : (b.tier === 'smart_money' ? 'tier-sm' : b.tier === 'lottery_shot' ? 'tier-ls' : '');
-              const tierLabel = b.tier === 'smart_money' ? 'Smart$' : b.tier === 'lottery_shot' ? 'Lottery' : (b.tier || '—');
-              const legPnlCls = b.hit === true ? 'pnl-pos' : b.hit === false ? 'pnl-neg' : '';
-              return `
-                <tr>
-                  <td><div class="pick-team">${b.away_team} @ ${b.home_team}</div></td>
-                  <td><span class="badge-type ${typeCls}">${b.type}</span></td>
-                  <td><span class="tier-badge ${tierCls}">${tierLabel}</span></td>
-                  <td><strong>${b.pick}</strong></td>
-                  <td>
-                    <div class="result-hit">
-                      <div class="result-dot ${legHit}"></div>
-                      ${legLabel}
-                    </div>
-                  </td>
-                  <td>${b.odds > 0 ? '+' : ''}${b.odds}</td>
-                  <td style="text-align:right"><span class="${legPnlCls}">${b.hit === true ? '✓' : '✗'}</span></td>
-                </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-        <div class="picks-mobile">
-          ${week.bets_detail.map(b => {
-            const legHit = b.hit === true ? 'win' : b.hit === false ? 'loss' : 'push';
-            const legLabel = b.hit === true ? 'Win' : b.hit === false ? 'Loss' : 'Push';
-            const typeCls = b.type === 'Spread' ? 'badge-spread' : b.type === 'O/U' ? 'badge-ou' : 'badge-ml';
-            const tierCls = b.tier === 'A+' ? 'tier-ap' : b.tier === 'A' ? 'tier-a' : (b.tier === 'smart_money' ? 'tier-sm' : b.tier === 'lottery_shot' ? 'tier-ls' : '');
-            const tierLabel = b.tier === 'smart_money' ? 'Smart$' : b.tier === 'lottery_shot' ? 'Lottery' : (b.tier || '—');
-            const legPnlCls = b.hit === true ? 'pnl-pos' : b.hit === false ? 'pnl-neg' : '';
-            return `
-              <div class="pick-card">
-                <div class="pick-card-top">
-                  <div class="pick-card-matchup">${b.away_team} @ ${b.home_team}</div>
-                  <div class="pick-card-tags">
-                    <span class="tier-badge ${tierCls}">${tierLabel}</span>
-                    <span class="badge-type ${typeCls}">${b.type}</span>
-                  </div>
-                </div>
-                <div class="pick-card-pick">Pick: <strong>${b.pick}</strong></div>
-                <div class="pick-card-foot">
-                  <div class="pick-card-result">
-                    <div class="result-dot ${legHit}"></div>
-                    <span>${legLabel}</span>
-                    <span class="pick-card-odds">· ${b.odds > 0 ? '+' : ''}${b.odds}</span>
-                  </div>
-                  <div class="pick-card-payout ${legPnlCls}">${b.hit === true ? '✓' : '✗'}</div>
-                </div>
-              </div>`;
-          }).join('')}
-        </div>
-      </div>`;
-  });
-
-  document.getElementById('results-content').innerHTML = html;
-}
-
-// Init
-loadData();
+  // ── Boot ───────────────────────────────────────────────────────────
+  refresh();
+})();
 </script>
+
 </body>
 </html>
