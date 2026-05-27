@@ -4,11 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Results — PressBox Analytics</title>
+<meta name="description" content="Two seasons under the locked spec. Every pick, every result, every tier.">
 
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PressBox Analytics">
@@ -16,375 +15,146 @@
 <meta property="og:title" content="Track Record — PressBox Analytics">
 <meta property="og:description" content="Two seasons under the locked spec. Every pick, every result, every tier.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-
 <meta name="theme-color" content="#0F0E0A">
 
+<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Tokens FIRST, components AFTER -->
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/components/live-lines.css">
 
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background-color: #F8F5EE; min-height: 100vh; }
-  :root {
-    --cream:      #F8F5EE;
-    --cream-dark: #EFE9DC;
-    --cream-mid:  #E8E1D3;
-    --border:     #DDD6C8;
-    --text:       #1A1705;
-    --text-mid:   #6B6455;
-    --text-light: #A39A88;
-    --gold:       #B8922A;
-    --gold-light: #D4A83A;
-    --gold-pale:  #F5EDD0;
-    --ink:        #0F0E0A;
-    --rust:       #B83A2A;
-    --green:      #2D7A3F;
-    --serif:      'Libre Baskerville', Georgia, serif;
-    --sans:       'Source Sans 3', system-ui, sans-serif;
-    --mono:       'JetBrains Mono', ui-monospace, monospace;
-    --max:        1200px;
-  }
-  body {
-    font-family: var(--sans);
-    color: var(--text);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* ── Ticker ── */
-  .ticker {
-    background: var(--ink);
-    color: var(--cream-mid);
-    overflow: hidden;
-    white-space: nowrap;
-    border-bottom: 1px solid var(--border);
-    padding: 10px 0;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-  }
-  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
-  .ticker-track span { margin: 0 28px; color: #2A2A20; }
-  .ticker-track b { color: var(--gold-light); }
-  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-  /* ── Nav ── */
-  nav { background: var(--cream); border-bottom: 1px solid var(--border); }
-  .nav-inner {
-    max-width: var(--max);
-    margin: 0 auto;
-    padding: 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 80px;
-  }
+  /* ── Site nav (copy of live-lines nav — keep in sync) ── */
+  :root { --max: 1200px; }
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
   .nav-logo img { height: 68px; width: auto; display: block; }
-  .nav-links {
-    list-style: none;
-    display: flex;
-    gap: 32px;
-    align-items: center;
-  }
-  .nav-links a {
-    color: var(--text-mid);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: color 0.15s;
-  }
-  .nav-links a.active { color: var(--ink); font-weight: 600; }
-  .nav-links a:hover { color: var(--ink); }
-  .hamburger { display: none; background: none; border: none; padding: 8px; cursor: pointer; }
-  .hamburger span { display: block; width: 24px; height: 2px; background: var(--ink); margin: 5px 0; }
-  .mobile-menu { display: none; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0; padding: 0; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
 
-  /* ── Page layout ── */
-  .page {
-    max-width: var(--max);
-    margin: 0 auto;
-    padding: 56px 32px 80px;
-  }
-
-  /* ── Hero ── */
-  .hero { margin-bottom: 48px; }
-  .eyebrow {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 16px;
-  }
-  h1 {
-    font-family: var(--serif);
+  .nav-links a.nav-live {
+    color: var(--rust) !important;
     font-weight: 700;
-    font-size: 42px;
-    line-height: 1.15;
-    color: var(--ink);
-    margin-bottom: 16px;
-    letter-spacing: -0.5px;
-  }
-  h1 em { font-style: italic; color: var(--gold); }
-  .lede {
-    font-size: 17px;
-    line-height: 1.55;
-    color: var(--text-mid);
-    max-width: 720px;
-  }
-
-  /* ── Filter bars ── */
-  .filters {
-    margin-bottom: 32px;
-    padding-bottom: 32px;
-    border-bottom: 1px solid var(--border);
-  }
-  .filter-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .filter-row:last-child { margin-bottom: 0; }
-  .filter-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-mid);
-    margin-right: 8px;
-    min-width: 60px;
-  }
-  .filter-chip {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-mid);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: var(--sans);
-  }
-  .filter-chip:hover { color: var(--ink); border-color: var(--text-mid); }
-  .filter-chip[aria-pressed="true"] {
-    background: var(--ink);
-    color: var(--cream);
-    border-color: var(--ink);
-  }
-
-  /* ── Summary card ── */
-  .summary {
-    background: #FFFFFF;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 28px 32px;
-    margin-bottom: 32px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 32px;
-  }
-  .summary-cell-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-mid);
-    margin-bottom: 8px;
-  }
-  .summary-cell-value {
-    font-family: var(--mono);
-    font-size: 28px;
-    font-weight: 600;
-    color: var(--ink);
-    letter-spacing: -1px;
-  }
-  .summary-cell-value.green { color: var(--green); }
-  .summary-cell-value.rust  { color: var(--rust); }
-  .summary-cell-sub {
-    font-size: 12px;
-    color: var(--text-light);
-    margin-top: 4px;
-  }
-  .summary-empty {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: var(--text-light);
-    font-style: italic;
-    padding: 16px 0;
-  }
-
-  /* ── Table ── */
-  .table-wrap {
-    background: #FFFFFF;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  table.results-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-  .results-table thead th {
-    background: var(--cream-dark);
-    color: var(--text-mid);
-    font-weight: 600;
-    text-align: left;
-    padding: 12px 16px;
-    font-size: 11px;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  .results-table tbody td {
-    padding: 14px 16px;
-    border-top: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  .results-table tbody tr:hover { background: var(--cream); }
-  .col-result { text-align: center; width: 80px; }
-  .col-tier   { width: 90px; }
-  .col-market { width: 90px; }
-  .col-line   { font-family: var(--mono); width: 70px; text-align: right; }
-  .col-week   { width: 70px; color: var(--text-mid); }
-  .col-season { width: 80px; color: var(--text-mid); }
-  .result-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .result-badge.win  { background: #E8F5EC; color: var(--green); }
-  .result-badge.loss { background: #FCE9E5; color: var(--rust); }
-  .result-badge.push { background: var(--cream-mid); color: var(--text-mid); }
-  .result-badge.pending { background: var(--cream-dark); color: var(--text-light); }
-  .tier-badge {
-    display: inline-block;
-    padding: 4px 9px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 600;
     letter-spacing: 0.3px;
-    background: var(--cream-mid);
-    color: var(--text);
+    position: relative;
+    text-transform: uppercase;
+    font-size: 11px;
   }
-  .tier-badge.ap { background: var(--gold); color: var(--ink); }
-  .tier-badge.a  { background: var(--gold-pale); color: #6B5318; }
-  .tier-badge.sm { background: #E8F5EC; color: var(--green); }
-  .tier-badge.gl { background: #FFF4DD; color: #7A5A1F; }
-  .tier-badge.lt { background: #F0EBFF; color: #5A3A8A; }
+  .nav-links a.nav-live::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--rust);
+    border-radius: 50%;
+    margin-right: 7px;
+    vertical-align: 2px;
+    animation: pulse-live 2.4s ease-in-out infinite;
+  }
+  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
+  @keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
 
-  .matchup { font-weight: 500; }
-  .pick-side { color: var(--ink); font-weight: 500; }
+  .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 4px; background: none; border: none; padding: 8px; cursor: pointer; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--ink); }
+  .mobile-menu { display: none; position: fixed; inset: 0; background: var(--cream); z-index: 200; padding: 80px 32px; flex-direction: column; gap: 24px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { color: var(--ink); text-decoration: none; font-size: 22px; font-family: var(--serif); }
+  .mobile-menu .close-btn { position: absolute; top: 24px; right: 24px; font-size: 28px; background: none; border: none; color: var(--ink); line-height: 1; cursor: pointer; }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
 
-  .empty-state {
-    text-align: center;
-    padding: 64px 32px;
+  /* ── Page-specific: results summary ── */
+  /* Match live-lines.css patterns. Stat row sits below the week tabs,
+     uses serif numbers (same as the hero stat treatment elsewhere on
+     the site), and is just inline text — no card chrome. */
+  .ll-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+    padding: var(--space-5) 0;
+    margin-bottom: var(--space-4);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .ll-summary-cell {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 140px;
+  }
+  .ll-summary-label {
+    font-size: var(--text-eyebrow);
+    font-weight: var(--weight-semi);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--text-light);
   }
-  .empty-state-title {
+  .ll-summary-value {
     font-family: var(--serif);
-    font-size: 18px;
-    color: var(--text-mid);
-    margin-bottom: 8px;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    color: var(--ink);
+    line-height: 1;
   }
-
-  .loading-state {
-    text-align: center;
-    padding: 80px 32px;
-    color: var(--text-light);
+  .ll-summary-value em {
     font-style: italic;
+    color: var(--gold);
   }
 
-  /* ── Footer reminder ── */
-  .footer-note {
-    margin-top: 48px;
-    padding-top: 32px;
+  /* Result column in the row — replaces the chevron. Live Lines rows
+     are clickable (expand). Results rows are static, so we drop the
+     chevron and put a simple W / L / P / — in its place. Plain serif,
+     no badge chrome. Color is conveyed through context, not background. */
+  .ll-row-result {
+    flex-shrink: 0;
+    font-family: var(--serif);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+    width: 24px;
+    text-align: center;
+    margin-left: var(--space-2);
+  }
+  .ll-row-result.win  { color: var(--sage); }
+  .ll-row-result.loss { color: var(--rust); }
+  .ll-row-result.push { color: var(--text-light); }
+
+  /* Override the row cursor — these aren't clickable. */
+  .ll-row-static {
+    cursor: default;
+  }
+
+  /* Footer note */
+  .ll-footer-note {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
     border-top: 1px solid var(--border);
     text-align: center;
     color: var(--text-mid);
-    font-size: 13px;
+    font-size: var(--text-sm);
     line-height: 1.6;
   }
-
-  /* ── Mobile ── */
-  @media (max-width: 860px) {
-    .summary { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-    .col-week, .col-season { display: none; }
-    .nav-links { display: none; }
-    .hamburger { display: block; }
-    .nav-inner { padding: 0 20px; height: 64px; }
-    .nav-logo img { height: 52px; }
-    h1 { font-size: 30px; }
-    .lede { font-size: 16px; }
-    .page { padding: 32px 16px 60px; }
-    .results-table thead th { padding: 10px 8px; font-size: 10px; }
-    .results-table tbody td { padding: 10px 8px; font-size: 13px; }
-    .mobile-menu {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--cream);
-      z-index: 100;
-      padding: 80px 32px;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .mobile-menu.open { display: flex; }
-    .mobile-menu a {
-      color: var(--ink);
-      text-decoration: none;
-      font-size: 22px;
-      font-family: var(--serif);
-    }
-    .close-btn {
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: var(--ink);
-    }
-  }
+  .ll-footer-note a { color: var(--ink); text-decoration: underline; }
 </style>
 </head>
-<body>
 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-track">
-    A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b><span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
-    <b>Every FBS game</b> graded<span>·</span>
-    2026 picks drop in time for <b>Week 0</b><span>·</span>
-    A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b><span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
-    <b>Every FBS game</b> graded<span>·</span>
-    2026 picks drop in time for <b>Week 0</b><span>·</span>
-  </div>
-</div>
+<body class="ll-page">
 
 <!-- NAV -->
 <nav>
   <div class="nav-inner">
     <a href="/" class="nav-logo">
-      <img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics">
+      <img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
     </a>
     <ul class="nav-links">
-      <li><a href="/live-lines.html">Live Lines</a></li>
+      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
       <li><a href="/results.html" class="active">Results</a></li>
       <li><a href="/how-it-works.html">How It Works</a></li>
       <li><a href="/about.html">About</a></li>
@@ -398,78 +168,17 @@
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
   <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
-  <a href="/live-lines.html">Live Lines</a>
+  <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
   <a href="/results.html">Results</a>
   <a href="/how-it-works.html">How It Works</a>
   <a href="/about.html">About</a>
 </div>
+<script>
+function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+</script>
 
-<main class="page">
-
-  <div class="hero">
-    <div class="eyebrow">Track record</div>
-    <h1>Two seasons under the<br><em>locked spec.</em></h1>
-    <p class="lede">
-      Every pick, every result, every tier. The A+ Board hit
-      <strong style="color:var(--ink);">260-120 for 68.4% and +30.6% ROI</strong> across the 2024
-      and 2025 seasons, with less than one percentage point of variation between years.
-      Filter by season, tier, or market — the numbers don't move based on what you select.
-    </p>
-  </div>
-
-  <div class="filters">
-    <div class="filter-row">
-      <span class="filter-label">Season</span>
-      <button class="filter-chip" data-filter="season" data-value="all"  aria-pressed="true">All</button>
-      <button class="filter-chip" data-filter="season" data-value="2024" aria-pressed="false">2024</button>
-      <button class="filter-chip" data-filter="season" data-value="2025" aria-pressed="false">2025</button>
-    </div>
-    <div class="filter-row">
-      <span class="filter-label">Tier</span>
-      <button class="filter-chip" data-filter="tier" data-value="all"          aria-pressed="true">All</button>
-      <button class="filter-chip" data-filter="tier" data-value="A+"           aria-pressed="false">A+</button>
-      <button class="filter-chip" data-filter="tier" data-value="A"            aria-pressed="false">A</button>
-      <button class="filter-chip" data-filter="tier" data-value="smart_money"  aria-pressed="false">Smart Money</button>
-      <button class="filter-chip" data-filter="tier" data-value="goldilocks"   aria-pressed="false">Goldilocks</button>
-      <button class="filter-chip" data-filter="tier" data-value="lottery"      aria-pressed="false">Lottery</button>
-    </div>
-    <div class="filter-row">
-      <span class="filter-label">Market</span>
-      <button class="filter-chip" data-filter="market" data-value="all"    aria-pressed="true">All</button>
-      <button class="filter-chip" data-filter="market" data-value="spread" aria-pressed="false">Spread</button>
-      <button class="filter-chip" data-filter="market" data-value="total"  aria-pressed="false">Total</button>
-      <button class="filter-chip" data-filter="market" data-value="ml"     aria-pressed="false">Moneyline</button>
-    </div>
-  </div>
-
-  <div id="summary" class="summary">
-    <div class="summary-empty">Loading...</div>
-  </div>
-
-  <div class="table-wrap">
-    <table class="results-table">
-      <thead>
-        <tr>
-          <th class="col-season">Season</th>
-          <th class="col-week">Week</th>
-          <th>Matchup</th>
-          <th class="col-tier">Tier</th>
-          <th class="col-market">Market</th>
-          <th>Pick</th>
-          <th class="col-line">Line</th>
-          <th class="col-result">Result</th>
-        </tr>
-      </thead>
-      <tbody id="results-body">
-        <tr><td colspan="8" class="loading-state">Loading picks...</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <p class="footer-note">
-    Wins/losses/pushes only — picks that landed in No Edge by kickoff aren't counted in the record, since we didn't recommend a side. The full live board lives at <a href="/live-lines.html" style="color:var(--ink);">Live Lines</a>.
-  </p>
-
+<main id="results-app" class="ll-container">
+  <div class="ll-skeleton">Loading...</div>
 </main>
 
 <script>
@@ -480,15 +189,18 @@
 
   // ── State ──────────────────────────────────────────────────────────
   const state = {
-    season: 'all',
-    tier:   'all',
-    market: 'all',
-    loading: false,
+    season:    'all',
+    tier:      'all',
+    market:    'all',
+    week:      null,        // null = "all weeks"
+    weeks:     [],          // populated from rows
+    rows:      [],          // current filtered rows from server
+    summary:   null,
+    loading:   false,
   };
 
   // ── Helpers ────────────────────────────────────────────────────────
-  function $(sel) { return document.querySelector(sel); }
-  function $$(sel) { return Array.from(document.querySelectorAll(sel)); }
+  function $app() { return document.getElementById('results-app'); }
   function esc(s) {
     if (s == null) return '';
     return String(s).replace(/[&<>"']/g, c => ({
@@ -507,80 +219,263 @@
   function fmtUnits(v) {
     if (v == null) return '—';
     const sign = v >= 0 ? '+' : '';
-    return sign + v.toFixed(2) + 'u';
+    return sign + v.toFixed(1) + 'u';
   }
 
-  function tierCssClass(slug) {
-    if (slug === 'A+') return 'ap';
+  // Tier slug → CSS class key for ll-badge--{key}
+  function tierBadgeKey(slug) {
+    if (slug === 'A+') return 'aplus';
     if (slug === 'A')  return 'a';
-    if (slug === 'smart_money') return 'sm';
-    if (slug === 'goldilocks')  return 'gl';
-    if (slug === 'lottery')     return 'lt';
-    return '';
+    return slug; // smart_money, goldilocks, lottery match the CSS class names directly
   }
 
-  // ── Render ─────────────────────────────────────────────────────────
-  function renderSummary(s) {
-    if (!s || s.total === 0) {
-      $('#summary').innerHTML = `<div class="summary-empty">No graded picks match those filters.</div>`;
-      return;
+  // Group rows by week for the week tab list
+  function computeWeeks(rows) {
+    const seasons = new Set();
+    rows.forEach(r => { if (r.season) seasons.add(r.season); });
+    // If exactly one season selected, group by week number alone.
+    // If multiple seasons, group by "{season} Wk {week}" composite key.
+    const weeks = [];
+    const seen = new Set();
+    rows.forEach(r => {
+      if (r.week == null) return;
+      const key = `${r.season}-${r.week}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      weeks.push({ season: r.season, week: r.week, key });
+    });
+    // Sort descending: latest season first, then latest week
+    weeks.sort((a, b) => {
+      if (a.season !== b.season) return b.season - a.season;
+      return b.week - a.week;
+    });
+    return weeks;
+  }
+
+  function weekLabel(weekObj, isSingleSeason) {
+    return isSingleSeason
+      ? `Wk ${weekObj.week}`
+      : `${weekObj.season} Wk ${weekObj.week}`;
+  }
+
+  // ── Render: hero ───────────────────────────────────────────────────
+  function renderHero() {
+    return `
+      <header class="ll-header">
+        <div class="ll-eyebrow">— Track Record</div>
+        <h1 class="ll-headline">Two seasons under the <em style="font-style:italic;color:var(--gold);">locked spec.</em></h1>
+        <div class="ll-meta">
+          <span>Every pick across 2024 and 2025. Filter by season, tier, or market — the numbers don't move based on what you select.</span>
+        </div>
+      </header>
+    `;
+  }
+
+  // ── Render: filter pills ───────────────────────────────────────────
+  function renderFilters() {
+    function pill(filterName, value, label) {
+      const active = state[filterName] === value;
+      return `
+        <button class="ll-filter-pill"
+                data-filter="${esc(filterName)}"
+                data-value="${esc(value)}"
+                aria-pressed="${active ? 'true' : 'false'}">
+          ${esc(label)}
+        </button>
+      `;
     }
-    const roiClass = s.roi > 0 ? 'green' : (s.roi < 0 ? 'rust' : '');
-    const profitClass = s.profit_units > 0 ? 'green' : (s.profit_units < 0 ? 'rust' : '');
-    $('#summary').innerHTML = `
-      <div>
-        <div class="summary-cell-label">Record</div>
-        <div class="summary-cell-value">${esc(s.record)}</div>
-        ${s.pushes > 0 ? `<div class="summary-cell-sub">${s.pushes} pushes</div>` : ''}
-      </div>
-      <div>
-        <div class="summary-cell-label">Hit rate</div>
-        <div class="summary-cell-value">${fmtPct(s.hit_rate)}</div>
-      </div>
-      <div>
-        <div class="summary-cell-label">Profit</div>
-        <div class="summary-cell-value ${profitClass}">${fmtUnits(s.profit_units)}</div>
-        <div class="summary-cell-sub">1u per pick</div>
-      </div>
-      <div>
-        <div class="summary-cell-label">ROI</div>
-        <div class="summary-cell-value ${roiClass}">${fmtRoi(s.roi)}</div>
+    return `
+      <div class="ll-filters" style="display:flex;flex-direction:column;gap:var(--space-3);">
+        <div class="ll-filters-row" style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);">
+          <span class="ll-filter-label">Season</span>
+          ${pill('season', 'all',  'All')}
+          ${pill('season', '2024', '2024')}
+          ${pill('season', '2025', '2025')}
+        </div>
+        <div class="ll-filters-row" style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);">
+          <span class="ll-filter-label">Tier</span>
+          ${pill('tier', 'all',         'All')}
+          ${pill('tier', 'A+',          'A+')}
+          ${pill('tier', 'A',           'A')}
+          ${pill('tier', 'smart_money', 'Smart Money')}
+          ${pill('tier', 'goldilocks',  'Goldilocks')}
+          ${pill('tier', 'lottery',     'Lottery')}
+        </div>
+        <div class="ll-filters-row" style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2);">
+          <span class="ll-filter-label">Market</span>
+          ${pill('market', 'all',    'All')}
+          ${pill('market', 'spread', 'Spread')}
+          ${pill('market', 'total',  'Total')}
+          ${pill('market', 'ml',     'Moneyline')}
+        </div>
       </div>
     `;
   }
 
-  function renderRows(rows) {
-    const tbody = $('#results-body');
-    if (!rows || rows.length === 0) {
-      tbody.innerHTML = `
-        <tr><td colspan="8" class="empty-state">
-          <div class="empty-state-title">No picks match those filters.</div>
-          <div>Try widening the season, tier, or market selection.</div>
-        </td></tr>`;
-      return;
-    }
-
-    const html = rows.map(r => {
-      const resultLabel = r.result || 'pending';
-      const lineDisplay = r.line == null ? '—' : (
-        // For ML show as american (+200 etc.); for spread/total show signed line
-        r.market === 'ml'
-          ? (r.line > 0 ? '+' + r.line : String(r.line))
-          : (r.line > 0 ? '+' + r.line : String(r.line))
-      );
+  // ── Render: summary stats ──────────────────────────────────────────
+  function renderSummary(s) {
+    if (!s || s.total === 0) {
       return `
-        <tr>
-          <td class="col-season">${esc(r.season)}</td>
-          <td class="col-week">Wk ${esc(r.week ?? '—')}</td>
-          <td class="matchup">${esc(r.matchup)}</td>
-          <td class="col-tier"><span class="tier-badge ${tierCssClass(r.tier)}">${esc(r.tier_display)}</span></td>
-          <td class="col-market">${esc(r.market_display)}</td>
-          <td class="pick-side">${esc(r.pick_side)}</td>
-          <td class="col-line">${esc(lineDisplay)}</td>
-          <td class="col-result"><span class="result-badge ${resultLabel}">${esc(resultLabel)}</span></td>
-        </tr>`;
-    }).join('');
-    tbody.innerHTML = html;
+        <div class="ll-summary">
+          <div class="ll-summary-cell" style="flex:1;">
+            <div class="ll-summary-label">No graded picks match these filters.</div>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="ll-summary">
+        <div class="ll-summary-cell">
+          <div class="ll-summary-label">Record</div>
+          <div class="ll-summary-value">${esc(s.record)}</div>
+        </div>
+        <div class="ll-summary-cell">
+          <div class="ll-summary-label">Hit rate</div>
+          <div class="ll-summary-value">${fmtPct(s.hit_rate)}</div>
+        </div>
+        <div class="ll-summary-cell">
+          <div class="ll-summary-label">Profit</div>
+          <div class="ll-summary-value"><em>${fmtUnits(s.profit_units)}</em></div>
+        </div>
+        <div class="ll-summary-cell">
+          <div class="ll-summary-label">ROI</div>
+          <div class="ll-summary-value"><em>${fmtRoi(s.roi)}</em></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Render: week tabs ──────────────────────────────────────────────
+  function renderWeekTabs() {
+    if (!state.weeks || state.weeks.length === 0) return '';
+
+    const isSingleSeason = state.season !== 'all';
+    const allTab = `
+      <button class="ll-week-tab ${state.week === null ? 'active' : ''}"
+              data-week="all" role="tab"
+              aria-selected="${state.week === null ? 'true' : 'false'}">
+        All weeks
+      </button>
+    `;
+    const weekTabs = state.weeks.map(w => `
+      <button class="ll-week-tab ${state.week === w.key ? 'active' : ''}"
+              data-week="${esc(w.key)}" role="tab"
+              aria-selected="${state.week === w.key ? 'true' : 'false'}">
+        ${esc(weekLabel(w, isSingleSeason))}
+      </button>
+    `).join('');
+
+    return `
+      <div class="ll-week-bar" style="overflow-x:auto;">
+        <div class="ll-week-bar-inner" role="tablist" aria-label="Pick week">
+          ${allTab}${weekTabs}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Render: pick row (mimics Live Lines row layout) ────────────────
+  function renderRow(r) {
+    const badgeKey = tierBadgeKey(r.tier);
+    const lineDisplay = r.line == null ? '' : (
+      r.line > 0 ? '+' + r.line : String(r.line)
+    );
+    const pickText = r.market === 'total'
+      ? `${esc(r.pick_side)} <span class="ll-row-pick-num">${esc(lineDisplay)}</span>`
+      : `${esc(r.pick_side)} <span class="ll-row-pick-num">${esc(lineDisplay)}</span>`;
+
+    const resultLabel = r.result === 'win'  ? 'W'
+                       : r.result === 'loss' ? 'L'
+                       : r.result === 'push' ? 'P'
+                       : '—';
+    const resultClass = r.result || 'pending';
+
+    return `
+      <article class="ll-row">
+        <div class="ll-row-header ll-row-static">
+          <span class="ll-badge ll-badge--${esc(badgeKey)}" aria-label="${esc(r.tier_display)}">
+            ${esc(r.tier_display === 'Smart Money' ? 'SM' :
+                  r.tier_display === 'Goldilocks'  ? 'GL' :
+                  r.tier_display === 'Lottery'     ? 'LT' :
+                  r.tier_display)}
+          </span>
+          <div class="ll-row-content">
+            <div class="ll-row-matchup">${esc(r.matchup)}</div>
+            <div class="ll-row-pick">${pickText} <span style="color:var(--text-light);">· ${esc(r.book || 'unbooked')}</span></div>
+          </div>
+          <span class="ll-row-result ${esc(resultClass)}" title="${esc(resultLabel === 'W' ? 'Win' : resultLabel === 'L' ? 'Loss' : resultLabel === 'P' ? 'Push' : 'Pending')}">
+            ${esc(resultLabel)}
+          </span>
+        </div>
+      </article>
+    `;
+  }
+
+  // ── Render: feed of rows, optionally filtered by week ──────────────
+  function renderRows() {
+    let rows = state.rows;
+    if (state.week !== null) {
+      rows = rows.filter(r => `${r.season}-${r.week}` === state.week);
+    }
+    if (rows.length === 0) {
+      return `
+        <div style="padding:var(--space-8) 0;text-align:center;color:var(--text-mid);">
+          No picks in this view.
+        </div>
+      `;
+    }
+    return rows.map(renderRow).join('');
+  }
+
+  // ── Render: full page ──────────────────────────────────────────────
+  function render() {
+    $app().innerHTML = `
+      ${renderHero()}
+      ${renderFilters()}
+      ${renderSummary(state.summary)}
+      ${renderWeekTabs()}
+      <div id="results-rows">${renderRows()}</div>
+      <p class="ll-footer-note">
+        Wins, losses, and pushes only. Picks that landed in No Edge by kickoff aren't counted here —
+        no side was recommended, so there's nothing to score.
+        The full live board is at <a href="/live-lines.html">Live Lines</a>.
+      </p>
+    `;
+    attachHandlers();
+  }
+
+  function renderRowsOnly() {
+    const el = document.getElementById('results-rows');
+    if (el) el.innerHTML = renderRows();
+  }
+
+  // ── Handlers ───────────────────────────────────────────────────────
+  function attachHandlers() {
+    // Filter pills
+    document.querySelectorAll('.ll-filter-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filterName = btn.dataset.filter;
+        const value      = btn.dataset.value;
+        if (state[filterName] === value) return;
+        state[filterName] = value;
+        // Reset week selection when filters change (week list may differ)
+        state.week = null;
+        refresh();
+      });
+    });
+
+    // Week tabs
+    document.querySelectorAll('.ll-week-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const w = btn.dataset.week;
+        const newWeek = (w === 'all') ? null : w;
+        if (state.week === newWeek) return;
+        state.week = newWeek;
+        // Just re-render rows + tab states; summary stays since it's the full server response
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
   }
 
   // ── Fetch ──────────────────────────────────────────────────────────
@@ -594,8 +489,7 @@
       market: state.market,
     });
 
-    $('#summary').innerHTML = `<div class="summary-empty">Loading...</div>`;
-    $('#results-body').innerHTML = `<tr><td colspan="8" class="loading-state">Loading picks...</td></tr>`;
+    $app().innerHTML = `<div style="padding:var(--space-12) 0;text-align:center;color:var(--text-light);">Loading...</div>`;
 
     try {
       const res = await fetch(`${API_BASE}/canonical/results/summary?${params.toString()}`, {
@@ -603,41 +497,21 @@
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      renderSummary(data.summary);
-      renderRows(data.rows);
+      state.summary = data.summary;
+      state.rows    = data.rows || [];
+      state.weeks   = computeWeeks(state.rows);
+      render();
     } catch (err) {
       console.error('Results fetch failed:', err);
-      $('#summary').innerHTML = `<div class="summary-empty">Couldn't load results. Refresh to try again.</div>`;
-      $('#results-body').innerHTML = `<tr><td colspan="8" class="empty-state">
-        <div class="empty-state-title">Couldn't load picks.</div>
-        <div>Refresh to try again.</div>
-      </td></tr>`;
+      $app().innerHTML = `
+        <div style="padding:var(--space-12) 0;text-align:center;color:var(--rust);">
+          Couldn't load results. Refresh to try again.
+        </div>
+      `;
     } finally {
       state.loading = false;
     }
   }
-
-  // ── Filter chip handlers ───────────────────────────────────────────
-  $$('.filter-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const filterName = btn.dataset.filter;
-      const value      = btn.dataset.value;
-      if (state[filterName] === value) return;
-      state[filterName] = value;
-
-      // Update aria-pressed states for this filter row only
-      $$(`.filter-chip[data-filter="${filterName}"]`).forEach(b => {
-        b.setAttribute('aria-pressed', b.dataset.value === value ? 'true' : 'false');
-      });
-
-      refresh();
-    });
-  });
-
-  // ── Mobile menu ────────────────────────────────────────────────────
-  window.toggleMenu = function() {
-    document.getElementById('mobileMenu').classList.toggle('open');
-  };
 
   // ── Boot ───────────────────────────────────────────────────────────
   refresh();
