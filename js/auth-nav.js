@@ -32,7 +32,7 @@
   'use strict';
 
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
-  const SUPABASE_ANON = 'REPLACE_ME_WITH_ANON_KEY';
+  const SUPABASE_ANON = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
 
   // Guard: if Supabase SDK didn't load, do nothing (page stays in default
   // anon-display state).
