@@ -595,12 +595,44 @@
   });
 
   // ── Manage subscription button (Stripe Billing Portal) ──────────────
-  // Placeholder: real implementation requires a backend endpoint that
-  // creates a billing portal session. Linking to a temporary fallback
-  // for now — billing portal endpoint is next on the build list.
-  document.getElementById('btn-manage-sub').addEventListener('click', (e) => {
+  // Calls the backend /api/billing/create-portal-session endpoint with
+  // the user's JWT. Backend looks up their stripe_customer_id and
+  // returns a portal session URL we redirect to.
+  document.getElementById('btn-manage-sub').addEventListener('click', async (e) => {
     e.preventDefault();
-    showError("Subscription management is coming soon. For now, contact support to make changes.");
+    clearError();
+
+    const btn = e.currentTarget;
+    btn.textContent = 'Opening portal...';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        throw new Error('You need to be signed in to manage your subscription.');
+      }
+
+      const res = await fetch(`${API_BASE}/api/billing/create-portal-session`, {
+        method:  'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type':  'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || `Portal session failed (${res.status})`);
+      }
+
+      const { url } = await res.json();
+      if (!url) throw new Error('Portal URL missing from response');
+      window.location.href = url;
+    } catch (err) {
+      btn.textContent = 'Manage subscription';
+      btn.style.pointerEvents = '';
+      showError(err.message || 'Could not open billing portal. Try again.');
+    }
   });
 
   // ── Handle ?canceled=true (returning from Stripe Checkout cancel) ──
