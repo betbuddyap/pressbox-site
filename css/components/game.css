@@ -683,14 +683,15 @@
 }
 .read-row-value {
   position: absolute;
-  font-family: var(--serif);
-  font-style: italic;
+  font-family: var(--sans);
+  font-style: normal;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ink);
   transform: translateX(10px);
   white-space: nowrap;
   pointer-events: none;
+  letter-spacing: 0.3px;
 }
 .read-row-value.missing {
   color: var(--text-light);
@@ -813,11 +814,12 @@
   color: var(--text-light);
 }
 .pick-line {
-  font-family: var(--serif);
-  font-style: italic;
+  font-family: var(--sans);
+  font-style: normal;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 18px;
   color: var(--ink);
+  letter-spacing: 0.2px;
   margin-bottom: 4px;
 }
 .pick-meta {
@@ -921,11 +923,12 @@
 .numbers-row:last-child { border-bottom: 0; }
 
 .numbers-row-val {
-  font-family: var(--serif);
-  font-style: italic;
+  font-family: var(--sans);
+  font-style: normal;
   font-weight: 700;
-  font-size: 17px;
+  font-size: 15px;
   color: var(--text-mid);
+  letter-spacing: 0.3px;
 }
 .numbers-row-val.away { text-align: right; }
 .numbers-row-val.home { text-align: left; }
@@ -1000,8 +1003,8 @@
     grid-row: 1;
     text-align: center;
   }
-  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: left; font-size: 18px; }
-  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: right; font-size: 18px; }
+  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: left; font-size: 16px; }
+  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: right; font-size: 16px; }
   .numbers-row-track.away { grid-column: 1; grid-row: 3; direction: rtl; }
   .numbers-row-track.home { grid-column: 2; grid-row: 3; }
 }
@@ -1015,13 +1018,14 @@
   padding: 24px 28px;
 }
 .series-summary {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-weight: 700;
-  font-size: 17px;
+  font-size: 15px;
   color: var(--ink);
   margin-bottom: 16px;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--cream-mid);
+  letter-spacing: 0.2px;
 }
 .series-list {
   display: flex;
