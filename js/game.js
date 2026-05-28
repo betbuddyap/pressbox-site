@@ -379,11 +379,20 @@
     }
 
     // Axis range — Vegas ± 8, padded by any model values further out
-    const allVals = [vegasPos, blendPos, ...points.map(p => p.value)].filter(v => v != null);
+    // AND by the historical band edges if present.
+    const histRange = section.historical_range || null;
+    const histLow   = histRange?.low ?? null;
+    const histHigh  = histRange?.high ?? null;
+    const allVals = [vegasPos, blendPos, histLow, histHigh, ...points.map(p => p.value)].filter(v => v != null);
     const minVal = Math.min(...allVals);
     const maxVal = Math.max(...allVals);
     let axisMin = vegasPos != null ? Math.min(minVal, vegasPos - 8) : minVal - 4;
     let axisMax = vegasPos != null ? Math.max(maxVal, vegasPos + 8) : maxVal + 4;
+    // Spread chart: always include 0 in the axis so the zero anchor is visible
+    if (key === 'anchor_spread') {
+      axisMin = Math.min(axisMin, -2);
+      axisMax = Math.max(axisMax, 2);
+    }
     // Pad outward to a clean tick
     const tickStep = (axisMax - axisMin) > 30 ? 5 : (axisMax - axisMin) > 15 ? 3 : 1;
     axisMin = Math.floor(axisMin / tickStep) * tickStep;
@@ -428,6 +437,31 @@
         ? (t > 0 ? '+' + t : t)
         : t;
       ticksEl.appendChild(lab);
+    }
+
+    // Historical outcome band — light blue shaded region across the
+    // axis. Rendered FIRST so it sits behind everything else.
+    if (histLow != null && histHigh != null) {
+      const band = document.createElement('div');
+      band.className = 'strip-hist-band';
+      const lP = xPct(histLow);
+      const hP = xPct(histHigh);
+      band.style.left  = `${lP}%`;
+      band.style.width = `${Math.max(0, hP - lP)}%`;
+      const tip = histRange?.sample_size
+        ? `Historical range for games with this line: ${histLow.toFixed(1)} to ${histHigh.toFixed(1)} (n=${histRange.sample_size})`
+        : '';
+      if (tip) band.title = tip;
+      axisEl.appendChild(band);
+    }
+
+    // Zero anchor — spread chart only. Distinct red vertical line at 0,
+    // signals pick'em as the reference point.
+    if (key === 'anchor_spread' && axisMin <= 0 && axisMax >= 0) {
+      const zero = document.createElement('div');
+      zero.className = 'strip-zero';
+      zero.style.left = `${xPct(0)}%`;
+      axisEl.appendChild(zero);
     }
 
     // Vegas vertical line + label above axis
