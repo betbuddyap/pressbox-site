@@ -477,9 +477,14 @@
   }
 
   /**
-   * Moneyline section.
-   * Each row: Vegas / 5 models / PressBox blend.
-   * Show American odds for the anchor team (Vegas favorite).
+   * Moneyline section — center-divider bar style like stat rows.
+   * Each row shows anchor probability radiating LEFT from center,
+   * other probability radiating RIGHT. Numbers at the outer edges.
+   *
+   * Layout per row:
+   *   [anchor_odds]  [    ←anchor bar  |  other bar→    ]  [other_odds]
+   *
+   * 7 rows total: Vegas, 5 models, PressBox.
    */
   function buildMLRows(data, mlSection, anchor) {
     const card = document.createElement('div');
@@ -488,44 +493,73 @@
     const anchorTeam = anchor.team || 'Anchor';
     const otherTeam  = anchor.other_team || 'Other';
 
-    const vegasLabel = (mlSection.vegas_anchor_display && mlSection.vegas_other_display)
-      ? `${escape(anchorTeam)} <strong>${escape(mlSection.vegas_anchor_display)}</strong> / ${escape(otherTeam)} <strong>${escape(mlSection.vegas_other_display)}</strong>`
-      : '—';
-
+    // Header with team name columns
     card.innerHTML = `
       <div class="read-card-head">
         <div class="read-card-label">Moneyline</div>
-        <div class="read-card-vegas">${vegasLabel}</div>
       </div>
-      <div class="read-ml-rows"></div>
-      <div class="read-ml-foot">
-        <span class="read-ml-foot-anchor">${escape(anchorTeam)}</span>
-        <span class="read-ml-foot-other">${escape(otherTeam)}</span>
+      <div class="ml-teamhead">
+        <div class="ml-teamhead-left">${escape(anchorTeam)}</div>
+        <div class="ml-teamhead-right">${escape(otherTeam)}</div>
       </div>
+      <div class="ml-bars"></div>
     `;
-    const rowsEl = card.querySelector('.read-ml-rows');
+    const barsEl = card.querySelector('.ml-bars');
 
-    function row(label, anchorDisplay, otherDisplay, kind) {
+    function row(label, anchorProb, otherProb, anchorOdds, otherOdds, kind) {
       const klass = kind === 'vegas' ? ' is-vegas' : kind === 'blend' ? ' is-blend' : '';
-      const anchorD = anchorDisplay || '—';
-      const otherD  = otherDisplay  || '—';
-      rowsEl.insertAdjacentHTML('beforeend', `
-        <div class="read-ml-odds-row${klass}">
-          <div class="read-ml-name">${escape(label)}</div>
-          <div class="read-ml-odds-anchor">${escape(anchorD)}</div>
-          <div class="read-ml-odds-other">${escape(otherD)}</div>
+
+      // Convert probability to bar width (0-50% from center)
+      const aWidth = (anchorProb != null) ? clamp(anchorProb * 100, 0, 100) : 0;
+      const oWidth = (otherProb  != null) ? clamp(otherProb  * 100, 0, 100) : 0;
+
+      // Determine which side is "winning" for color emphasis
+      const anchorFav = anchorProb != null && otherProb != null && anchorProb > otherProb;
+      const otherFav  = otherProb  != null && anchorProb != null && otherProb  > anchorProb;
+      const aQual = anchorFav ? 'fav' : 'dog';
+      const oQual = otherFav  ? 'fav' : 'dog';
+
+      barsEl.insertAdjacentHTML('beforeend', `
+        <div class="ml-row${klass}">
+          <div class="ml-odds ml-odds-left">${escape(anchorOdds || '—')}</div>
+          <div class="ml-bar-pair">
+            <div class="ml-bar-half ml-bar-left">
+              <div class="ml-bar-fill ml-bar-fill-${aQual}" style="width:${aWidth}%;"></div>
+            </div>
+            <div class="ml-bar-divider"></div>
+            <div class="ml-bar-half ml-bar-right">
+              <div class="ml-bar-fill ml-bar-fill-${oQual}" style="width:${oWidth}%;"></div>
+            </div>
+          </div>
+          <div class="ml-odds ml-odds-right">${escape(otherOdds || '—')}</div>
+          <div class="ml-label">${escape(label)}</div>
         </div>
       `);
     }
 
-    row('Vegas', mlSection.vegas_anchor_display, mlSection.vegas_other_display, 'vegas');
+    row('Vegas',
+        mlSection.vegas_anchor_implied,
+        mlSection.vegas_other_implied,
+        mlSection.vegas_anchor_display,
+        mlSection.vegas_other_display,
+        'vegas');
 
     MODEL_ORDER.forEach(modelName => {
       const m = (mlSection.models || []).find(x => x.name === modelName);
-      row(modelName, m?.anchor_display, m?.other_display, 'model');
+      row(modelName,
+          m?.anchor_prob,
+          m?.other_prob,
+          m?.anchor_display,
+          m?.other_display,
+          'model');
     });
 
-    row('PressBox', mlSection.pressbox_anchor_american, mlSection.pressbox_other_american, 'blend');
+    row('PressBox',
+        mlSection.pressbox_anchor_prob,
+        mlSection.pressbox_other_prob,
+        mlSection.pressbox_anchor_american,
+        mlSection.pressbox_other_american,
+        'blend');
 
     return card;
   }
@@ -657,57 +691,54 @@
   /**
    * Compute bar width (0-100%) and quality class for a single value.
    *
-   * The bar extends from center outward. Width is the distance from
-   * the league median, normalized against the further of the two
-   * extremes (min or max from median).
+   * Width tracks QUALITY. The best team in the league at this stat
+   * gets a 100% bar. The worst gets a 0% bar. Lower_better-aware.
    *
-   * Quality class is set based on percentile position, lower_better-aware:
-   *   - elite      (top quartile for this stat's "good" direction)
-   *   - above-avg  (above median in good direction)
-   *   - below-avg  (below median, slightly bad)
+   * This means:
+   *   - For a "higher = better" stat (points_per_game): best team
+   *     (highest value) gets full bar.
+   *   - For a "lower = better" stat (yards_allowed): best team
+   *     (lowest value) gets full bar.
+   *
+   * Quality class for color:
+   *   - elite      (top quartile of league quality)
+   *   - above-avg  (2nd quartile)
+   *   - below-avg  (3rd quartile)
    *   - poor       (bottom quartile)
    */
   function computeBar(value, row) {
     if (value == null) return { width: 0, qual: 'missing' };
     const min = row.league_min;
     const max = row.league_max;
-    const med = row.league_median;
     const lowerBetter = row.lower_better;
 
-    if (min == null || max == null || med == null || min === max) {
+    if (min == null || max == null || min === max) {
       // No league context — render a fixed half-width neutral bar
       return { width: 30, qual: 'below-avg' };
     }
 
-    // Quality: where does this value sit on the "good→bad" axis?
-    // posPct: 0% = best in league, 100% = worst in league
-    let posPct;
+    // qualityPct: 0% = league worst, 100% = league best (for this stat)
+    let qualityPct;
     if (lowerBetter) {
-      posPct = ((value - min) / (max - min)) * 100;
+      // Lower value = better quality
+      qualityPct = ((max - value) / (max - min)) * 100;
     } else {
-      posPct = ((max - value) / (max - min)) * 100;
+      // Higher value = better quality
+      qualityPct = ((value - min) / (max - min)) * 100;
     }
-    posPct = clamp(posPct, 0, 100);
+    qualityPct = clamp(qualityPct, 0, 100);
+
+    // Bar width = quality. Good = long, bad = short. Always.
+    // Minimum visible bar even for league-worst team.
+    const width = Math.max(4, Math.round(qualityPct));
 
     let qual;
-    if (posPct <= 25)      qual = 'elite';
-    else if (posPct <= 50) qual = 'above-avg';
-    else if (posPct <= 75) qual = 'below-avg';
-    else                   qual = 'poor';
+    if (qualityPct >= 75)      qual = 'elite';
+    else if (qualityPct >= 50) qual = 'above-avg';
+    else if (qualityPct >= 25) qual = 'below-avg';
+    else                       qual = 'poor';
 
-    // Bar width: distance from median, normalized to the further extreme.
-    // Always 0-100. A value at the median gets ~5% (minimum visible bar).
-    let width;
-    if (value >= med) {
-      const denom = (max - med) || 1;
-      width = ((value - med) / denom) * 100;
-    } else {
-      const denom = (med - min) || 1;
-      width = ((med - value) / denom) * 100;
-    }
-    width = clamp(width, 4, 100); // minimum visible bar
-
-    return { width: Math.round(width), qual };
+    return { width, qual };
   }
 
   function clamp(v, lo, hi) {
