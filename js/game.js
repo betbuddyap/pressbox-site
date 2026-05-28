@@ -441,19 +441,57 @@
       ticksEl.appendChild(lab);
     }
 
-    // Historical outcome band — light blue shaded region across the
-    // axis. Rendered FIRST so it sits behind everything else.
-    if (histLow != null && histHigh != null) {
+    // Historical density curve — mirrored shape rendered as inline SVG.
+    // The curve carries SHAPE (where outcomes pool); the y-values are
+    // normalized to peak=1 by the backend so every game's curve renders
+    // to the same pixel height. Drawn FIRST so it sits behind everything.
+    const densityCurve = histRange?.density_curve || [];
+    if (densityCurve.length >= 3) {
+      // Build the mirrored polygon: top edge left-to-right, then bottom
+      // edge right-to-left, all expressed in viewBox units (0-1000 x,
+      // 0-100 y centered on 50).
+      const VBW = 1000;       // viewBox width
+      const VBH = 100;        // viewBox height
+      const CENTER_Y = 50;
+      const PEAK_PX  = 32;    // max half-height of the lobe (each side)
+
+      const topPts = [];
+      const botPts = [];
+      for (const [x, y] of densityCurve) {
+        const xv = clamp(((x - axisMin) / range) * VBW, 0, VBW);
+        const yPx = clamp(y, 0, 1) * PEAK_PX;
+        topPts.push([xv, CENTER_Y - yPx]);
+        botPts.push([xv, CENTER_Y + yPx]);
+      }
+      // Polygon path: top L→R, then bottom R→L
+      const pathPts = [
+        ...topPts,
+        ...[...botPts].reverse(),
+      ];
+      const d = 'M' + pathPts.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join(' L') + ' Z';
+
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('class', 'strip-hist-curve');
+      svg.setAttribute('viewBox', `0 0 ${VBW} ${VBH}`);
+      svg.setAttribute('preserveAspectRatio', 'none');
+      const path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d', d);
+      svg.appendChild(path);
+      const tip = histRange?.sample_size
+        ? `Historical outcome density for games at this Vegas line (n=${histRange.sample_size})`
+        : '';
+      if (tip) svg.setAttribute('aria-label', tip);
+      axisEl.appendChild(svg);
+    } else if (histLow != null && histHigh != null) {
+      // Fallback to flat band if we somehow have edges but no curve
+      // (e.g. an older row that hasn't been re-backfilled yet).
       const band = document.createElement('div');
       band.className = 'strip-hist-band';
       const lP = xPct(histLow);
       const hP = xPct(histHigh);
       band.style.left  = `${lP}%`;
       band.style.width = `${Math.max(0, hP - lP)}%`;
-      const tip = histRange?.sample_size
-        ? `Historical range for games with this line: ${histLow.toFixed(1)} to ${histHigh.toFixed(1)} (n=${histRange.sample_size})`
-        : '';
-      if (tip) band.title = tip;
       axisEl.appendChild(band);
     }
 
