@@ -218,24 +218,28 @@
       els.projected.style.display = 'none';
       return;
     }
-    const blendMargin = p.spread?.pressbox_blend; // home perspective (negative = home favored)
-    const blendTotal  = p.total?.pressbox_blend;
-    if (blendMargin == null || blendTotal == null) {
+    // Blend total + blend home margin. We stored home_margin per-model
+    // but the blend is in anchor frame — compute from anchor + anchor.is_home.
+    const blendAnchorSpread = p.spread?.pressbox_blend;  // anchor-frame
+    const blendTotal        = p.total?.pressbox_blend;
+    const anchorIsHome      = p.anchor?.is_home;
+    if (blendAnchorSpread == null || blendTotal == null || anchorIsHome == null) {
       els.projected.style.display = 'none';
       return;
     }
-    // home_points + away_points = total. home_points - away_points = margin (home-perspective).
-    // home_points = (total + margin) / 2
-    // away_points = (total - margin) / 2
-    const homePts = (blendTotal + blendMargin) / 2;
-    const awayPts = (blendTotal - blendMargin) / 2;
+    // Convert anchor spread back to home margin:
+    //   if anchor is home: home_margin = -anchor_spread
+    //   if anchor is away: home_margin = anchor_spread
+    const homeMargin = anchorIsHome ? -blendAnchorSpread : blendAnchorSpread;
+
+    const homePts = (blendTotal + homeMargin) / 2;
+    const awayPts = (blendTotal - homeMargin) / 2;
 
     els.projAway.textContent = Math.round(awayPts);
     els.projHome.textContent = Math.round(homePts);
     els.projAwayLbl.textContent = data.game?.away?.name || '';
     els.projHomeLbl.textContent = data.game?.home?.name || '';
 
-    // Winner emphasis
     if (awayPts > homePts) {
       els.projAway.classList.add('winner');
       els.projHome.classList.remove('winner');
@@ -325,55 +329,68 @@
     els.readStack.innerHTML = '';
     if (!p) return;
 
-    if (p.spread)    els.readStack.appendChild(buildDotPlot('Spread', p.spread, 'margin'));
-    if (p.total)     els.readStack.appendChild(buildDotPlot('Total',  p.total,  'total'));
-    if (p.moneyline) els.readStack.appendChild(buildMLRows(data, p.moneyline));
+    const anchor = p.anchor || {};
+    if (p.spread)    els.readStack.appendChild(buildDotPlot('Spread', p.spread, 'anchor_spread', anchor));
+    if (p.total)     els.readStack.appendChild(buildDotPlot('Total',  p.total,  'total', anchor));
+    if (p.moneyline) els.readStack.appendChild(buildMLRows(data, p.moneyline, anchor));
   }
 
   /**
-   * Dot plot for spread or total. `key` is "margin" or "total" — the
-   * field name on each model entry.
+   * Dot plot for spread or total. `key` is "anchor_spread" or "total".
+   * For Spread: each model entry has `anchor_spread` (number) + `display`
+   *   (string like "UNLV -12.4"). We use anchor_spread for axis position
+   *   and display for label.
+   * For Total: each model has `total` (number) + `display`.
    */
-  function buildDotPlot(label, section, key) {
+  function buildDotPlot(label, section, key, anchor) {
     const card = document.createElement('div');
     card.className = 'read-card';
 
-    const vegas = section.vegas_line;
-    const blend = section.pressbox_blend;
+    // For spread: Vegas position = vegas_anchor_spread
+    // For total:  Vegas position = vegas_line
+    const vegasPos = key === 'anchor_spread'
+      ? section.vegas_anchor_spread
+      : section.vegas_line;
+    // Blend position
+    const blendPos = section.pressbox_blend;
+    const blendDisplay = section.pressbox_display;
+    const vegasDisplay = section.vegas_display;
+
     const models = (section.models || []).filter(m => m[key] != null);
 
     // Determine axis range:
     //   At minimum, vegas ± 10
     //   Extended if any model is further out
-    const values = [vegas, blend, ...models.map(m => m[key])].filter(v => v != null);
-    if (!values.length) return card;
+    const values = [vegasPos, blendPos, ...models.map(m => m[key])].filter(v => v != null);
+    if (!values.length) {
+      // No data at all
+      card.innerHTML = `
+        <div class="read-card-head">
+          <div class="read-card-label">${escape(label)}</div>
+          <div class="read-card-vegas">—</div>
+        </div>
+        <div class="read-empty">No data available yet for this matchup.</div>
+      `;
+      return card;
+    }
 
     const minVal = Math.min(...values);
     const maxVal = Math.max(...values);
-    // Pad to vegas ± 10 minimum
-    let axisMin = Math.min(minVal, (vegas != null ? vegas - 10 : minVal));
-    let axisMax = Math.max(maxVal, (vegas != null ? vegas + 10 : maxVal));
-    // Round outwards to nearest integer
+    let axisMin = Math.min(minVal, (vegasPos != null ? vegasPos - 10 : minVal));
+    let axisMax = Math.max(maxVal, (vegasPos != null ? vegasPos + 10 : maxVal));
     axisMin = Math.floor(axisMin);
     axisMax = Math.ceil(axisMax);
     if (axisMax - axisMin < 4) {
       axisMin -= 2; axisMax += 2;
     }
     const range = axisMax - axisMin;
-
     const xPct = (v) => ((v - axisMin) / range) * 100;
-    const fmt = (v) => {
-      if (v == null) return '—';
-      if (key === 'margin') return (v > 0 ? '+' : '') + v.toFixed(1);
-      return v.toFixed(1);
-    };
 
     // Build header
-    const vegasDisplay = vegas != null ? fmt(vegas) : '—';
     card.innerHTML = `
       <div class="read-card-head">
-        <div class="read-card-label">${label}</div>
-        <div class="read-card-vegas">Vegas: <strong>${vegasDisplay}</strong></div>
+        <div class="read-card-label">${escape(label)}</div>
+        <div class="read-card-vegas">Vegas: <strong>${escape(vegasDisplay || '—')}</strong></div>
       </div>
       <div class="read-plot">
         <div class="read-axis"></div>
@@ -384,7 +401,7 @@
     const axisEl = card.querySelector('.read-axis');
     const rowsEl = card.querySelector('.read-rows');
 
-    // Axis tick marks every ~3 units
+    // Axis tick marks every ~3-5 units
     const tickStep = range > 30 ? 5 : (range > 15 ? 3 : 1);
     for (let t = Math.ceil(axisMin / tickStep) * tickStep; t <= axisMax; t += tickStep) {
       const tick = document.createElement('div');
@@ -395,43 +412,42 @@
         const lab = document.createElement('div');
         lab.className = 'read-axis-label';
         lab.style.left = `${xPct(t)}%`;
-        lab.textContent = key === 'margin' ? (t > 0 ? '+' + t : t) : t;
+        lab.textContent = (key === 'anchor_spread')
+          ? (t > 0 ? '+' + t : t)
+          : t;
         axisEl.appendChild(lab);
       }
     }
 
-    // Vegas vertical mark
-    if (vegas != null) {
+    if (vegasPos != null) {
       const v = document.createElement('div');
       v.className = 'read-vegas-mark';
-      v.style.left = `${xPct(vegas)}%`;
+      v.style.left = `${xPct(vegasPos)}%`;
       axisEl.appendChild(v);
     }
 
-    // PressBox blend marker on the axis
-    if (blend != null) {
+    if (blendPos != null) {
       const b = document.createElement('div');
       b.className = 'read-blend-mark';
-      b.style.left = `${xPct(blend)}%`;
-      b.title = `PressBox blend: ${fmt(blend)}`;
+      b.style.left = `${xPct(blendPos)}%`;
+      b.title = `PressBox blend: ${blendDisplay || ''}`;
       axisEl.appendChild(b);
     }
 
-    // One row per model, in canonical order
+    // One row per model in canonical order
     MODEL_ORDER.forEach(modelName => {
       const m = (section.models || []).find(x => x.name === modelName);
       const row = document.createElement('div');
       row.className = 'read-row';
       const value = m && m[key] != null ? m[key] : null;
+      const display = m ? m.display : null;
 
-      // Name label, left-aligned
       const nameEl = document.createElement('div');
       nameEl.className = 'read-row-name';
       nameEl.textContent = modelName;
       row.appendChild(nameEl);
 
       if (value == null) {
-        // Missing — show ghost dot at 50% with em-dash
         const dot = document.createElement('div');
         dot.className = 'read-row-dot missing';
         dot.style.left = '50%';
@@ -448,7 +464,7 @@
         const val = document.createElement('div');
         val.className = 'read-row-value';
         val.style.left = `${xPct(value)}%`;
-        val.textContent = fmt(value);
+        val.textContent = display || String(value);
         row.appendChild(dot);
         row.appendChild(val);
       }
@@ -460,20 +476,19 @@
   }
 
   /**
-   * Moneyline section: Vegas row + 5 model rows + PressBox blend row.
-   * Each row is a horizontal bar split between away/home probability.
+   * Moneyline section.
+   * Each row: Vegas / 5 models / PressBox blend.
+   * Show American odds for the anchor team (Vegas favorite).
    */
-  function buildMLRows(data, mlSection) {
+  function buildMLRows(data, mlSection, anchor) {
     const card = document.createElement('div');
     card.className = 'read-card';
 
-    const awayName = data.game?.away?.name || 'Away';
-    const homeName = data.game?.home?.name || 'Home';
-    const vegasAway = mlSection.vegas_away_implied;
-    const vegasHome = mlSection.vegas_home_implied;
+    const anchorTeam = anchor.team || 'Anchor';
+    const otherTeam  = anchor.other_team || 'Other';
 
-    const vegasLabel = (vegasAway != null && vegasHome != null)
-      ? `${awayName} ${Math.round(vegasAway * 100)}% · ${homeName} ${Math.round(vegasHome * 100)}%`
+    const vegasLabel = (mlSection.vegas_anchor_display && mlSection.vegas_other_display)
+      ? `${escape(anchorTeam)} <strong>${escape(mlSection.vegas_anchor_display)}</strong> / ${escape(otherTeam)} <strong>${escape(mlSection.vegas_other_display)}</strong>`
       : '—';
 
     card.innerHTML = `
@@ -483,51 +498,33 @@
       </div>
       <div class="read-ml-rows"></div>
       <div class="read-ml-foot">
-        <span class="read-ml-foot-away">← ${escape(awayName)}</span>
-        <span class="read-ml-foot-home">${escape(homeName)} →</span>
+        <span class="read-ml-foot-anchor">${escape(anchorTeam)}</span>
+        <span class="read-ml-foot-other">${escape(otherTeam)}</span>
       </div>
     `;
     const rowsEl = card.querySelector('.read-ml-rows');
 
-    function bar(label, awayProb, homeProb, kind) {
+    function row(label, anchorDisplay, otherDisplay, kind) {
       const klass = kind === 'vegas' ? ' is-vegas' : kind === 'blend' ? ' is-blend' : '';
-      if (awayProb == null || homeProb == null) {
-        rowsEl.insertAdjacentHTML('beforeend', `
-          <div class="read-ml-row${klass}">
-            <div class="read-ml-name">${escape(label)}</div>
-            <div class="read-ml-bar"><div class="read-ml-bar-away" style="width:0%;"></div></div>
-            <div class="read-ml-values">—</div>
-          </div>
-        `);
-        return;
-      }
-      const aPct = Math.round(awayProb * 100);
-      const hPct = 100 - aPct;
+      const anchorD = anchorDisplay || '—';
+      const otherD  = otherDisplay  || '—';
       rowsEl.insertAdjacentHTML('beforeend', `
-        <div class="read-ml-row${klass}">
+        <div class="read-ml-odds-row${klass}">
           <div class="read-ml-name">${escape(label)}</div>
-          <div class="read-ml-bar">
-            <div class="read-ml-bar-away" style="width:${aPct}%;"></div>
-            <div class="read-ml-bar-home" style="width:${hPct}%;"></div>
-          </div>
-          <div class="read-ml-values">${aPct}% / ${hPct}%</div>
+          <div class="read-ml-odds-anchor">${escape(anchorD)}</div>
+          <div class="read-ml-odds-other">${escape(otherD)}</div>
         </div>
       `);
     }
 
-    // Vegas first
-    bar('Vegas', vegasAway, vegasHome, 'vegas');
+    row('Vegas', mlSection.vegas_anchor_display, mlSection.vegas_other_display, 'vegas');
 
-    // 5 models
     MODEL_ORDER.forEach(modelName => {
       const m = (mlSection.models || []).find(x => x.name === modelName);
-      const a = m?.away_win_prob;
-      const h = m?.home_win_prob;
-      bar(modelName, a, h, 'model');
+      row(modelName, m?.anchor_display, m?.other_display, 'model');
     });
 
-    // PressBox blend
-    bar('PressBox', mlSection.pressbox_away_blend, mlSection.pressbox_home_blend, 'blend');
+    row('PressBox', mlSection.pressbox_anchor_american, mlSection.pressbox_other_american, 'blend');
 
     return card;
   }
