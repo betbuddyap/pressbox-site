@@ -698,76 +698,84 @@
   font-style: normal;
 }
 
-/* ── Moneyline probability bars ──────────────────────────────── */
+/* ── Moneyline odds rows (sportsbook-style display) ──────────── */
 
 .read-ml-rows {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 4px 0;
+  gap: 4px;
+  padding: 4px 0 8px;
 }
-.read-ml-row {
+.read-ml-odds-row {
   display: grid;
-  grid-template-columns: 80px 1fr 90px;
+  grid-template-columns: 90px 1fr 1fr;
   align-items: center;
   gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cream-mid);
 }
+.read-ml-odds-row:last-child { border-bottom: 0; }
 .read-ml-name {
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   color: var(--text-mid);
   text-transform: uppercase;
 }
-.read-ml-row.is-vegas .read-ml-name { color: var(--ink); }
-.read-ml-row.is-blend .read-ml-name { color: var(--gold); }
-.read-ml-bar {
-  position: relative;
-  height: 22px;
-  background: var(--cream-dark);
-  border-radius: 2px;
-  overflow: hidden;
-  display: flex;
-}
-.read-ml-bar-away {
-  background: rgba(74,122,74,0.65);
-  height: 100%;
-}
-.read-ml-bar-home {
-  background: rgba(15,14,10,0.6);
-  height: 100%;
-}
-.read-ml-row.is-vegas .read-ml-bar-away  { background: var(--sage); }
-.read-ml-row.is-vegas .read-ml-bar-home  { background: var(--ink); }
-.read-ml-row.is-blend .read-ml-bar-away  { background: var(--gold); }
-.read-ml-row.is-blend .read-ml-bar-home  { background: #826515; }
-.read-ml-values {
+.read-ml-odds-row.is-vegas { background: var(--cream-dark); margin: 0 -14px; padding: 8px 14px; border-radius: 2px; }
+.read-ml-odds-row.is-vegas .read-ml-name { color: var(--ink); }
+.read-ml-odds-row.is-blend { background: rgba(184,146,42,0.08); margin: 0 -14px; padding: 8px 14px; border-radius: 2px; }
+.read-ml-odds-row.is-blend .read-ml-name { color: var(--gold); }
+
+.read-ml-odds-anchor,
+.read-ml-odds-other {
   font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-mid);
-  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
   letter-spacing: 0.3px;
 }
-.read-ml-row.is-vegas .read-ml-values,
-.read-ml-row.is-blend .read-ml-values {
-  color: var(--ink);
+.read-ml-odds-row.is-vegas .read-ml-odds-anchor,
+.read-ml-odds-row.is-vegas .read-ml-odds-other,
+.read-ml-odds-row.is-blend .read-ml-odds-anchor,
+.read-ml-odds-row.is-blend .read-ml-odds-other {
   font-weight: 700;
+}
+.read-ml-odds-row:not(.is-vegas):not(.is-blend) .read-ml-odds-anchor,
+.read-ml-odds-row:not(.is-vegas):not(.is-blend) .read-ml-odds-other {
+  font-weight: 600;
+  color: var(--text-mid);
 }
 
 .read-ml-foot {
   margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--cream-mid);
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr;
+  gap: 14px;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
   color: var(--text-light);
+  font-weight: 700;
 }
-.read-ml-foot-away { color: var(--sage); font-weight: 600; }
-.read-ml-foot-home { color: var(--ink); font-weight: 600; }
+.read-ml-foot > :first-child { /* spacer to align with name column */ }
+.read-ml-foot-anchor,
+.read-ml-foot-other {
+  text-align: center;
+}
+
+/* Empty state for charts with no data */
+.read-empty {
+  padding: 32px 16px;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-light);
+  font-style: italic;
+}
 
 
 /* ============================================================
@@ -1128,12 +1136,17 @@ footer {
   .read-card { padding: 18px 16px 22px; }
   .read-card-head { flex-direction: column; align-items: flex-start; gap: 6px; }
 
-  .read-ml-row {
-    grid-template-columns: 64px 1fr 80px;
+  .read-ml-odds-row {
+    grid-template-columns: 70px 1fr 1fr;
     gap: 10px;
   }
-  .read-ml-name { font-size: 11px; }
-  .read-ml-values { font-size: 11px; }
+  .read-ml-name { font-size: 10px; }
+  .read-ml-odds-anchor,
+  .read-ml-odds-other { font-size: 13px; }
+  .read-ml-foot {
+    grid-template-columns: 70px 1fr 1fr;
+    gap: 10px;
+  }
 
   .pick-card { padding: 18px 18px; }
   .pick-line { font-size: 19px; }
