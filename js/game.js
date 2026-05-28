@@ -378,7 +378,7 @@
       return card;
     }
 
-    // Axis range — Vegas ± 8, padded by any model values further out.
+    // Axis range — Vegas ± 13, padded by any model values further out.
     // The historical band does NOT participate in axis bounds. The band
     // will be clipped to whatever the axis ends up being. Letting it
     // drive bounds caused the band to swallow the entire chart.
@@ -388,8 +388,8 @@
     const allVals = [vegasPos, blendPos, ...points.map(p => p.value)].filter(v => v != null);
     const minVal = Math.min(...allVals);
     const maxVal = Math.max(...allVals);
-    let axisMin = vegasPos != null ? Math.min(minVal, vegasPos - 8) : minVal - 4;
-    let axisMax = vegasPos != null ? Math.max(maxVal, vegasPos + 8) : maxVal + 4;
+    let axisMin = vegasPos != null ? Math.min(minVal, vegasPos - 13) : minVal - 4;
+    let axisMax = vegasPos != null ? Math.max(maxVal, vegasPos + 13) : maxVal + 4;
     // Spread chart: always include 0 in the axis so the zero anchor is visible
     if (key === 'anchor_spread') {
       axisMin = Math.min(axisMin, -2);
@@ -564,8 +564,13 @@
     const card = document.createElement('div');
     card.className = 'read-card';
 
-    const anchorTeam = anchor.team || 'Anchor';
-    const otherTeam  = anchor.other_team || 'Other';
+    // Layout convention: AWAY on the LEFT, HOME on the RIGHT.
+    // This matches every other card on the page (stat rows, hero, etc).
+    // The anchor/favorite is independent of left/right — we look up
+    // which side the favorite is on per row to color the bars.
+    const awayTeam = data.game?.away?.name || 'Away';
+    const homeTeam = data.game?.home?.name || 'Home';
+    const anchorIsHome = !!anchor.is_home;
 
     // Header with team name columns
     card.innerHTML = `
@@ -573,8 +578,8 @@
         <div class="read-card-label">Moneyline</div>
       </div>
       <div class="ml-teamhead">
-        <div class="ml-teamhead-left">${escape(anchorTeam)}</div>
-        <div class="ml-teamhead-right">${escape(otherTeam)}</div>
+        <div class="ml-teamhead-left">${escape(awayTeam)}</div>
+        <div class="ml-teamhead-right">${escape(homeTeam)}</div>
       </div>
       <div class="ml-bars"></div>
     `;
@@ -583,29 +588,38 @@
     function row(label, anchorProb, otherProb, anchorOdds, otherOdds, kind) {
       const klass = kind === 'vegas' ? ' is-vegas' : kind === 'blend' ? ' is-blend' : '';
 
-      // Convert probability to bar width (0-50% from center)
-      const aWidth = (anchorProb != null) ? clamp(anchorProb * 100, 0, 100) : 0;
-      const oWidth = (otherProb  != null) ? clamp(otherProb  * 100, 0, 100) : 0;
+      // Reorient anchor/other into away/home for display. Anchor probs
+      // and odds come from the backend in anchor-perspective; we swap
+      // them into away/home so the row lines up with the page-wide
+      // away-left / home-right convention.
+      const awayProb = anchorIsHome ? otherProb  : anchorProb;
+      const homeProb = anchorIsHome ? anchorProb : otherProb;
+      const awayOdds = anchorIsHome ? otherOdds  : anchorOdds;
+      const homeOdds = anchorIsHome ? anchorOdds : otherOdds;
 
-      // Determine which side is "winning" for color emphasis
-      const anchorFav = anchorProb != null && otherProb != null && anchorProb > otherProb;
-      const otherFav  = otherProb  != null && anchorProb != null && otherProb  > anchorProb;
-      const aQual = anchorFav ? 'fav' : 'dog';
-      const oQual = otherFav  ? 'fav' : 'dog';
+      // Convert probability to bar width (0-100% from center)
+      const aWidth = (awayProb != null) ? clamp(awayProb * 100, 0, 100) : 0;
+      const hWidth = (homeProb != null) ? clamp(homeProb * 100, 0, 100) : 0;
+
+      // Color emphasis: which side is the favorite in this row
+      const awayFav = awayProb != null && homeProb != null && awayProb > homeProb;
+      const homeFav = homeProb != null && awayProb != null && homeProb > awayProb;
+      const aQual = awayFav ? 'fav' : 'dog';
+      const hQual = homeFav ? 'fav' : 'dog';
 
       barsEl.insertAdjacentHTML('beforeend', `
         <div class="ml-row${klass}">
-          <div class="ml-odds ml-odds-left">${escape(anchorOdds || '—')}</div>
+          <div class="ml-odds ml-odds-left">${escape(awayOdds || '—')}</div>
           <div class="ml-bar-pair">
             <div class="ml-bar-half ml-bar-left">
               <div class="ml-bar-fill ml-bar-fill-${aQual}" style="width:${aWidth}%;"></div>
             </div>
             <div class="ml-bar-divider"></div>
             <div class="ml-bar-half ml-bar-right">
-              <div class="ml-bar-fill ml-bar-fill-${oQual}" style="width:${oWidth}%;"></div>
+              <div class="ml-bar-fill ml-bar-fill-${hQual}" style="width:${hWidth}%;"></div>
             </div>
           </div>
-          <div class="ml-odds ml-odds-right">${escape(otherOdds || '—')}</div>
+          <div class="ml-odds ml-odds-right">${escape(homeOdds || '—')}</div>
           <div class="ml-label">${escape(label)}</div>
         </div>
       `);
