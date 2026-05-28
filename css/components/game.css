@@ -1,0 +1,1139 @@
+/* ============================================================
+ * Game Pages — Component Styles
+ * ============================================================
+ * Per the Game Pages build brief (2026-05-27).
+ *
+ * Hero (.ctx-*) preserved from the prior game.html design.
+ * Everything beneath rebuilt to match Live Lines / Results
+ * aesthetic: cream backgrounds, white cards, eyebrow + serif
+ * headlines, 4px radii, 0.5px borders.
+ *
+ * Pure CSS for chart visualizations (spread/total dot plots,
+ * moneyline probability bars) — no library overhead.
+ * ============================================================ */
+
+
+/* ============================================================
+ * 0. PAGE STATES (loading, error, paywall)
+ * ============================================================ */
+
+.game-loading,
+.game-status,
+.game-paywall {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 80px 24px 120px;
+  text-align: center;
+  font-family: var(--sans);
+}
+
+.game-loading-spinner {
+  width: 32px; height: 32px;
+  margin: 0 auto 20px;
+  border: 2px solid var(--cream-mid);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: game-spin 700ms linear infinite;
+}
+@keyframes game-spin {
+  to { transform: rotate(360deg); }
+}
+.game-loading-msg {
+  color: var(--text-mid);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.game-status-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 32px;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+.game-status-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.game-status-sub {
+  font-size: 15px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0 auto 28px;
+}
+.game-status-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 200ms ease;
+}
+.game-status-btn:hover { background: #2A2920; }
+
+/* Paywall (anonymous visitor) */
+.game-paywall {
+  padding: 120px 24px;
+}
+.game-paywall-inner {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 56px 40px;
+  max-width: 580px;
+  margin: 0 auto;
+}
+.game-paywall-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+.game-paywall-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--ink);
+  line-height: 1.25;
+  margin: 0 0 14px;
+}
+.game-paywall-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.game-paywall-sub {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  margin: 0 auto 28px;
+  max-width: 440px;
+}
+.game-paywall-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 200ms ease;
+}
+.game-paywall-btn:hover { background: #2A2920; }
+.game-paywall-foot {
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--text-light);
+}
+.game-paywall-foot a {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+
+/* ============================================================
+ * 1. HERO (preserved from prior design)
+ * ============================================================ */
+
+.ctx {
+  position: relative;
+  background: var(--ink);
+  overflow: hidden;
+  min-height: 380px;
+}
+.ctx-bg { position: absolute; inset: 0; display: flex; }
+.ctx-bg-half { flex: 1; }
+.ctx-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(15,14,10,0.35) 0%,
+    rgba(15,14,10,0.55) 55%,
+    rgba(15,14,10,0.85) 100%);
+}
+.ctx-seam {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg,
+    rgba(212,168,58,0) 0%,
+    rgba(212,168,58,0.5) 30%,
+    rgba(212,168,58,0.5) 70%,
+    rgba(212,168,58,0) 100%);
+  transform: translateX(-0.5px);
+  z-index: 2;
+}
+.ctx-inner {
+  position: relative;
+  z-index: 3;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 32px 32px;
+}
+.ctx-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(248,245,238,0.65);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.ctx-breadcrumb a {
+  color: rgba(248,245,238,0.75);
+  text-decoration: none;
+}
+.ctx-breadcrumb a:hover { color: var(--gold-light); }
+.ctx-breadcrumb-sep { color: rgba(248,245,238,0.4); }
+
+/* Tier ribbon (top-left corner) */
+.ctx-ribbon {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 5;
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  background: var(--tier-bg);
+  color: var(--tier-fg);
+}
+.ctx-ribbon::after {
+  content: '';
+  position: absolute;
+  left: 100%; top: 0; bottom: 0;
+  width: 10px;
+  background: linear-gradient(135deg, var(--tier-bg) 50%, transparent 50%);
+}
+
+/* Tier color mappings — used by ribbon + pick badges */
+.tier-ap   { --tier-bg: var(--gold);             --tier-fg: var(--ink); }
+.tier-a    { --tier-bg: #C0C5CC;                 --tier-fg: var(--ink); }
+.tier-sm   { --tier-bg: var(--sage);             --tier-fg: #fff; }
+.tier-gl   { --tier-bg: var(--gold-pale);        --tier-fg: var(--ink); }
+.tier-ls   { --tier-bg: var(--rust);             --tier-fg: #fff; }
+.tier-no-edge { --tier-bg: rgba(160,154,138,0.35); --tier-fg: var(--cream); }
+
+/* Team names + sub */
+.ctx-teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 28px;
+}
+.ctx-side { min-width: 0; }
+.ctx-side.away { text-align: right; padding-right: 24px; }
+.ctx-side.home { text-align: left;  padding-left: 24px; }
+.ctx-team-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 48px;
+  color: var(--cream);
+  line-height: 1.1;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+.ctx-team-sub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: rgba(248,245,238,0.78);
+  margin-top: 8px;
+}
+.ctx-side.away .ctx-team-sub { justify-content: flex-end; }
+.ctx-side.home .ctx-team-sub { justify-content: flex-start; }
+.ctx-team-rank {
+  font-weight: 700;
+  color: var(--gold-light);
+}
+.ctx-team-conf {
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.ctx-team-record {
+  color: rgba(248,245,238,0.65);
+}
+.ctx-at {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 28px;
+  color: var(--gold-light);
+  padding: 0 24px;
+  line-height: 1;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+}
+
+/* Meta row (kickoff, venue) */
+.ctx-meta {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: rgba(248,245,238,0.85);
+}
+.ctx-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ctx-meta-item strong {
+  color: var(--cream);
+  font-weight: 600;
+}
+.ctx-meta-dot {
+  width: 4px; height: 4px;
+  background: rgba(212,168,58,0.5);
+  border-radius: 50%;
+}
+
+/* Projected score block (pre-game) */
+.ctx-projected {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  max-width: 560px;
+  margin: 0 auto 24px;
+  padding: 20px 24px 22px;
+  background: rgba(248,245,238,0.04);
+  border: 1px solid rgba(212,168,58,0.18);
+  border-radius: 4px;
+}
+.ctx-projected-eyebrow {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.ctx-projected-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.ctx-projected-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 48px;
+  color: var(--cream);
+  line-height: 1;
+}
+.ctx-projected-num.winner { color: var(--gold-light); }
+.ctx-projected-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(248,245,238,0.55);
+}
+.ctx-projected-dash {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: rgba(248,245,238,0.4);
+  font-style: italic;
+}
+
+/* Final score (post-game) */
+.pg-score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 8px 0 24px;
+}
+.pg-score-team { text-align: center; }
+.pg-score-team.away { text-align: right; }
+.pg-score-team.home { text-align: left; }
+.pg-score-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 72px;
+  color: var(--cream);
+  line-height: 1;
+}
+.pg-score-num.loser { opacity: 0.55; }
+.pg-score-dash {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 32px;
+  color: var(--gold-light);
+  padding: 0 12px;
+}
+
+
+/* ============================================================
+ * 2. MAIN COLUMN & SECTION HEADERS
+ * ============================================================ */
+
+.game-main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.game-section {
+  padding-top: 56px;
+}
+.game-section:first-of-type {
+  padding-top: 40px;
+}
+
+.game-section-head {
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+.game-section-eyebrow {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.game-section-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.2;
+}
+.game-section-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.game-section-deck {
+  margin: 8px 0 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--gold);
+  font-weight: 400;
+}
+
+/* Generic card primitive */
+.game-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 28px;
+}
+
+
+/* ============================================================
+ * 3. STORYLINE (narrative section)
+ * ============================================================ */
+
+.storyline-card {
+  padding: 32px 36px;
+}
+.storyline-lede {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--gold);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+.storyline-text {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-mid);
+}
+.storyline-text p {
+  margin: 0 0 14px;
+}
+.storyline-text p:last-child { margin-bottom: 0; }
+.storyline-text strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+.storyline-meta {
+  margin-top: 22px;
+  text-align: right;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-light);
+  letter-spacing: 0.5px;
+}
+.storyline-meta .stale-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--rust);
+  margin-left: 12px;
+  font-weight: 600;
+}
+
+
+/* ============================================================
+ * 4. THE READ (model projection charts)
+ * ============================================================ */
+
+.read-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.read-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 24px 28px 28px;
+}
+.read-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cream-mid);
+}
+.read-card-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.read-card-vegas {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+}
+.read-card-vegas strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ── Dot plot (Spread + Total) ───────────────────────────────── */
+
+.read-plot {
+  position: relative;
+  padding: 16px 8px 0;
+}
+
+/* Axis: horizontal track with tick marks below */
+.read-axis {
+  position: relative;
+  height: 1px;
+  background: var(--cream-mid);
+  margin-bottom: 28px;
+}
+.read-axis-tick {
+  position: absolute;
+  top: -2px;
+  width: 1px;
+  height: 5px;
+  background: var(--cream-mid);
+  transform: translateX(-0.5px);
+}
+.read-axis-tick.major {
+  background: var(--border);
+  height: 7px;
+  top: -3px;
+}
+.read-axis-label {
+  position: absolute;
+  top: 10px;
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--text-light);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Vegas reference line */
+.read-vegas-mark {
+  position: absolute;
+  top: -28px;
+  bottom: 0;
+  width: 2px;
+  background: var(--ink);
+  transform: translateX(-1px);
+  z-index: 3;
+}
+.read-vegas-mark::before {
+  content: 'Vegas';
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* PressBox blend marker (star, on the axis) */
+.read-blend-mark {
+  position: absolute;
+  top: -8px;
+  width: 16px; height: 16px;
+  transform: translateX(-8px);
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(184,146,42,0.18);
+  z-index: 4;
+}
+.read-blend-mark::after {
+  content: 'PressBox';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+/* Model rows: one per model, each gets its own row beneath the axis */
+.read-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+  position: relative;
+}
+.read-row {
+  position: relative;
+  height: 22px;
+  display: flex;
+  align-items: center;
+}
+.read-row-track {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.read-row-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px; height: 10px;
+  background: var(--text-mid);
+  border-radius: 50%;
+  transform: translate(-5px, -5px);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--text-mid);
+  z-index: 2;
+}
+.read-row-dot.missing {
+  background: var(--cream-mid);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--cream-mid);
+}
+.read-row-name {
+  position: absolute;
+  left: 0;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.read-row-value {
+  position: absolute;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  transform: translateX(10px);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.read-row-value.missing {
+  color: var(--text-light);
+  font-style: normal;
+}
+
+/* ── Moneyline probability bars ──────────────────────────────── */
+
+.read-ml-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+.read-ml-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 90px;
+  align-items: center;
+  gap: 14px;
+}
+.read-ml-name {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+.read-ml-row.is-vegas .read-ml-name { color: var(--ink); }
+.read-ml-row.is-blend .read-ml-name { color: var(--gold); }
+.read-ml-bar {
+  position: relative;
+  height: 22px;
+  background: var(--cream-dark);
+  border-radius: 2px;
+  overflow: hidden;
+  display: flex;
+}
+.read-ml-bar-away {
+  background: rgba(74,122,74,0.65);
+  height: 100%;
+}
+.read-ml-bar-home {
+  background: rgba(15,14,10,0.6);
+  height: 100%;
+}
+.read-ml-row.is-vegas .read-ml-bar-away  { background: var(--sage); }
+.read-ml-row.is-vegas .read-ml-bar-home  { background: var(--ink); }
+.read-ml-row.is-blend .read-ml-bar-away  { background: var(--gold); }
+.read-ml-row.is-blend .read-ml-bar-home  { background: #826515; }
+.read-ml-values {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+  text-align: right;
+  letter-spacing: 0.3px;
+}
+.read-ml-row.is-vegas .read-ml-values,
+.read-ml-row.is-blend .read-ml-values {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.read-ml-foot {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cream-mid);
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-light);
+}
+.read-ml-foot-away { color: var(--sage); font-weight: 600; }
+.read-ml-foot-home { color: var(--ink); font-weight: 600; }
+
+
+/* ============================================================
+ * 5. THE PICK (active pick(s) inline)
+ * ============================================================ */
+
+.pick-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pick-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 22px 24px;
+}
+.pick-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+.pick-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: var(--tier-bg);
+  color: var(--tier-fg);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.pick-market {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.pick-line {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.pick-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-mid);
+}
+.pick-meta-dot {
+  width: 4px; height: 4px;
+  background: var(--text-light);
+  border-radius: 50%;
+  display: inline-block;
+}
+.pick-outcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.pick-outcome.win  { background: var(--sage-pale); color: var(--sage); }
+.pick-outcome.loss { background: var(--rust-pale); color: var(--rust); }
+.pick-outcome.push { background: var(--cream-mid); color: var(--text-mid); }
+
+/* No-pick note */
+.pick-empty {
+  background: #fff;
+  border: 0.5px dashed var(--border);
+  border-radius: 4px;
+  padding: 24px 28px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.pick-empty-icon {
+  flex-shrink: 0;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--cream-mid);
+  color: var(--text-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+
+/* ============================================================
+ * 6. THE NUMBERS (stat comparison)
+ * ============================================================ */
+
+.numbers-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.numbers-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.numbers-card-head {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--cream-mid);
+}
+.numbers-card-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+  margin: 0;
+}
+.numbers-rows {
+  padding: 8px 24px 16px;
+}
+
+/* Stat row layout: away value | track | label | track | home value */
+.numbers-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 110px 1fr 60px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--cream-mid);
+}
+.numbers-row:last-child { border-bottom: 0; }
+
+.numbers-row-val {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--text-mid);
+}
+.numbers-row-val.away { text-align: right; }
+.numbers-row-val.home { text-align: left; }
+.numbers-row-val.lead {
+  color: var(--ink);
+  font-weight: 700;
+}
+.numbers-row-val.missing {
+  font-style: normal;
+  font-size: 14px;
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+.numbers-row-label {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+  text-align: center;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
+}
+
+/* Value-anchored bars: bar fills FROM CENTER outward.
+   Position tracks where value sits in league distribution.
+   - center = league median
+   - left edge = league min (for "lower better" stats, the GOOD side)
+   - right edge = league max
+   Bars on the away side fill RIGHT-TO-LEFT (toward away side).
+   Bars on the home side fill LEFT-TO-RIGHT (toward home side).
+   Color is QUALITY: gold for above-median (good given lower_better),
+   neutral for below. The fill always tracks raw position in the
+   league range — but visual length = how far from median, so
+   "elite" stats look long, "league average" stats look short. */
+.numbers-row-track {
+  position: relative;
+  height: 8px;
+  background: transparent;
+}
+.numbers-row-track.away { direction: rtl; }
+
+.numbers-row-fill {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: var(--text-light);
+  border-radius: 1px;
+  transition: width 200ms ease;
+}
+.numbers-row-fill.away {
+  right: 0;
+}
+.numbers-row-fill.home {
+  left: 0;
+}
+.numbers-row-fill.elite      { background: var(--gold); }
+.numbers-row-fill.above-avg  { background: var(--gold-light); }
+.numbers-row-fill.below-avg  { background: var(--text-light); }
+.numbers-row-fill.poor       { background: var(--border); }
+.numbers-row-fill.missing    { background: transparent; }
+
+/* Mobile: stack vertically per stat */
+@media (max-width: 600px) {
+  .numbers-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 6px 12px;
+    padding: 14px 0;
+  }
+  .numbers-row-label {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+  }
+  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: left; font-size: 18px; }
+  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: right; font-size: 18px; }
+  .numbers-row-track.away { grid-column: 1; grid-row: 3; direction: rtl; }
+  .numbers-row-track.home { grid-column: 2; grid-row: 3; }
+}
+
+
+/* ============================================================
+ * 7. THE SERIES (matchup history)
+ * ============================================================ */
+
+.series-card {
+  padding: 24px 28px;
+}
+.series-summary {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--cream-mid);
+}
+.series-list {
+  display: flex;
+  flex-direction: column;
+}
+.series-row {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cream-mid);
+}
+.series-row:last-child { border-bottom: 0; }
+.series-year {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-light);
+  text-transform: uppercase;
+}
+.series-score {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.series-score strong { font-weight: 700; }
+
+
+/* ============================================================
+ * FOOTER
+ * ============================================================ */
+
+footer {
+  background: var(--cream-dark);
+  border-top: 1px solid var(--border);
+  margin-top: 80px;
+  padding: 48px 0 32px;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+.footer-logo img { height: 56px; width: auto; display: block; opacity: 0.85; }
+.footer-meta-links {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.footer-meta-links a {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  text-decoration: none;
+}
+.footer-meta-links a:hover { color: var(--ink); }
+.footer-note {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-light);
+  text-align: center;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+ * MOBILE RESPONSIVE
+ * ============================================================ */
+
+@media (max-width: 760px) {
+  .ctx-inner { padding: 20px 16px 24px; }
+  .ctx-teams { margin-bottom: 20px; }
+  .ctx-team-name { font-size: 32px; }
+  .ctx-at { font-size: 22px; padding: 0 12px; }
+  .ctx-side.away { padding-right: 12px; }
+  .ctx-side.home { padding-left: 12px; }
+  .ctx-projected { padding: 16px 18px 18px; }
+  .ctx-projected-num { font-size: 36px; }
+  .pg-score-num { font-size: 52px; }
+
+  .game-main { padding: 0 16px 60px; }
+  .game-section { padding-top: 40px; }
+  .game-section-title { font-size: 22px; }
+  .game-section-deck { font-size: 14px; }
+  .game-card { padding: 20px; }
+  .storyline-card { padding: 22px 20px; }
+  .storyline-text { font-size: 14px; }
+  .storyline-lede { font-size: 16px; }
+
+  .read-card { padding: 18px 16px 22px; }
+  .read-card-head { flex-direction: column; align-items: flex-start; gap: 6px; }
+
+  .read-ml-row {
+    grid-template-columns: 64px 1fr 80px;
+    gap: 10px;
+  }
+  .read-ml-name { font-size: 11px; }
+  .read-ml-values { font-size: 11px; }
+
+  .pick-card { padding: 18px 18px; }
+  .pick-line { font-size: 19px; }
+
+  .numbers-card-head { padding: 14px 18px 12px; }
+  .numbers-rows { padding: 6px 18px 12px; }
+}
