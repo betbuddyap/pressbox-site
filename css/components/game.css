@@ -958,7 +958,7 @@
    have to scroll back to the hero to remember which side is which. */
 .numbers-teamhead {
   display: grid;
-  grid-template-columns: 1fr 110px 1fr;
+  grid-template-columns: 1fr 140px 1fr;
   align-items: center;
   padding: 10px 24px 8px;
   font-family: var(--sans);
@@ -1009,7 +1009,7 @@
 /* Stat row layout: away value | track | label | track | home value */
 .numbers-row {
   display: grid;
-  grid-template-columns: 60px 1fr 110px 1fr 60px;
+  grid-template-columns: 60px 1fr 140px 1fr 60px;
   align-items: center;
   gap: 10px;
   padding: 3px 0;
@@ -1047,6 +1047,7 @@
   text-align: center;
   letter-spacing: 0.3px;
   line-height: 1.3;
+  white-space: nowrap;
   position: relative;
   /* Option Y: vertical gutters flanking the center label,
      same color as the row dividers, separating label from bars. */
@@ -1083,13 +1084,8 @@
 /* Value-anchored bars.
    Width tracks RAW position in the league range (bigger number =
    longer bar, always). Color carries the quality signal across
-   5 tiers: deep sage (elite) → sage-light → cream-mid → rust-light
-   → deep rust (poor). Defense rows are labeled "...Allowed" so the
-   reader knows shorter = better there.
-
-   Outer end (the end nearer the value) is rounded; inner end
-   (toward center label) stays sharp so the bars look anchored
-   at the center label gutter. */
+   5 tiers running from ink (poor) to gold (elite). Defense rows are
+   labeled "Opp ..." so the reader knows shorter = better there. */
 .numbers-row-track {
   position: relative;
   height: 10px;
@@ -1101,23 +1097,20 @@
   position: absolute;
   top: 0; bottom: 0;
   background: var(--text-light);
+  border-radius: 1px;
   transition: width 200ms ease;
 }
 .numbers-row-fill.away {
   right: 0;
-  /* away bar's outer edge is its LEFT side */
-  border-radius: 999px 0 0 999px;
 }
 .numbers-row-fill.home {
   left: 0;
-  /* home bar's outer edge is its RIGHT side */
-  border-radius: 0 999px 999px 0;
 }
-.numbers-row-fill.elite      { background: var(--sage); }
-.numbers-row-fill.above-avg  { background: var(--sage-light); }
-.numbers-row-fill.mid        { background: var(--cream-mid); }
-.numbers-row-fill.below-avg  { background: var(--rust-light); }
-.numbers-row-fill.poor       { background: var(--rust); }
+.numbers-row-fill.elite      { background: var(--gold); }
+.numbers-row-fill.above-avg  { background: var(--gold-light); }
+.numbers-row-fill.mid        { background: var(--text-light); }
+.numbers-row-fill.below-avg  { background: var(--text-mid); }
+.numbers-row-fill.poor       { background: var(--ink); }
 .numbers-row-fill.missing    { background: transparent; }
 
 /* Mobile: stack vertically per stat */
