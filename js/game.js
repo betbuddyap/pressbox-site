@@ -635,15 +635,49 @@
   function renderNumbers(data) {
     els.numbersStack.innerHTML = '';
     const cats = data.stats?.categories || [];
+    const awayName = data.game?.away?.name || 'Away';
+    const homeName = data.game?.home?.name || 'Home';
+
     cats.forEach(cat => {
       const card = document.createElement('div');
       card.className = 'numbers-card';
-      const rowsHtml = (cat.rows || []).map(r => renderStatRow(r)).join('');
+
+      // Special-case: Defense — Advanced splits into "Allowed" (lower better)
+      // and "Generated" (higher better) sub-groups. Headed with explanatory
+      // italic subheads so the reader knows which direction = good.
+      let bodyHtml;
+      if (cat.name === 'Defense — Advanced') {
+        const allowedRows = (cat.rows || []).filter(r => r.lower_better);
+        const generatedRows = (cat.rows || []).filter(r => !r.lower_better);
+
+        const sections = [];
+        if (allowedRows.length) {
+          sections.push(`
+            <div class="numbers-subhead">What this defense allows <span class="numbers-subhead-hint">(shorter bar = better)</span></div>
+            ${allowedRows.map(r => renderStatRow(r)).join('')}
+          `);
+        }
+        if (generatedRows.length) {
+          sections.push(`
+            <div class="numbers-subhead">What this defense generates <span class="numbers-subhead-hint">(longer bar = better)</span></div>
+            ${generatedRows.map(r => renderStatRow(r)).join('')}
+          `);
+        }
+        bodyHtml = sections.join('');
+      } else {
+        bodyHtml = (cat.rows || []).map(r => renderStatRow(r)).join('');
+      }
+
       card.innerHTML = `
         <div class="numbers-card-head">
           <h3 class="numbers-card-title">${escape(cat.name)}</h3>
         </div>
-        <div class="numbers-rows">${rowsHtml}</div>
+        <div class="numbers-teamhead">
+          <div class="numbers-teamhead-away">${escape(awayName)}</div>
+          <div class="numbers-teamhead-spacer"></div>
+          <div class="numbers-teamhead-home">${escape(homeName)}</div>
+        </div>
+        <div class="numbers-rows">${bodyHtml}</div>
       `;
       els.numbersStack.appendChild(card);
     });
