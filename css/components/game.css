@@ -933,7 +933,7 @@
 .numbers-stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 .numbers-card {
   background: #fff;
@@ -1002,7 +1002,7 @@
   .numbers-teamhead-home { text-align: right; }
 }
 .numbers-rows {
-  padding: 8px 24px 16px;
+  padding: 4px 24px 10px;
 }
 
 /* Stat row layout: away value | track | label | track | home value */
@@ -1011,18 +1011,18 @@
   grid-template-columns: 60px 1fr 110px 1fr 60px;
   align-items: center;
   gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--cream-mid);
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(15, 14, 10, 0.04);
 }
 .numbers-row:last-child { border-bottom: 0; }
 
 .numbers-row-val {
   font-family: var(--sans);
   font-style: normal;
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 14px;
   color: var(--text-mid);
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 .numbers-row-val.away { text-align: right; }
 .numbers-row-val.home { text-align: left; }
@@ -1032,7 +1032,7 @@
 }
 .numbers-row-val.missing {
   font-style: normal;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-light);
   font-weight: 400;
 }
@@ -1040,27 +1040,22 @@
 .numbers-row-label {
   font-family: var(--sans);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-mid);
   text-align: center;
   letter-spacing: 0.3px;
   line-height: 1.3;
 }
 
-/* Value-anchored bars: bar fills FROM CENTER outward.
-   Position tracks where value sits in league distribution.
-   - center = league median
-   - left edge = league min (for "lower better" stats, the GOOD side)
-   - right edge = league max
-   Bars on the away side fill RIGHT-TO-LEFT (toward away side).
-   Bars on the home side fill LEFT-TO-RIGHT (toward home side).
-   Color is QUALITY: gold for above-median (good given lower_better),
-   neutral for below. The fill always tracks raw position in the
-   league range — but visual length = how far from median, so
-   "elite" stats look long, "league average" stats look short. */
+/* Value-anchored bars.
+   Width tracks RAW position in the league range (bigger number =
+   longer bar, always). Color is a single flat ink across all rows —
+   the bar carries the quantitative read; the bold "lead" value
+   highlights the better team within the row. Defense rows are labeled
+   "...Allowed" so the reader knows shorter = better there. */
 .numbers-row-track {
   position: relative;
-  height: 8px;
+  height: 5px;
   background: transparent;
 }
 .numbers-row-track.away { direction: rtl; }
@@ -1068,7 +1063,7 @@
 .numbers-row-fill {
   position: absolute;
   top: 0; bottom: 0;
-  background: var(--text-light);
+  background: var(--ink);
   border-radius: 1px;
   transition: width 200ms ease;
 }
@@ -1078,10 +1073,10 @@
 .numbers-row-fill.home {
   left: 0;
 }
-.numbers-row-fill.elite      { background: var(--gold); }
-.numbers-row-fill.above-avg  { background: var(--gold-light); }
-.numbers-row-fill.below-avg  { background: var(--text-light); }
-.numbers-row-fill.poor       { background: var(--border); }
+.numbers-row-fill.elite,
+.numbers-row-fill.above-avg,
+.numbers-row-fill.below-avg,
+.numbers-row-fill.poor       { background: var(--ink); }
 .numbers-row-fill.missing    { background: transparent; }
 
 /* Mobile: stack vertically per stat */
@@ -1089,16 +1084,16 @@
   .numbers-row {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto auto;
-    gap: 6px 12px;
-    padding: 14px 0;
+    gap: 4px 12px;
+    padding: 8px 0;
   }
   .numbers-row-label {
     grid-column: 1 / -1;
     grid-row: 1;
     text-align: center;
   }
-  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: left; font-size: 16px; }
-  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: right; font-size: 16px; }
+  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: left; font-size: 14px; }
+  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: right; font-size: 14px; }
   .numbers-row-track.away { grid-column: 1; grid-row: 3; direction: rtl; }
   .numbers-row-track.home { grid-column: 2; grid-row: 3; }
 }
