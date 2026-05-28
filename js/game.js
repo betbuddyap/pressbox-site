@@ -1,0 +1,812 @@
+/* ============================================================
+ * Game Pages — Client logic
+ * ============================================================
+ * Per the build brief (2026-05-27).
+ *
+ * Reads ?game_id=N from URL. Fetches
+ * /canonical/games/{id}/breakdown. Renders six sections:
+ *   1. Hero          (.ctx-* — team colors, names, projected/final score)
+ *   2. Storyline     (narrative blurb + staleness warn)
+ *   3. The Read      (5-model dot plots + ML probability bars)
+ *   4. The Pick      (active pick(s) or "no edge" note)
+ *   5. The Numbers   (6 stat category cards w/ value-anchored bars)
+ *   6. The Series    (matchup history, hidden if no prior meetings)
+ *
+ * Pure DOM + CSS positioning for charts — no library dependency.
+ * ============================================================ */
+
+(function () {
+  'use strict';
+
+  /* ───────────────────────────────────────────────────────────
+   * Constants
+   * ─────────────────────────────────────────────────────────── */
+
+  const API_BASE   = 'https://betbuddy-backend.onrender.com';
+  const SUPABASE_URL = 'https://brwalcuodwxsynrpiqjc.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
+
+  // Display labels and tier-class mapping (matches the brief)
+  const TIER_CLASS = {
+    'A+':           'tier-ap',
+    'A':            'tier-a',
+    'smart_money':  'tier-sm',
+    'goldilocks':   'tier-gl',
+    'lottery':      'tier-ls',
+    'no_edge':      'tier-no-edge',
+  };
+  const MARKET_DISPLAY = {
+    'spread': 'Spread',
+    'total':  'Total',
+    'ml':     'Moneyline',
+  };
+  const MODEL_ORDER = ['SP+', 'Elo', 'PPA', 'Advanced', 'Pace+'];
+
+  /* ───────────────────────────────────────────────────────────
+   * Element refs
+   * ─────────────────────────────────────────────────────────── */
+
+  const $ = (id) => document.getElementById(id);
+
+  const els = {
+    loading:   $('loadingState'),
+    error:     $('errorState'),
+    notFound:  $('notFoundState'),
+    paywall:   $('paywallState'),
+    content:   $('gameContent'),
+
+    // Hero
+    bgAway:    $('ctxBgAway'),
+    bgHome:    $('ctxBgHome'),
+    ribbon:    $('ctxRibbon'),
+    breadcrumb: $('ctxBreadcrumb'),
+    awayName:  $('ctxAwayName'),
+    awaySub:   $('ctxAwaySub'),
+    homeName:  $('ctxHomeName'),
+    homeSub:   $('ctxHomeSub'),
+    pgScore:   $('pgScore'),
+    pgAway:    $('pgAwayNum'),
+    pgHome:    $('pgHomeNum'),
+    preGame:   $('preGameContent'),
+    projected: $('ctxProjected'),
+    projAway:  $('ctxProjAway'),
+    projHome:  $('ctxProjHome'),
+    projAwayLbl: $('ctxProjAwayLbl'),
+    projHomeLbl: $('ctxProjHomeLbl'),
+    meta:      $('ctxMeta'),
+
+    // Sections
+    storylineLede:  $('storylineLede'),
+    storylineText:  $('storylineText'),
+    storylineMeta:  $('storylineMeta'),
+    readStack:      $('readStack'),
+    pickStack:      $('pickStack'),
+    numbersStack:   $('numbersStack'),
+    seriesSection:  $('seriesSection'),
+    seriesSummary:  $('seriesSummary'),
+    seriesList:     $('seriesList'),
+  };
+
+  /* ───────────────────────────────────────────────────────────
+   * State helpers
+   * ─────────────────────────────────────────────────────────── */
+
+  function showState(which) {
+    [els.loading, els.error, els.notFound, els.paywall, els.content].forEach(el => {
+      if (el) el.style.display = 'none';
+    });
+    const target = { loading: els.loading, error: els.error, notfound: els.notFound,
+                     paywall: els.paywall, content: els.content }[which];
+    if (target) target.style.display = which === 'content' ? 'block' : '';
+  }
+
+  function getGameId() {
+    const url = new URL(window.location.href);
+    const fromQuery = url.searchParams.get('game_id') || url.searchParams.get('id');
+    if (fromQuery) return fromQuery;
+    // Support path-style URLs: /game/{id}
+    const m = url.pathname.match(/\/game\/(\d+)/);
+    return m ? m[1] : null;
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * Auth gate
+   * ─────────────────────────────────────────────────────────── */
+
+  async function checkAuth() {
+    if (!window.supabase) return null;
+    try {
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data } = await sb.auth.getSession();
+      return data?.session?.access_token || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * Data fetch
+   * ─────────────────────────────────────────────────────────── */
+
+  async function fetchBreakdown(gameId, token) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/canonical/games/${gameId}/breakdown`, { headers });
+    if (res.status === 404) return { notFound: true };
+    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+    return await res.json();
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * Hero rendering
+   * ─────────────────────────────────────────────────────────── */
+
+  function renderHero(data) {
+    const g = data.game;
+    if (!g) return;
+
+    // Team color split
+    if (g.away?.primary_color) els.bgAway.style.background = g.away.primary_color;
+    if (g.home?.primary_color) els.bgHome.style.background = g.home.primary_color;
+
+    // Breadcrumb
+    els.breadcrumb.innerHTML =
+      `<a href="/live-lines.html">Live Lines</a>` +
+      `<span class="ctx-breadcrumb-sep">›</span>` +
+      `<span>${escape(g.away?.name)} @ ${escape(g.home?.name)}</span>`;
+
+    // Tier ribbon (only if there's a non-no-edge pick)
+    const ribbonPick = (data.picks || []).find(p => p.tier && p.tier !== 'no_edge');
+    if (ribbonPick) {
+      const tierClass = TIER_CLASS[ribbonPick.tier] || 'tier-no-edge';
+      els.ribbon.outerHTML =
+        `<div class="ctx-ribbon ${tierClass}" id="ctxRibbon">${escape(ribbonPick.tier_display || ribbonPick.tier)}</div>`;
+    } else {
+      els.ribbon.outerHTML = `<div id="ctxRibbon"></div>`;
+    }
+
+    // Team names
+    els.awayName.textContent = g.away?.name || '—';
+    els.homeName.textContent = g.home?.name || '—';
+
+    // Team sublines
+    const awaySubParts = [];
+    if (g.away?.rank != null) awaySubParts.push(`<span class="ctx-team-rank">#${g.away.rank}</span>`);
+    if (g.away?.conference)   awaySubParts.push(`<span class="ctx-team-conf">${escape(g.away.conference)}</span>`);
+    if (g.away?.record)       awaySubParts.push(`<span class="ctx-team-record">${escape(g.away.record)}</span>`);
+    els.awaySub.innerHTML = awaySubParts.join('<span class="ctx-meta-dot"></span>');
+
+    const homeSubParts = [];
+    if (g.home?.rank != null) homeSubParts.push(`<span class="ctx-team-rank">#${g.home.rank}</span>`);
+    if (g.home?.conference)   homeSubParts.push(`<span class="ctx-team-conf">${escape(g.home.conference)}</span>`);
+    if (g.home?.record)       homeSubParts.push(`<span class="ctx-team-record">${escape(g.home.record)}</span>`);
+    els.homeSub.innerHTML = homeSubParts.join('<span class="ctx-meta-dot"></span>');
+
+    // Score state: played vs upcoming
+    const played = g.status === 'final' && g.away_points != null && g.home_points != null;
+    if (played) {
+      els.pgScore.style.display = '';
+      els.pgAway.textContent = g.away_points;
+      els.pgHome.textContent = g.home_points;
+      const awayWon = g.away_points > g.home_points;
+      els.pgAway.classList.toggle('loser', !awayWon && g.away_points !== g.home_points);
+      els.pgHome.classList.toggle('loser',  awayWon && g.away_points !== g.home_points);
+      els.preGame.style.display = 'none';
+    } else {
+      els.pgScore.style.display = 'none';
+      els.preGame.style.display = '';
+      renderProjectedScore(data);
+    }
+
+    // Meta row (kickoff + venue)
+    const metaParts = [];
+    if (g.kickoff_display) {
+      metaParts.push(`<div class="ctx-meta-item"><strong>${escape(g.kickoff_display)}</strong></div>`);
+    }
+    if (g.venue) {
+      metaParts.push(`<div class="ctx-meta-item">${escape(g.venue)}</div>`);
+    }
+    if (g.neutral_site) {
+      metaParts.push(`<div class="ctx-meta-item">Neutral Site</div>`);
+    }
+    els.meta.innerHTML = metaParts.join('<span class="ctx-meta-dot"></span>');
+  }
+
+  function renderProjectedScore(data) {
+    const p = data.projections;
+    if (!p) {
+      els.projected.style.display = 'none';
+      return;
+    }
+    const blendMargin = p.spread?.pressbox_blend; // home perspective (negative = home favored)
+    const blendTotal  = p.total?.pressbox_blend;
+    if (blendMargin == null || blendTotal == null) {
+      els.projected.style.display = 'none';
+      return;
+    }
+    // home_points + away_points = total. home_points - away_points = margin (home-perspective).
+    // home_points = (total + margin) / 2
+    // away_points = (total - margin) / 2
+    const homePts = (blendTotal + blendMargin) / 2;
+    const awayPts = (blendTotal - blendMargin) / 2;
+
+    els.projAway.textContent = Math.round(awayPts);
+    els.projHome.textContent = Math.round(homePts);
+    els.projAwayLbl.textContent = data.game?.away?.name || '';
+    els.projHomeLbl.textContent = data.game?.home?.name || '';
+
+    // Winner emphasis
+    if (awayPts > homePts) {
+      els.projAway.classList.add('winner');
+      els.projHome.classList.remove('winner');
+    } else if (homePts > awayPts) {
+      els.projHome.classList.add('winner');
+      els.projAway.classList.remove('winner');
+    }
+
+    els.projected.style.display = '';
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * Storyline
+   * ─────────────────────────────────────────────────────────── */
+
+  function renderStoryline(data) {
+    const n = data.narrative || {};
+    if (!n.text) {
+      els.storylineText.innerHTML = '<p style="color:var(--text-light);font-style:italic;">No editorial read available for this game.</p>';
+      els.storylineMeta.textContent = '';
+      els.storylineLede.style.display = 'none';
+      return;
+    }
+
+    // Use post-game text if available and game is played
+    const usePostGame = data.game?.status === 'final' && n.post_game_text;
+    const text = usePostGame ? n.post_game_text : n.text;
+
+    // Parse paragraphs and clean up UTF-8 encoding issues (em-dash corruption)
+    const paragraphs = text
+      .split(/\n\n+/)
+      .map(p => p.trim())
+      .filter(Boolean)
+      .map(p => fixEncoding(p));
+
+    els.storylineText.innerHTML = paragraphs.map(p =>
+      `<p>${escape(p)}</p>`
+    ).join('');
+
+    // Generated timestamp + staleness warning
+    const metaParts = [];
+    if (n.generated_at) {
+      metaParts.push(`Generated ${timeAgo(n.generated_at)}.`);
+    }
+    if (n.last_input_change && n.generated_at &&
+        new Date(n.last_input_change) > new Date(n.generated_at)) {
+      metaParts.push(`<span class="stale-warn">⚠ Lines have moved since this was written.</span>`);
+    }
+    els.storylineMeta.innerHTML = metaParts.join(' ');
+
+    // Lede not currently emitted by the generator; keep hidden
+    els.storylineLede.style.display = 'none';
+  }
+
+  function fixEncoding(s) {
+    // Repair common UTF-8 mis-encoding artifacts from the narrative generator
+    return s
+      .replace(/â€"/g, '—')
+      .replace(/â€™/g, "'")
+      .replace(/â€œ/g, '"')
+      .replace(/â€/g, '"')
+      .replace(/â€¦/g, '…');
+  }
+
+  function timeAgo(iso) {
+    if (!iso) return '';
+    const then = new Date(iso).getTime();
+    if (isNaN(then)) return '';
+    const diffMs = Date.now() - then;
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1)    return 'just now';
+    if (mins < 60)   return `${mins} min ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24)    return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30)   return `${days} day${days === 1 ? '' : 's'} ago`;
+    const months = Math.floor(days / 30);
+    return `${months} month${months === 1 ? '' : 's'} ago`;
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * The Read — model projection charts
+   * ─────────────────────────────────────────────────────────── */
+
+  function renderRead(data) {
+    const p = data.projections;
+    els.readStack.innerHTML = '';
+    if (!p) return;
+
+    if (p.spread)    els.readStack.appendChild(buildDotPlot('Spread', p.spread, 'margin'));
+    if (p.total)     els.readStack.appendChild(buildDotPlot('Total',  p.total,  'total'));
+    if (p.moneyline) els.readStack.appendChild(buildMLRows(data, p.moneyline));
+  }
+
+  /**
+   * Dot plot for spread or total. `key` is "margin" or "total" — the
+   * field name on each model entry.
+   */
+  function buildDotPlot(label, section, key) {
+    const card = document.createElement('div');
+    card.className = 'read-card';
+
+    const vegas = section.vegas_line;
+    const blend = section.pressbox_blend;
+    const models = (section.models || []).filter(m => m[key] != null);
+
+    // Determine axis range:
+    //   At minimum, vegas ± 10
+    //   Extended if any model is further out
+    const values = [vegas, blend, ...models.map(m => m[key])].filter(v => v != null);
+    if (!values.length) return card;
+
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    // Pad to vegas ± 10 minimum
+    let axisMin = Math.min(minVal, (vegas != null ? vegas - 10 : minVal));
+    let axisMax = Math.max(maxVal, (vegas != null ? vegas + 10 : maxVal));
+    // Round outwards to nearest integer
+    axisMin = Math.floor(axisMin);
+    axisMax = Math.ceil(axisMax);
+    if (axisMax - axisMin < 4) {
+      axisMin -= 2; axisMax += 2;
+    }
+    const range = axisMax - axisMin;
+
+    const xPct = (v) => ((v - axisMin) / range) * 100;
+    const fmt = (v) => {
+      if (v == null) return '—';
+      if (key === 'margin') return (v > 0 ? '+' : '') + v.toFixed(1);
+      return v.toFixed(1);
+    };
+
+    // Build header
+    const vegasDisplay = vegas != null ? fmt(vegas) : '—';
+    card.innerHTML = `
+      <div class="read-card-head">
+        <div class="read-card-label">${label}</div>
+        <div class="read-card-vegas">Vegas: <strong>${vegasDisplay}</strong></div>
+      </div>
+      <div class="read-plot">
+        <div class="read-axis"></div>
+        <div class="read-rows"></div>
+      </div>
+    `;
+
+    const axisEl = card.querySelector('.read-axis');
+    const rowsEl = card.querySelector('.read-rows');
+
+    // Axis tick marks every ~3 units
+    const tickStep = range > 30 ? 5 : (range > 15 ? 3 : 1);
+    for (let t = Math.ceil(axisMin / tickStep) * tickStep; t <= axisMax; t += tickStep) {
+      const tick = document.createElement('div');
+      tick.className = 'read-axis-tick' + (t % (tickStep * 2) === 0 ? ' major' : '');
+      tick.style.left = `${xPct(t)}%`;
+      axisEl.appendChild(tick);
+      if (t % (tickStep * 2) === 0) {
+        const lab = document.createElement('div');
+        lab.className = 'read-axis-label';
+        lab.style.left = `${xPct(t)}%`;
+        lab.textContent = key === 'margin' ? (t > 0 ? '+' + t : t) : t;
+        axisEl.appendChild(lab);
+      }
+    }
+
+    // Vegas vertical mark
+    if (vegas != null) {
+      const v = document.createElement('div');
+      v.className = 'read-vegas-mark';
+      v.style.left = `${xPct(vegas)}%`;
+      axisEl.appendChild(v);
+    }
+
+    // PressBox blend marker on the axis
+    if (blend != null) {
+      const b = document.createElement('div');
+      b.className = 'read-blend-mark';
+      b.style.left = `${xPct(blend)}%`;
+      b.title = `PressBox blend: ${fmt(blend)}`;
+      axisEl.appendChild(b);
+    }
+
+    // One row per model, in canonical order
+    MODEL_ORDER.forEach(modelName => {
+      const m = (section.models || []).find(x => x.name === modelName);
+      const row = document.createElement('div');
+      row.className = 'read-row';
+      const value = m && m[key] != null ? m[key] : null;
+
+      // Name label, left-aligned
+      const nameEl = document.createElement('div');
+      nameEl.className = 'read-row-name';
+      nameEl.textContent = modelName;
+      row.appendChild(nameEl);
+
+      if (value == null) {
+        // Missing — show ghost dot at 50% with em-dash
+        const dot = document.createElement('div');
+        dot.className = 'read-row-dot missing';
+        dot.style.left = '50%';
+        const val = document.createElement('div');
+        val.className = 'read-row-value missing';
+        val.style.left = '50%';
+        val.textContent = 'No data';
+        row.appendChild(dot);
+        row.appendChild(val);
+      } else {
+        const dot = document.createElement('div');
+        dot.className = 'read-row-dot';
+        dot.style.left = `${xPct(value)}%`;
+        const val = document.createElement('div');
+        val.className = 'read-row-value';
+        val.style.left = `${xPct(value)}%`;
+        val.textContent = fmt(value);
+        row.appendChild(dot);
+        row.appendChild(val);
+      }
+
+      rowsEl.appendChild(row);
+    });
+
+    return card;
+  }
+
+  /**
+   * Moneyline section: Vegas row + 5 model rows + PressBox blend row.
+   * Each row is a horizontal bar split between away/home probability.
+   */
+  function buildMLRows(data, mlSection) {
+    const card = document.createElement('div');
+    card.className = 'read-card';
+
+    const awayName = data.game?.away?.name || 'Away';
+    const homeName = data.game?.home?.name || 'Home';
+    const vegasAway = mlSection.vegas_away_implied;
+    const vegasHome = mlSection.vegas_home_implied;
+
+    const vegasLabel = (vegasAway != null && vegasHome != null)
+      ? `${awayName} ${Math.round(vegasAway * 100)}% · ${homeName} ${Math.round(vegasHome * 100)}%`
+      : '—';
+
+    card.innerHTML = `
+      <div class="read-card-head">
+        <div class="read-card-label">Moneyline</div>
+        <div class="read-card-vegas">${vegasLabel}</div>
+      </div>
+      <div class="read-ml-rows"></div>
+      <div class="read-ml-foot">
+        <span class="read-ml-foot-away">← ${escape(awayName)}</span>
+        <span class="read-ml-foot-home">${escape(homeName)} →</span>
+      </div>
+    `;
+    const rowsEl = card.querySelector('.read-ml-rows');
+
+    function bar(label, awayProb, homeProb, kind) {
+      const klass = kind === 'vegas' ? ' is-vegas' : kind === 'blend' ? ' is-blend' : '';
+      if (awayProb == null || homeProb == null) {
+        rowsEl.insertAdjacentHTML('beforeend', `
+          <div class="read-ml-row${klass}">
+            <div class="read-ml-name">${escape(label)}</div>
+            <div class="read-ml-bar"><div class="read-ml-bar-away" style="width:0%;"></div></div>
+            <div class="read-ml-values">—</div>
+          </div>
+        `);
+        return;
+      }
+      const aPct = Math.round(awayProb * 100);
+      const hPct = 100 - aPct;
+      rowsEl.insertAdjacentHTML('beforeend', `
+        <div class="read-ml-row${klass}">
+          <div class="read-ml-name">${escape(label)}</div>
+          <div class="read-ml-bar">
+            <div class="read-ml-bar-away" style="width:${aPct}%;"></div>
+            <div class="read-ml-bar-home" style="width:${hPct}%;"></div>
+          </div>
+          <div class="read-ml-values">${aPct}% / ${hPct}%</div>
+        </div>
+      `);
+    }
+
+    // Vegas first
+    bar('Vegas', vegasAway, vegasHome, 'vegas');
+
+    // 5 models
+    MODEL_ORDER.forEach(modelName => {
+      const m = (mlSection.models || []).find(x => x.name === modelName);
+      const a = m?.away_win_prob;
+      const h = m?.home_win_prob;
+      bar(modelName, a, h, 'model');
+    });
+
+    // PressBox blend
+    bar('PressBox', mlSection.pressbox_away_blend, mlSection.pressbox_home_blend, 'blend');
+
+    return card;
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * The Pick
+   * ─────────────────────────────────────────────────────────── */
+
+  function renderPicks(data) {
+    els.pickStack.innerHTML = '';
+    const picks = (data.picks || []).filter(p => p.tier && p.tier !== 'no_edge');
+    if (!picks.length) {
+      els.pickStack.innerHTML = `
+        <div class="pick-empty">
+          <div class="pick-empty-icon">i</div>
+          <div>No active pick on this game. Our system considered it but didn't find a tier-eligible edge.</div>
+        </div>
+      `;
+      return;
+    }
+
+    picks.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'pick-card';
+      const tierClass = TIER_CLASS[p.tier] || 'tier-no-edge';
+      const marketLabel = (p.market_display || MARKET_DISPLAY[p.market] || p.market || '').toUpperCase();
+
+      const lineDisplay = (() => {
+        if (p.market === 'total') {
+          return `${p.side_display} ${p.line ?? ''}`.trim();
+        }
+        if (p.market === 'spread') {
+          const ln = p.line != null ? formatSignedNumber(p.line) : '';
+          return `${p.side_display} ${ln}`.trim();
+        }
+        // moneyline
+        return `${p.side_display}${p.line != null ? ' ' + formatSignedNumber(p.line) : ''}`;
+      })();
+
+      const outcomeBadge = p.outcome
+        ? `<span class="pick-outcome ${
+            p.outcome === 'W' ? 'win' : p.outcome === 'L' ? 'loss' : 'push'
+          }">${p.outcome === 'W' ? 'Won' : p.outcome === 'L' ? 'Lost' : 'Push'}</span>`
+        : '';
+
+      card.innerHTML = `
+        <div class="pick-head">
+          <span class="pick-tier-badge ${tierClass}">${escape(p.tier_display || p.tier)}</span>
+          <span class="pick-market">${escape(marketLabel)}</span>
+        </div>
+        <div class="pick-line">${escape(lineDisplay)}</div>
+        <div class="pick-meta">
+          ${p.book ? `<span>${escape(p.book)}</span>` : ''}
+          ${p.book && p.released_at ? `<span class="pick-meta-dot"></span>` : ''}
+          ${p.released_at ? `<span>Released ${timeAgo(p.released_at)}</span>` : ''}
+          ${outcomeBadge ? `<span class="pick-meta-dot"></span>${outcomeBadge}` : ''}
+        </div>
+      `;
+      els.pickStack.appendChild(card);
+    });
+  }
+
+  function formatSignedNumber(n) {
+    if (n == null) return '';
+    if (n > 0) return '+' + n;
+    return String(n);
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * The Numbers — stat comparison
+   * ─────────────────────────────────────────────────────────── */
+
+  function renderNumbers(data) {
+    els.numbersStack.innerHTML = '';
+    const cats = data.stats?.categories || [];
+    cats.forEach(cat => {
+      const card = document.createElement('div');
+      card.className = 'numbers-card';
+      const rowsHtml = (cat.rows || []).map(r => renderStatRow(r)).join('');
+      card.innerHTML = `
+        <div class="numbers-card-head">
+          <h3 class="numbers-card-title">${escape(cat.name)}</h3>
+        </div>
+        <div class="numbers-rows">${rowsHtml}</div>
+      `;
+      els.numbersStack.appendChild(card);
+    });
+  }
+
+  /**
+   * Render a single stat row with value-anchored bars.
+   *
+   * Bar width = position in league distribution.
+   * Bar color = QUALITY (lower_better-aware).
+   *
+   * Anchored at the median: a value at median gets 0% bar, a value
+   * at the extreme gets ~100% bar. The bar extends FROM the center
+   * outward — away values to the left, home values to the right.
+   */
+  function renderStatRow(row) {
+    const a = row.away;
+    const h = row.home;
+    const aDisplay = row.away_display ?? (a != null ? String(a) : '—');
+    const hDisplay = row.home_display ?? (h != null ? String(h) : '—');
+    const lead = row.lead; // "away" | "home" | "tie" | null
+
+    const aLead = lead === 'away';
+    const hLead = lead === 'home';
+
+    // Compute value-anchored bar width + quality color per side.
+    const aBar = computeBar(a, row);
+    const hBar = computeBar(h, row);
+
+    return `
+      <div class="numbers-row">
+        <div class="numbers-row-val away ${aLead ? 'lead' : ''} ${a == null ? 'missing' : ''}">${escape(aDisplay)}</div>
+        <div class="numbers-row-track away">
+          <div class="numbers-row-fill away ${aBar.qual}" style="width:${aBar.width}%;"></div>
+        </div>
+        <div class="numbers-row-label">${escape(row.label)}</div>
+        <div class="numbers-row-track home">
+          <div class="numbers-row-fill home ${hBar.qual}" style="width:${hBar.width}%;"></div>
+        </div>
+        <div class="numbers-row-val home ${hLead ? 'lead' : ''} ${h == null ? 'missing' : ''}">${escape(hDisplay)}</div>
+      </div>
+    `;
+  }
+
+  /**
+   * Compute bar width (0-100%) and quality class for a single value.
+   *
+   * The bar extends from center outward. Width is the distance from
+   * the league median, normalized against the further of the two
+   * extremes (min or max from median).
+   *
+   * Quality class is set based on percentile position, lower_better-aware:
+   *   - elite      (top quartile for this stat's "good" direction)
+   *   - above-avg  (above median in good direction)
+   *   - below-avg  (below median, slightly bad)
+   *   - poor       (bottom quartile)
+   */
+  function computeBar(value, row) {
+    if (value == null) return { width: 0, qual: 'missing' };
+    const min = row.league_min;
+    const max = row.league_max;
+    const med = row.league_median;
+    const lowerBetter = row.lower_better;
+
+    if (min == null || max == null || med == null || min === max) {
+      // No league context — render a fixed half-width neutral bar
+      return { width: 30, qual: 'below-avg' };
+    }
+
+    // Quality: where does this value sit on the "good→bad" axis?
+    // posPct: 0% = best in league, 100% = worst in league
+    let posPct;
+    if (lowerBetter) {
+      posPct = ((value - min) / (max - min)) * 100;
+    } else {
+      posPct = ((max - value) / (max - min)) * 100;
+    }
+    posPct = clamp(posPct, 0, 100);
+
+    let qual;
+    if (posPct <= 25)      qual = 'elite';
+    else if (posPct <= 50) qual = 'above-avg';
+    else if (posPct <= 75) qual = 'below-avg';
+    else                   qual = 'poor';
+
+    // Bar width: distance from median, normalized to the further extreme.
+    // Always 0-100. A value at the median gets ~5% (minimum visible bar).
+    let width;
+    if (value >= med) {
+      const denom = (max - med) || 1;
+      width = ((value - med) / denom) * 100;
+    } else {
+      const denom = (med - min) || 1;
+      width = ((med - value) / denom) * 100;
+    }
+    width = clamp(width, 4, 100); // minimum visible bar
+
+    return { width: Math.round(width), qual };
+  }
+
+  function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * The Series
+   * ─────────────────────────────────────────────────────────── */
+
+  function renderSeries(data) {
+    const s = data.series;
+    if (!s || !s.games || !s.games.length) {
+      els.seriesSection.style.display = 'none';
+      return;
+    }
+    els.seriesSection.style.display = '';
+    els.seriesSummary.textContent = s.summary || '';
+    els.seriesList.innerHTML = (s.games || []).map(g => {
+      const score = `${escape(g.home_team)} ${g.home_points}, ${escape(g.away_team)} ${g.away_points}`;
+      return `
+        <div class="series-row">
+          <div class="series-year">${escape(g.year ?? '')}</div>
+          <div class="series-score">${score}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * Util
+   * ─────────────────────────────────────────────────────────── */
+
+  function escape(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * Boot
+   * ─────────────────────────────────────────────────────────── */
+
+  async function boot() {
+    const gameId = getGameId();
+    if (!gameId) {
+      showState('notfound');
+      return;
+    }
+
+    showState('loading');
+
+    // Subscriber gate
+    const token = await checkAuth();
+    if (!token) {
+      showState('paywall');
+      return;
+    }
+
+    let data;
+    try {
+      data = await fetchBreakdown(gameId, token);
+    } catch (e) {
+      console.error('fetch failed:', e);
+      showState('error');
+      return;
+    }
+
+    if (data.notFound) {
+      showState('notfound');
+      return;
+    }
+
+    // Render everything
+    try {
+      renderHero(data);
+      renderStoryline(data);
+      renderRead(data);
+      renderPicks(data);
+      renderNumbers(data);
+      renderSeries(data);
+    } catch (e) {
+      console.error('render failed:', e);
+      showState('error');
+      return;
+    }
+
+    showState('content');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
