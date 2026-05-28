@@ -952,6 +952,55 @@
   color: var(--ink);
   margin: 0;
 }
+
+/* Team header row — repeated on each stat card so the reader doesn't
+   have to scroll back to the hero to remember which side is which. */
+.numbers-teamhead {
+  display: grid;
+  grid-template-columns: 1fr 110px 1fr;
+  align-items: center;
+  padding: 10px 24px 8px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+.numbers-teamhead-away { text-align: left; }
+.numbers-teamhead-home { text-align: right; }
+.numbers-teamhead-spacer { /* center column placeholder, aligns with row label column */ }
+
+/* Sub-head used inside categories that split by direction
+   (currently only Defense — Advanced). */
+.numbers-subhead {
+  font-family: var(--sans);
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  padding: 12px 0 6px;
+  border-top: 1px solid var(--cream-mid);
+}
+.numbers-rows > .numbers-subhead:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+.numbers-subhead-hint {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--text-light);
+  margin-left: 6px;
+}
+
+@media (max-width: 600px) {
+  .numbers-teamhead {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px 18px 8px;
+  }
+  .numbers-teamhead-spacer { display: none; }
+  .numbers-teamhead-home { text-align: right; }
+}
 .numbers-rows {
   padding: 8px 24px 16px;
 }
