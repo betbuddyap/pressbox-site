@@ -378,12 +378,14 @@
       return card;
     }
 
-    // Axis range — Vegas ± 8, padded by any model values further out
-    // AND by the historical band edges if present.
+    // Axis range — Vegas ± 8, padded by any model values further out.
+    // The historical band does NOT participate in axis bounds. The band
+    // will be clipped to whatever the axis ends up being. Letting it
+    // drive bounds caused the band to swallow the entire chart.
     const histRange = section.historical_range || null;
     const histLow   = histRange?.low ?? null;
     const histHigh  = histRange?.high ?? null;
-    const allVals = [vegasPos, blendPos, histLow, histHigh, ...points.map(p => p.value)].filter(v => v != null);
+    const allVals = [vegasPos, blendPos, ...points.map(p => p.value)].filter(v => v != null);
     const minVal = Math.min(...allVals);
     const maxVal = Math.max(...allVals);
     let axisMin = vegasPos != null ? Math.min(minVal, vegasPos - 8) : minVal - 4;
