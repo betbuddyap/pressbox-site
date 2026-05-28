@@ -578,25 +578,39 @@
   border-radius: 1px;
 }
 
-/* Vegas vertical reference line */
+/* Vegas vertical reference line — tall tick, no circle. */
 .strip-vegas {
   position: absolute;
-  top: -10px;
-  bottom: -10px;
+  top: -16px;
+  bottom: -16px;
   width: 2px;
   background: var(--ink);
   transform: translateX(-1px);
   z-index: 3;
 }
-.strip-vegas::before {
-  content: '';
+
+/* Zero anchor (spread chart only) — distinct red vertical line. */
+.strip-zero {
   position: absolute;
-  top: -4px;
-  left: -4px;
-  width: 10px;
-  height: 10px;
-  background: var(--ink);
-  border-radius: 50%;
+  top: -12px;
+  bottom: -12px;
+  width: 1.5px;
+  background: var(--rust);
+  transform: translateX(-0.75px);
+  z-index: 2;
+  opacity: 0.85;
+}
+
+/* Historical outcome band — shaded region showing where games with
+   this Vegas line have historically landed (~p16 to p84). */
+.strip-hist-band {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  background: rgba(76, 124, 168, 0.16);
+  border-radius: 2px;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* Dots — all sit on the axis line */
@@ -609,7 +623,7 @@
   border: 2px solid #fff;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  z-index: 2;
+  z-index: 4;
   box-shadow: 0 0 0 1px var(--text-mid);
 }
 .strip-dot-blend {
@@ -617,7 +631,7 @@
   height: 14px;
   background: var(--gold);
   box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px rgba(184,146,42,0.18);
-  z-index: 4;
+  z-index: 5;
 }
 
 /* Dot labels — small box with model name + value */
@@ -689,8 +703,9 @@
   position: absolute;
   top: 6px;
   font-family: var(--sans);
-  font-size: 10px;
-  color: var(--text-light);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-mid);
   letter-spacing: 0.3px;
   transform: translateX(-50%);
 }
