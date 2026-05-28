@@ -602,7 +602,8 @@
 }
 
 /* Historical outcome band — shaded region showing where games with
-   this Vegas line have historically landed (~p16 to p84). */
+   this Vegas line have historically landed (~p25 to p75). Used as a
+   fallback when no density curve is available. */
 .strip-hist-band {
   position: absolute;
   top: -8px;
@@ -611,6 +612,27 @@
   border-radius: 2px;
   z-index: 1;
   pointer-events: none;
+}
+
+/* Historical density CURVE — mirrored lobe drawn as inline SVG. Real
+   shape: tall where outcomes cluster, fading to nothing at the tails. */
+.strip-hist-curve {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -28px;
+  bottom: -28px;
+  width: 100%;
+  height: 64px;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+.strip-hist-curve path {
+  fill: rgba(76, 124, 168, 0.18);
+  stroke: rgba(76, 124, 168, 0.45);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
 }
 
 /* Dots — all sit on the axis line */
