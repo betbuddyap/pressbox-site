@@ -731,11 +731,12 @@
    * Width does NOT care about lower_better. Bigger number = longer bar.
    * Always.
    *
-   * Color tracks QUALITY. Lower_better-aware.
-   *   - elite      (top quartile of league quality)
-   *   - above-avg  (2nd quartile)
-   *   - below-avg  (3rd quartile)
-   *   - poor       (bottom quartile)
+   * Color tracks QUALITY in 5 tiers. Lower_better-aware.
+   *   - elite      (top 20%)
+   *   - above-avg  (60–80%)
+   *   - mid        (40–60%)
+   *   - below-avg  (20–40%)
+   *   - poor       (bottom 20%)
    *
    * So a defense allowing the most points/game in FBS gets a LONG bar
    * in a BAD color. A defense allowing the fewest points gets a SHORT
@@ -764,9 +765,10 @@
     const width = Math.max(4, Math.round(rawPct));
 
     let qual;
-    if (qualityPct >= 75)      qual = 'elite';
-    else if (qualityPct >= 50) qual = 'above-avg';
-    else if (qualityPct >= 25) qual = 'below-avg';
+    if (qualityPct >= 80)      qual = 'elite';
+    else if (qualityPct >= 60) qual = 'above-avg';
+    else if (qualityPct >= 40) qual = 'mid';
+    else if (qualityPct >= 20) qual = 'below-avg';
     else                       qual = 'poor';
 
     return { width, qual };
