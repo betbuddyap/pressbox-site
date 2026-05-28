@@ -652,12 +652,12 @@
   /**
    * Render a single stat row with value-anchored bars.
    *
-   * Bar width = position in league distribution.
+   * Bar width = RAW position in league range (bigger number = longer bar).
    * Bar color = QUALITY (lower_better-aware).
    *
-   * Anchored at the median: a value at median gets 0% bar, a value
-   * at the extreme gets ~100% bar. The bar extends FROM the center
-   * outward — away values to the left, home values to the right.
+   * So a defense allowing 39.5 pts/g (league worst) gets a long bar in a
+   * BAD color. A defense allowing 9.3 pts/g (league best) gets a short
+   * bar in a GOOD color. Width and color carry separate signals.
    */
   function renderStatRow(row) {
     const a = row.away;
@@ -691,20 +691,22 @@
   /**
    * Compute bar width (0-100%) and quality class for a single value.
    *
-   * Width tracks QUALITY. The best team in the league at this stat
-   * gets a 100% bar. The worst gets a 0% bar. Lower_better-aware.
+   * Width tracks RAW position in the league range.
+   *   - League min  → 0% bar
+   *   - League max  → 100% bar
+   * Width does NOT care about lower_better. Bigger number = longer bar.
+   * Always.
    *
-   * This means:
-   *   - For a "higher = better" stat (points_per_game): best team
-   *     (highest value) gets full bar.
-   *   - For a "lower = better" stat (yards_allowed): best team
-   *     (lowest value) gets full bar.
-   *
-   * Quality class for color:
+   * Color tracks QUALITY. Lower_better-aware.
    *   - elite      (top quartile of league quality)
    *   - above-avg  (2nd quartile)
    *   - below-avg  (3rd quartile)
    *   - poor       (bottom quartile)
+   *
+   * So a defense allowing the most points/game in FBS gets a LONG bar
+   * in a BAD color. A defense allowing the fewest points gets a SHORT
+   * bar in a GOOD color. The eye stops fighting "big number = small bar"
+   * and the color tells you whether big is good or bad.
    */
   function computeBar(value, row) {
     if (value == null) return { width: 0, qual: 'missing' };
@@ -717,20 +719,15 @@
       return { width: 30, qual: 'below-avg' };
     }
 
-    // qualityPct: 0% = league worst, 100% = league best (for this stat)
-    let qualityPct;
-    if (lowerBetter) {
-      // Lower value = better quality
-      qualityPct = ((max - value) / (max - min)) * 100;
-    } else {
-      // Higher value = better quality
-      qualityPct = ((value - min) / (max - min)) * 100;
-    }
-    qualityPct = clamp(qualityPct, 0, 100);
+    // rawPct: 0% = league min, 100% = league max. Used for WIDTH.
+    let rawPct = ((value - min) / (max - min)) * 100;
+    rawPct = clamp(rawPct, 0, 100);
 
-    // Bar width = quality. Good = long, bad = short. Always.
-    // Minimum visible bar even for league-worst team.
-    const width = Math.max(4, Math.round(qualityPct));
+    // qualityPct: 0% = league worst, 100% = league best. Used for COLOR.
+    const qualityPct = lowerBetter ? (100 - rawPct) : rawPct;
+
+    // Bar width tracks raw value. Minimum visible bar even at league min.
+    const width = Math.max(4, Math.round(rawPct));
 
     let qual;
     if (qualityPct >= 75)      qual = 'elite';
