@@ -942,8 +942,9 @@
   overflow: hidden;
 }
 .numbers-card-head {
-  padding: 18px 24px 14px;
-  border-bottom: 1px solid var(--cream-mid);
+  padding: 14px 24px 12px;
+  background: var(--cream-dark);
+  border-bottom: 1px solid var(--border);
 }
 .numbers-card-title {
   font-family: var(--serif);
@@ -1049,13 +1050,15 @@
 
 /* Value-anchored bars.
    Width tracks RAW position in the league range (bigger number =
-   longer bar, always). Color is a single flat ink across all rows —
-   the bar carries the quantitative read; the bold "lead" value
-   highlights the better team within the row. Defense rows are labeled
-   "...Allowed" so the reader knows shorter = better there. */
+   longer bar, always). Color carries the quality signal:
+     sage  = good given lower_better
+     tan   = league middle
+     rust  = poor given lower_better
+   Defense rows are labeled "...Allowed" so the reader knows
+   shorter = better there. */
 .numbers-row-track {
   position: relative;
-  height: 5px;
+  height: 10px;
   background: transparent;
 }
 .numbers-row-track.away { direction: rtl; }
@@ -1063,7 +1066,7 @@
 .numbers-row-fill {
   position: absolute;
   top: 0; bottom: 0;
-  background: var(--ink);
+  background: var(--text-light);
   border-radius: 1px;
   transition: width 200ms ease;
 }
@@ -1073,10 +1076,10 @@
 .numbers-row-fill.home {
   left: 0;
 }
-.numbers-row-fill.elite,
-.numbers-row-fill.above-avg,
-.numbers-row-fill.below-avg,
-.numbers-row-fill.poor       { background: var(--ink); }
+.numbers-row-fill.elite      { background: var(--sage); }
+.numbers-row-fill.above-avg  { background: var(--sage-light); }
+.numbers-row-fill.below-avg  { background: var(--text-light); }
+.numbers-row-fill.poor       { background: var(--rust-light); }
 .numbers-row-fill.missing    { background: transparent; }
 
 /* Mobile: stack vertically per stat */
