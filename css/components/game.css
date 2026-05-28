@@ -1013,7 +1013,7 @@
   align-items: center;
   gap: 10px;
   padding: 3px 0;
-  border-bottom: 1px solid rgba(15, 14, 10, 0.04);
+  border-bottom: 1px solid var(--cream-mid);
 }
 .numbers-row:last-child { border-bottom: 0; }
 
@@ -1024,9 +1024,10 @@
   font-size: 14px;
   color: var(--text-mid);
   letter-spacing: 0.2px;
+  text-align: center;
 }
-.numbers-row-val.away { text-align: right; }
-.numbers-row-val.home { text-align: left; }
+.numbers-row-val.away { text-align: center; }
+.numbers-row-val.home { text-align: center; }
 .numbers-row-val.lead {
   color: var(--ink);
   font-weight: 700;
@@ -1046,16 +1047,49 @@
   text-align: center;
   letter-spacing: 0.3px;
   line-height: 1.3;
+  position: relative;
+  /* Option Y: vertical gutters flanking the center label,
+     same color as the row dividers, separating label from bars. */
+  padding: 0 12px;
 }
+.numbers-row-label::before,
+.numbers-row-label::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 70%;
+  background: var(--cream-mid);
+}
+.numbers-row-label::before { left: 0; }
+.numbers-row-label::after  { right: 0; }
+
+/* Option X (opt-in): additional verticals on the OUTER edges of
+   each bar track, so each bar is fully framed in cream-mid lines.
+   Activate by adding class="numbers-frame-full" to .numbers-stack. */
+.numbers-frame-full .numbers-row-track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 140%;
+  background: var(--cream-mid);
+}
+.numbers-frame-full .numbers-row-track.away::before  { left: 0; }
+.numbers-frame-full .numbers-row-track.home::before  { right: 0; }
 
 /* Value-anchored bars.
    Width tracks RAW position in the league range (bigger number =
-   longer bar, always). Color carries the quality signal:
-     sage  = good given lower_better
-     tan   = league middle
-     rust  = poor given lower_better
-   Defense rows are labeled "...Allowed" so the reader knows
-   shorter = better there. */
+   longer bar, always). Color carries the quality signal across
+   5 tiers: deep sage (elite) → sage-light → cream-mid → rust-light
+   → deep rust (poor). Defense rows are labeled "...Allowed" so the
+   reader knows shorter = better there.
+
+   Outer end (the end nearer the value) is rounded; inner end
+   (toward center label) stays sharp so the bars look anchored
+   at the center label gutter. */
 .numbers-row-track {
   position: relative;
   height: 10px;
@@ -1067,19 +1101,23 @@
   position: absolute;
   top: 0; bottom: 0;
   background: var(--text-light);
-  border-radius: 1px;
   transition: width 200ms ease;
 }
 .numbers-row-fill.away {
   right: 0;
+  /* away bar's outer edge is its LEFT side */
+  border-radius: 999px 0 0 999px;
 }
 .numbers-row-fill.home {
   left: 0;
+  /* home bar's outer edge is its RIGHT side */
+  border-radius: 0 999px 999px 0;
 }
 .numbers-row-fill.elite      { background: var(--sage); }
 .numbers-row-fill.above-avg  { background: var(--sage-light); }
-.numbers-row-fill.below-avg  { background: var(--text-light); }
-.numbers-row-fill.poor       { background: var(--rust-light); }
+.numbers-row-fill.mid        { background: var(--cream-mid); }
+.numbers-row-fill.below-avg  { background: var(--rust-light); }
+.numbers-row-fill.poor       { background: var(--rust); }
 .numbers-row-fill.missing    { background: transparent; }
 
 /* Mobile: stack vertically per stat */
@@ -1094,9 +1132,12 @@
     grid-column: 1 / -1;
     grid-row: 1;
     text-align: center;
+    padding: 0;
   }
-  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: left; font-size: 14px; }
-  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: right; font-size: 14px; }
+  .numbers-row-label::before,
+  .numbers-row-label::after { display: none; }
+  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: center; font-size: 14px; }
+  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: center; font-size: 14px; }
   .numbers-row-track.away { grid-column: 1; grid-row: 3; direction: rtl; }
   .numbers-row-track.home { grid-column: 2; grid-row: 3; }
 }
