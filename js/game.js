@@ -336,34 +336,38 @@
   }
 
   /**
-   * Dot plot for spread or total. `key` is "anchor_spread" or "total".
-   * For Spread: each model entry has `anchor_spread` (number) + `display`
-   *   (string like "UNLV -12.4"). We use anchor_spread for axis position
-   *   and display for label.
-   * For Total: each model has `total` (number) + `display`.
+   * Single-axis strip plot.
+   *
+   * Layout:
+   *   - One horizontal axis across the card.
+   *   - Vegas line: vertical tick across the axis with label above.
+   *   - All model dots sit ON the axis at their projected value.
+   *   - PressBox blend: larger gold dot, slightly offset above axis.
+   *   - Labels (model name + value) attach to each dot, stacked above
+   *     or below to avoid overlap.
    */
   function buildDotPlot(label, section, key, anchor) {
     const card = document.createElement('div');
     card.className = 'read-card';
 
-    // For spread: Vegas position = vegas_anchor_spread
-    // For total:  Vegas position = vegas_line
-    const vegasPos = key === 'anchor_spread'
-      ? section.vegas_anchor_spread
-      : section.vegas_line;
-    // Blend position
-    const blendPos = section.pressbox_blend;
+    const vegasPos     = key === 'anchor_spread' ? section.vegas_anchor_spread : section.vegas_line;
+    const blendPos     = section.pressbox_blend;
     const blendDisplay = section.pressbox_display;
     const vegasDisplay = section.vegas_display;
 
-    const models = (section.models || []).filter(m => m[key] != null);
+    // Collect model points
+    const points = [];
+    (section.models || []).forEach(m => {
+      if (m[key] == null) return;
+      points.push({
+        name:    m.name,
+        value:   m[key],
+        display: m.display || String(m[key]),
+        kind:    'model',
+      });
+    });
 
-    // Determine axis range:
-    //   At minimum, vegas ± 10
-    //   Extended if any model is further out
-    const values = [vegasPos, blendPos, ...models.map(m => m[key])].filter(v => v != null);
-    if (!values.length) {
-      // No data at all
+    if (points.length === 0 && vegasPos == null && blendPos == null) {
       card.innerHTML = `
         <div class="read-card-head">
           <div class="read-card-label">${escape(label)}</div>
@@ -374,102 +378,99 @@
       return card;
     }
 
-    const minVal = Math.min(...values);
-    const maxVal = Math.max(...values);
-    let axisMin = Math.min(minVal, (vegasPos != null ? vegasPos - 10 : minVal));
-    let axisMax = Math.max(maxVal, (vegasPos != null ? vegasPos + 10 : maxVal));
-    axisMin = Math.floor(axisMin);
-    axisMax = Math.ceil(axisMax);
+    // Axis range — Vegas ± 8, padded by any model values further out
+    const allVals = [vegasPos, blendPos, ...points.map(p => p.value)].filter(v => v != null);
+    const minVal = Math.min(...allVals);
+    const maxVal = Math.max(...allVals);
+    let axisMin = vegasPos != null ? Math.min(minVal, vegasPos - 8) : minVal - 4;
+    let axisMax = vegasPos != null ? Math.max(maxVal, vegasPos + 8) : maxVal + 4;
+    // Pad outward to a clean tick
+    const tickStep = (axisMax - axisMin) > 30 ? 5 : (axisMax - axisMin) > 15 ? 3 : 1;
+    axisMin = Math.floor(axisMin / tickStep) * tickStep;
+    axisMax = Math.ceil(axisMax / tickStep) * tickStep;
     if (axisMax - axisMin < 4) {
       axisMin -= 2; axisMax += 2;
     }
     const range = axisMax - axisMin;
-    const xPct = (v) => ((v - axisMin) / range) * 100;
+    const xPct = (v) => clamp(((v - axisMin) / range) * 100, 0, 100);
 
-    // Build header
+    // Header
     card.innerHTML = `
       <div class="read-card-head">
         <div class="read-card-label">${escape(label)}</div>
         <div class="read-card-vegas">Vegas: <strong>${escape(vegasDisplay || '—')}</strong></div>
       </div>
-      <div class="read-plot">
-        <div class="read-axis"></div>
-        <div class="read-rows"></div>
+      <div class="strip-plot">
+        <div class="strip-labels strip-labels-above"></div>
+        <div class="strip-axis-wrap">
+          <div class="strip-axis"></div>
+        </div>
+        <div class="strip-labels strip-labels-below"></div>
+        <div class="strip-ticks"></div>
       </div>
     `;
 
-    const axisEl = card.querySelector('.read-axis');
-    const rowsEl = card.querySelector('.read-rows');
+    const axisEl  = card.querySelector('.strip-axis');
+    const above   = card.querySelector('.strip-labels-above');
+    const below   = card.querySelector('.strip-labels-below');
+    const ticksEl = card.querySelector('.strip-ticks');
 
-    // Axis tick marks every ~3-5 units
-    const tickStep = range > 30 ? 5 : (range > 15 ? 3 : 1);
+    // Axis tick labels
     for (let t = Math.ceil(axisMin / tickStep) * tickStep; t <= axisMax; t += tickStep) {
       const tick = document.createElement('div');
-      tick.className = 'read-axis-tick' + (t % (tickStep * 2) === 0 ? ' major' : '');
+      tick.className = 'strip-tick';
       tick.style.left = `${xPct(t)}%`;
-      axisEl.appendChild(tick);
-      if (t % (tickStep * 2) === 0) {
-        const lab = document.createElement('div');
-        lab.className = 'read-axis-label';
-        lab.style.left = `${xPct(t)}%`;
-        lab.textContent = (key === 'anchor_spread')
-          ? (t > 0 ? '+' + t : t)
-          : t;
-        axisEl.appendChild(lab);
-      }
+      ticksEl.appendChild(tick);
+      const lab = document.createElement('div');
+      lab.className = 'strip-tick-label';
+      lab.style.left = `${xPct(t)}%`;
+      lab.textContent = (key === 'anchor_spread')
+        ? (t > 0 ? '+' + t : t)
+        : t;
+      ticksEl.appendChild(lab);
     }
 
+    // Vegas vertical line + label above axis
     if (vegasPos != null) {
       const v = document.createElement('div');
-      v.className = 'read-vegas-mark';
+      v.className = 'strip-vegas';
       v.style.left = `${xPct(vegasPos)}%`;
       axisEl.appendChild(v);
     }
 
+    // PressBox blend marker — slightly larger, gold star/dot
     if (blendPos != null) {
       const b = document.createElement('div');
-      b.className = 'read-blend-mark';
+      b.className = 'strip-dot strip-dot-blend';
       b.style.left = `${xPct(blendPos)}%`;
       b.title = `PressBox blend: ${blendDisplay || ''}`;
       axisEl.appendChild(b);
+
+      const bLab = document.createElement('div');
+      bLab.className = 'strip-label strip-label-blend';
+      bLab.style.left = `${xPct(blendPos)}%`;
+      bLab.innerHTML = `<span class="strip-label-name">PressBox</span><span class="strip-label-value">${escape(blendDisplay || '')}</span>`;
+      above.appendChild(bLab);
     }
 
-    // One row per model in canonical order
-    MODEL_ORDER.forEach(modelName => {
-      const m = (section.models || []).find(x => x.name === modelName);
-      const row = document.createElement('div');
-      row.className = 'read-row';
-      const value = m && m[key] != null ? m[key] : null;
-      const display = m ? m.display : null;
+    // Model dots — sort by value to do simple anti-overlap label stacking.
+    // Position labels alternating above/below if they cluster.
+    const sortedPts = [...points].sort((a, b) => a.value - b.value);
 
-      const nameEl = document.createElement('div');
-      nameEl.className = 'read-row-name';
-      nameEl.textContent = modelName;
-      row.appendChild(nameEl);
+    sortedPts.forEach((p, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'strip-dot';
+      dot.style.left = `${xPct(p.value)}%`;
+      dot.title = `${p.name}: ${p.display}`;
+      axisEl.appendChild(dot);
 
-      if (value == null) {
-        const dot = document.createElement('div');
-        dot.className = 'read-row-dot missing';
-        dot.style.left = '50%';
-        const val = document.createElement('div');
-        val.className = 'read-row-value missing';
-        val.style.left = '50%';
-        val.textContent = 'No data';
-        row.appendChild(dot);
-        row.appendChild(val);
-      } else {
-        const dot = document.createElement('div');
-        dot.className = 'read-row-dot';
-        dot.style.left = `${xPct(value)}%`;
-        const val = document.createElement('div');
-        val.className = 'read-row-value';
-        val.style.left = `${xPct(value)}%`;
-        val.textContent = display || String(value);
-        row.appendChild(dot);
-        row.appendChild(val);
-      }
-
-      rowsEl.appendChild(row);
+      const lbl = document.createElement('div');
+      lbl.className = 'strip-label';
+      lbl.style.left = `${xPct(p.value)}%`;
+      lbl.innerHTML = `<span class="strip-label-name">${escape(p.name)}</span><span class="strip-label-value">${escape(p.display)}</span>`;
+      // Alternate above/below to reduce overlap
+      if (i % 2 === 0) above.appendChild(lbl);
+      else             below.appendChild(lbl);
     });
 
     return card;
