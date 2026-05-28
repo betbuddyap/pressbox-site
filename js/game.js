@@ -1,874 +1,1281 @@
 /* ============================================================
- * Game Pages — Client logic
+ * Game Pages — Component Styles
  * ============================================================
- * Per the build brief (2026-05-27).
+ * Per the Game Pages build brief (2026-05-27).
  *
- * Reads ?game_id=N from URL. Fetches
- * /canonical/games/{id}/breakdown. Renders six sections:
- *   1. Hero          (.ctx-* — team colors, names, projected/final score)
- *   2. Storyline     (narrative blurb + staleness warn)
- *   3. The Read      (5-model dot plots + ML probability bars)
- *   4. The Pick      (active pick(s) or "no edge" note)
- *   5. The Numbers   (6 stat category cards w/ value-anchored bars)
- *   6. The Series    (matchup history, hidden if no prior meetings)
+ * Hero (.ctx-*) preserved from the prior game.html design.
+ * Everything beneath rebuilt to match Live Lines / Results
+ * aesthetic: cream backgrounds, white cards, eyebrow + serif
+ * headlines, 4px radii, 0.5px borders.
  *
- * Pure DOM + CSS positioning for charts — no library dependency.
+ * Pure CSS for chart visualizations (spread/total dot plots,
+ * moneyline probability bars) — no library overhead.
  * ============================================================ */
 
-(function () {
-  'use strict';
 
-  /* ───────────────────────────────────────────────────────────
-   * Constants
-   * ─────────────────────────────────────────────────────────── */
+/* ============================================================
+ * 0. PAGE STATES (loading, error, paywall)
+ * ============================================================ */
 
-  const API_BASE   = 'https://betbuddy-backend.onrender.com';
-  const SUPABASE_URL = 'https://brwalcuodwxsynrpiqjc.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
+.game-loading,
+.game-status,
+.game-paywall {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 80px 24px 120px;
+  text-align: center;
+  font-family: var(--sans);
+}
 
-  // Display labels and tier-class mapping (matches the brief)
-  const TIER_CLASS = {
-    'A+':           'tier-ap',
-    'A':            'tier-a',
-    'smart_money':  'tier-sm',
-    'goldilocks':   'tier-gl',
-    'lottery':      'tier-ls',
-    'no_edge':      'tier-no-edge',
-  };
-  const MARKET_DISPLAY = {
-    'spread': 'Spread',
-    'total':  'Total',
-    'ml':     'Moneyline',
-  };
-  const MODEL_ORDER = ['SP+', 'Elo', 'PPA', 'Advanced', 'Pace+'];
+.game-loading-spinner {
+  width: 32px; height: 32px;
+  margin: 0 auto 20px;
+  border: 2px solid var(--cream-mid);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: game-spin 700ms linear infinite;
+}
+@keyframes game-spin {
+  to { transform: rotate(360deg); }
+}
+.game-loading-msg {
+  color: var(--text-mid);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
 
-  /* ───────────────────────────────────────────────────────────
-   * Element refs
-   * ─────────────────────────────────────────────────────────── */
+.game-status-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 32px;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+.game-status-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.game-status-sub {
+  font-size: 15px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0 auto 28px;
+}
+.game-status-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 200ms ease;
+}
+.game-status-btn:hover { background: #2A2920; }
 
-  const $ = (id) => document.getElementById(id);
+/* Paywall (anonymous visitor) */
+.game-paywall {
+  padding: 120px 24px;
+}
+.game-paywall-inner {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 56px 40px;
+  max-width: 580px;
+  margin: 0 auto;
+}
+.game-paywall-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+.game-paywall-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--ink);
+  line-height: 1.25;
+  margin: 0 0 14px;
+}
+.game-paywall-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.game-paywall-sub {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  margin: 0 auto 28px;
+  max-width: 440px;
+}
+.game-paywall-btn {
+  display: inline-block;
+  padding: 14px 36px;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 200ms ease;
+}
+.game-paywall-btn:hover { background: #2A2920; }
+.game-paywall-foot {
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--text-light);
+}
+.game-paywall-foot a {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 600;
+}
 
-  const els = {
-    loading:   $('loadingState'),
-    error:     $('errorState'),
-    notFound:  $('notFoundState'),
-    paywall:   $('paywallState'),
-    content:   $('gameContent'),
 
-    // Hero
-    bgAway:    $('ctxBgAway'),
-    bgHome:    $('ctxBgHome'),
-    ribbon:    $('ctxRibbon'),
-    breadcrumb: $('ctxBreadcrumb'),
-    awayName:  $('ctxAwayName'),
-    awaySub:   $('ctxAwaySub'),
-    homeName:  $('ctxHomeName'),
-    homeSub:   $('ctxHomeSub'),
-    pgScore:   $('pgScore'),
-    pgAway:    $('pgAwayNum'),
-    pgHome:    $('pgHomeNum'),
-    preGame:   $('preGameContent'),
-    projected: $('ctxProjected'),
-    projAway:  $('ctxProjAway'),
-    projHome:  $('ctxProjHome'),
-    projAwayLbl: $('ctxProjAwayLbl'),
-    projHomeLbl: $('ctxProjHomeLbl'),
-    meta:      $('ctxMeta'),
+/* ============================================================
+ * 1. HERO (preserved from prior design)
+ * ============================================================ */
 
-    // Sections
-    storylineLede:  $('storylineLede'),
-    storylineText:  $('storylineText'),
-    storylineMeta:  $('storylineMeta'),
-    readStack:      $('readStack'),
-    pickStack:      $('pickStack'),
-    numbersStack:   $('numbersStack'),
-    seriesSection:  $('seriesSection'),
-    seriesSummary:  $('seriesSummary'),
-    seriesList:     $('seriesList'),
-  };
+.ctx {
+  position: relative;
+  background: var(--ink);
+  overflow: hidden;
+  min-height: 380px;
+}
+.ctx-bg { position: absolute; inset: 0; display: flex; }
+.ctx-bg-half { flex: 1; }
+.ctx-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgba(15,14,10,0.35) 0%,
+    rgba(15,14,10,0.55) 55%,
+    rgba(15,14,10,0.85) 100%);
+}
+.ctx-seam {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg,
+    rgba(212,168,58,0) 0%,
+    rgba(212,168,58,0.5) 30%,
+    rgba(212,168,58,0.5) 70%,
+    rgba(212,168,58,0) 100%);
+  transform: translateX(-0.5px);
+  z-index: 2;
+}
+.ctx-inner {
+  position: relative;
+  z-index: 3;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 32px 32px;
+}
+.ctx-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(248,245,238,0.65);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.ctx-breadcrumb a {
+  color: rgba(248,245,238,0.75);
+  text-decoration: none;
+}
+.ctx-breadcrumb a:hover { color: var(--gold-light); }
+.ctx-breadcrumb-sep { color: rgba(248,245,238,0.4); }
 
-  /* ───────────────────────────────────────────────────────────
-   * State helpers
-   * ─────────────────────────────────────────────────────────── */
+/* Tier ribbon (top-left corner) */
+.ctx-ribbon {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 5;
+  font-family: var(--sans);
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  background: var(--tier-bg);
+  color: var(--tier-fg);
+}
+.ctx-ribbon::after {
+  content: '';
+  position: absolute;
+  left: 100%; top: 0; bottom: 0;
+  width: 10px;
+  background: linear-gradient(135deg, var(--tier-bg) 50%, transparent 50%);
+}
 
-  function showState(which) {
-    [els.loading, els.error, els.notFound, els.paywall, els.content].forEach(el => {
-      if (el) el.style.display = 'none';
-    });
-    const target = { loading: els.loading, error: els.error, notfound: els.notFound,
-                     paywall: els.paywall, content: els.content }[which];
-    if (target) target.style.display = which === 'content' ? 'block' : '';
+/* Tier color mappings — used by ribbon + pick badges */
+.tier-ap   { --tier-bg: var(--gold);             --tier-fg: var(--ink); }
+.tier-a    { --tier-bg: #C0C5CC;                 --tier-fg: var(--ink); }
+.tier-sm   { --tier-bg: var(--sage);             --tier-fg: #fff; }
+.tier-gl   { --tier-bg: var(--gold-pale);        --tier-fg: var(--ink); }
+.tier-ls   { --tier-bg: var(--rust);             --tier-fg: #fff; }
+.tier-no-edge { --tier-bg: rgba(160,154,138,0.35); --tier-fg: var(--cream); }
+
+/* Team names + sub */
+.ctx-teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 28px;
+}
+.ctx-side { min-width: 0; }
+.ctx-side.away { text-align: right; padding-right: 24px; }
+.ctx-side.home { text-align: left;  padding-left: 24px; }
+.ctx-team-name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 48px;
+  color: var(--cream);
+  line-height: 1.1;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+.ctx-team-sub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: rgba(248,245,238,0.78);
+  margin-top: 8px;
+}
+.ctx-side.away .ctx-team-sub { justify-content: flex-end; }
+.ctx-side.home .ctx-team-sub { justify-content: flex-start; }
+.ctx-team-rank {
+  font-weight: 700;
+  color: var(--gold-light);
+}
+.ctx-team-conf {
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.ctx-team-record {
+  color: rgba(248,245,238,0.65);
+}
+.ctx-at {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 28px;
+  color: var(--gold-light);
+  padding: 0 24px;
+  line-height: 1;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+}
+
+/* Meta row (kickoff, venue) */
+.ctx-meta {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: rgba(248,245,238,0.85);
+}
+.ctx-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ctx-meta-item strong {
+  color: var(--cream);
+  font-weight: 600;
+}
+.ctx-meta-dot {
+  width: 4px; height: 4px;
+  background: rgba(212,168,58,0.5);
+  border-radius: 50%;
+}
+
+/* Projected score block (pre-game) */
+.ctx-projected {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  max-width: 560px;
+  margin: 0 auto 24px;
+  padding: 20px 24px 22px;
+  background: rgba(248,245,238,0.04);
+  border: 1px solid rgba(212,168,58,0.18);
+  border-radius: 4px;
+}
+.ctx-projected-eyebrow {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.ctx-projected-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.ctx-projected-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 48px;
+  color: var(--cream);
+  line-height: 1;
+}
+.ctx-projected-num.winner { color: var(--gold-light); }
+.ctx-projected-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(248,245,238,0.55);
+}
+.ctx-projected-dash {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: rgba(248,245,238,0.4);
+  font-style: italic;
+}
+
+/* Final score (post-game) */
+.pg-score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  padding: 8px 0 24px;
+}
+.pg-score-team { text-align: center; }
+.pg-score-team.away { text-align: right; }
+.pg-score-team.home { text-align: left; }
+.pg-score-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 72px;
+  color: var(--cream);
+  line-height: 1;
+}
+.pg-score-num.loser { opacity: 0.55; }
+.pg-score-dash {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 32px;
+  color: var(--gold-light);
+  padding: 0 12px;
+}
+
+
+/* ============================================================
+ * 2. MAIN COLUMN & SECTION HEADERS
+ * ============================================================ */
+
+.game-main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.game-section {
+  padding-top: 56px;
+}
+.game-section:first-of-type {
+  padding-top: 40px;
+}
+
+.game-section-head {
+  margin-bottom: 24px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+.game-section-eyebrow {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.game-section-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.2;
+}
+.game-section-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.game-section-deck {
+  margin: 8px 0 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--gold);
+  font-weight: 400;
+}
+
+/* Generic card primitive */
+.game-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 28px;
+}
+
+
+/* ============================================================
+ * 3. STORYLINE (narrative section)
+ * ============================================================ */
+
+.storyline-card {
+  padding: 32px 36px;
+}
+.storyline-lede {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--gold);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+.storyline-text {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-mid);
+}
+.storyline-text p {
+  margin: 0 0 14px;
+}
+.storyline-text p:last-child { margin-bottom: 0; }
+.storyline-text strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+.storyline-meta {
+  margin-top: 22px;
+  text-align: right;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-light);
+  letter-spacing: 0.5px;
+}
+.storyline-meta .stale-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--rust);
+  margin-left: 12px;
+  font-weight: 600;
+}
+
+
+/* ============================================================
+ * 4. THE READ (model projection charts)
+ * ============================================================ */
+
+.read-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.read-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 24px 28px 28px;
+}
+.read-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--cream-mid);
+}
+.read-card-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.read-card-vegas {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-mid);
+}
+.read-card-vegas strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* ── Strip plot (single shared axis with all dots ON it) ─────── */
+
+.strip-plot {
+  position: relative;
+  padding: 0 12px;
+}
+
+/* Labels above and below — alternating to avoid collision */
+.strip-labels {
+  position: relative;
+  height: 36px;
+}
+.strip-labels-above { margin-bottom: 6px; }
+.strip-labels-below { margin-top: 6px; height: 32px; }
+
+.strip-axis-wrap {
+  position: relative;
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+.strip-axis {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+}
+
+/* Vegas vertical reference line */
+.strip-vegas {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  width: 2px;
+  background: var(--ink);
+  transform: translateX(-1px);
+  z-index: 3;
+}
+.strip-vegas::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  background: var(--ink);
+  border-radius: 50%;
+}
+
+/* Dots — all sit on the axis line */
+.strip-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: var(--text-mid);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  box-shadow: 0 0 0 1px var(--text-mid);
+}
+.strip-dot-blend {
+  width: 14px;
+  height: 14px;
+  background: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px rgba(184,146,42,0.18);
+  z-index: 4;
+}
+
+/* Dot labels — small box with model name + value */
+.strip-label {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--sans);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.strip-labels-above .strip-label { bottom: 4px; }
+.strip-labels-below .strip-label { top: 4px; }
+.strip-label-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+.strip-label-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.3px;
+}
+.strip-label-blend .strip-label-name { color: var(--gold); }
+.strip-label-blend .strip-label-value { color: var(--gold); }
+
+/* Connector line from label to dot — subtle */
+.strip-labels-above .strip-label::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 1px;
+  height: 4px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+.strip-labels-below .strip-label::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 1px;
+  height: 4px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+
+/* Axis ticks */
+.strip-ticks {
+  position: relative;
+  margin-top: 6px;
+  height: 16px;
+}
+.strip-tick {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 4px;
+  background: var(--cream-mid);
+  transform: translateX(-50%);
+}
+.strip-tick-label {
+  position: absolute;
+  top: 6px;
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--text-light);
+  letter-spacing: 0.3px;
+  transform: translateX(-50%);
+}
+
+/* Vegas label - shown in card header, "Vegas: UNLV -10.5" */
+/* Legacy class shims (kept so old markup wouldn't blow up) */
+.read-plot, .read-axis, .read-rows, .read-row, .read-row-name,
+.read-row-dot, .read-row-value, .read-axis-tick, .read-axis-label,
+.read-vegas-mark, .read-blend-mark { /* unused */ }
+
+/* ── Moneyline rows: center-divider bars (stat-style) ────────── */
+
+/* Grid layout (5 cols):
+   [label] [anchor odds] [anchor bar] [other bar] [other odds]
+       70px      50px       1fr           1fr          50px         */
+
+.ml-teamhead {
+  display: grid;
+  grid-template-columns: 70px 50px 1fr 1fr 50px;
+  gap: 8px;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--cream-mid);
+  margin-bottom: 8px;
+}
+.ml-teamhead-left,
+.ml-teamhead-right {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.ml-teamhead-left  { grid-column: 3; text-align: right; padding-right: 8px; }
+.ml-teamhead-right { grid-column: 4; text-align: left;  padding-left: 8px; }
+
+.ml-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ml-row {
+  display: grid;
+  grid-template-columns: 70px 50px 1fr 1fr 50px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+.ml-row.is-vegas {
+  background: var(--cream-dark);
+  margin: 0 -14px;
+  padding: 8px 14px;
+  border-radius: 2px;
+}
+.ml-row.is-blend {
+  background: rgba(184,146,42,0.08);
+  margin: 0 -14px;
+  padding: 8px 14px;
+  border-radius: 2px;
+}
+
+.ml-label {
+  grid-column: 1;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+.ml-row.is-vegas .ml-label { color: var(--ink); }
+.ml-row.is-blend .ml-label { color: var(--gold); }
+
+.ml-odds {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-mid);
+  letter-spacing: 0.3px;
+}
+.ml-odds-left  { grid-column: 2; text-align: right; }
+.ml-odds-right { grid-column: 5; text-align: left;  }
+.ml-row.is-vegas .ml-odds { color: var(--ink); }
+.ml-row.is-blend .ml-odds { color: var(--gold); }
+
+.ml-bar-pair {
+  grid-column: 3 / 5;
+  display: grid;
+  grid-template-columns: 1fr 2px 1fr;
+  align-items: center;
+  height: 12px;
+}
+.ml-bar-half {
+  position: relative;
+  height: 8px;
+}
+.ml-bar-divider {
+  width: 2px;
+  height: 18px;
+  background: var(--ink);
+}
+.ml-bar-fill {
+  position: absolute;
+  top: 0; bottom: 0;
+  border-radius: 1px;
+}
+.ml-bar-left  .ml-bar-fill { right: 0; }
+.ml-bar-right .ml-bar-fill { left: 0;  }
+
+.ml-bar-fill-fav { background: var(--gold); }
+.ml-bar-fill-dog { background: var(--text-light); }
+
+/* Empty state for charts with no data */
+.read-empty {
+  padding: 32px 16px;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+
+/* ============================================================
+ * 5. THE PICK (active pick(s) inline)
+ * ============================================================ */
+
+.pick-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pick-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 22px 24px;
+}
+.pick-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+.pick-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: var(--tier-bg);
+  color: var(--tier-fg);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.pick-market {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.pick-line {
+  font-family: var(--sans);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  letter-spacing: 0.2px;
+  margin-bottom: 4px;
+}
+.pick-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-mid);
+}
+.pick-meta-dot {
+  width: 4px; height: 4px;
+  background: var(--text-light);
+  border-radius: 50%;
+  display: inline-block;
+}
+.pick-outcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.pick-outcome.win  { background: var(--sage-pale); color: var(--sage); }
+.pick-outcome.loss { background: var(--rust-pale); color: var(--rust); }
+.pick-outcome.push { background: var(--cream-mid); color: var(--text-mid); }
+
+/* No-pick note */
+.pick-empty {
+  background: #fff;
+  border: 0.5px dashed var(--border);
+  border-radius: 4px;
+  padding: 24px 28px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.pick-empty-icon {
+  flex-shrink: 0;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--cream-mid);
+  color: var(--text-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 1px;
+}
+
+
+/* ============================================================
+ * 6. THE NUMBERS (stat comparison)
+ * ============================================================ */
+
+.numbers-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.numbers-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.numbers-card-head {
+  padding: 14px 24px 12px;
+  background: var(--cream-dark);
+  border-bottom: 1px solid var(--border);
+}
+.numbers-card-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Team header row — repeated on each stat card so the reader doesn't
+   have to scroll back to the hero to remember which side is which. */
+.numbers-teamhead {
+  display: grid;
+  grid-template-columns: 1fr 110px 1fr;
+  align-items: center;
+  padding: 10px 24px 8px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+.numbers-teamhead-away { text-align: left; }
+.numbers-teamhead-home { text-align: right; }
+.numbers-teamhead-spacer { /* center column placeholder, aligns with row label column */ }
+
+/* Sub-head used inside categories that split by direction
+   (currently only Defense — Advanced). */
+.numbers-subhead {
+  font-family: var(--sans);
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  padding: 12px 0 6px;
+  border-top: 1px solid var(--cream-mid);
+}
+.numbers-rows > .numbers-subhead:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+.numbers-subhead-hint {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--text-light);
+  margin-left: 6px;
+}
+
+@media (max-width: 600px) {
+  .numbers-teamhead {
+    grid-template-columns: 1fr 1fr;
+    padding: 10px 18px 8px;
+  }
+  .numbers-teamhead-spacer { display: none; }
+  .numbers-teamhead-home { text-align: right; }
+}
+.numbers-rows {
+  padding: 4px 24px 10px;
+}
+
+/* Stat row layout: away value | track | label | track | home value */
+.numbers-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 110px 1fr 60px;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--cream-mid);
+}
+.numbers-row:last-child { border-bottom: 0; }
+
+.numbers-row-val {
+  font-family: var(--sans);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-mid);
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+.numbers-row-val.away { text-align: center; }
+.numbers-row-val.home { text-align: center; }
+.numbers-row-val.lead {
+  color: var(--ink);
+  font-weight: 700;
+}
+.numbers-row-val.missing {
+  font-style: normal;
+  font-size: 13px;
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+.numbers-row-label {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  text-align: center;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
+  position: relative;
+  /* Option Y: vertical gutters flanking the center label,
+     same color as the row dividers, separating label from bars. */
+  padding: 0 12px;
+}
+.numbers-row-label::before,
+.numbers-row-label::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 70%;
+  background: var(--cream-mid);
+}
+.numbers-row-label::before { left: 0; }
+.numbers-row-label::after  { right: 0; }
+
+/* Option X (opt-in): additional verticals on the OUTER edges of
+   each bar track, so each bar is fully framed in cream-mid lines.
+   Activate by adding class="numbers-frame-full" to .numbers-stack. */
+.numbers-frame-full .numbers-row-track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 140%;
+  background: var(--cream-mid);
+}
+.numbers-frame-full .numbers-row-track.away::before  { left: 0; }
+.numbers-frame-full .numbers-row-track.home::before  { right: 0; }
+
+/* Value-anchored bars.
+   Width tracks RAW position in the league range (bigger number =
+   longer bar, always). Color carries the quality signal across
+   5 tiers: deep sage (elite) → sage-light → cream-mid → rust-light
+   → deep rust (poor). Defense rows are labeled "...Allowed" so the
+   reader knows shorter = better there.
+
+   Outer end (the end nearer the value) is rounded; inner end
+   (toward center label) stays sharp so the bars look anchored
+   at the center label gutter. */
+.numbers-row-track {
+  position: relative;
+  height: 10px;
+  background: transparent;
+}
+.numbers-row-track.away { direction: rtl; }
+
+.numbers-row-fill {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: var(--text-light);
+  transition: width 200ms ease;
+}
+.numbers-row-fill.away {
+  right: 0;
+  /* away bar's outer edge is its LEFT side */
+  border-radius: 999px 0 0 999px;
+}
+.numbers-row-fill.home {
+  left: 0;
+  /* home bar's outer edge is its RIGHT side */
+  border-radius: 0 999px 999px 0;
+}
+.numbers-row-fill.elite      { background: var(--sage); }
+.numbers-row-fill.above-avg  { background: var(--sage-light); }
+.numbers-row-fill.mid        { background: var(--cream-mid); }
+.numbers-row-fill.below-avg  { background: var(--rust-light); }
+.numbers-row-fill.poor       { background: var(--rust); }
+.numbers-row-fill.missing    { background: transparent; }
+
+/* Mobile: stack vertically per stat */
+@media (max-width: 600px) {
+  .numbers-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 4px 12px;
+    padding: 8px 0;
+  }
+  .numbers-row-label {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: center;
+    padding: 0;
+  }
+  .numbers-row-label::before,
+  .numbers-row-label::after { display: none; }
+  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: center; font-size: 14px; }
+  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: center; font-size: 14px; }
+  .numbers-row-track.away { grid-column: 1; grid-row: 3; direction: rtl; }
+  .numbers-row-track.home { grid-column: 2; grid-row: 3; }
+}
+
+
+/* ============================================================
+ * 7. THE SERIES (matchup history)
+ * ============================================================ */
+
+.series-card {
+  padding: 24px 28px;
+}
+.series-summary {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--cream-mid);
+  letter-spacing: 0.2px;
+}
+.series-list {
+  display: flex;
+  flex-direction: column;
+}
+.series-row {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cream-mid);
+}
+.series-row:last-child { border-bottom: 0; }
+.series-year {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-light);
+  text-transform: uppercase;
+}
+.series-score {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.series-score strong { font-weight: 700; }
+
+
+/* ============================================================
+ * FOOTER
+ * ============================================================ */
+
+footer {
+  background: var(--cream-dark);
+  border-top: 1px solid var(--border);
+  margin-top: 80px;
+  padding: 48px 0 32px;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+.footer-logo img { height: 56px; width: auto; display: block; opacity: 0.85; }
+.footer-meta-links {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.footer-meta-links a {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  text-decoration: none;
+}
+.footer-meta-links a:hover { color: var(--ink); }
+.footer-note {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-light);
+  text-align: center;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+
+/* ============================================================
+ * MOBILE RESPONSIVE
+ * ============================================================ */
+
+@media (max-width: 760px) {
+  .ctx-inner { padding: 20px 16px 24px; }
+  .ctx-teams { margin-bottom: 20px; }
+  .ctx-team-name { font-size: 32px; }
+  .ctx-at { font-size: 22px; padding: 0 12px; }
+  .ctx-side.away { padding-right: 12px; }
+  .ctx-side.home { padding-left: 12px; }
+  .ctx-projected { padding: 16px 18px 18px; }
+  .ctx-projected-num { font-size: 36px; }
+  .pg-score-num { font-size: 52px; }
+
+  .game-main { padding: 0 16px 60px; }
+  .game-section { padding-top: 40px; }
+  .game-section-title { font-size: 22px; }
+  .game-section-deck { font-size: 14px; }
+  .game-card { padding: 20px; }
+  .storyline-card { padding: 22px 20px; }
+  .storyline-text { font-size: 14px; }
+  .storyline-lede { font-size: 16px; }
+
+  .read-card { padding: 18px 16px 22px; }
+  .read-card-head { flex-direction: column; align-items: flex-start; gap: 6px; }
+
+  .read-ml-odds-row {
+    grid-template-columns: 70px 1fr 1fr;
+    gap: 10px;
+  }
+  .read-ml-name { font-size: 10px; }
+  .read-ml-odds-anchor,
+  .read-ml-odds-other { font-size: 13px; }
+  .read-ml-foot {
+    grid-template-columns: 70px 1fr 1fr;
+    gap: 10px;
   }
 
-  function getGameId() {
-    const url = new URL(window.location.href);
-    const fromQuery = url.searchParams.get('game_id') || url.searchParams.get('id');
-    if (fromQuery) return fromQuery;
-    // Support path-style URLs: /game/{id}
-    const m = url.pathname.match(/\/game\/(\d+)/);
-    return m ? m[1] : null;
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * Auth gate
-   * ─────────────────────────────────────────────────────────── */
-
-  async function checkAuth() {
-    if (!window.supabase) return null;
-    try {
-      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      const { data } = await sb.auth.getSession();
-      return data?.session?.access_token || null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * Data fetch
-   * ─────────────────────────────────────────────────────────── */
-
-  async function fetchBreakdown(gameId, token) {
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch(`${API_BASE}/canonical/games/${gameId}/breakdown`, { headers });
-    if (res.status === 404) return { notFound: true };
-    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-    return await res.json();
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * Hero rendering
-   * ─────────────────────────────────────────────────────────── */
-
-  function renderHero(data) {
-    const g = data.game;
-    if (!g) return;
-
-    // Team color split
-    if (g.away?.primary_color) els.bgAway.style.background = g.away.primary_color;
-    if (g.home?.primary_color) els.bgHome.style.background = g.home.primary_color;
-
-    // Breadcrumb
-    els.breadcrumb.innerHTML =
-      `<a href="/live-lines.html">Live Lines</a>` +
-      `<span class="ctx-breadcrumb-sep">›</span>` +
-      `<span>${escape(g.away?.name)} @ ${escape(g.home?.name)}</span>`;
-
-    // Tier ribbon (only if there's a non-no-edge pick)
-    const ribbonPick = (data.picks || []).find(p => p.tier && p.tier !== 'no_edge');
-    if (ribbonPick) {
-      const tierClass = TIER_CLASS[ribbonPick.tier] || 'tier-no-edge';
-      els.ribbon.outerHTML =
-        `<div class="ctx-ribbon ${tierClass}" id="ctxRibbon">${escape(ribbonPick.tier_display || ribbonPick.tier)}</div>`;
-    } else {
-      els.ribbon.outerHTML = `<div id="ctxRibbon"></div>`;
-    }
-
-    // Team names
-    els.awayName.textContent = g.away?.name || '—';
-    els.homeName.textContent = g.home?.name || '—';
-
-    // Team sublines
-    const awaySubParts = [];
-    if (g.away?.rank != null) awaySubParts.push(`<span class="ctx-team-rank">#${g.away.rank}</span>`);
-    if (g.away?.conference)   awaySubParts.push(`<span class="ctx-team-conf">${escape(g.away.conference)}</span>`);
-    if (g.away?.record)       awaySubParts.push(`<span class="ctx-team-record">${escape(g.away.record)}</span>`);
-    els.awaySub.innerHTML = awaySubParts.join('<span class="ctx-meta-dot"></span>');
-
-    const homeSubParts = [];
-    if (g.home?.rank != null) homeSubParts.push(`<span class="ctx-team-rank">#${g.home.rank}</span>`);
-    if (g.home?.conference)   homeSubParts.push(`<span class="ctx-team-conf">${escape(g.home.conference)}</span>`);
-    if (g.home?.record)       homeSubParts.push(`<span class="ctx-team-record">${escape(g.home.record)}</span>`);
-    els.homeSub.innerHTML = homeSubParts.join('<span class="ctx-meta-dot"></span>');
-
-    // Score state: played vs upcoming
-    const played = g.status === 'final' && g.away_points != null && g.home_points != null;
-    if (played) {
-      els.pgScore.style.display = '';
-      els.pgAway.textContent = g.away_points;
-      els.pgHome.textContent = g.home_points;
-      const awayWon = g.away_points > g.home_points;
-      els.pgAway.classList.toggle('loser', !awayWon && g.away_points !== g.home_points);
-      els.pgHome.classList.toggle('loser',  awayWon && g.away_points !== g.home_points);
-      els.preGame.style.display = 'none';
-    } else {
-      els.pgScore.style.display = 'none';
-      els.preGame.style.display = '';
-      renderProjectedScore(data);
-    }
-
-    // Meta row (kickoff + venue)
-    const metaParts = [];
-    if (g.kickoff_display) {
-      metaParts.push(`<div class="ctx-meta-item"><strong>${escape(g.kickoff_display)}</strong></div>`);
-    }
-    if (g.venue) {
-      metaParts.push(`<div class="ctx-meta-item">${escape(g.venue)}</div>`);
-    }
-    if (g.neutral_site) {
-      metaParts.push(`<div class="ctx-meta-item">Neutral Site</div>`);
-    }
-    els.meta.innerHTML = metaParts.join('<span class="ctx-meta-dot"></span>');
-  }
-
-  function renderProjectedScore(data) {
-    const p = data.projections;
-    if (!p) {
-      els.projected.style.display = 'none';
-      return;
-    }
-    // Blend total + blend home margin. We stored home_margin per-model
-    // but the blend is in anchor frame — compute from anchor + anchor.is_home.
-    const blendAnchorSpread = p.spread?.pressbox_blend;  // anchor-frame
-    const blendTotal        = p.total?.pressbox_blend;
-    const anchorIsHome      = p.anchor?.is_home;
-    if (blendAnchorSpread == null || blendTotal == null || anchorIsHome == null) {
-      els.projected.style.display = 'none';
-      return;
-    }
-    // Convert anchor spread back to home margin:
-    //   if anchor is home: home_margin = -anchor_spread
-    //   if anchor is away: home_margin = anchor_spread
-    const homeMargin = anchorIsHome ? -blendAnchorSpread : blendAnchorSpread;
-
-    const homePts = (blendTotal + homeMargin) / 2;
-    const awayPts = (blendTotal - homeMargin) / 2;
-
-    els.projAway.textContent = Math.round(awayPts);
-    els.projHome.textContent = Math.round(homePts);
-    els.projAwayLbl.textContent = data.game?.away?.name || '';
-    els.projHomeLbl.textContent = data.game?.home?.name || '';
-
-    if (awayPts > homePts) {
-      els.projAway.classList.add('winner');
-      els.projHome.classList.remove('winner');
-    } else if (homePts > awayPts) {
-      els.projHome.classList.add('winner');
-      els.projAway.classList.remove('winner');
-    }
-
-    els.projected.style.display = '';
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * Storyline
-   * ─────────────────────────────────────────────────────────── */
-
-  function renderStoryline(data) {
-    const n = data.narrative || {};
-    if (!n.text) {
-      els.storylineText.innerHTML = '<p style="color:var(--text-light);font-style:italic;">No editorial read available for this game.</p>';
-      els.storylineMeta.textContent = '';
-      els.storylineLede.style.display = 'none';
-      return;
-    }
-
-    // Use post-game text if available and game is played
-    const usePostGame = data.game?.status === 'final' && n.post_game_text;
-    const text = usePostGame ? n.post_game_text : n.text;
-
-    // Parse paragraphs and clean up UTF-8 encoding issues (em-dash corruption)
-    const paragraphs = text
-      .split(/\n\n+/)
-      .map(p => p.trim())
-      .filter(Boolean)
-      .map(p => fixEncoding(p));
-
-    els.storylineText.innerHTML = paragraphs.map(p =>
-      `<p>${escape(p)}</p>`
-    ).join('');
-
-    // Generated timestamp + staleness warning
-    const metaParts = [];
-    if (n.generated_at) {
-      metaParts.push(`Generated ${timeAgo(n.generated_at)}.`);
-    }
-    if (n.last_input_change && n.generated_at &&
-        new Date(n.last_input_change) > new Date(n.generated_at)) {
-      metaParts.push(`<span class="stale-warn">⚠ Lines have moved since this was written.</span>`);
-    }
-    els.storylineMeta.innerHTML = metaParts.join(' ');
-
-    // Lede not currently emitted by the generator; keep hidden
-    els.storylineLede.style.display = 'none';
-  }
-
-  function fixEncoding(s) {
-    // Repair common UTF-8 mis-encoding artifacts from the narrative generator
-    return s
-      .replace(/â€"/g, '—')
-      .replace(/â€™/g, "'")
-      .replace(/â€œ/g, '"')
-      .replace(/â€/g, '"')
-      .replace(/â€¦/g, '…');
-  }
-
-  function timeAgo(iso) {
-    if (!iso) return '';
-    const then = new Date(iso).getTime();
-    if (isNaN(then)) return '';
-    const diffMs = Date.now() - then;
-    const mins = Math.floor(diffMs / 60000);
-    if (mins < 1)    return 'just now';
-    if (mins < 60)   return `${mins} min ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24)    return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
-    const days = Math.floor(hrs / 24);
-    if (days < 30)   return `${days} day${days === 1 ? '' : 's'} ago`;
-    const months = Math.floor(days / 30);
-    return `${months} month${months === 1 ? '' : 's'} ago`;
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * The Read — model projection charts
-   * ─────────────────────────────────────────────────────────── */
-
-  function renderRead(data) {
-    const p = data.projections;
-    els.readStack.innerHTML = '';
-    if (!p) return;
-
-    const anchor = p.anchor || {};
-    if (p.spread)    els.readStack.appendChild(buildDotPlot('Spread', p.spread, 'anchor_spread', anchor));
-    if (p.total)     els.readStack.appendChild(buildDotPlot('Total',  p.total,  'total', anchor));
-    if (p.moneyline) els.readStack.appendChild(buildMLRows(data, p.moneyline, anchor));
-  }
-
-  /**
-   * Single-axis strip plot.
-   *
-   * Layout:
-   *   - One horizontal axis across the card.
-   *   - Vegas line: vertical tick across the axis with label above.
-   *   - All model dots sit ON the axis at their projected value.
-   *   - PressBox blend: larger gold dot, slightly offset above axis.
-   *   - Labels (model name + value) attach to each dot, stacked above
-   *     or below to avoid overlap.
-   */
-  function buildDotPlot(label, section, key, anchor) {
-    const card = document.createElement('div');
-    card.className = 'read-card';
-
-    const vegasPos     = key === 'anchor_spread' ? section.vegas_anchor_spread : section.vegas_line;
-    const blendPos     = section.pressbox_blend;
-    const blendDisplay = section.pressbox_display;
-    const vegasDisplay = section.vegas_display;
-
-    // Collect model points
-    const points = [];
-    (section.models || []).forEach(m => {
-      if (m[key] == null) return;
-      points.push({
-        name:    m.name,
-        value:   m[key],
-        display: m.display || String(m[key]),
-        kind:    'model',
-      });
-    });
-
-    if (points.length === 0 && vegasPos == null && blendPos == null) {
-      card.innerHTML = `
-        <div class="read-card-head">
-          <div class="read-card-label">${escape(label)}</div>
-          <div class="read-card-vegas">—</div>
-        </div>
-        <div class="read-empty">No data available yet for this matchup.</div>
-      `;
-      return card;
-    }
-
-    // Axis range — Vegas ± 8, padded by any model values further out
-    const allVals = [vegasPos, blendPos, ...points.map(p => p.value)].filter(v => v != null);
-    const minVal = Math.min(...allVals);
-    const maxVal = Math.max(...allVals);
-    let axisMin = vegasPos != null ? Math.min(minVal, vegasPos - 8) : minVal - 4;
-    let axisMax = vegasPos != null ? Math.max(maxVal, vegasPos + 8) : maxVal + 4;
-    // Pad outward to a clean tick
-    const tickStep = (axisMax - axisMin) > 30 ? 5 : (axisMax - axisMin) > 15 ? 3 : 1;
-    axisMin = Math.floor(axisMin / tickStep) * tickStep;
-    axisMax = Math.ceil(axisMax / tickStep) * tickStep;
-    if (axisMax - axisMin < 4) {
-      axisMin -= 2; axisMax += 2;
-    }
-    const range = axisMax - axisMin;
-    const xPct = (v) => clamp(((v - axisMin) / range) * 100, 0, 100);
-
-    // Header
-    card.innerHTML = `
-      <div class="read-card-head">
-        <div class="read-card-label">${escape(label)}</div>
-        <div class="read-card-vegas">Vegas: <strong>${escape(vegasDisplay || '—')}</strong></div>
-      </div>
-      <div class="strip-plot">
-        <div class="strip-labels strip-labels-above"></div>
-        <div class="strip-axis-wrap">
-          <div class="strip-axis"></div>
-        </div>
-        <div class="strip-labels strip-labels-below"></div>
-        <div class="strip-ticks"></div>
-      </div>
-    `;
-
-    const axisEl  = card.querySelector('.strip-axis');
-    const above   = card.querySelector('.strip-labels-above');
-    const below   = card.querySelector('.strip-labels-below');
-    const ticksEl = card.querySelector('.strip-ticks');
-
-    // Axis tick labels
-    for (let t = Math.ceil(axisMin / tickStep) * tickStep; t <= axisMax; t += tickStep) {
-      const tick = document.createElement('div');
-      tick.className = 'strip-tick';
-      tick.style.left = `${xPct(t)}%`;
-      ticksEl.appendChild(tick);
-      const lab = document.createElement('div');
-      lab.className = 'strip-tick-label';
-      lab.style.left = `${xPct(t)}%`;
-      lab.textContent = (key === 'anchor_spread')
-        ? (t > 0 ? '+' + t : t)
-        : t;
-      ticksEl.appendChild(lab);
-    }
-
-    // Vegas vertical line + label above axis
-    if (vegasPos != null) {
-      const v = document.createElement('div');
-      v.className = 'strip-vegas';
-      v.style.left = `${xPct(vegasPos)}%`;
-      axisEl.appendChild(v);
-    }
-
-    // PressBox blend marker — slightly larger, gold star/dot
-    if (blendPos != null) {
-      const b = document.createElement('div');
-      b.className = 'strip-dot strip-dot-blend';
-      b.style.left = `${xPct(blendPos)}%`;
-      b.title = `PressBox blend: ${blendDisplay || ''}`;
-      axisEl.appendChild(b);
-
-      const bLab = document.createElement('div');
-      bLab.className = 'strip-label strip-label-blend';
-      bLab.style.left = `${xPct(blendPos)}%`;
-      bLab.innerHTML = `<span class="strip-label-name">PressBox</span><span class="strip-label-value">${escape(blendDisplay || '')}</span>`;
-      above.appendChild(bLab);
-    }
-
-    // Model dots — sort by value to do simple anti-overlap label stacking.
-    // Position labels alternating above/below if they cluster.
-    const sortedPts = [...points].sort((a, b) => a.value - b.value);
-
-    sortedPts.forEach((p, i) => {
-      const dot = document.createElement('div');
-      dot.className = 'strip-dot';
-      dot.style.left = `${xPct(p.value)}%`;
-      dot.title = `${p.name}: ${p.display}`;
-      axisEl.appendChild(dot);
-
-      const lbl = document.createElement('div');
-      lbl.className = 'strip-label';
-      lbl.style.left = `${xPct(p.value)}%`;
-      lbl.innerHTML = `<span class="strip-label-name">${escape(p.name)}</span><span class="strip-label-value">${escape(p.display)}</span>`;
-      // Alternate above/below to reduce overlap
-      if (i % 2 === 0) above.appendChild(lbl);
-      else             below.appendChild(lbl);
-    });
-
-    return card;
-  }
-
-  /**
-   * Moneyline section — center-divider bar style like stat rows.
-   * Each row shows anchor probability radiating LEFT from center,
-   * other probability radiating RIGHT. Numbers at the outer edges.
-   *
-   * Layout per row:
-   *   [anchor_odds]  [    ←anchor bar  |  other bar→    ]  [other_odds]
-   *
-   * 7 rows total: Vegas, 5 models, PressBox.
-   */
-  function buildMLRows(data, mlSection, anchor) {
-    const card = document.createElement('div');
-    card.className = 'read-card';
-
-    const anchorTeam = anchor.team || 'Anchor';
-    const otherTeam  = anchor.other_team || 'Other';
-
-    // Header with team name columns
-    card.innerHTML = `
-      <div class="read-card-head">
-        <div class="read-card-label">Moneyline</div>
-      </div>
-      <div class="ml-teamhead">
-        <div class="ml-teamhead-left">${escape(anchorTeam)}</div>
-        <div class="ml-teamhead-right">${escape(otherTeam)}</div>
-      </div>
-      <div class="ml-bars"></div>
-    `;
-    const barsEl = card.querySelector('.ml-bars');
-
-    function row(label, anchorProb, otherProb, anchorOdds, otherOdds, kind) {
-      const klass = kind === 'vegas' ? ' is-vegas' : kind === 'blend' ? ' is-blend' : '';
-
-      // Convert probability to bar width (0-50% from center)
-      const aWidth = (anchorProb != null) ? clamp(anchorProb * 100, 0, 100) : 0;
-      const oWidth = (otherProb  != null) ? clamp(otherProb  * 100, 0, 100) : 0;
-
-      // Determine which side is "winning" for color emphasis
-      const anchorFav = anchorProb != null && otherProb != null && anchorProb > otherProb;
-      const otherFav  = otherProb  != null && anchorProb != null && otherProb  > anchorProb;
-      const aQual = anchorFav ? 'fav' : 'dog';
-      const oQual = otherFav  ? 'fav' : 'dog';
-
-      barsEl.insertAdjacentHTML('beforeend', `
-        <div class="ml-row${klass}">
-          <div class="ml-odds ml-odds-left">${escape(anchorOdds || '—')}</div>
-          <div class="ml-bar-pair">
-            <div class="ml-bar-half ml-bar-left">
-              <div class="ml-bar-fill ml-bar-fill-${aQual}" style="width:${aWidth}%;"></div>
-            </div>
-            <div class="ml-bar-divider"></div>
-            <div class="ml-bar-half ml-bar-right">
-              <div class="ml-bar-fill ml-bar-fill-${oQual}" style="width:${oWidth}%;"></div>
-            </div>
-          </div>
-          <div class="ml-odds ml-odds-right">${escape(otherOdds || '—')}</div>
-          <div class="ml-label">${escape(label)}</div>
-        </div>
-      `);
-    }
-
-    row('Vegas',
-        mlSection.vegas_anchor_implied,
-        mlSection.vegas_other_implied,
-        mlSection.vegas_anchor_display,
-        mlSection.vegas_other_display,
-        'vegas');
-
-    MODEL_ORDER.forEach(modelName => {
-      const m = (mlSection.models || []).find(x => x.name === modelName);
-      row(modelName,
-          m?.anchor_prob,
-          m?.other_prob,
-          m?.anchor_display,
-          m?.other_display,
-          'model');
-    });
-
-    row('PressBox',
-        mlSection.pressbox_anchor_prob,
-        mlSection.pressbox_other_prob,
-        mlSection.pressbox_anchor_american,
-        mlSection.pressbox_other_american,
-        'blend');
-
-    return card;
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * The Pick
-   * ─────────────────────────────────────────────────────────── */
-
-  function renderPicks(data) {
-    els.pickStack.innerHTML = '';
-    const picks = (data.picks || []).filter(p => p.tier && p.tier !== 'no_edge');
-    if (!picks.length) {
-      els.pickStack.innerHTML = `
-        <div class="pick-empty">
-          <div class="pick-empty-icon">i</div>
-          <div>No active pick on this game. Our system considered it but didn't find a tier-eligible edge.</div>
-        </div>
-      `;
-      return;
-    }
-
-    picks.forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'pick-card';
-      const tierClass = TIER_CLASS[p.tier] || 'tier-no-edge';
-      const marketLabel = (p.market_display || MARKET_DISPLAY[p.market] || p.market || '').toUpperCase();
-
-      const lineDisplay = (() => {
-        if (p.market === 'total') {
-          return `${p.side_display} ${p.line ?? ''}`.trim();
-        }
-        if (p.market === 'spread') {
-          const ln = p.line != null ? formatSignedNumber(p.line) : '';
-          return `${p.side_display} ${ln}`.trim();
-        }
-        // moneyline
-        return `${p.side_display}${p.line != null ? ' ' + formatSignedNumber(p.line) : ''}`;
-      })();
-
-      const outcomeBadge = p.outcome
-        ? `<span class="pick-outcome ${
-            p.outcome === 'W' ? 'win' : p.outcome === 'L' ? 'loss' : 'push'
-          }">${p.outcome === 'W' ? 'Won' : p.outcome === 'L' ? 'Lost' : 'Push'}</span>`
-        : '';
-
-      card.innerHTML = `
-        <div class="pick-head">
-          <span class="pick-tier-badge ${tierClass}">${escape(p.tier_display || p.tier)}</span>
-          <span class="pick-market">${escape(marketLabel)}</span>
-        </div>
-        <div class="pick-line">${escape(lineDisplay)}</div>
-        <div class="pick-meta">
-          ${p.book ? `<span>${escape(p.book)}</span>` : ''}
-          ${p.book && p.released_at ? `<span class="pick-meta-dot"></span>` : ''}
-          ${p.released_at ? `<span>Released ${timeAgo(p.released_at)}</span>` : ''}
-          ${outcomeBadge ? `<span class="pick-meta-dot"></span>${outcomeBadge}` : ''}
-        </div>
-      `;
-      els.pickStack.appendChild(card);
-    });
-  }
-
-  function formatSignedNumber(n) {
-    if (n == null) return '';
-    if (n > 0) return '+' + n;
-    return String(n);
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * The Numbers — stat comparison
-   * ─────────────────────────────────────────────────────────── */
-
-  function renderNumbers(data) {
-    els.numbersStack.innerHTML = '';
-    const cats = data.stats?.categories || [];
-    const awayName = data.game?.away?.name || 'Away';
-    const homeName = data.game?.home?.name || 'Home';
-
-    cats.forEach(cat => {
-      const card = document.createElement('div');
-      card.className = 'numbers-card';
-
-      // Special-case: Defense — Advanced splits into "Allowed" (lower better)
-      // and "Generated" (higher better) sub-groups. Headed with explanatory
-      // italic subheads so the reader knows which direction = good.
-      let bodyHtml;
-      if (cat.name === 'Defense — Advanced') {
-        const allowedRows = (cat.rows || []).filter(r => r.lower_better);
-        const generatedRows = (cat.rows || []).filter(r => !r.lower_better);
-
-        const sections = [];
-        if (allowedRows.length) {
-          sections.push(`
-            <div class="numbers-subhead">What this defense allows <span class="numbers-subhead-hint">(shorter bar = better)</span></div>
-            ${allowedRows.map(r => renderStatRow(r)).join('')}
-          `);
-        }
-        if (generatedRows.length) {
-          sections.push(`
-            <div class="numbers-subhead">What this defense generates <span class="numbers-subhead-hint">(longer bar = better)</span></div>
-            ${generatedRows.map(r => renderStatRow(r)).join('')}
-          `);
-        }
-        bodyHtml = sections.join('');
-      } else {
-        bodyHtml = (cat.rows || []).map(r => renderStatRow(r)).join('');
-      }
-
-      card.innerHTML = `
-        <div class="numbers-card-head">
-          <h3 class="numbers-card-title">${escape(cat.name)}</h3>
-        </div>
-        <div class="numbers-teamhead">
-          <div class="numbers-teamhead-away">${escape(awayName)}</div>
-          <div class="numbers-teamhead-spacer"></div>
-          <div class="numbers-teamhead-home">${escape(homeName)}</div>
-        </div>
-        <div class="numbers-rows">${bodyHtml}</div>
-      `;
-      els.numbersStack.appendChild(card);
-    });
-  }
-
-  /**
-   * Render a single stat row with value-anchored bars.
-   *
-   * Bar width = RAW position in league range (bigger number = longer bar).
-   * Bar color = QUALITY (lower_better-aware).
-   *
-   * So a defense allowing 39.5 pts/g (league worst) gets a long bar in a
-   * BAD color. A defense allowing 9.3 pts/g (league best) gets a short
-   * bar in a GOOD color. Width and color carry separate signals.
-   */
-  function renderStatRow(row) {
-    const a = row.away;
-    const h = row.home;
-    const aDisplay = row.away_display ?? (a != null ? String(a) : '—');
-    const hDisplay = row.home_display ?? (h != null ? String(h) : '—');
-    const lead = row.lead; // "away" | "home" | "tie" | null
-
-    const aLead = lead === 'away';
-    const hLead = lead === 'home';
-
-    // Compute value-anchored bar width + quality color per side.
-    const aBar = computeBar(a, row);
-    const hBar = computeBar(h, row);
-
-    return `
-      <div class="numbers-row">
-        <div class="numbers-row-val away ${aLead ? 'lead' : ''} ${a == null ? 'missing' : ''}">${escape(aDisplay)}</div>
-        <div class="numbers-row-track away">
-          <div class="numbers-row-fill away ${aBar.qual}" style="width:${aBar.width}%;"></div>
-        </div>
-        <div class="numbers-row-label">${escape(row.label)}</div>
-        <div class="numbers-row-track home">
-          <div class="numbers-row-fill home ${hBar.qual}" style="width:${hBar.width}%;"></div>
-        </div>
-        <div class="numbers-row-val home ${hLead ? 'lead' : ''} ${h == null ? 'missing' : ''}">${escape(hDisplay)}</div>
-      </div>
-    `;
-  }
-
-  /**
-   * Compute bar width (0-100%) and quality class for a single value.
-   *
-   * Width tracks RAW position in the league range.
-   *   - League min  → 0% bar
-   *   - League max  → 100% bar
-   * Width does NOT care about lower_better. Bigger number = longer bar.
-   * Always.
-   *
-   * Color tracks QUALITY in 5 tiers. Lower_better-aware.
-   *   - elite      (top 20%)
-   *   - above-avg  (60–80%)
-   *   - mid        (40–60%)
-   *   - below-avg  (20–40%)
-   *   - poor       (bottom 20%)
-   *
-   * So a defense allowing the most points/game in FBS gets a LONG bar
-   * in a BAD color. A defense allowing the fewest points gets a SHORT
-   * bar in a GOOD color. The eye stops fighting "big number = small bar"
-   * and the color tells you whether big is good or bad.
-   */
-  function computeBar(value, row) {
-    if (value == null) return { width: 0, qual: 'missing' };
-    const min = row.league_min;
-    const max = row.league_max;
-    const lowerBetter = row.lower_better;
-
-    if (min == null || max == null || min === max) {
-      // No league context — render a fixed half-width neutral bar
-      return { width: 30, qual: 'below-avg' };
-    }
-
-    // rawPct: 0% = league min, 100% = league max. Used for WIDTH.
-    let rawPct = ((value - min) / (max - min)) * 100;
-    rawPct = clamp(rawPct, 0, 100);
-
-    // qualityPct: 0% = league worst, 100% = league best. Used for COLOR.
-    const qualityPct = lowerBetter ? (100 - rawPct) : rawPct;
-
-    // Bar width tracks raw value. Minimum visible bar even at league min.
-    const width = Math.max(4, Math.round(rawPct));
-
-    let qual;
-    if (qualityPct >= 80)      qual = 'elite';
-    else if (qualityPct >= 60) qual = 'above-avg';
-    else if (qualityPct >= 40) qual = 'mid';
-    else if (qualityPct >= 20) qual = 'below-avg';
-    else                       qual = 'poor';
-
-    return { width, qual };
-  }
-
-  function clamp(v, lo, hi) {
-    return Math.max(lo, Math.min(hi, v));
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * The Series
-   * ─────────────────────────────────────────────────────────── */
-
-  function renderSeries(data) {
-    const s = data.series;
-    if (!s || !s.games || !s.games.length) {
-      els.seriesSection.style.display = 'none';
-      return;
-    }
-    els.seriesSection.style.display = '';
-    els.seriesSummary.textContent = s.summary || '';
-    els.seriesList.innerHTML = (s.games || []).map(g => {
-      const score = `${escape(g.home_team)} ${g.home_points}, ${escape(g.away_team)} ${g.away_points}`;
-      return `
-        <div class="series-row">
-          <div class="series-year">${escape(g.year ?? '')}</div>
-          <div class="series-score">${score}</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * Util
-   * ─────────────────────────────────────────────────────────── */
-
-  function escape(s) {
-    if (s == null) return '';
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  /* ───────────────────────────────────────────────────────────
-   * Boot
-   * ─────────────────────────────────────────────────────────── */
-
-  async function boot() {
-    const gameId = getGameId();
-    if (!gameId) {
-      showState('notfound');
-      return;
-    }
-
-    showState('loading');
-
-    // Subscriber gate
-    const token = await checkAuth();
-    if (!token) {
-      showState('paywall');
-      return;
-    }
-
-    let data;
-    try {
-      data = await fetchBreakdown(gameId, token);
-    } catch (e) {
-      console.error('fetch failed:', e);
-      showState('error');
-      return;
-    }
-
-    if (data.notFound) {
-      showState('notfound');
-      return;
-    }
-
-    // Render everything
-    try {
-      renderHero(data);
-      renderStoryline(data);
-      renderRead(data);
-      renderPicks(data);
-      renderNumbers(data);
-      renderSeries(data);
-    } catch (e) {
-      console.error('render failed:', e);
-      showState('error');
-      return;
-    }
-
-    showState('content');
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
-  }
-})();
+  .pick-card { padding: 18px 18px; }
+  .pick-line { font-size: 19px; }
+
+  .numbers-card-head { padding: 14px 18px 12px; }
+  .numbers-rows { padding: 6px 18px 12px; }
+}
