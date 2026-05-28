@@ -701,74 +701,108 @@
 .read-row-dot, .read-row-value, .read-axis-tick, .read-axis-label,
 .read-vegas-mark, .read-blend-mark { /* unused */ }
 
-/* ── Moneyline odds rows (sportsbook-style display) ──────────── */
+/* ── Moneyline rows: center-divider bars (stat-style) ────────── */
 
-.read-ml-rows {
+/* Grid layout (5 cols):
+   [label] [anchor odds] [anchor bar] [other bar] [other odds]
+       70px      50px       1fr           1fr          50px         */
+
+.ml-teamhead {
+  display: grid;
+  grid-template-columns: 70px 50px 1fr 1fr 50px;
+  gap: 8px;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--cream-mid);
+  margin-bottom: 8px;
+}
+.ml-teamhead-left,
+.ml-teamhead-right {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.ml-teamhead-left  { grid-column: 3; text-align: right; padding-right: 8px; }
+.ml-teamhead-right { grid-column: 4; text-align: left;  padding-left: 8px; }
+
+.ml-bars {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 4px 0 8px;
 }
-.read-ml-odds-row {
+
+.ml-row {
   display: grid;
-  grid-template-columns: 90px 1fr 1fr;
+  grid-template-columns: 70px 50px 1fr 1fr 50px;
   align-items: center;
-  gap: 14px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--cream-mid);
+  gap: 8px;
+  padding: 6px 0;
 }
-.read-ml-odds-row:last-child { border-bottom: 0; }
-.read-ml-name {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--text-mid);
-  text-transform: uppercase;
+.ml-row.is-vegas {
+  background: var(--cream-dark);
+  margin: 0 -14px;
+  padding: 8px 14px;
+  border-radius: 2px;
 }
-.read-ml-odds-row.is-vegas { background: var(--cream-dark); margin: 0 -14px; padding: 8px 14px; border-radius: 2px; }
-.read-ml-odds-row.is-vegas .read-ml-name { color: var(--ink); }
-.read-ml-odds-row.is-blend { background: rgba(184,146,42,0.08); margin: 0 -14px; padding: 8px 14px; border-radius: 2px; }
-.read-ml-odds-row.is-blend .read-ml-name { color: var(--gold); }
-
-.read-ml-odds-anchor,
-.read-ml-odds-other {
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink);
-  text-align: center;
-  letter-spacing: 0.3px;
-}
-.read-ml-odds-row.is-vegas .read-ml-odds-anchor,
-.read-ml-odds-row.is-vegas .read-ml-odds-other,
-.read-ml-odds-row.is-blend .read-ml-odds-anchor,
-.read-ml-odds-row.is-blend .read-ml-odds-other {
-  font-weight: 700;
-}
-.read-ml-odds-row:not(.is-vegas):not(.is-blend) .read-ml-odds-anchor,
-.read-ml-odds-row:not(.is-vegas):not(.is-blend) .read-ml-odds-other {
-  font-weight: 600;
-  color: var(--text-mid);
+.ml-row.is-blend {
+  background: rgba(184,146,42,0.08);
+  margin: 0 -14px;
+  padding: 8px 14px;
+  border-radius: 2px;
 }
 
-.read-ml-foot {
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: 90px 1fr 1fr;
-  gap: 14px;
+.ml-label {
+  grid-column: 1;
   font-family: var(--sans);
   font-size: 10px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-light);
   font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-mid);
 }
-.read-ml-foot > :first-child { /* spacer to align with name column */ }
-.read-ml-foot-anchor,
-.read-ml-foot-other {
-  text-align: center;
+.ml-row.is-vegas .ml-label { color: var(--ink); }
+.ml-row.is-blend .ml-label { color: var(--gold); }
+
+.ml-odds {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-mid);
+  letter-spacing: 0.3px;
 }
+.ml-odds-left  { grid-column: 2; text-align: right; }
+.ml-odds-right { grid-column: 5; text-align: left;  }
+.ml-row.is-vegas .ml-odds { color: var(--ink); }
+.ml-row.is-blend .ml-odds { color: var(--gold); }
+
+.ml-bar-pair {
+  grid-column: 3 / 5;
+  display: grid;
+  grid-template-columns: 1fr 2px 1fr;
+  align-items: center;
+  height: 12px;
+}
+.ml-bar-half {
+  position: relative;
+  height: 8px;
+}
+.ml-bar-divider {
+  width: 2px;
+  height: 18px;
+  background: var(--ink);
+}
+.ml-bar-fill {
+  position: absolute;
+  top: 0; bottom: 0;
+  border-radius: 1px;
+}
+.ml-bar-left  .ml-bar-fill { right: 0; }
+.ml-bar-right .ml-bar-fill { left: 0;  }
+
+.ml-bar-fill-fav { background: var(--gold); }
+.ml-bar-fill-dog { background: var(--text-light); }
 
 /* Empty state for charts with no data */
 .read-empty {
