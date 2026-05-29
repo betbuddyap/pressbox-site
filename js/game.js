@@ -466,9 +466,16 @@
 
       const topPts = [];
       const botPts = [];
+      // Power exponent applied to the normalized density. y is already
+      // in 0..1 with peak at 1. Raising to the power leaves the peak at
+      // 1 but drops everything else toward 0 — sharpens the peak and
+      // narrows the lobe visually. Pure visualization tweak; backend
+      // density data unchanged.
+      const POWER = 2.0;
       for (const [x, y] of densityCurve) {
         const xv = clamp(((x - axisMin) / range) * VBW, 0, VBW);
-        const yPx = clamp(y, 0, 1) * PEAK_PX;
+        const ySharp = Math.pow(clamp(y, 0, 1), POWER);
+        const yPx = ySharp * PEAK_PX;
         topPts.push([xv, CENTER_Y - yPx]);
         botPts.push([xv, CENTER_Y + yPx]);
       }
