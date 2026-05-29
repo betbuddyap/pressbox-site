@@ -702,7 +702,7 @@
          style="margin-top:var(--space-4);">
         Bet at ${esc(currentBook)} →
       </a>
-      <a class="ll-game-link" href="/game/${esc(pick.game_id || '')}">
+      <a class="ll-game-link" href="/game.html?game_id=${esc(pick.game_id || '')}">
         Full game breakdown →
       </a>
     `;
