@@ -378,18 +378,27 @@
       return card;
     }
 
-    // Axis range — Vegas ± 13, padded by any model values further out.
-    // The historical band does NOT participate in axis bounds. The band
-    // will be clipped to whatever the axis ends up being. Letting it
-    // drive bounds caused the band to swallow the entire chart.
+    // Axis range — Vegas ± 13, padded by model values further out
+    // BUT capped at Vegas ± 18 so one extreme model (e.g. Pace+ at -24
+    // on a -1 game) doesn't stretch the entire chart. Out-of-range
+    // dots will sit at the axis edge; the chart stays readable.
+    // The historical band does NOT participate in axis bounds.
     const histRange = section.historical_range || null;
     const histLow   = histRange?.low ?? null;
     const histHigh  = histRange?.high ?? null;
     const allVals = [vegasPos, blendPos, ...points.map(p => p.value)].filter(v => v != null);
     const minVal = Math.min(...allVals);
     const maxVal = Math.max(...allVals);
-    let axisMin = vegasPos != null ? Math.min(minVal, vegasPos - 13) : minVal - 4;
-    let axisMax = vegasPos != null ? Math.max(maxVal, vegasPos + 13) : maxVal + 4;
+    const AXIS_INNER = 13;   // default padding around Vegas
+    const AXIS_OUTER_CAP = 18; // max distance Vegas can stretch in either direction
+    let axisMin, axisMax;
+    if (vegasPos != null) {
+      axisMin = Math.max(vegasPos - AXIS_OUTER_CAP, Math.min(minVal, vegasPos - AXIS_INNER));
+      axisMax = Math.min(vegasPos + AXIS_OUTER_CAP, Math.max(maxVal, vegasPos + AXIS_INNER));
+    } else {
+      axisMin = minVal - 4;
+      axisMax = maxVal + 4;
+    }
     // Spread chart: always include 0 in the axis so the zero anchor is visible
     if (key === 'anchor_spread') {
       axisMin = Math.min(axisMin, -2);
@@ -524,14 +533,61 @@
       bLab.className = 'strip-label strip-label-blend';
       bLab.style.left = `${xPct(blendPos)}%`;
       bLab.innerHTML = `<span class="strip-label-name">PressBox</span><span class="strip-label-value">${escape(blendDisplay || '')}</span>`;
+      // Note: blend label intentionally does NOT include team name —
+      // the team is already shown in the card header. Keeping every
+      // label consistently-sized makes the collision-detection cleaner.
       above.appendChild(bLab);
     }
 
-    // Model dots — sort by value to do simple anti-overlap label stacking.
-    // Position labels alternating above/below if they cluster.
+    // Model dots — labels get placed via 4-lane collision detection.
+    // Each label has an xPct center. We try to place it in the
+    // most-preferred lane (above-near), and if it would overlap a label
+    // already in that lane, fall through to below-near, above-far,
+    // below-far in order. Minimum gap between label centers in the
+    // same lane is the sum of their half-widths in xPct space.
+    //
+    // The Pressbox blend label is placed FIRST (lane 0 = above-near)
+    // so it always gets the prime spot. Other labels work around it.
+
+    // Estimated label half-width as a percent of chart width.
+    // Chart is ~1100-1500px wide; labels render around 70px.
+    // halfWidth ≈ 35px ≈ 3-4% of chart. Pad to be safe.
+    const LABEL_HALF_PCT = 4.0;
+    const BLEND_HALF_PCT = 4.5; // blend is slightly larger
+
+    // Lane registry: each lane tracks the placed labels [{x, halfW}]
+    const lanes = [[], [], [], []];
+    const laneNodes = [above, below, above, below];
+    const laneClasses = ['', '', 'far', 'far'];
+
+    function tryPlace(xCenter, halfW) {
+      for (let i = 0; i < lanes.length; i++) {
+        const occupants = lanes[i];
+        const overlaps = occupants.some(occ => {
+          const gap = Math.abs(occ.x - xCenter);
+          const required = (occ.halfW + halfW);
+          return gap < required;
+        });
+        if (!overlaps) {
+          occupants.push({ x: xCenter, halfW });
+          return i;
+        }
+      }
+      // All lanes full — fall back to lane 0 and accept the overlap
+      return 0;
+    }
+
+    // Reserve lane 0 for the blend label if present
+    if (blendPos != null) {
+      const blendX = xPct(blendPos);
+      lanes[0].push({ x: blendX, halfW: BLEND_HALF_PCT });
+      // The blend label was already appended above; tag its lane class
+      // (already in `above` which is lane 0, so no movement needed).
+    }
+
     const sortedPts = [...points].sort((a, b) => a.value - b.value);
 
-    sortedPts.forEach((p, i) => {
+    sortedPts.forEach((p) => {
       const dot = document.createElement('div');
       dot.className = 'strip-dot';
       dot.style.left = `${xPct(p.value)}%`;
@@ -542,9 +598,11 @@
       lbl.className = 'strip-label';
       lbl.style.left = `${xPct(p.value)}%`;
       lbl.innerHTML = `<span class="strip-label-name">${escape(p.name)}</span><span class="strip-label-value">${escape(p.display)}</span>`;
-      // Alternate above/below to reduce overlap
-      if (i % 2 === 0) above.appendChild(lbl);
-      else             below.appendChild(lbl);
+
+      const xCenter = xPct(p.value);
+      const lane = tryPlace(xCenter, LABEL_HALF_PCT);
+      if (laneClasses[lane]) lbl.classList.add(`strip-label-${laneClasses[lane]}`);
+      laneNodes[lane].appendChild(lbl);
     });
 
     return card;
