@@ -1139,45 +1139,52 @@
 
 /* Mobile: stack vertically per stat */
 @media (max-width: 600px) {
+  /* Tight horizontal 5-column layout: value | bar | label | bar | value
+     Values sit at the far edges so they align with the team-name
+     headers at the top. Bars grow inward toward the centered label. */
   .numbers-row {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 2px 12px;
-    padding: 4px 0;
+    grid-template-columns: 44px 1fr 70px 1fr 44px;
+    grid-template-rows: auto;
+    gap: 6px;
+    padding: 5px 0;
+    align-items: center;
   }
   .numbers-row-label {
-    grid-column: 1 / -1;
+    grid-column: 3;
     grid-row: 1;
     text-align: center;
-    padding: 0 0 1px;
-    font-size: 11px;
-    letter-spacing: 0.4px;
+    padding: 0;
+    font-size: 10px;
+    letter-spacing: 0.3px;
     color: var(--text-mid);
+    line-height: 1.2;
   }
   .numbers-row-label::before,
   .numbers-row-label::after { display: none; }
   .numbers-row-val.away {
-    grid-column: 1; grid-row: 2;
-    text-align: center;
-    font-size: 13px;
+    grid-column: 1;
+    grid-row: 1;
+    text-align: left;
+    font-size: 12px;
     padding: 0;
   }
   .numbers-row-val.home {
-    grid-column: 2; grid-row: 2;
-    text-align: center;
-    font-size: 13px;
+    grid-column: 5;
+    grid-row: 1;
+    text-align: right;
+    font-size: 12px;
     padding: 0;
   }
   .numbers-row-track.away {
-    grid-column: 1; grid-row: 3;
+    grid-column: 2;
+    grid-row: 1;
     direction: rtl;
-    height: 7px;
-    margin: 1px 0 0;
+    height: 6px;
   }
   .numbers-row-track.home {
-    grid-column: 2; grid-row: 3;
-    height: 7px;
-    margin: 1px 0 0;
+    grid-column: 4;
+    grid-row: 1;
+    height: 6px;
   }
 }
 
