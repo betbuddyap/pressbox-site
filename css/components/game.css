@@ -1142,21 +1142,43 @@
   .numbers-row {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto auto;
-    gap: 4px 12px;
-    padding: 8px 0;
+    gap: 2px 12px;
+    padding: 4px 0;
   }
   .numbers-row-label {
     grid-column: 1 / -1;
     grid-row: 1;
     text-align: center;
-    padding: 0;
+    padding: 0 0 1px;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    color: var(--text-mid);
   }
   .numbers-row-label::before,
   .numbers-row-label::after { display: none; }
-  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: center; font-size: 14px; }
-  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: center; font-size: 14px; }
-  .numbers-row-track.away { grid-column: 1; grid-row: 3; direction: rtl; }
-  .numbers-row-track.home { grid-column: 2; grid-row: 3; }
+  .numbers-row-val.away {
+    grid-column: 1; grid-row: 2;
+    text-align: center;
+    font-size: 13px;
+    padding: 0;
+  }
+  .numbers-row-val.home {
+    grid-column: 2; grid-row: 2;
+    text-align: center;
+    font-size: 13px;
+    padding: 0;
+  }
+  .numbers-row-track.away {
+    grid-column: 1; grid-row: 3;
+    direction: rtl;
+    height: 7px;
+    margin: 1px 0 0;
+  }
+  .numbers-row-track.home {
+    grid-column: 2; grid-row: 3;
+    height: 7px;
+    margin: 1px 0 0;
+  }
 }
 
 
@@ -1309,38 +1331,16 @@ footer {
   .strip-hist-curve { height: 44px; }
   .strip-vegas, .strip-zero { height: 48px; }
 
-  /* ── Moneyline (stat-card layout) ──────────────────────────── */
-  /* Compact center label column on mobile — was 140px desktop. */
-  .numbers-row {
-    grid-template-columns: 38px 1fr 78px 1fr 38px !important;
-    gap: 6px !important;
-    padding: 6px 12px !important;
-  }
-  .numbers-row-val { font-size: 11px; }
-  .numbers-row-label { font-size: 10px; padding: 0 4px; }
-
-  /* ── Stats cards ───────────────────────────────────────────── */
+  /* ── Moneyline + stat cards on mobile ────────────────────────── */
+  /* Rows themselves use the stacked 2x3 layout from the
+     @media (max-width: 600px) block above. Don't override
+     grid-template-columns here — that layout is intentional.
+     The rules here just polish card chrome. */
   .numbers-card-head { padding: 12px 14px 10px; }
-  .numbers-card-title { font-size: 13px; }
+  .numbers-card-title { font-size: 14px; }
   .numbers-teamhead-away,
   .numbers-teamhead-home { font-size: 11px; padding: 8px 14px; }
-  .numbers-rows { padding: 4px 14px 10px; }
-
-  /* Stat-card rows on mobile use the existing 2x3 stacked layout from
-     the @media (max-width: 600px) block above (label centered on top,
-     values side-by-side in row 2, bars side-by-side in row 3). The
-     rules here just polish that layout — they don't override the
-     grid-column/grid-row assignments. */
-  .numbers-card-title { font-size: 14px; }
-  .numbers-row-label {
-    font-size: 11px;
-    letter-spacing: 0.4px;
-    color: var(--text-mid);
-  }
-  .numbers-row-val { font-size: 13px !important; }
-  .numbers-row-val.lead { font-size: 14px !important; }
-  /* Slightly thinner bars on phones */
-  .numbers-row-track { height: 8px !important; }
+  .numbers-rows { padding: 4px 14px 8px; }
 
   /* Fallback-season note */
   .numbers-fallback-note { font-size: 11px; padding: 8px 12px; }
@@ -1353,11 +1353,8 @@ footer {
   .read-card { padding: 12px 8px 14px; }
   .strip-plot { padding: 0 2px; }
 
-  /* ML and stat rows BOTH use the stacked 2x3 layout at this size
-     (inherited from the @media (max-width: 600px) block above).
-     Just tighten label + value sizes a touch more. */
-  .numbers-row { padding: 6px 0; }
-  .numbers-row-label { font-size: 10px; padding: 0; }
-  .numbers-row-val { font-size: 12px !important; }
-  .numbers-row-val.lead { font-size: 13px !important; }
+  /* Slightly smaller text + tighter padding on small phones,
+     but keep the 600px stacked grid layout. */
+  .numbers-card-head { padding: 10px 12px 8px; }
+  .numbers-rows { padding: 2px 10px 6px; }
 }
