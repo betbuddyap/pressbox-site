@@ -548,6 +548,18 @@
   color: var(--ink);
   font-weight: 700;
 }
+.read-card-vegas-price {
+  font-family: var(--mono, var(--sans));
+  font-weight: 500;
+  color: var(--text-light);
+  font-size: 11px;
+  margin-left: 2px;
+}
+.read-card-vegas-pending {
+  color: var(--text-light);
+  font-style: italic;
+  font-weight: 500;
+}
 
 /* ── Strip plot (single shared axis with all dots ON it) ─────── */
 
