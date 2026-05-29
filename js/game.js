@@ -1061,6 +1061,16 @@
     const awayName = data.game?.away?.name || 'Away';
     const homeName = data.game?.home?.name || 'Home';
 
+    // When the backend fell back to a prior season (current season has
+    // no data yet — typical for upcoming games), surface that to the
+    // reader so they don't think stale stats are this season's.
+    if (data.stats?.fallback_used && data.stats?.source_season) {
+      const note = document.createElement('div');
+      note.className = 'numbers-fallback-note';
+      note.textContent = `Stats shown are from the ${data.stats.source_season} season — current season hasn't started.`;
+      els.numbersStack.appendChild(note);
+    }
+
     cats.forEach(cat => {
       const card = document.createElement('div');
       card.className = 'numbers-card';
