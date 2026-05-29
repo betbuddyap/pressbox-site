@@ -941,6 +941,19 @@
   flex-direction: column;
   gap: 12px;
 }
+/* Fallback-season notice — shown when current-season data is unavailable
+   and we fell back to the prior season. Stays understated so it informs
+   without alarming. */
+.numbers-fallback-note {
+  background: var(--cream-dark);
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-mid);
+  font-style: italic;
+}
 .numbers-card {
   background: #fff;
   border: 0.5px solid var(--border);
