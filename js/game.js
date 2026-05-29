@@ -800,9 +800,15 @@
 
   function llPickLine(p) {
     // Mirror live-lines.js renderPickLine. If no side, just em-dash.
-    if (!p.side_display && !p.line) return '<span class="ll-row-pick-num">—</span>';
+    if (!p.side_display && !p.line && !p.history?.current?.side) {
+      return '<span class="ll-row-pick-num">—</span>';
+    }
 
-    const side = p.side_display || '';
+    // Prefer the CURRENT (latest journal) side/line/book over the
+    // released values. Live Lines does the same — the headline should
+    // reflect where the pick is NOW, not where it started. Otherwise
+    // the headline contradicts the history shown when expanded.
+    const side = p.history?.current?.side || p.side_display || '';
     const bookName = p.history?.current?.book?.name
       || p.book
       || '';
