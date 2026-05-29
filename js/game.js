@@ -618,94 +618,113 @@
    *
    * 7 rows total: Vegas, 5 models, PressBox.
    */
+  /**
+   * Moneyline card — styled exactly like a stats category card.
+   *
+   * One numbers-card with a teamhead, then one numbers-row per source
+   * (Vegas + 5 models + PressBox blend). Each row:
+   *   [away odds] [away bar] [SOURCE] [home bar] [home odds]
+   *
+   * Bar width = win probability (0–100). Bar color = 5-tier ladder
+   * via computeBar with league_min=0, league_max=1, lower_better=false
+   * so higher probability = better color, same as offense stat rows.
+   *
+   * Convention: AWAY on the left, HOME on the right. Matches the stats
+   * cards and the page-wide team orientation. Anchor/other from the
+   * backend gets unfolded into away/home using anchor.is_home.
+   */
   function buildMLRows(data, mlSection, anchor) {
     const card = document.createElement('div');
-    card.className = 'read-card';
+    card.className = 'numbers-card';
 
-    // Layout convention: AWAY on the LEFT, HOME on the RIGHT.
-    // This matches every other card on the page (stat rows, hero, etc).
-    // The anchor/favorite is independent of left/right — we look up
-    // which side the favorite is on per row to color the bars.
-    const awayTeam = data.game?.away?.name || 'Away';
-    const homeTeam = data.game?.home?.name || 'Home';
+    const awayName = data.game?.away?.name || 'Away';
+    const homeName = data.game?.home?.name || 'Home';
     const anchorIsHome = !!anchor.is_home;
 
-    // Header with team name columns
-    card.innerHTML = `
-      <div class="read-card-head">
-        <div class="read-card-label">Moneyline</div>
-      </div>
-      <div class="ml-teamhead">
-        <div class="ml-teamhead-left">${escape(awayTeam)}</div>
-        <div class="ml-teamhead-right">${escape(homeTeam)}</div>
-      </div>
-      <div class="ml-bars"></div>
-    `;
-    const barsEl = card.querySelector('.ml-bars');
+    // Build per-source rows. We'll render them as numbers-rows below.
+    const rows = [];
 
-    function row(label, anchorProb, otherProb, anchorOdds, otherOdds, kind) {
-      const klass = kind === 'vegas' ? ' is-vegas' : kind === 'blend' ? ' is-blend' : '';
-
-      // Reorient anchor/other into away/home for display. Anchor probs
-      // and odds come from the backend in anchor-perspective; we swap
-      // them into away/home so the row lines up with the page-wide
-      // away-left / home-right convention.
-      const awayProb = anchorIsHome ? otherProb  : anchorProb;
-      const homeProb = anchorIsHome ? anchorProb : otherProb;
-      const awayOdds = anchorIsHome ? otherOdds  : anchorOdds;
-      const homeOdds = anchorIsHome ? anchorOdds : otherOdds;
-
-      // Convert probability to bar width (0-100% from center)
-      const aWidth = (awayProb != null) ? clamp(awayProb * 100, 0, 100) : 0;
-      const hWidth = (homeProb != null) ? clamp(homeProb * 100, 0, 100) : 0;
-
-      // Color emphasis: which side is the favorite in this row
-      const awayFav = awayProb != null && homeProb != null && awayProb > homeProb;
-      const homeFav = homeProb != null && awayProb != null && homeProb > awayProb;
-      const aQual = awayFav ? 'fav' : 'dog';
-      const hQual = homeFav ? 'fav' : 'dog';
-
-      barsEl.insertAdjacentHTML('beforeend', `
-        <div class="ml-row${klass}">
-          <div class="ml-odds ml-odds-left">${escape(awayOdds || '—')}</div>
-          <div class="ml-bar-pair">
-            <div class="ml-bar-half ml-bar-left">
-              <div class="ml-bar-fill ml-bar-fill-${aQual}" style="width:${aWidth}%;"></div>
-            </div>
-            <div class="ml-bar-divider"></div>
-            <div class="ml-bar-half ml-bar-right">
-              <div class="ml-bar-fill ml-bar-fill-${hQual}" style="width:${hWidth}%;"></div>
-            </div>
-          </div>
-          <div class="ml-odds ml-odds-right">${escape(homeOdds || '—')}</div>
-          <div class="ml-label">${escape(label)}</div>
-        </div>
-      `);
-    }
-
-    row('Vegas',
-        mlSection.vegas_anchor_implied,
-        mlSection.vegas_other_implied,
-        mlSection.vegas_anchor_display,
-        mlSection.vegas_other_display,
-        'vegas');
-
-    MODEL_ORDER.forEach(modelName => {
-      const m = (mlSection.models || []).find(x => x.name === modelName);
-      row(modelName,
-          m?.anchor_prob,
-          m?.other_prob,
-          m?.anchor_display,
-          m?.other_display,
-          'model');
+    // Vegas
+    const vegasAwayProb = anchorIsHome ? mlSection.vegas_other_implied : mlSection.vegas_anchor_implied;
+    const vegasHomeProb = anchorIsHome ? mlSection.vegas_anchor_implied : mlSection.vegas_other_implied;
+    const vegasAwayOdds = anchorIsHome ? mlSection.vegas_other_display : mlSection.vegas_anchor_display;
+    const vegasHomeOdds = anchorIsHome ? mlSection.vegas_anchor_display : mlSection.vegas_other_display;
+    rows.push({
+      label: 'Vegas',
+      awayProb: vegasAwayProb,
+      homeProb: vegasHomeProb,
+      awayOdds: vegasAwayOdds,
+      homeOdds: vegasHomeOdds,
     });
 
-    row('PressBox',
-        mlSection.pressbox_anchor_prob,
-        mlSection.pressbox_other_prob,
-        mlSection.pressbox_anchor_american,
-        mlSection.pressbox_other_american,
-        'blend');
+    // Models (in MODEL_ORDER)
+    MODEL_ORDER.forEach(modelName => {
+      const m = (mlSection.models || []).find(x => x.name === modelName);
+      if (!m) return;
+      const awayProb  = anchorIsHome ? m.other_prob   : m.anchor_prob;
+      const homeProb  = anchorIsHome ? m.anchor_prob  : m.other_prob;
+      const awayOdds  = anchorIsHome ? m.other_display : m.anchor_display;
+      const homeOdds  = anchorIsHome ? m.anchor_display : m.other_display;
+      rows.push({ label: modelName, awayProb, homeProb, awayOdds, homeOdds });
+    });
+
+    // PressBox blend
+    if (mlSection.pressbox_anchor_prob != null) {
+      const blendAwayProb = anchorIsHome ? mlSection.pressbox_other_prob  : mlSection.pressbox_anchor_prob;
+      const blendHomeProb = anchorIsHome ? mlSection.pressbox_anchor_prob : mlSection.pressbox_other_prob;
+      const blendAwayOdds = anchorIsHome ? mlSection.pressbox_other_american : mlSection.pressbox_anchor_american;
+      const blendHomeOdds = anchorIsHome ? mlSection.pressbox_anchor_american : mlSection.pressbox_other_american;
+      rows.push({
+        label: 'PressBox',
+        awayProb: blendAwayProb,
+        homeProb: blendHomeProb,
+        awayOdds: blendAwayOdds,
+        homeOdds: blendHomeOdds,
+        isBlend: true,
+      });
+    }
+
+    // Render each source row using the SAME shape as renderStatRow.
+    // computeBar gets passed a synthetic "row" with the probability as
+    // both value and league range (0–1, higher better).
+    const rowsHtml = rows.map(r => {
+      const aDisplay = r.awayOdds || '—';
+      const hDisplay = r.homeOdds || '—';
+
+      const aLead = (r.awayProb != null && r.homeProb != null && r.awayProb > r.homeProb);
+      const hLead = (r.homeProb != null && r.awayProb != null && r.homeProb > r.awayProb);
+
+      const aBar = computeBar(r.awayProb, { league_min: 0, league_max: 1, lower_better: false });
+      const hBar = computeBar(r.homeProb, { league_min: 0, league_max: 1, lower_better: false });
+
+      const labelClass = r.isBlend ? 'numbers-row-label is-blend' : 'numbers-row-label';
+
+      return `
+        <div class="numbers-row">
+          <div class="numbers-row-val away ${aLead ? 'lead' : ''} ${r.awayProb == null ? 'missing' : ''}">${escape(aDisplay)}</div>
+          <div class="numbers-row-track away">
+            <div class="numbers-row-fill away ${aBar.qual}" style="width:${aBar.width}%;"></div>
+          </div>
+          <div class="${labelClass}">${escape(r.label)}</div>
+          <div class="numbers-row-track home">
+            <div class="numbers-row-fill home ${hBar.qual}" style="width:${hBar.width}%;"></div>
+          </div>
+          <div class="numbers-row-val home ${hLead ? 'lead' : ''} ${r.homeProb == null ? 'missing' : ''}">${escape(hDisplay)}</div>
+        </div>
+      `;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="numbers-card-head">
+        <h3 class="numbers-card-title">Moneyline</h3>
+      </div>
+      <div class="numbers-teamhead">
+        <div class="numbers-teamhead-away">${escape(awayName)}</div>
+        <div class="numbers-teamhead-spacer"></div>
+        <div class="numbers-teamhead-home">${escape(homeName)}</div>
+      </div>
+      <div class="numbers-rows">${rowsHtml}</div>
+    `;
 
     return card;
   }
