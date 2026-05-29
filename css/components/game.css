@@ -1060,7 +1060,7 @@
 .numbers-row-val.away { text-align: center; }
 .numbers-row-val.home { text-align: center; }
 .numbers-row-val.lead {
-  color: var(--ink);
+  color: var(--gold);
   font-weight: 700;
 }
 .numbers-row-val.missing {
