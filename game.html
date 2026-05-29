@@ -280,7 +280,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     </section>
 
-    <!-- ZONE 3: THE READ (five-model projections) -->
+    <!-- ZONE 3: THE PICK (active pick or no-pick note) — comes BEFORE the chart so it leads the page after the storyline -->
+    <section class="game-section" id="pickSection">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">— THE PICK</div>
+          <h2 class="game-section-title">Where we <em>actually bet</em>.</h2>
+        </div>
+      </header>
+      <div class="pick-stack" id="pickStack">
+        <!-- Picks rendered by JS, Live Lines accordion pattern -->
+      </div>
+    </section>
+
+    <!-- ZONE 4: THE READ (model charts justifying the pick) -->
     <section class="game-section" id="readSection">
       <header class="game-section-head">
         <div>
@@ -291,19 +304,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       </header>
       <div class="read-stack" id="readStack">
         <!-- Three chart cards rendered by JS: spread, total, moneyline -->
-      </div>
-    </section>
-
-    <!-- ZONE 4: THE PICK (active pick or no-pick note) -->
-    <section class="game-section" id="pickSection">
-      <header class="game-section-head">
-        <div>
-          <div class="game-section-eyebrow">— THE PICK</div>
-          <h2 class="game-section-title">Where we <em>actually bet</em>.</h2>
-        </div>
-      </header>
-      <div class="pick-stack" id="pickStack">
-        <!-- Picks rendered by JS, Live Lines accordion pattern -->
       </div>
     </section>
 
