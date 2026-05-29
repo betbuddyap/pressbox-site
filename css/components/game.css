@@ -519,15 +519,15 @@
   background: #fff;
   border: 0.5px solid var(--border);
   border-radius: 4px;
-  padding: 24px 28px 28px;
+  padding: 16px 28px 20px;
 }
 .read-card-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 28px;
-  padding-bottom: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--cream-mid);
 }
 .read-card-label {
@@ -559,10 +559,10 @@
 /* Labels above and below — two rows each via 4-lane collision system */
 .strip-labels {
   position: relative;
-  height: 62px;
+  height: 48px;
 }
-.strip-labels-above { margin-bottom: 6px; }
-.strip-labels-below { margin-top: 6px; height: 62px; }
+.strip-labels-above { margin-bottom: 4px; }
+.strip-labels-below { margin-top: 4px; height: 48px; }
 
 .strip-axis-wrap {
   position: relative;
@@ -671,8 +671,8 @@
 .strip-labels-above .strip-label { bottom: 4px; }
 .strip-labels-below .strip-label { top: 4px; }
 /* "Far" labels sit further from the axis to clear a "near" label. */
-.strip-labels-above .strip-label.strip-label-far { bottom: 32px; }
-.strip-labels-below .strip-label.strip-label-far { top: 32px; }
+.strip-labels-above .strip-label.strip-label-far { bottom: 26px; }
+.strip-labels-below .strip-label.strip-label-far { top: 26px; }
 .strip-label-name {
   font-size: 10px;
   font-weight: 700;
@@ -702,8 +702,8 @@
   transform: translateX(-50%);
 }
 .strip-labels-above .strip-label.strip-label-far::after {
-  height: 32px;
-  bottom: -34px;
+  height: 26px;
+  bottom: -28px;
 }
 .strip-labels-below .strip-label::before {
   content: '';
@@ -716,8 +716,8 @@
   transform: translateX(-50%);
 }
 .strip-labels-below .strip-label.strip-label-far::before {
-  height: 32px;
-  top: -34px;
+  height: 26px;
+  top: -28px;
 }
 
 /* Axis ticks */
