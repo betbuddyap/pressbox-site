@@ -364,6 +364,15 @@
     const blendDisplay = section.pressbox_display;
     const vegasDisplay = section.vegas_display;
 
+    // Optional Vegas price tag. e.g. "Vegas: TCU -2.5 (-110)"
+    // For spread: anchor side's price. For total: over price.
+    let vegasPriceDisplay = '';
+    if (key === 'anchor_spread' && section.vegas_anchor_price_display) {
+      vegasPriceDisplay = section.vegas_anchor_price_display;
+    } else if (key === 'total' && section.vegas_over_price_display) {
+      vegasPriceDisplay = section.vegas_over_price_display;
+    }
+
     // Collect model points
     const points = [];
     (section.models || []).forEach(m => {
@@ -435,10 +444,17 @@
     const xPct = (v) => clamp(((v - axisMin) / range) * 100, 0, 100);
 
     // Header
+    // Vegas line label. When the line isn't posted at enough books yet
+    // (backend returns null), say so explicitly rather than rendering
+    // "Vegas: —" which reads like a data problem.
+    const vegasHeadHtml = vegasDisplay
+      ? `Vegas: <strong>${escape(vegasDisplay)}</strong>${vegasPriceDisplay ? ` <span class="read-card-vegas-price">(${escape(vegasPriceDisplay)})</span>` : ''}`
+      : `<span class="read-card-vegas-pending">Vegas line pending</span>`;
+
     card.innerHTML = `
       <div class="read-card-head">
         <div class="read-card-label">${escape(label)}</div>
-        <div class="read-card-vegas">Vegas: <strong>${escape(vegasDisplay || '—')}</strong></div>
+        <div class="read-card-vegas">${vegasHeadHtml}</div>
       </div>
       <div class="strip-plot">
         <div class="strip-labels strip-labels-above"></div>
@@ -678,13 +694,18 @@
     const vegasHomeProb = anchorIsHome ? mlSection.vegas_anchor_implied : mlSection.vegas_other_implied;
     const vegasAwayOdds = anchorIsHome ? mlSection.vegas_other_display : mlSection.vegas_anchor_display;
     const vegasHomeOdds = anchorIsHome ? mlSection.vegas_anchor_display : mlSection.vegas_other_display;
-    rows.push({
-      label: 'Vegas',
-      awayProb: vegasAwayProb,
-      homeProb: vegasHomeProb,
-      awayOdds: vegasAwayOdds,
-      homeOdds: vegasHomeOdds,
-    });
+    // Only include the Vegas row when prices are actually posted at
+    // enough books. Otherwise the backend returns null and showing
+    // "Vegas —" looks like a data error rather than a pending market.
+    if (vegasAwayProb != null && vegasHomeProb != null) {
+      rows.push({
+        label: 'Vegas',
+        awayProb: vegasAwayProb,
+        homeProb: vegasHomeProb,
+        awayOdds: vegasAwayOdds,
+        homeOdds: vegasHomeOdds,
+      });
+    }
 
     // Models (in MODEL_ORDER)
     MODEL_ORDER.forEach(modelName => {
