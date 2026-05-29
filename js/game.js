@@ -750,14 +750,83 @@
    * ─────────────────────────────────────────────────────────── */
 
   /**
-   * Pick section — one expandable card per market (spread / total /
-   * moneyline). Cards show release event + full transition history
-   * when expanded. No-edge markets show a dimmed placeholder with
-   * "considered, no edge" treatment.
+   * Pick section — pixel-for-pixel Live Lines accordion treatment.
+   * Emits the same .ll-row + .ll-accordion DOM that live-lines.js uses,
+   * with .ll-* CSS coming from /css/components/live-lines.css (loaded
+   * at the top of game.html).
    *
-   * Backend always returns 3 entries in fixed order: spread, total,
-   * moneyline. We render them in that order regardless of tier.
+   * The only divergence from Live Lines: for graded picks (outcome set),
+   * the "Current/Now" event is replaced by an .rs-outcome win/loss/push
+   * indicator from the Results page. For ungraded picks, we keep the
+   * Live Lines "Current" event.
+   *
+   * Three cards always render (spread / total / moneyline), with
+   * no-edge markets shown as collapsed-only .ll-row--no-edge cards.
    */
+
+  // Tier badge mapping — copied verbatim from live-lines.js so the
+  // markup matches exactly. CSS classes come from live-lines.css.
+  const LL_BADGE_MAP = {
+    'A+':          { label: 'A+', aria: 'A plus tier',      key: 'aplus' },
+    'A':           { label: 'A',  aria: 'A tier',           key: 'a' },
+    'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
+    'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
+    'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
+    'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
+  };
+
+  function llBadge(tier) {
+    const m = LL_BADGE_MAP[tier] || { label: escape(tier), aria: escape(tier), key: 'no_edge' };
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
+  }
+
+  function llTierLabel(tier) {
+    if (!tier) return '—';
+    return TIER_DISPLAY[tier] || tier;
+  }
+
+  function llPickLine(p) {
+    // Mirror live-lines.js renderPickLine. If no side, just em-dash.
+    if (!p.side_display && !p.line) return '<span class="ll-row-pick-num">—</span>';
+
+    const side = p.side_display || '';
+    const bookName = p.history?.current?.book?.name
+      || p.book
+      || '';
+    const lineRaw = p.history?.current?.line
+      || (p.line != null ? (p.market === 'spread' ? formatSignedNumber(p.line) : String(p.line)) : '');
+
+    let bookText = bookName ? ' · ' + escape(bookName) : '';
+    if (p.market === 'moneyline' || p.market === 'ml') {
+      return `${escape(side)} ML <span class="ll-row-pick-num">${escape(lineRaw)}</span>${bookText}`;
+    }
+    return `${escape(side)} <span class="ll-row-pick-num">${escape(lineRaw)}</span>${bookText}`;
+  }
+
+  function llHistoryTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleString('en-US', {
+      weekday: 'short', month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit',
+      timeZone: 'America/New_York',
+    });
+  }
+
+  function llOutcomeBlock(outcome) {
+    // Returns the rs-outcome block when a pick has graded, else null.
+    if (!outcome) return null;
+    const klass = outcome === 'W' ? 'win' : outcome === 'L' ? 'loss' : 'push';
+    const label = outcome === 'W' ? 'WIN' : outcome === 'L' ? 'LOSS' : 'PUSH';
+    return `
+      <span class="rs-outcome rs-outcome--${klass}">
+        <span class="rs-outcome-dot" aria-hidden="true"></span>
+        <span class="rs-outcome-label">${label}</span>
+      </span>
+    `;
+  }
+
   function renderPicks(data) {
     els.pickStack.innerHTML = '';
     const picks = data.picks || [];
@@ -772,149 +841,210 @@
     }
 
     picks.forEach(p => {
-      const card = document.createElement('div');
       const isNoEdge = p.tier === 'no_edge';
-      card.className = isNoEdge ? 'pick-card is-no-edge' : 'pick-card';
+      const article = document.createElement('article');
+      article.className = isNoEdge ? 'll-row ll-row--no-edge' : 'll-row';
+      article.setAttribute('data-pick-id', String(p.pick_id || ''));
+      article.setAttribute('aria-expanded', 'false');
 
-      const tierClass = TIER_CLASS[p.tier] || 'tier-no-edge';
-      const marketLabel = (p.market_display || MARKET_DISPLAY[p.market] || p.market || '').toUpperCase();
+      // Build the row header — same shape as live-lines.js renderPickRow
+      const market = (p.market_display || MARKET_DISPLAY[p.market] || '');
+      const matchupLabel = isNoEdge
+        ? `${escape(market)} — No Edge`
+        : escape(market);
 
-      // Line text — only for picks with an actual edge. No-edge cards
-      // get an explainer line instead.
-      let lineText = '';
-      if (isNoEdge) {
-        lineText = 'Considered, no qualifying edge';
-      } else {
-        lineText = (() => {
-          if (p.market === 'total') {
-            return `${p.side_display} ${p.line ?? ''}`.trim();
-          }
-          if (p.market === 'spread') {
-            const ln = p.line != null ? formatSignedNumber(p.line) : '';
-            return `${p.side_display} ${ln}`.trim();
-          }
-          // moneyline
-          return `${p.side_display}${p.line != null ? ' ' + formatSignedNumber(p.line) : ''}`;
-        })();
-      }
+      const headerHtml = `
+        <button class="ll-row-header" data-action="toggle"
+                aria-controls="ll-acc-${escape(String(p.pick_id || 'ne-' + p.market))}"
+                aria-expanded="false"${isNoEdge ? ' disabled' : ''}>
+          ${llBadge(p.tier)}
+          <div class="ll-row-content">
+            <div class="ll-row-matchup">${matchupLabel}</div>
+            <div class="ll-row-pick">${llPickLine(p)}</div>
+          </div>
+          ${isNoEdge ? '' : `
+            <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          `}
+        </button>
+      `;
 
-      const outcomeBadge = p.outcome
-        ? `<span class="pick-outcome ${
-            p.outcome === 'W' ? 'win' : p.outcome === 'L' ? 'loss' : 'push'
-          }">${p.outcome === 'W' ? 'Won' : p.outcome === 'L' ? 'Lost' : 'Push'}</span>`
-        : '';
-
-      // History timeline. Only rendered for picks that have history
-      // (i.e. not no-edge placeholders). Events render oldest to newest.
-      let historyHtml = '';
+      // Accordion body for picks with history
+      let bodyHtml = '';
       if (!isNoEdge && p.history) {
         const released = p.history.released;
         const transitions = p.history.transitions || [];
+        const current = p.history.current;
+        const currentBooks = p.history.current_books || [];
 
-        const events = [];
-        if (released) {
-          const releasedTier = released.tier
-            ? `<span class="pick-event-tier ${TIER_CLASS[released.tier] || 'tier-no-edge'}">${escape(TIER_DISPLAY[released.tier] || released.tier)}</span>`
-            : '';
-          const releasedLine = released.line ? ` · ${escape(released.line)}` : '';
-          const releasedBook = released.book?.name ? ` at ${escape(released.book.name)}` : '';
-          events.push(`
-            <div class="pick-event pick-event-release">
-              <span class="pick-event-dot pick-event-dot-release"></span>
-              <div class="pick-event-body">
-                <div class="pick-event-title">
-                  ${releasedTier ? `Released ${releasedTier}` : 'Released'}${releasedLine}${releasedBook}
-                </div>
-                <div class="pick-event-time">${escape(formatHistoryTime(released.at))}</div>
-              </div>
-            </div>
-          `);
-        }
-        transitions.forEach(e => {
+        const releasedDate = released?.at ? llHistoryTime(released.at) : '';
+
+        const transitionsHtml = transitions.map(e => {
           const isBookOnly = e.is_book_change && !e.is_tier_change && !e.is_side_change && !e.is_line_change;
-          const dotClass = isBookOnly ? 'pick-event-dot pick-event-dot-book' : 'pick-event-dot';
-          events.push(`
-            <div class="pick-event">
-              <span class="${dotClass}"></span>
-              <div class="pick-event-body">
-                <div class="pick-event-title">${escape(e.summary || 'Pick updated')}</div>
-                <div class="pick-event-time">${escape(formatHistoryTime(e.observed_at))}</div>
-              </div>
+          const dot = isBookOnly
+            ? `<span class="ll-event-dot" style="background:var(--text-mid);"></span>`
+            : `<span class="ll-event-dot"></span>`;
+          return `
+            <div class="ll-event">
+              ${dot}
+              <div class="ll-event-title">${escape(e.summary || 'Pick updated')}</div>
+              <div class="ll-event-time">${escape(llHistoryTime(e.observed_at))}</div>
             </div>
-          `);
+          `;
+        }).join('');
+
+        // Current/result event: graded → rs-outcome; else Live Lines "Now"
+        const outcomeBlock = llOutcomeBlock(p.outcome);
+        let currentEventHtml = '';
+        if (outcomeBlock) {
+          currentEventHtml = `
+            <div class="ll-event">
+              <span class="ll-event-dot"></span>
+              <div class="ll-event-title">
+                <strong>Result</strong>
+                · ${outcomeBlock}
+              </div>
+              <div class="ll-event-time">Graded</div>
+            </div>
+          `;
+        } else if (current) {
+          const curTier = current.tier;
+          const curSide = current.side || '—';
+          const curLine = current.line || '';
+          const curBook = current.book?.name || '—';
+          currentEventHtml = `
+            <div class="ll-event">
+              <span class="ll-event-dot"></span>
+              <div class="ll-event-title">
+                <strong>Current</strong>
+                · ${escape(curTier === 'no_edge' ? 'No Edge' : llTierLabel(curTier) + ' holding')}
+                · ${escape(curSide)} ${escape(curLine)} at ${escape(curBook)}
+              </div>
+              <div class="ll-event-time">Now</div>
+            </div>
+          `;
+        }
+
+        // Other books expander
+        const currentBookName = current?.book?.name || '';
+        let primaryHidden = false;
+        const otherBooks = currentBooks.filter(b => {
+          if (!primaryHidden && b.book && b.book.name === currentBookName) {
+            primaryHidden = true;
+            return false;
+          }
+          return true;
         });
 
-        historyHtml = `
-          <div class="pick-history">
-            <div class="pick-history-label">History</div>
-            ${events.join('')}
+        const booksHtml = otherBooks.length ? otherBooks.map(b => {
+          const url = b.book?.url || '#';
+          const name = escape(b.book?.name || '?');
+          const line = escape(b.line || '');
+          const deltaClass =
+            b.delta === 'match' ? 'll-book-delta--match' :
+            (b.delta && String(b.delta).startsWith('+')) ? 'll-book-delta--better' :
+            'll-book-delta--worse';
+          return `
+            <a class="ll-book-row" href="${escape(url)}" target="_blank" rel="noopener noreferrer"
+               aria-label="Bet at ${name} (opens in new tab)">
+              <span class="ll-book-name">
+                ${name}
+                <svg class="ll-book-name-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M6 4h6v6M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span>
+                <span class="ll-book-line">${line}</span>
+                <span class="${deltaClass}"> (${escape(String(b.delta))})</span>
+              </span>
+            </a>
+          `;
+        }).join('') : '';
+
+        const currentBookUrl = current?.book?.url || '#';
+
+        bodyHtml = `
+          <div id="ll-acc-${escape(String(p.pick_id))}" class="ll-accordion">
+            <div class="ll-accordion-section-label">History</div>
+            <div class="ll-history">
+              ${released ? `
+                <div class="ll-event">
+                  <span class="ll-event-dot"></span>
+                  <div class="ll-event-title">
+                    <strong>Released ${escape(llTierLabel(released.tier))}</strong>
+                    · ${escape(released.side || '—')} ${escape(released.line || '')}
+                    at ${escape(released.book?.name || '—')}
+                  </div>
+                  <div class="ll-event-time">${escape(releasedDate)}</div>
+                </div>
+              ` : ''}
+              ${transitionsHtml}
+              ${currentEventHtml}
+            </div>
+
+            ${booksHtml ? `
+              <div class="ll-other-books" data-other-books="${escape(String(p.pick_id))}">
+                <button type="button" class="ll-other-books-header" data-action="toggle-books"
+                        aria-expanded="false">
+                  <span class="ll-accordion-section-label" style="margin:0;">Other books</span>
+                  <svg class="ll-other-books-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                <div class="ll-other-books-rows" style="display:none;margin-top:var(--space-2);">
+                  ${booksHtml}
+                </div>
+              </div>
+            ` : ''}
+
+            ${currentBookName && !p.outcome ? `
+              <a class="ll-bet-button" href="${escape(currentBookUrl)}"
+                 target="_blank" rel="noopener noreferrer"
+                 aria-label="Bet at ${escape(currentBookName)} (opens in new tab)"
+                 style="margin-top:var(--space-4);">
+                Bet at ${escape(currentBookName)} →
+              </a>
+            ` : ''}
           </div>
         `;
+      } else if (!isNoEdge) {
+        // Picked but no history available — render an empty accordion to match Live Lines shape
+        bodyHtml = `<div id="ll-acc-${escape(String(p.pick_id || ''))}" class="ll-accordion"></div>`;
+      } else {
+        // No-edge row has no accordion at all (Live Lines convention)
+        bodyHtml = `<div class="ll-accordion"></div>`;
       }
 
-      // Header: tier badge + market label + (optional) outcome + chevron
-      const tierBadge = isNoEdge
-        ? '<span class="pick-tier-badge tier-no-edge">No Edge</span>'
-        : `<span class="pick-tier-badge ${tierClass}">${escape(p.tier_display || p.tier)}</span>`;
+      article.innerHTML = headerHtml + bodyHtml;
 
-      // Whether the accordion can be opened (no-edge has nothing to show)
-      const expandable = !isNoEdge && (p.history && (p.history.released || (p.history.transitions || []).length));
-
-      card.innerHTML = `
-        <button type="button" class="pick-header-button" aria-expanded="false"${expandable ? '' : ' disabled'}>
-          <div class="pick-head">
-            ${tierBadge}
-            <span class="pick-market">${escape(marketLabel)}</span>
-            ${outcomeBadge}
-            ${expandable ? '<span class="pick-chevron" aria-hidden="true">›</span>' : ''}
-          </div>
-          <div class="pick-line">${escape(lineText)}</div>
-          ${!isNoEdge ? `
-            <div class="pick-meta">
-              ${p.book ? `<span>${escape(p.book)}</span>` : ''}
-              ${p.book && p.released_at ? `<span class="pick-meta-dot"></span>` : ''}
-              ${p.released_at ? `<span>Released ${timeAgo(p.released_at)}</span>` : ''}
-            </div>
-          ` : ''}
-        </button>
-        ${historyHtml ? `<div class="pick-accordion-body">${historyHtml}</div>` : ''}
-      `;
-
-      // Wire up the accordion toggle. No-op for no-edge cards.
-      if (expandable) {
-        const btn  = card.querySelector('.pick-header-button');
-        const body = card.querySelector('.pick-accordion-body');
-        btn.addEventListener('click', () => {
-          const open = card.classList.toggle('is-expanded');
-          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-          if (body) body.style.display = open ? 'block' : 'none';
+      // Toggle handler — only for non-no-edge rows
+      if (!isNoEdge) {
+        const btn = article.querySelector('.ll-row-header');
+        btn?.addEventListener('click', () => {
+          const isOpen = article.getAttribute('aria-expanded') === 'true';
+          article.setAttribute('aria-expanded', String(!isOpen));
+          btn.setAttribute('aria-expanded', String(!isOpen));
         });
-        if (body) body.style.display = 'none';
+        // Other-books toggle
+        const obToggle = article.querySelector('[data-action="toggle-books"]');
+        if (obToggle) {
+          obToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wrap = obToggle.closest('.ll-other-books');
+            const rows = wrap?.querySelector('.ll-other-books-rows');
+            if (!rows) return;
+            const isOpen = obToggle.getAttribute('aria-expanded') === 'true';
+            obToggle.setAttribute('aria-expanded', String(!isOpen));
+            rows.style.display = isOpen ? 'none' : 'block';
+            const chev = obToggle.querySelector('.ll-other-books-chevron');
+            if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+          });
+        }
       }
 
-      els.pickStack.appendChild(card);
+      els.pickStack.appendChild(article);
     });
-  }
-
-  // Format an ISO timestamp into the "Tue, May 26, 7:59 PM" style used
-  // by Live Lines history.
-  function formatHistoryTime(iso) {
-    if (!iso) return '';
-    try {
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return iso;
-      const opts = {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      };
-      return d.toLocaleString('en-US', opts);
-    } catch {
-      return iso;
-    }
   }
 
   function formatSignedNumber(n) {
