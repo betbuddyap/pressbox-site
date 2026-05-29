@@ -878,11 +878,53 @@
   background: #fff;
   border: 0.5px solid var(--border);
   border-radius: 4px;
+  overflow: hidden;
+}
+
+/* No-edge cards are dimmed and non-interactive */
+.pick-card.is-no-edge {
+  background: #fafaf7;
+  border-style: dashed;
+}
+.pick-card.is-no-edge .pick-line { color: var(--text-mid); font-style: italic; font-weight: 500; font-size: 14px; }
+.pick-card.is-no-edge .pick-tier-badge {
+  background: var(--cream-mid);
+  color: var(--text-mid);
+}
+
+/* Clickable header. Looks like the old static card unless expandable. */
+.pick-header-button {
+  display: block;
+  width: 100%;
   padding: 22px 24px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.pick-header-button[disabled] {
+  cursor: default;
+}
+.pick-header-button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+.pick-card.is-expanded .pick-chevron {
+  transform: rotate(90deg);
+}
+.pick-chevron {
+  margin-left: auto;
+  font-size: 18px;
+  color: var(--text-light);
+  font-weight: 400;
+  transition: transform 0.15s ease;
+  line-height: 1;
 }
 .pick-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 14px;
   margin-bottom: 6px;
 }
@@ -946,6 +988,87 @@
 .pick-outcome.win  { background: var(--sage-pale); color: var(--sage); }
 .pick-outcome.loss { background: var(--rust-pale); color: var(--rust); }
 .pick-outcome.push { background: var(--cream-mid); color: var(--text-mid); }
+
+/* ── Accordion body + history timeline ────────────────────────────── */
+.pick-accordion-body {
+  padding: 0 24px 20px;
+  border-top: 0.5px solid var(--cream-mid);
+}
+.pick-history {
+  padding-top: 16px;
+}
+.pick-history-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 14px;
+}
+.pick-event {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 12px;
+  padding: 6px 0;
+  position: relative;
+}
+.pick-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+  margin-top: 6px;
+  z-index: 1;
+}
+/* Release event = gold dot to highlight the start */
+.pick-event-dot-release {
+  background: var(--gold);
+}
+/* Book-only changes = muted dot since they're less significant */
+.pick-event-dot-book {
+  background: var(--text-light);
+}
+/* Vertical line connecting events */
+.pick-event:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 3.5px;
+  top: 14px;
+  bottom: -6px;
+  width: 1px;
+  background: var(--cream-mid);
+}
+.pick-event-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pick-event-title {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.pick-event-time {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-mid);
+}
+.pick-event-tier {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  background: var(--tier-bg);
+  color: var(--tier-fg);
+  border-radius: 2px;
+  margin: 0 4px;
+}
 
 /* No-pick note */
 .pick-empty {
