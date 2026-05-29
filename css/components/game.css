@@ -1255,6 +1255,9 @@ footer {
  * MOBILE RESPONSIVE
  * ============================================================ */
 
+/* ============================================================
+ * MOBILE — tablets and below
+ * ============================================================ */
 @media (max-width: 760px) {
   .ctx-inner { padding: 20px 16px 24px; }
   .ctx-teams { margin-bottom: 20px; }
@@ -1275,24 +1278,81 @@ footer {
   .storyline-text { font-size: 14px; }
   .storyline-lede { font-size: 16px; }
 
-  .read-card { padding: 18px 16px 22px; }
-  .read-card-head { flex-direction: column; align-items: flex-start; gap: 6px; }
-
-  .read-ml-odds-row {
-    grid-template-columns: 70px 1fr 1fr;
-    gap: 10px;
+  /* ── Spread / Total read-cards ─────────────────────────────── */
+  .read-card { padding: 14px 12px 16px; }
+  .read-card-head {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
   }
-  .read-ml-name { font-size: 10px; }
-  .read-ml-odds-anchor,
-  .read-ml-odds-other { font-size: 13px; }
-  .read-ml-foot {
-    grid-template-columns: 70px 1fr 1fr;
-    gap: 10px;
+  .read-card-label { font-size: 10px; letter-spacing: 1.8px; }
+  .read-card-vegas { font-size: 11px; }
+
+  /* Tighter strip-plot side padding so labels have more room */
+  .strip-plot { padding: 0 4px; }
+
+  /* Mobile labels are smaller so they fit. Container heights stay
+     the same since the 4-lane collision needs vertical space when
+     labels are crammed. */
+  .strip-label-name { font-size: 9px; letter-spacing: 0.3px; }
+  .strip-label-value { font-size: 10px; }
+
+  /* Tick labels along the bottom — shrink + lighter so they're not
+     screaming for attention next to the model labels. */
+  .strip-tick { font-size: 9px; }
+
+  /* Density curve — slightly shorter on mobile so it doesn't
+     overwhelm the rest of the row. */
+  .strip-hist-curve { height: 44px; }
+  .strip-vegas, .strip-zero { height: 48px; }
+
+  /* ── Moneyline (stat-card layout) ──────────────────────────── */
+  /* Compact center label column on mobile — was 140px desktop. */
+  .numbers-row {
+    grid-template-columns: 38px 1fr 78px 1fr 38px !important;
+    gap: 6px !important;
+    padding: 6px 12px !important;
+  }
+  .numbers-row-val { font-size: 11px; }
+  .numbers-row-label { font-size: 10px; padding: 0 4px; }
+
+  /* ── Stats cards ───────────────────────────────────────────── */
+  .numbers-card-head { padding: 12px 14px 10px; }
+  .numbers-card-title { font-size: 13px; }
+  .numbers-teamhead-away,
+  .numbers-teamhead-home { font-size: 11px; padding: 8px 14px; }
+  .numbers-rows { padding: 4px 14px 10px; }
+
+  /* Stat rows on mobile: shorter center label, smaller padding */
+  .numbers-rows .numbers-row {
+    grid-template-columns: 48px 1fr 110px 1fr 48px !important;
   }
 
-  .pick-card { padding: 18px 18px; }
-  .pick-line { font-size: 19px; }
+  /* Fallback-season note */
+  .numbers-fallback-note { font-size: 11px; padding: 8px 12px; }
+}
 
-  .numbers-card-head { padding: 14px 18px 12px; }
-  .numbers-rows { padding: 6px 18px 12px; }
+/* ============================================================
+ * MOBILE — small phones
+ * ============================================================ */
+@media (max-width: 480px) {
+  .read-card { padding: 12px 8px 14px; }
+  .strip-plot { padding: 0 2px; }
+
+  /* Even tighter ML rows on small phones */
+  .numbers-row {
+    grid-template-columns: 32px 1fr 64px 1fr 32px !important;
+    gap: 4px !important;
+    padding: 5px 8px !important;
+  }
+
+  /* Stat rows: collapse center label to a small column */
+  .numbers-rows .numbers-row {
+    grid-template-columns: 42px 1fr 90px 1fr 42px !important;
+  }
+  .numbers-rows .numbers-row-label { font-size: 9px; letter-spacing: 0.2px; }
+  .numbers-rows .numbers-row-val { font-size: 10px; }
 }
