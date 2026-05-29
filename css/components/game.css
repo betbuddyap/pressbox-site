@@ -1053,14 +1053,14 @@
   font-style: normal;
   font-weight: 600;
   font-size: 14px;
-  color: var(--text-mid);
+  color: #4A4438;          /* deeper than --text-mid; warmer than pure ink */
   letter-spacing: 0.2px;
   text-align: center;
 }
 .numbers-row-val.away { text-align: center; }
 .numbers-row-val.home { text-align: center; }
 .numbers-row-val.lead {
-  color: var(--gold);
+  color: #8F7020;          /* deeper, more burnished gold than --gold */
   font-weight: 700;
 }
 .numbers-row-val.missing {
