@@ -1103,6 +1103,11 @@
      same color as the row dividers, separating label from bars. */
   padding: 0 12px;
 }
+/* Blend row label (used by the moneyline card for the PressBox row) */
+.numbers-row-label.is-blend {
+  color: var(--gold);
+  font-weight: 700;
+}
 .numbers-row-label::before,
 .numbers-row-label::after {
   content: "";
