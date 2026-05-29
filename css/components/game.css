@@ -874,203 +874,10 @@
   flex-direction: column;
   gap: 16px;
 }
-.pick-card {
-  background: #fff;
-  border: 0.5px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-/* No-edge cards are dimmed and non-interactive */
-.pick-card.is-no-edge {
-  background: #fafaf7;
-  border-style: dashed;
-}
-.pick-card.is-no-edge .pick-line { color: var(--text-mid); font-style: italic; font-weight: 500; font-size: 14px; }
-.pick-card.is-no-edge .pick-tier-badge {
-  background: var(--cream-mid);
-  color: var(--text-mid);
-}
-
-/* Clickable header. Looks like the old static card unless expandable. */
-.pick-header-button {
-  display: block;
-  width: 100%;
-  padding: 22px 24px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  text-align: left;
-  font: inherit;
-  color: inherit;
-}
-.pick-header-button[disabled] {
-  cursor: default;
-}
-.pick-header-button:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: -2px;
-}
-.pick-card.is-expanded .pick-chevron {
-  transform: rotate(90deg);
-}
-.pick-chevron {
-  margin-left: auto;
-  font-size: 18px;
-  color: var(--text-light);
-  font-weight: 400;
-  transition: transform 0.15s ease;
-  line-height: 1;
-}
-.pick-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 6px;
-}
-.pick-tier-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 9px;
-  font-family: var(--sans);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  background: var(--tier-bg);
-  color: var(--tier-fg);
-  border-radius: 2px;
-  white-space: nowrap;
-}
-.pick-market {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-light);
-}
-.pick-line {
-  font-family: var(--sans);
-  font-style: normal;
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--ink);
-  letter-spacing: 0.2px;
-  margin-bottom: 4px;
-}
-.pick-meta {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-family: var(--sans);
-  font-size: 12px;
-  color: var(--text-mid);
-}
-.pick-meta-dot {
-  width: 4px; height: 4px;
-  background: var(--text-light);
-  border-radius: 50%;
-  display: inline-block;
-}
-.pick-outcome {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 8px;
-  border-radius: 2px;
-  font-family: var(--sans);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-.pick-outcome.win  { background: var(--sage-pale); color: var(--sage); }
-.pick-outcome.loss { background: var(--rust-pale); color: var(--rust); }
-.pick-outcome.push { background: var(--cream-mid); color: var(--text-mid); }
-
-/* ── Accordion body + history timeline ────────────────────────────── */
-.pick-accordion-body {
-  padding: 0 24px 20px;
-  border-top: 0.5px solid var(--cream-mid);
-}
-.pick-history {
-  padding-top: 16px;
-}
-.pick-history-label {
-  font-family: var(--sans);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-light);
-  margin-bottom: 14px;
-}
-.pick-event {
-  display: grid;
-  grid-template-columns: 14px 1fr;
-  gap: 12px;
-  padding: 6px 0;
-  position: relative;
-}
-.pick-event-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ink);
-  margin-top: 6px;
-  z-index: 1;
-}
-/* Release event = gold dot to highlight the start */
-.pick-event-dot-release {
-  background: var(--gold);
-}
-/* Book-only changes = muted dot since they're less significant */
-.pick-event-dot-book {
-  background: var(--text-light);
-}
-/* Vertical line connecting events */
-.pick-event:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  left: 3.5px;
-  top: 14px;
-  bottom: -6px;
-  width: 1px;
-  background: var(--cream-mid);
-}
-.pick-event-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.pick-event-title {
-  font-family: var(--sans);
-  font-size: 13px;
-  color: var(--ink);
-  font-weight: 500;
-}
-.pick-event-time {
-  font-family: var(--sans);
-  font-size: 11px;
-  color: var(--text-mid);
-}
-.pick-event-tier {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 7px;
-  font-family: var(--sans);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1.3px;
-  text-transform: uppercase;
-  background: var(--tier-bg);
-  color: var(--tier-fg);
-  border-radius: 2px;
-  margin: 0 4px;
-}
-
-/* No-pick note */
+/* The pick cards themselves are now rendered using .ll-row + accordion
+   classes from /css/components/live-lines.css for pixel-perfect parity
+   with the Live Lines page. The legacy .pick-* rules below only apply
+   to the empty-state placeholder. */
 .pick-empty {
   background: #fff;
   border: 0.5px dashed var(--border);
@@ -1095,8 +902,34 @@
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  margin-top: 1px;
+  font-style: italic;
 }
+
+/* Win/Loss/Push outcome indicator on graded pick rows, copied from
+   results.css since results.css isn't loaded on this page. The graded
+   outcome sits in the accordion in place of Live Lines' "Current" event. */
+.rs-outcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.rs-outcome-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rs-outcome-label {
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.05em;
+}
+.rs-outcome--win  .rs-outcome-dot { background: var(--sage); }
+.rs-outcome--win  .rs-outcome-label { color: var(--sage); }
+.rs-outcome--loss .rs-outcome-dot { background: var(--rust); }
+.rs-outcome--loss .rs-outcome-label { color: var(--rust); }
+.rs-outcome--push .rs-outcome-dot { background: var(--text-light); }
+.rs-outcome--push .rs-outcome-label { color: var(--text-light); }
 
 
 /* ============================================================
