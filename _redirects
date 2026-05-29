@@ -1,0 +1,9 @@
+# Cloudflare Pages redirects
+#
+# Map clean game URLs like /game/401856766 to the actual page file
+# game.html with the game_id as a query string. The 200 status means
+# "rewrite" (URL bar stays as /game/:id), not "redirect".
+#
+# Add this file at the ROOT of the frontend repo so Pages picks it up
+# on the next deploy.
+/game/:game_id  /game.html?game_id=:game_id  200
