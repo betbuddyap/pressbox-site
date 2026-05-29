@@ -856,23 +856,23 @@
       const headerHtml = `
         <button class="ll-row-header" data-action="toggle"
                 aria-controls="ll-acc-${escape(String(p.pick_id || 'ne-' + p.market))}"
-                aria-expanded="false"${isNoEdge ? ' disabled' : ''}>
+                aria-expanded="false">
           ${llBadge(p.tier)}
           <div class="ll-row-content">
             <div class="ll-row-matchup">${matchupLabel}</div>
             <div class="ll-row-pick">${llPickLine(p)}</div>
           </div>
-          ${isNoEdge ? '' : `
-            <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          `}
+          <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
       `;
 
-      // Accordion body for picks with history
+      // Accordion body — render for ALL picks including no_edge, matching
+      // Live Lines behavior. No-edge cards expand to show the same
+      // history + other-books info as real picks.
       let bodyHtml = '';
-      if (!isNoEdge && p.history) {
+      if (p.history) {
         const released = p.history.released;
         const transitions = p.history.transitions || [];
         const current = p.history.current;
@@ -1008,39 +1008,37 @@
             ` : ''}
           </div>
         `;
-      } else if (!isNoEdge) {
-        // Picked but no history available — render an empty accordion to match Live Lines shape
-        bodyHtml = `<div id="ll-acc-${escape(String(p.pick_id || ''))}" class="ll-accordion"></div>`;
       } else {
-        // No-edge row has no accordion at all (Live Lines convention)
-        bodyHtml = `<div class="ll-accordion"></div>`;
+        // No history data available — render an empty accordion to
+        // match Live Lines shape (placeholder so click toggle works
+        // without errors; user just sees an empty body).
+        bodyHtml = `<div id="ll-acc-${escape(String(p.pick_id || 'ne-' + p.market))}" class="ll-accordion"></div>`;
       }
 
       article.innerHTML = headerHtml + bodyHtml;
 
-      // Toggle handler — only for non-no-edge rows
-      if (!isNoEdge) {
-        const btn = article.querySelector('.ll-row-header');
-        btn?.addEventListener('click', () => {
-          const isOpen = article.getAttribute('aria-expanded') === 'true';
-          article.setAttribute('aria-expanded', String(!isOpen));
-          btn.setAttribute('aria-expanded', String(!isOpen));
+      // Toggle handler — wire up for ALL rows including no_edge,
+      // matching Live Lines behavior.
+      const btn = article.querySelector('.ll-row-header');
+      btn?.addEventListener('click', () => {
+        const isOpen = article.getAttribute('aria-expanded') === 'true';
+        article.setAttribute('aria-expanded', String(!isOpen));
+        btn.setAttribute('aria-expanded', String(!isOpen));
+      });
+      // Other-books toggle
+      const obToggle = article.querySelector('[data-action="toggle-books"]');
+      if (obToggle) {
+        obToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const wrap = obToggle.closest('.ll-other-books');
+          const rows = wrap?.querySelector('.ll-other-books-rows');
+          if (!rows) return;
+          const isOpen = obToggle.getAttribute('aria-expanded') === 'true';
+          obToggle.setAttribute('aria-expanded', String(!isOpen));
+          rows.style.display = isOpen ? 'none' : 'block';
+          const chev = obToggle.querySelector('.ll-other-books-chevron');
+          if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
         });
-        // Other-books toggle
-        const obToggle = article.querySelector('[data-action="toggle-books"]');
-        if (obToggle) {
-          obToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wrap = obToggle.closest('.ll-other-books');
-            const rows = wrap?.querySelector('.ll-other-books-rows');
-            if (!rows) return;
-            const isOpen = obToggle.getAttribute('aria-expanded') === 'true';
-            obToggle.setAttribute('aria-expanded', String(!isOpen));
-            rows.style.display = isOpen ? 'none' : 'block';
-            const chev = obToggle.querySelector('.ll-other-books-chevron');
-            if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
-          });
-        }
       }
 
       els.pickStack.appendChild(article);
