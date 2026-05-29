@@ -414,7 +414,18 @@
       axisMax = Math.max(axisMax, 2);
     }
     // Pad outward to a clean tick
-    const tickStep = (axisMax - axisMin) > 30 ? 5 : (axisMax - axisMin) > 15 ? 3 : 1;
+    // Tick step adapts to both the axis range AND the viewport. On a
+    // narrow phone screen, even 3-pt ticks crowd into each other; bump
+    // up to 6 or 10. On desktop with a wide chart, 3-pt is fine.
+    const viewportPx = window.innerWidth || 1200;
+    const isNarrow = viewportPx < 600;
+    let tickStep;
+    if (isNarrow) {
+      // Fewer ticks on phones — each one needs ~50px to render its label
+      tickStep = (axisMax - axisMin) > 30 ? 10 : (axisMax - axisMin) > 15 ? 6 : 3;
+    } else {
+      tickStep = (axisMax - axisMin) > 30 ? 5 : (axisMax - axisMin) > 15 ? 3 : 1;
+    }
     axisMin = Math.floor(axisMin / tickStep) * tickStep;
     axisMax = Math.ceil(axisMax / tickStep) * tickStep;
     if (axisMax - axisMin < 4) {
@@ -565,11 +576,13 @@
     // The Pressbox blend label is placed FIRST (lane 0 = above-near)
     // so it always gets the prime spot. Other labels work around it.
 
-    // Estimated label half-width as a percent of chart width.
-    // Chart is ~1100-1500px wide; labels render around 70px.
-    // halfWidth ≈ 35px ≈ 3-4% of chart. Pad to be safe.
-    const LABEL_HALF_PCT = 4.0;
-    const BLEND_HALF_PCT = 4.5; // blend is slightly larger
+    // Estimated label half-width as a percent of chart width. Labels
+    // are ~70px wide regardless of screen, so the percentage they
+    // occupy changes with viewport. On desktop (~1200px), 35px ≈ 3%.
+    // On mobile (~380px), 35px ≈ 9%. Compute from actual measured width.
+    const chartPx = axisEl.parentElement?.offsetWidth || axisEl.offsetWidth || 1200;
+    const LABEL_HALF_PCT = Math.min(15, (35 / chartPx) * 100 + 1);  // +1 padding
+    const BLEND_HALF_PCT = Math.min(16, (38 / chartPx) * 100 + 1);
 
     // Lane registry: each lane tracks the placed labels [{x, halfW}]
     const lanes = [[], [], [], []];
