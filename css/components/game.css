@@ -1326,10 +1326,23 @@ footer {
   .numbers-teamhead-home { font-size: 11px; padding: 8px 14px; }
   .numbers-rows { padding: 4px 14px 10px; }
 
-  /* Stat rows on mobile: shorter center label, smaller padding */
+  /* Stat-card rows on mobile: shorter center label, smaller padding,
+     and allow the label text to wrap if needed so the row stays one
+     logical row rather than overflowing horizontally. */
   .numbers-rows .numbers-row {
-    grid-template-columns: 48px 1fr 110px 1fr 48px !important;
+    grid-template-columns: 48px 1fr 100px 1fr 48px !important;
+    gap: 6px !important;
   }
+  .numbers-rows .numbers-row-label {
+    white-space: normal;
+    font-size: 10px;
+    padding: 0 4px;
+    line-height: 1.25;
+  }
+  .numbers-rows .numbers-row-val { font-size: 12px; }
+  .numbers-rows .numbers-row-val.missing { font-size: 11px; }
+  /* Smaller bar height on mobile so the visual chrome doesn't dominate */
+  .numbers-rows .numbers-row-track { height: 8px !important; }
 
   /* Fallback-season note */
   .numbers-fallback-note { font-size: 11px; padding: 8px 12px; }
@@ -1349,10 +1362,15 @@ footer {
     padding: 5px 8px !important;
   }
 
-  /* Stat rows: collapse center label to a small column */
+  /* Stat rows on small phones: pull labels in further, allow wrap */
   .numbers-rows .numbers-row {
-    grid-template-columns: 42px 1fr 90px 1fr 42px !important;
+    grid-template-columns: 40px 1fr 80px 1fr 40px !important;
+    gap: 4px !important;
   }
-  .numbers-rows .numbers-row-label { font-size: 9px; letter-spacing: 0.2px; }
-  .numbers-rows .numbers-row-val { font-size: 10px; }
+  .numbers-rows .numbers-row-label {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+    padding: 0 2px;
+  }
+  .numbers-rows .numbers-row-val { font-size: 11px; }
 }
