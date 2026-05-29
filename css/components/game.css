@@ -1326,23 +1326,21 @@ footer {
   .numbers-teamhead-home { font-size: 11px; padding: 8px 14px; }
   .numbers-rows { padding: 4px 14px 10px; }
 
-  /* Stat-card rows on mobile: shorter center label, smaller padding,
-     and allow the label text to wrap if needed so the row stays one
-     logical row rather than overflowing horizontally. */
-  .numbers-rows .numbers-row {
-    grid-template-columns: 48px 1fr 100px 1fr 48px !important;
-    gap: 6px !important;
+  /* Stat-card rows on mobile use the existing 2x3 stacked layout from
+     the @media (max-width: 600px) block above (label centered on top,
+     values side-by-side in row 2, bars side-by-side in row 3). The
+     rules here just polish that layout — they don't override the
+     grid-column/grid-row assignments. */
+  .numbers-card-title { font-size: 14px; }
+  .numbers-row-label {
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    color: var(--text-mid);
   }
-  .numbers-rows .numbers-row-label {
-    white-space: normal;
-    font-size: 10px;
-    padding: 0 4px;
-    line-height: 1.25;
-  }
-  .numbers-rows .numbers-row-val { font-size: 12px; }
-  .numbers-rows .numbers-row-val.missing { font-size: 11px; }
-  /* Smaller bar height on mobile so the visual chrome doesn't dominate */
-  .numbers-rows .numbers-row-track { height: 8px !important; }
+  .numbers-row-val { font-size: 13px !important; }
+  .numbers-row-val.lead { font-size: 14px !important; }
+  /* Slightly thinner bars on phones */
+  .numbers-row-track { height: 8px !important; }
 
   /* Fallback-season note */
   .numbers-fallback-note { font-size: 11px; padding: 8px 12px; }
@@ -1355,22 +1353,11 @@ footer {
   .read-card { padding: 12px 8px 14px; }
   .strip-plot { padding: 0 2px; }
 
-  /* Even tighter ML rows on small phones */
-  .numbers-row {
-    grid-template-columns: 32px 1fr 64px 1fr 32px !important;
-    gap: 4px !important;
-    padding: 5px 8px !important;
-  }
-
-  /* Stat rows on small phones: pull labels in further, allow wrap */
-  .numbers-rows .numbers-row {
-    grid-template-columns: 40px 1fr 80px 1fr 40px !important;
-    gap: 4px !important;
-  }
-  .numbers-rows .numbers-row-label {
-    font-size: 9px;
-    letter-spacing: 0.2px;
-    padding: 0 2px;
-  }
-  .numbers-rows .numbers-row-val { font-size: 11px; }
+  /* ML and stat rows BOTH use the stacked 2x3 layout at this size
+     (inherited from the @media (max-width: 600px) block above).
+     Just tighten label + value sizes a touch more. */
+  .numbers-row { padding: 6px 0; }
+  .numbers-row-label { font-size: 10px; padding: 0; }
+  .numbers-row-val { font-size: 12px !important; }
+  .numbers-row-val.lead { font-size: 13px !important; }
 }
