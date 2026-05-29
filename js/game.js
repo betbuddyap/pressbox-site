@@ -35,10 +35,19 @@
     'lottery':      'tier-ls',
     'no_edge':      'tier-no-edge',
   };
+  const TIER_DISPLAY = {
+    'A+':           'A+',
+    'A':            'A',
+    'smart_money':  'Smart Money',
+    'goldilocks':   'Goldilocks',
+    'lottery':      'Lottery',
+    'no_edge':      'No Edge',
+  };
   const MARKET_DISPLAY = {
-    'spread': 'Spread',
-    'total':  'Total',
-    'ml':     'Moneyline',
+    'spread':    'Spread',
+    'total':     'Total',
+    'ml':        'Moneyline',
+    'moneyline': 'Moneyline',
   };
   const MODEL_ORDER = ['SP+', 'Elo', 'PPA', 'Advanced', 'Pace+'];
 
@@ -740,14 +749,23 @@
    * The Pick
    * ─────────────────────────────────────────────────────────── */
 
+  /**
+   * Pick section — one expandable card per market (spread / total /
+   * moneyline). Cards show release event + full transition history
+   * when expanded. No-edge markets show a dimmed placeholder with
+   * "considered, no edge" treatment.
+   *
+   * Backend always returns 3 entries in fixed order: spread, total,
+   * moneyline. We render them in that order regardless of tier.
+   */
   function renderPicks(data) {
     els.pickStack.innerHTML = '';
-    const picks = (data.picks || []).filter(p => p.tier && p.tier !== 'no_edge');
+    const picks = data.picks || [];
     if (!picks.length) {
       els.pickStack.innerHTML = `
         <div class="pick-empty">
           <div class="pick-empty-icon">i</div>
-          <div>No active pick on this game. Our system considered it but didn't find a tier-eligible edge.</div>
+          <div>No pick data available for this game yet.</div>
         </div>
       `;
       return;
@@ -755,21 +773,30 @@
 
     picks.forEach(p => {
       const card = document.createElement('div');
-      card.className = 'pick-card';
+      const isNoEdge = p.tier === 'no_edge';
+      card.className = isNoEdge ? 'pick-card is-no-edge' : 'pick-card';
+
       const tierClass = TIER_CLASS[p.tier] || 'tier-no-edge';
       const marketLabel = (p.market_display || MARKET_DISPLAY[p.market] || p.market || '').toUpperCase();
 
-      const lineDisplay = (() => {
-        if (p.market === 'total') {
-          return `${p.side_display} ${p.line ?? ''}`.trim();
-        }
-        if (p.market === 'spread') {
-          const ln = p.line != null ? formatSignedNumber(p.line) : '';
-          return `${p.side_display} ${ln}`.trim();
-        }
-        // moneyline
-        return `${p.side_display}${p.line != null ? ' ' + formatSignedNumber(p.line) : ''}`;
-      })();
+      // Line text — only for picks with an actual edge. No-edge cards
+      // get an explainer line instead.
+      let lineText = '';
+      if (isNoEdge) {
+        lineText = 'Considered, no qualifying edge';
+      } else {
+        lineText = (() => {
+          if (p.market === 'total') {
+            return `${p.side_display} ${p.line ?? ''}`.trim();
+          }
+          if (p.market === 'spread') {
+            const ln = p.line != null ? formatSignedNumber(p.line) : '';
+            return `${p.side_display} ${ln}`.trim();
+          }
+          // moneyline
+          return `${p.side_display}${p.line != null ? ' ' + formatSignedNumber(p.line) : ''}`;
+        })();
+      }
 
       const outcomeBadge = p.outcome
         ? `<span class="pick-outcome ${
@@ -777,21 +804,117 @@
           }">${p.outcome === 'W' ? 'Won' : p.outcome === 'L' ? 'Lost' : 'Push'}</span>`
         : '';
 
+      // History timeline. Only rendered for picks that have history
+      // (i.e. not no-edge placeholders). Events render oldest to newest.
+      let historyHtml = '';
+      if (!isNoEdge && p.history) {
+        const released = p.history.released;
+        const transitions = p.history.transitions || [];
+
+        const events = [];
+        if (released) {
+          const releasedTier = released.tier
+            ? `<span class="pick-event-tier ${TIER_CLASS[released.tier] || 'tier-no-edge'}">${escape(TIER_DISPLAY[released.tier] || released.tier)}</span>`
+            : '';
+          const releasedLine = released.line ? ` · ${escape(released.line)}` : '';
+          const releasedBook = released.book?.name ? ` at ${escape(released.book.name)}` : '';
+          events.push(`
+            <div class="pick-event pick-event-release">
+              <span class="pick-event-dot pick-event-dot-release"></span>
+              <div class="pick-event-body">
+                <div class="pick-event-title">
+                  ${releasedTier ? `Released ${releasedTier}` : 'Released'}${releasedLine}${releasedBook}
+                </div>
+                <div class="pick-event-time">${escape(formatHistoryTime(released.at))}</div>
+              </div>
+            </div>
+          `);
+        }
+        transitions.forEach(e => {
+          const isBookOnly = e.is_book_change && !e.is_tier_change && !e.is_side_change && !e.is_line_change;
+          const dotClass = isBookOnly ? 'pick-event-dot pick-event-dot-book' : 'pick-event-dot';
+          events.push(`
+            <div class="pick-event">
+              <span class="${dotClass}"></span>
+              <div class="pick-event-body">
+                <div class="pick-event-title">${escape(e.summary || 'Pick updated')}</div>
+                <div class="pick-event-time">${escape(formatHistoryTime(e.observed_at))}</div>
+              </div>
+            </div>
+          `);
+        });
+
+        historyHtml = `
+          <div class="pick-history">
+            <div class="pick-history-label">History</div>
+            ${events.join('')}
+          </div>
+        `;
+      }
+
+      // Header: tier badge + market label + (optional) outcome + chevron
+      const tierBadge = isNoEdge
+        ? '<span class="pick-tier-badge tier-no-edge">No Edge</span>'
+        : `<span class="pick-tier-badge ${tierClass}">${escape(p.tier_display || p.tier)}</span>`;
+
+      // Whether the accordion can be opened (no-edge has nothing to show)
+      const expandable = !isNoEdge && (p.history && (p.history.released || (p.history.transitions || []).length));
+
       card.innerHTML = `
-        <div class="pick-head">
-          <span class="pick-tier-badge ${tierClass}">${escape(p.tier_display || p.tier)}</span>
-          <span class="pick-market">${escape(marketLabel)}</span>
-        </div>
-        <div class="pick-line">${escape(lineDisplay)}</div>
-        <div class="pick-meta">
-          ${p.book ? `<span>${escape(p.book)}</span>` : ''}
-          ${p.book && p.released_at ? `<span class="pick-meta-dot"></span>` : ''}
-          ${p.released_at ? `<span>Released ${timeAgo(p.released_at)}</span>` : ''}
-          ${outcomeBadge ? `<span class="pick-meta-dot"></span>${outcomeBadge}` : ''}
-        </div>
+        <button type="button" class="pick-header-button" aria-expanded="false"${expandable ? '' : ' disabled'}>
+          <div class="pick-head">
+            ${tierBadge}
+            <span class="pick-market">${escape(marketLabel)}</span>
+            ${outcomeBadge}
+            ${expandable ? '<span class="pick-chevron" aria-hidden="true">›</span>' : ''}
+          </div>
+          <div class="pick-line">${escape(lineText)}</div>
+          ${!isNoEdge ? `
+            <div class="pick-meta">
+              ${p.book ? `<span>${escape(p.book)}</span>` : ''}
+              ${p.book && p.released_at ? `<span class="pick-meta-dot"></span>` : ''}
+              ${p.released_at ? `<span>Released ${timeAgo(p.released_at)}</span>` : ''}
+            </div>
+          ` : ''}
+        </button>
+        ${historyHtml ? `<div class="pick-accordion-body">${historyHtml}</div>` : ''}
       `;
+
+      // Wire up the accordion toggle. No-op for no-edge cards.
+      if (expandable) {
+        const btn  = card.querySelector('.pick-header-button');
+        const body = card.querySelector('.pick-accordion-body');
+        btn.addEventListener('click', () => {
+          const open = card.classList.toggle('is-expanded');
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+          if (body) body.style.display = open ? 'block' : 'none';
+        });
+        if (body) body.style.display = 'none';
+      }
+
       els.pickStack.appendChild(card);
     });
+  }
+
+  // Format an ISO timestamp into the "Tue, May 26, 7:59 PM" style used
+  // by Live Lines history.
+  function formatHistoryTime(iso) {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return iso;
+      const opts = {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      };
+      return d.toLocaleString('en-US', opts);
+    } catch {
+      return iso;
+    }
   }
 
   function formatSignedNumber(n) {
