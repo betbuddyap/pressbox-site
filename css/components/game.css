@@ -505,6 +505,135 @@
   font-weight: 600;
 }
 
+/* ─── Running editorial timeline ──────────────────────────────────
+   A vertical bar (ink/gray, newspaper-style) connects dated entries.
+   Original release entry sits at top with full body. Newest follow-up
+   directly below; older entries collapse behind a toggle. */
+
+.storyline-timeline {
+  position: relative;
+  padding-left: 28px;
+  margin-top: 4px;
+}
+.storyline-timeline::before {
+  /* The continuous vertical bar */
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--ink-light, #2a2a2a);
+  opacity: 0.18;
+  border-radius: 1px;
+}
+
+.storyline-entry {
+  position: relative;
+  padding-bottom: 28px;
+}
+.storyline-entry:last-child { padding-bottom: 0; }
+
+.storyline-entry-marker {
+  /* The dot that sits on the bar at the entry's date */
+  position: absolute;
+  left: -27px;
+  top: 7px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ink);
+  z-index: 2;
+}
+.storyline-entry.is-lede .storyline-entry-marker {
+  /* Lede gets a slightly larger dot to anchor the timeline visually */
+  width: 14px;
+  height: 14px;
+  left: -29px;
+  top: 5px;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--cream, #fff);
+}
+
+.storyline-entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.storyline-entry-date {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--ink);
+  text-transform: none;
+}
+.storyline-entry-type {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border: 1px solid var(--text-mid);
+  border-radius: 3px;
+  opacity: 0.7;
+}
+
+.storyline-entry-body {
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
+}
+.storyline-entry.is-lede .storyline-entry-body {
+  font-size: 17px;
+}
+.storyline-entry-body p {
+  margin: 0 0 12px;
+}
+.storyline-entry-body p:last-child { margin-bottom: 0; }
+
+.storyline-collapse-toggle {
+  position: relative;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-mid);
+  margin: 0 0 24px;
+  padding: 6px 0 6px 4px;
+  cursor: pointer;
+  user-select: none;
+  display: inline-block;
+}
+.storyline-collapse-toggle::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+.storyline-collapse-toggle[data-state="open"]::before {
+  transform: rotate(90deg);
+}
+.storyline-collapse-toggle:hover { color: var(--ink); }
+
+.storyline-hidden { margin-bottom: 16px; }
+.storyline-hidden .storyline-entry { padding-bottom: 22px; }
+
+@media (max-width: 600px) {
+  .storyline-timeline { padding-left: 22px; }
+  .storyline-timeline::before { left: 5px; }
+  .storyline-entry-marker { left: -21px; width: 8px; height: 8px; }
+  .storyline-entry.is-lede .storyline-entry-marker {
+    width: 12px; height: 12px; left: -23px;
+  }
+  .storyline-entry-body { font-size: 14px; }
+  .storyline-entry.is-lede .storyline-entry-body { font-size: 15px; }
+}
+
 
 /* ============================================================
  * 4. THE READ (model projection charts)
