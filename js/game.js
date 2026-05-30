@@ -276,31 +276,52 @@
    * Storyline
    * ─────────────────────────────────────────────────────────── */
 
+  // Entry-type labels for the timeline chips
+  const ENTRY_TYPE_LABEL = {
+    'release':             '',                  // release is the lede; no chip
+    'tier_change':         'Tier change',
+    'side_flip':           'Lean flip',
+    'firing_model_change': 'Firing model change',
+    'line_movement':       'Line movement',
+    'gameday':             'Daily check-in',
+  };
+
+  function formatEntryDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    // "Wednesday, May 29"
+    const opts = { weekday: 'long', month: 'long', day: 'numeric' };
+    return d.toLocaleDateString('en-US', opts);
+  }
+
   function renderStoryline(data) {
     const n = data.narrative || {};
+    const entries = Array.isArray(n.entries) ? n.entries : [];
+
+    // Timeline path — preferred when entries exist
+    if (entries.length > 0) {
+      renderStorylineTimeline(entries);
+      return;
+    }
+
+    // Legacy single-blurb fallback (no timeline rows yet)
     if (!n.text) {
       els.storylineText.innerHTML = '<p style="color:var(--text-light);font-style:italic;">No editorial read available for this game.</p>';
       els.storylineMeta.textContent = '';
       els.storylineLede.style.display = 'none';
       return;
     }
-
-    // Use post-game text if available and game is played
     const usePostGame = data.game?.status === 'final' && n.post_game_text;
     const text = usePostGame ? n.post_game_text : n.text;
-
-    // Parse paragraphs and clean up UTF-8 encoding issues (em-dash corruption)
     const paragraphs = text
       .split(/\n\n+/)
       .map(p => p.trim())
       .filter(Boolean)
       .map(p => fixEncoding(p));
-
     els.storylineText.innerHTML = paragraphs.map(p =>
       `<p>${escape(p)}</p>`
     ).join('');
-
-    // Generated timestamp + staleness warning
     const metaParts = [];
     if (n.generated_at) {
       metaParts.push(`Generated ${timeAgo(n.generated_at)}.`);
@@ -310,9 +331,116 @@
       metaParts.push(`<span class="stale-warn">⚠ Lines have moved since this was written.</span>`);
     }
     els.storylineMeta.innerHTML = metaParts.join(' ');
-
-    // Lede not currently emitted by the generator; keep hidden
     els.storylineLede.style.display = 'none';
+  }
+
+  /**
+   * Render the running-editorial timeline.
+   *
+   * Layout: a vertical connecting bar runs down the side. Each entry is
+   * a "node" on the bar with a dot at the date. The original release
+   * entry sits at top with full body. Newest entries directly below.
+   * After the first 2 entries (release + most-recent follow-up), the
+   * rest collapse behind a "View earlier entries" toggle.
+   *
+   * Entries arrive oldest-first from the backend; we keep that order
+   * so the release is at top and the chronology reads downward.
+   */
+  function renderStorylineTimeline(entries) {
+    // Hide legacy meta line; the timeline has its own per-entry dates
+    els.storylineMeta.innerHTML = '';
+    els.storylineLede.style.display = 'none';
+
+    // Split: release entry (or first entry if none is tagged release)
+    // and the rest.
+    const releaseIdx = entries.findIndex(e => e.entry_type === 'release');
+    const release = releaseIdx >= 0 ? entries[releaseIdx] : entries[0];
+    const others = entries.filter(e => e !== release);
+
+    // Show release + most-recent follow-up by default; collapse the
+    // rest behind a toggle. "Most recent" is the last in chronological
+    // order since entries are oldest-first.
+    const visible = [];
+    const hidden = [];
+    if (others.length === 0) {
+      // Just the release
+    } else if (others.length === 1) {
+      visible.push(others[0]);
+    } else {
+      // Show the most-recent follow-up; hide the older follow-ups
+      // (which are everything BETWEEN release and the latest).
+      visible.push(others[others.length - 1]);
+      for (let i = 0; i < others.length - 1; i++) {
+        hidden.push(others[i]);
+      }
+    }
+
+    const html = [];
+    html.push('<div class="storyline-timeline">');
+
+    html.push(renderEntryNode(release, /*isLede*/true));
+
+    if (hidden.length > 0) {
+      html.push(
+        `<div class="storyline-collapse-toggle" data-state="closed" role="button" tabindex="0">` +
+        `View ${hidden.length} earlier ${hidden.length === 1 ? 'entry' : 'entries'}` +
+        `</div>`
+      );
+      html.push('<div class="storyline-hidden" hidden>');
+      hidden.forEach(e => html.push(renderEntryNode(e, false)));
+      html.push('</div>');
+    }
+
+    visible.forEach(e => html.push(renderEntryNode(e, false)));
+
+    html.push('</div>');
+    els.storylineText.innerHTML = html.join('');
+
+    // Wire collapse toggle
+    const toggle = els.storylineText.querySelector('.storyline-collapse-toggle');
+    if (toggle) {
+      const hiddenEl = els.storylineText.querySelector('.storyline-hidden');
+      const handler = () => {
+        const isOpen = toggle.dataset.state === 'open';
+        toggle.dataset.state = isOpen ? 'closed' : 'open';
+        if (hiddenEl) hiddenEl.hidden = isOpen;
+        toggle.textContent = isOpen
+          ? `View ${hidden.length} earlier ${hidden.length === 1 ? 'entry' : 'entries'}`
+          : `Hide earlier entries`;
+      };
+      toggle.addEventListener('click', handler);
+      toggle.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          handler();
+        }
+      });
+    }
+  }
+
+  function renderEntryNode(entry, isLede) {
+    if (!entry) return '';
+    const dateLabel = formatEntryDate(entry.written_at);
+    const typeLabel = ENTRY_TYPE_LABEL[entry.entry_type] || '';
+    const body = (entry.body || '')
+      .split(/\n\n+/)
+      .map(p => fixEncoding(p.trim()))
+      .filter(Boolean)
+      .map(p => `<p>${escape(p)}</p>`)
+      .join('');
+
+    return `
+      <div class="storyline-entry${isLede ? ' is-lede' : ''}">
+        <div class="storyline-entry-marker"></div>
+        <div class="storyline-entry-content">
+          <div class="storyline-entry-head">
+            <span class="storyline-entry-date">${escape(dateLabel)}</span>
+            ${typeLabel ? `<span class="storyline-entry-type">${escape(typeLabel)}</span>` : ''}
+          </div>
+          <div class="storyline-entry-body">${body}</div>
+        </div>
+      </div>
+    `;
   }
 
   function fixEncoding(s) {
