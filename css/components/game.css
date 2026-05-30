@@ -668,6 +668,16 @@
   box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px rgba(184,146,42,0.18);
   z-index: 5;
 }
+/* When a cell fires, the model that triggered it gets the rust
+   treatment: same sizing as the blend dot, different color, clearly
+   marked as "this is the pick" not "this is the aggregate." */
+.strip-dot-pick {
+  width: 14px;
+  height: 14px;
+  background: var(--rust);
+  box-shadow: 0 0 0 1px var(--rust), 0 0 0 4px rgba(184,90,42,0.18);
+  z-index: 5;
+}
 
 /* Dot labels — small box with model name + value */
 .strip-label {
@@ -700,6 +710,8 @@
 }
 .strip-label-blend .strip-label-name { color: var(--gold); }
 .strip-label-blend .strip-label-value { color: var(--gold); }
+.strip-label-pick .strip-label-name { color: var(--rust); }
+.strip-label-pick .strip-label-value { color: var(--rust); }
 
 /* Connector line from label to dot — subtle. Near labels get a 4px
    stub; far labels get a longer line stretching back to the axis. */
@@ -1087,6 +1099,12 @@
 /* Blend row label (used by the moneyline card for the PressBox row) */
 .numbers-row-label.is-blend {
   color: var(--gold);
+  font-weight: 700;
+}
+/* Pick row label — when a cell fired, the firing model's row gets
+   rust treatment to clearly distinguish it from the other models. */
+.numbers-row-label.is-pick {
+  color: var(--rust);
   font-weight: 700;
 }
 .numbers-row-label::before,
