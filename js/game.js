@@ -51,6 +51,18 @@
   };
   const MODEL_ORDER = ['SP+', 'Elo', 'PPA', 'Advanced', 'Pace+'];
 
+  // Map between picks-engine model keys and chart display names.
+  // Backend's firing_model field uses raw keys (sp_plus, elo, etc.).
+  // Chart points use display names (SP+, Elo, etc.). When highlighting
+  // the model that fired a cell, we match keys to display names here.
+  const MODEL_KEY_TO_NAME = {
+    sp_plus:  'SP+',
+    elo:      'Elo',
+    ppa:      'PPA',
+    advanced: 'Advanced',
+    tempo:    'Pace+',
+  };
+
   /* ───────────────────────────────────────────────────────────
    * Element refs
    * ─────────────────────────────────────────────────────────── */
@@ -338,10 +350,22 @@
     els.readStack.innerHTML = '';
     if (!p) return;
 
+    // Build a {market → firing_model_display_name} map from picks data.
+    // For each market with a real cell-fire, find the picks-engine model
+    // and translate to its display name. No_edge picks have null
+    // firing_model and don't trigger the highlight treatment.
+    const firingByMarket = {};
+    (data.picks || []).forEach(pick => {
+      if (pick.firing_model) {
+        const displayName = MODEL_KEY_TO_NAME[pick.firing_model];
+        if (displayName) firingByMarket[pick.market] = displayName;
+      }
+    });
+
     const anchor = p.anchor || {};
-    if (p.spread)    els.readStack.appendChild(buildDotPlot('Spread', p.spread, 'anchor_spread', anchor));
-    if (p.total)     els.readStack.appendChild(buildDotPlot('Total',  p.total,  'total', anchor));
-    if (p.moneyline) els.readStack.appendChild(buildMLRows(data, p.moneyline, anchor));
+    if (p.spread)    els.readStack.appendChild(buildDotPlot('Spread', p.spread, 'anchor_spread', anchor, firingByMarket.spread));
+    if (p.total)     els.readStack.appendChild(buildDotPlot('Total',  p.total,  'total', anchor, firingByMarket.total));
+    if (p.moneyline) els.readStack.appendChild(buildMLRows(data, p.moneyline, anchor, firingByMarket.moneyline));
   }
 
   /**
@@ -355,12 +379,16 @@
    *   - Labels (model name + value) attach to each dot, stacked above
    *     or below to avoid overlap.
    */
-  function buildDotPlot(label, section, key, anchor) {
+  function buildDotPlot(label, section, key, anchor, firingModel) {
     const card = document.createElement('div');
     card.className = 'read-card';
 
     const vegasPos     = key === 'anchor_spread' ? section.vegas_anchor_spread : section.vegas_line;
-    const blendPos     = section.pressbox_blend;
+    // When a cell fired, suppress the aggregate blend dot — the pick
+    // came from one model hitting cell bands, not from the blend. The
+    // user gets a clearer story when we highlight that model in rust
+    // and remove the aggregate that didn't drive the decision.
+    const blendPos     = firingModel ? null : section.pressbox_blend;
     const blendDisplay = section.pressbox_display;
     const vegasDisplay = section.vegas_display;
 
@@ -633,14 +661,17 @@
     const sortedPts = [...points].sort((a, b) => a.value - b.value);
 
     sortedPts.forEach((p) => {
+      const isPick = firingModel && p.name === firingModel;
       const dot = document.createElement('div');
-      dot.className = 'strip-dot';
+      dot.className = isPick ? 'strip-dot strip-dot-pick' : 'strip-dot';
       dot.style.left = `${xPct(p.value)}%`;
-      dot.title = `${p.name}: ${p.display}`;
+      dot.title = isPick
+        ? `${p.name}: ${p.display} — this is the pick`
+        : `${p.name}: ${p.display}`;
       axisEl.appendChild(dot);
 
       const lbl = document.createElement('div');
-      lbl.className = 'strip-label';
+      lbl.className = isPick ? 'strip-label strip-label-pick' : 'strip-label';
       lbl.style.left = `${xPct(p.value)}%`;
       lbl.innerHTML = `<span class="strip-label-name">${escape(p.name)}</span><span class="strip-label-value">${escape(p.display)}</span>`;
 
@@ -678,7 +709,7 @@
    * cards and the page-wide team orientation. Anchor/other from the
    * backend gets unfolded into away/home using anchor.is_home.
    */
-  function buildMLRows(data, mlSection, anchor) {
+  function buildMLRows(data, mlSection, anchor, firingModel) {
     const card = document.createElement('div');
     card.className = 'numbers-card';
 
@@ -715,11 +746,14 @@
       const homeProb  = anchorIsHome ? m.anchor_prob  : m.other_prob;
       const awayOdds  = anchorIsHome ? m.other_display : m.anchor_display;
       const homeOdds  = anchorIsHome ? m.anchor_display : m.other_display;
-      rows.push({ label: modelName, awayProb, homeProb, awayOdds, homeOdds });
+      const isPick = firingModel && modelName === firingModel;
+      rows.push({ label: modelName, awayProb, homeProb, awayOdds, homeOdds, isPick });
     });
 
-    // PressBox blend
-    if (mlSection.pressbox_anchor_prob != null) {
+    // PressBox blend — suppressed when a cell fired (firingModel set).
+    // The pick came from one model hitting cell bands, not from the
+    // blend, so the aggregate would muddy the visual story.
+    if (!firingModel && mlSection.pressbox_anchor_prob != null) {
       const blendAwayProb = anchorIsHome ? mlSection.pressbox_other_prob  : mlSection.pressbox_anchor_prob;
       const blendHomeProb = anchorIsHome ? mlSection.pressbox_anchor_prob : mlSection.pressbox_other_prob;
       const blendAwayOdds = anchorIsHome ? mlSection.pressbox_other_american : mlSection.pressbox_anchor_american;
@@ -747,7 +781,11 @@
       const aBar = computeBar(r.awayProb, { league_min: 0, league_max: 1, lower_better: false });
       const hBar = computeBar(r.homeProb, { league_min: 0, league_max: 1, lower_better: false });
 
-      const labelClass = r.isBlend ? 'numbers-row-label is-blend' : 'numbers-row-label';
+      const labelClass = r.isBlend
+        ? 'numbers-row-label is-blend'
+        : r.isPick
+          ? 'numbers-row-label is-pick'
+          : 'numbers-row-label';
 
       return `
         <div class="numbers-row">
