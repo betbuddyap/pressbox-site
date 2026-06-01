@@ -415,6 +415,73 @@
   }
   .gc.slate .gc-status.live { color: var(--rust-light); }
   .gc.slate .gc-status.final { color: var(--gold-light); }
+  .gc.slate .gc-status.postponed { color: rgba(248,245,238,0.55); }
+  .gc.slate .gc-status.canceled { color: rgba(248,245,238,0.45); text-decoration: line-through; }
+
+  /* Pulsing rust dot for live games — gives the card a heartbeat */
+  .gc.slate .gc-live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--rust);
+    margin-right: 6px;
+    vertical-align: middle;
+    box-shadow: 0 0 0 0 var(--rust);
+    animation: gc-live-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes gc-live-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(178,75,55,0.7); }
+    70%  { box-shadow: 0 0 0 6px rgba(178,75,55,0); }
+    100% { box-shadow: 0 0 0 0 rgba(178,75,55,0); }
+  }
+
+  /* Faintly desaturate canceled / postponed cards as a whole */
+  .gc.slate.status-canceled { opacity: 0.55; }
+  .gc.slate.status-postponed { opacity: 0.75; }
+
+  /* Pick performance chip (live game overlay) */
+  .gc.slate .gc-pick-slot.has-perf {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .gc.slate .gc-pick-perf {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .gc.slate .gc-pick-slot.perf-win    .gc-pick-perf { background: var(--gold); color: var(--ink); }
+  .gc.slate .gc-pick-slot.perf-loss   .gc-pick-perf { background: var(--rust); color: var(--cream); }
+  .gc.slate .gc-pick-slot.perf-push   .gc-pick-perf { background: rgba(248,245,238,0.2); color: var(--cream); }
+  .gc.slate .gc-pick-slot.perf-pending .gc-pick-perf { background: rgba(248,245,238,0.15); color: var(--cream); }
+
+  /* Final-state outcome chip (W/L/P/V) */
+  .gc.slate .gc-pick-slot.has-outcome {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .gc.slate .gc-pick-outcome {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    border-radius: 50%;
+  }
+  .gc.slate .gc-pick-outcome.out-win   { background: var(--gold); color: var(--ink); }
+  .gc.slate .gc-pick-outcome.out-loss  { background: var(--rust); color: var(--cream); }
+  .gc.slate .gc-pick-outcome.out-push  { background: rgba(248,245,238,0.25); color: var(--cream); }
+  .gc.slate .gc-pick-outcome.out-void  { background: transparent; color: rgba(248,245,238,0.5); border: 1px solid rgba(248,245,238,0.3); }
   .gc.slate .gc-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
   .gc.slate .gc-team-name { font-size: 22px; line-height: 1.15; }
   .gc.slate .gc-team-sub { font-size: 11px; gap: 8px; margin-top: 3px; }
@@ -1057,22 +1124,48 @@ function renderSlateCard(g) {
   const homeRank = powerRankings[g.home_team];
   const awayRank = powerRankings[g.away_team];
 
-  // Time / status. Live and final states will hook in here once we have a
-  // live-score feed.
+  // status drives the card's overall behavior. Default to 'scheduled'
+  // for older API responses that don't include the field yet.
+  const status = g.status || (g.has_score ? 'final' : 'scheduled');
+  const slots = (pick && pick.slots) || {};
+
+  // ── Status strip (top of card) ─────────────────────────────────
   let statusHTML = '';
   const timeText = g.time && g.time !== 'TBD' ? g.time : 'Kickoff TBD';
-  if (g.has_score) {
-    // Played game — show final score
-    statusHTML = `<span class="gc-status final">Final · ${g.away_team.substring(0,4).toUpperCase()} ${g.away_points} ${g.home_team.substring(0,4).toUpperCase()} ${g.home_points}</span>`;
+  const awayPts = g.away_points;
+  const homePts = g.home_points;
+  const hasScores = (awayPts !== null && awayPts !== undefined &&
+                     homePts !== null && homePts !== undefined);
+
+  if (status === 'final') {
+    // Played — show final score
+    const awayShort = g.away_team.substring(0,4).toUpperCase();
+    const homeShort = g.home_team.substring(0,4).toUpperCase();
+    statusHTML = `<span class="gc-status final">Final · ${awayShort} ${awayPts} ${homeShort} ${homePts}</span>`;
+  } else if (status === 'live') {
+    // Live — pulsing rust dot + score
+    if (hasScores) {
+      const awayShort = g.away_team.substring(0,4).toUpperCase();
+      const homeShort = g.home_team.substring(0,4).toUpperCase();
+      statusHTML = `<span class="gc-status live"><span class="gc-live-dot"></span>Live · ${awayShort} ${awayPts} ${homeShort} ${homePts}</span>`;
+    } else {
+      statusHTML = `<span class="gc-status live"><span class="gc-live-dot"></span>Live</span>`;
+    }
+  } else if (status === 'postponed') {
+    statusHTML = `<span class="gc-status postponed">Postponed</span>`;
+  } else if (status === 'canceled') {
+    statusHTML = `<span class="gc-status canceled">Canceled</span>`;
   } else {
+    // scheduled
     statusHTML = `<span class="gc-meta">${timeText}</span>`;
   }
 
-  // Each slot renders independently from pick.slots = {spread, total, ml}.
-  // Label is always visible; tier badge appears next to it when present.
-  // pick.slots may be undefined if no pick record exists for this game.
-  const slots = (pick && pick.slots) || {};
-  const slot = (label, slotData) => {
+  // ── Pick slots row ─────────────────────────────────────────────
+  // Each slot renders independently. For live games, slot shows the
+  // pick's CURRENT performance state (winning/losing ATS, over hit, etc).
+  // For final games, slot shows W/L/P/V outcome. For scheduled games,
+  // slot shows the tier badge.
+  const slot = (label, slotData, market) => {
     const tierFull = slotData && slotData.tier_full;
     const tierKey = ({
       'A+':           'ap',
@@ -1080,6 +1173,34 @@ function renderSlateCard(g) {
       'smart_money':  'sm',
       'lottery_shot': 'ls',
     })[tierFull];
+
+    // Final / void → outcome chip
+    if (status === 'final' && slotData && slotData.result) {
+      const r = slotData.result;
+      const cls = ({win:'win', loss:'loss', push:'push', void:'void'})[r] || '';
+      const txt = ({win:'W', loss:'L', push:'P', void:'V'})[r] || '—';
+      return `
+        <div class="gc-pick-slot has-outcome">
+          <span class="gc-pick-label">${label}</span>
+          <span class="gc-pick-outcome out-${cls}">${txt}</span>
+        </div>
+      `;
+    }
+
+    // Live → performance state from current score (only if we have pick + scores)
+    if (status === 'live' && slotData && tierKey && hasScores) {
+      const perf = computeLivePerf(market, slotData, awayPts, homePts, g.home_team, g.away_team);
+      if (perf) {
+        return `
+          <div class="gc-pick-slot has-perf perf-${perf.cls}">
+            <span class="gc-pick-label">${label}</span>
+            <span class="gc-pick-perf">${perf.label}</span>
+          </div>
+        `;
+      }
+    }
+
+    // Default: tier badge if we have one, else empty placeholder
     if (tierKey) {
       return `
         <div class="gc-pick-slot has-tier">
@@ -1097,7 +1218,7 @@ function renderSlateCard(g) {
 
   return `
     <a class="gc-link" href="/game.html?id=${g.game_id}">
-      <div class="gc slate">
+      <div class="gc slate status-${status}">
         ${bgHTML(awayColor, homeColor)}
         <div class="gc-content">
           <div class="gc-strip">
@@ -1109,14 +1230,79 @@ function renderSlateCard(g) {
             ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
           </div>
           <div class="gc-picks">
-            ${slot('Spread', slots.spread)}
-            ${slot('Total',  slots.total)}
-            ${slot('ML',     slots.ml)}
+            ${slot('Spread', slots.spread, 'spread')}
+            ${slot('Total',  slots.total,  'total')}
+            ${slot('ML',     slots.ml,     'ml')}
           </div>
         </div>
       </div>
     </a>
   `;
+}
+
+// ────── PICK PERFORMANCE OVERLAY (live games) ──────
+// Given a pick and current score, return a short performance label.
+// Returns null if perf can't be computed (missing data).
+//
+// Data shape from picks_upcoming:
+//   slotData.side       — team name for spread/ml, "Over"/"Under" for total
+//   slotData.best_line  — line from the picked team's perspective
+//                         (e.g. picking Florida State -3.5 → best_line = -3.5)
+//                         For totals, the total number.
+//                         For ML, null.
+//
+// Spread: pick wins when pick_team_score - opponent_score + line > 0
+// Total:  over wins when home + away > line; under wins when home + away < line
+// ML:     pick wins when pick_team has more points
+function computeLivePerf(market, slotData, awayPts, homePts, homeTeam, awayTeam) {
+  if (slotData == null || awayPts == null || homePts == null) return null;
+  const side = slotData.side;
+  const line = slotData.best_line;
+
+  if (market === 'spread') {
+    if (line == null || side == null) return null;
+    // Figure out which team was picked
+    const pickIsHome = (side === homeTeam);
+    const pickIsAway = (side === awayTeam);
+    if (!pickIsHome && !pickIsAway) return null;
+    const pickPts = pickIsHome ? homePts : awayPts;
+    const oppPts  = pickIsHome ? awayPts : homePts;
+    const margin = (pickPts - oppPts) + line;
+    if (margin > 0) return { cls: 'win', label: `Cover +${margin.toFixed(1)}` };
+    if (margin === 0) return { cls: 'push', label: 'ATS push' };
+    return { cls: 'loss', label: `Cover ${margin.toFixed(1)}` };
+  }
+
+  if (market === 'total') {
+    if (line == null || side == null) return null;
+    const sum = homePts + awayPts;
+    const isOver = (side || '').toLowerCase() === 'over';
+    if (isOver) {
+      if (sum > line) return { cls: 'win', label: 'OVER hit' };
+      const remaining = (line - sum).toFixed(1);
+      return { cls: 'pending', label: `Need ${remaining}` };
+    } else {
+      // under
+      if (sum > line) return { cls: 'loss', label: 'OVER hit' };
+      const cushion = (line - sum).toFixed(1);
+      return { cls: 'win', label: `Under by ${cushion}` };
+    }
+  }
+
+  if (market === 'ml') {
+    if (side == null) return null;
+    if (homePts === awayPts) return { cls: 'push', label: 'Tied' };
+    const pickIsHome = (side === homeTeam);
+    const pickIsAway = (side === awayTeam);
+    if (!pickIsHome && !pickIsAway) return null;
+    const homeLeading = homePts > awayPts;
+    const pickLeading = (pickIsHome && homeLeading) || (pickIsAway && !homeLeading);
+    return pickLeading
+      ? { cls: 'win', label: 'Winning ML' }
+      : { cls: 'loss', label: 'Trailing' };
+  }
+
+  return null;
 }
 
 // ────── RENDERERS ──────
