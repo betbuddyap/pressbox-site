@@ -88,6 +88,14 @@
     pgScore:   $('pgScore'),
     pgAway:    $('pgAwayNum'),
     pgHome:    $('pgHomeNum'),
+    pgLive:           $('pgLive'),
+    pgLiveClock:      $('pgLiveClock'),
+    pgLiveAwayName:   $('pgLiveAwayName'),
+    pgLiveAwayNum:    $('pgLiveAwayNum'),
+    pgLiveHomeName:   $('pgLiveHomeName'),
+    pgLiveHomeNum:    $('pgLiveHomeNum'),
+    pgLiveSituation:  $('pgLiveSituation'),
+    pgLiveLastPlay:   $('pgLiveLastPlay'),
     preGame:   $('preGameContent'),
     projected: $('ctxProjected'),
     projAway:  $('ctxProjAway'),
@@ -203,9 +211,19 @@
     if (g.home?.record)       homeSubParts.push(`<span class="ctx-team-record">${escape(g.home.record)}</span>`);
     els.homeSub.innerHTML = homeSubParts.join('<span class="ctx-meta-dot"></span>');
 
-    // Score state: played vs upcoming
-    const played = g.status === 'final' && g.away_points != null && g.home_points != null;
-    if (played) {
+    // Score state: live / final / upcoming. Each state shows ONE of
+    // pgLive (hero broadcast block), pgScore (final-score block),
+    // preGameContent (projected-score block). Others are hidden.
+    const isLive  = g.status === 'in_progress';
+    const isFinal = g.status === 'final' && g.away_points != null && g.home_points != null;
+
+    if (isLive) {
+      els.pgLive.style.display = '';
+      els.pgScore.style.display = 'none';
+      els.preGame.style.display = 'none';
+      renderLiveHero(data);
+    } else if (isFinal) {
+      els.pgLive.style.display = 'none';
       els.pgScore.style.display = '';
       els.pgAway.textContent = g.away_points;
       els.pgHome.textContent = g.home_points;
@@ -214,6 +232,7 @@
       els.pgHome.classList.toggle('loser',  awayWon && g.away_points !== g.home_points);
       els.preGame.style.display = 'none';
     } else {
+      els.pgLive.style.display = 'none';
       els.pgScore.style.display = 'none';
       els.preGame.style.display = '';
       renderProjectedScore(data);
@@ -231,6 +250,80 @@
       metaParts.push(`<div class="ctx-meta-item">Neutral Site</div>`);
     }
     els.meta.innerHTML = metaParts.join('<span class="ctx-meta-dot"></span>');
+  }
+
+  // ────── LIVE HERO BLOCK ──────
+  // Populates the pg-live broadcast hero with ESPN-sourced live data.
+  // Score, possession ball next to team with the ball, period+clock,
+  // down/distance/yard-line, last play description.
+  function renderLiveHero(data) {
+    const g = data.game;
+    if (!els.pgLive) return;
+
+    const period = g.current_period;
+    const clock  = g.current_clock;
+    let periodLabel = '';
+    if (period) periodLabel = period <= 4 ? `Q${period}` : `OT${period - 4}`;
+    const clockLine = [periodLabel, clock].filter(Boolean).join(' · ');
+    els.pgLiveClock.textContent = clockLine || '';
+
+    const awayName = g.away?.team || '';
+    const homeName = g.home?.team || '';
+    const possessionTeam = g.current_possession_team || '';
+    const awayHasBall = possessionTeam === awayName;
+    const homeHasBall = possessionTeam === homeName;
+    const ballHTML = '<span class="pg-live-ball" title="Possession">●</span>';
+
+    els.pgLiveAwayName.innerHTML = escape(awayName.toUpperCase()) +
+      (awayHasBall ? ' ' + ballHTML : '');
+    els.pgLiveHomeName.innerHTML = (homeHasBall ? ballHTML + ' ' : '') +
+      escape(homeName.toUpperCase());
+
+    const awayPts = g.away_points;
+    const homePts = g.home_points;
+    els.pgLiveAwayNum.textContent = awayPts != null ? awayPts : '—';
+    els.pgLiveHomeNum.textContent = homePts != null ? homePts : '—';
+
+    // Loser-dim
+    if (awayPts != null && homePts != null && awayPts !== homePts) {
+      const awayWinning = awayPts > homePts;
+      els.pgLiveAwayNum.classList.toggle('loser', !awayWinning);
+      els.pgLiveHomeNum.classList.toggle('loser',  awayWinning);
+    } else {
+      els.pgLiveAwayNum.classList.remove('loser');
+      els.pgLiveHomeNum.classList.remove('loser');
+    }
+
+    // Down + distance + yard line
+    const down = g.current_down;
+    const distance = g.current_distance;
+    const yardLine = g.current_yard_line;
+    let situation = '';
+    if (down && distance != null) {
+      const ord = ({1:'1st', 2:'2nd', 3:'3rd', 4:'4th'})[down] || `${down}th`;
+      const distText = distance === 0 ? 'goal' : distance;
+      situation = `${ord} & ${distText}`;
+      if (yardLine) situation += ` · ${yardLine}`;
+    } else if (yardLine) {
+      situation = yardLine;
+    }
+    els.pgLiveSituation.textContent = situation;
+
+    // Last play description
+    const lastPlay = g.last_play_text;
+    if (lastPlay) {
+      els.pgLiveLastPlay.style.display = '';
+      els.pgLiveLastPlay.textContent = lastPlay;
+    } else {
+      els.pgLiveLastPlay.style.display = 'none';
+    }
+
+    // Red-zone highlight on the hero block
+    if (g.is_red_zone) {
+      els.pgLive.classList.add('red-zone');
+    } else {
+      els.pgLive.classList.remove('red-zone');
+    }
   }
 
   function renderProjectedScore(data) {
@@ -1503,6 +1596,54 @@
     }
 
     showState('content');
+
+    // ── Live polling ────────────────────────────────────────────
+    // If the game is in progress, keep the broadcast hero block fresh
+    // by re-fetching every 20 seconds. Stops automatically when the
+    // game leaves live state, or when the tab is hidden. Re-resumes
+    // when the tab regains focus.
+    startLivePolling(data, gameId, token);
+  }
+
+  // ────── LIVE POLLING ──────
+  let _livePollTimer = null;
+  let _visibilityHooked = false;
+  function startLivePolling(initialData, gameId, token) {
+    stopLivePolling();
+    const status = initialData.game?.status;
+    if (status !== 'in_progress') return;   // only poll for live games
+
+    const tick = async () => {
+      if (document.hidden) return;          // skip while tab is backgrounded
+      try {
+        const refresh = await fetchBreakdown(gameId, token);
+        if (!refresh || refresh.notFound || refresh.error) return;
+        // Only re-render the parts that change live. Avoid re-rendering
+        // the storyline / picks blocks which haven't changed.
+        renderHero(refresh);
+        // Once game leaves live state, stop polling.
+        if (refresh.game?.status !== 'in_progress') {
+          stopLivePolling();
+        }
+      } catch (e) {
+        console.warn('live poll failed:', e);
+      }
+    };
+
+    _livePollTimer = setInterval(tick, 20000);   // 20s cadence
+
+    if (!_visibilityHooked) {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && _livePollTimer) tick();
+      });
+      _visibilityHooked = true;
+    }
+  }
+  function stopLivePolling() {
+    if (_livePollTimer) {
+      clearInterval(_livePollTimer);
+      _livePollTimer = null;
+    }
   }
 
   if (document.readyState === 'loading') {
