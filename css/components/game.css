@@ -398,6 +398,151 @@
 }
 
 
+/* ──────────────────────────────────────────────────────────────
+ * Live hero block (game.status === in_progress)
+ * Sits alongside .pg-score in the hero context column. Shows the
+ * live broadcast snapshot from ESPN: score, period+clock, down,
+ * possession, last play. Rust-glow border, animated.
+ * ────────────────────────────────────────────────────────────── */
+
+.pg-live {
+  padding: 16px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.pg-live-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 4px;
+}
+.pg-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--rust);
+  color: var(--cream);
+  padding: 5px 12px;
+  border-radius: 3px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+}
+.pg-live-badge .pg-live-dot {
+  width: 9px;
+  height: 9px;
+  background: var(--cream);
+  border-radius: 50%;
+  animation: pg-live-pulse 1.4s ease-in-out infinite;
+}
+@keyframes pg-live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(248,245,238,0.7); }
+  70%  { box-shadow: 0 0 0 8px rgba(248,245,238,0); }
+  100% { box-shadow: 0 0 0 0 rgba(248,245,238,0); }
+}
+.pg-live-clock {
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--cream);
+  text-transform: uppercase;
+}
+
+.pg-live-score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 4px 0;
+}
+.pg-live-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.pg-live-team.away { align-items: flex-end; }
+.pg-live-team.home { align-items: flex-start; flex-direction: column-reverse; }
+.pg-live-team-name {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--cream);
+  text-transform: uppercase;
+}
+.pg-live-num {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 72px;
+  line-height: 1;
+  color: var(--cream);
+}
+.pg-live-num.loser { opacity: 0.55; }
+.pg-live-dash {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 32px;
+  color: var(--gold-light);
+  padding: 0 12px;
+}
+.pg-live-ball {
+  color: #f8d96b;
+  font-size: 14px;
+  line-height: 1;
+  text-shadow: 0 0 4px rgba(248,217,107,0.6);
+  margin: 0 4px;
+}
+
+.pg-live-situation {
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--cream);
+  text-transform: uppercase;
+  padding: 8px 0;
+  border-top: 1px solid rgba(248,245,238,0.18);
+  border-bottom: 1px solid rgba(248,245,238,0.18);
+}
+
+.pg-live-lastplay {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--cream);
+  opacity: 0.85;
+  line-height: 1.4;
+  text-align: center;
+  padding: 4px 8px;
+}
+
+/* Red zone — intensify the rust signaling */
+.pg-live.red-zone .pg-live-badge {
+  background: #d44a2a;
+  animation: pg-live-rz-flash 1.4s ease-in-out infinite;
+}
+@keyframes pg-live-rz-flash {
+  0%, 100% { background: #d44a2a; }
+  50%      { background: #f25638; }
+}
+
+@media (max-width: 600px) {
+  .pg-live-num { font-size: 56px; }
+  .pg-live-dash { font-size: 26px; }
+}
+
+
 /* ============================================================
  * 2. MAIN COLUMN & SECTION HEADERS
  * ============================================================ */
@@ -505,135 +650,6 @@
   font-weight: 600;
 }
 
-/* ─── Running editorial timeline ──────────────────────────────────
-   A vertical bar (ink/gray, newspaper-style) connects dated entries.
-   Original release entry sits at top with full body. Newest follow-up
-   directly below; older entries collapse behind a toggle. */
-
-.storyline-timeline {
-  position: relative;
-  padding-left: 28px;
-  margin-top: 4px;
-}
-.storyline-timeline::before {
-  /* The continuous vertical bar */
-  content: "";
-  position: absolute;
-  left: 7px;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: var(--ink-light, #2a2a2a);
-  opacity: 0.18;
-  border-radius: 1px;
-}
-
-.storyline-entry {
-  position: relative;
-  padding-bottom: 28px;
-}
-.storyline-entry:last-child { padding-bottom: 0; }
-
-.storyline-entry-marker {
-  /* The dot that sits on the bar at the entry's date */
-  position: absolute;
-  left: -27px;
-  top: 7px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--ink);
-  z-index: 2;
-}
-.storyline-entry.is-lede .storyline-entry-marker {
-  /* Lede gets a slightly larger dot to anchor the timeline visually */
-  width: 14px;
-  height: 14px;
-  left: -29px;
-  top: 5px;
-  background: var(--ink);
-  box-shadow: 0 0 0 3px var(--cream, #fff);
-}
-
-.storyline-entry-head {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
-}
-.storyline-entry-date {
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  color: var(--ink);
-  text-transform: none;
-}
-.storyline-entry-type {
-  font-family: var(--sans);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  color: var(--text-mid);
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border: 1px solid var(--text-mid);
-  border-radius: 3px;
-  opacity: 0.7;
-}
-
-.storyline-entry-body {
-  font-family: var(--serif);
-  font-size: 15px;
-  line-height: 1.65;
-  color: var(--ink);
-}
-.storyline-entry.is-lede .storyline-entry-body {
-  font-size: 17px;
-}
-.storyline-entry-body p {
-  margin: 0 0 12px;
-}
-.storyline-entry-body p:last-child { margin-bottom: 0; }
-
-.storyline-collapse-toggle {
-  position: relative;
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: var(--text-mid);
-  margin: 0 0 24px;
-  padding: 6px 0 6px 4px;
-  cursor: pointer;
-  user-select: none;
-  display: inline-block;
-}
-.storyline-collapse-toggle::before {
-  content: "▸ ";
-  display: inline-block;
-  transition: transform 0.15s ease;
-}
-.storyline-collapse-toggle[data-state="open"]::before {
-  transform: rotate(90deg);
-}
-.storyline-collapse-toggle:hover { color: var(--ink); }
-
-.storyline-hidden { margin-bottom: 16px; }
-.storyline-hidden .storyline-entry { padding-bottom: 22px; }
-
-@media (max-width: 600px) {
-  .storyline-timeline { padding-left: 22px; }
-  .storyline-timeline::before { left: 5px; }
-  .storyline-entry-marker { left: -21px; width: 8px; height: 8px; }
-  .storyline-entry.is-lede .storyline-entry-marker {
-    width: 12px; height: 12px; left: -23px;
-  }
-  .storyline-entry-body { font-size: 14px; }
-  .storyline-entry.is-lede .storyline-entry-body { font-size: 15px; }
-}
-
 
 /* ============================================================
  * 4. THE READ (model projection charts)
@@ -648,15 +664,15 @@
   background: #fff;
   border: 0.5px solid var(--border);
   border-radius: 4px;
-  padding: 16px 28px 20px;
+  padding: 24px 28px 28px;
 }
 .read-card-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
+  margin-bottom: 28px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--cream-mid);
 }
 .read-card-label {
@@ -677,18 +693,6 @@
   color: var(--ink);
   font-weight: 700;
 }
-.read-card-vegas-price {
-  font-family: var(--mono, var(--sans));
-  font-weight: 500;
-  color: var(--text-light);
-  font-size: 11px;
-  margin-left: 2px;
-}
-.read-card-vegas-pending {
-  color: var(--text-light);
-  font-style: italic;
-  font-weight: 500;
-}
 
 /* ── Strip plot (single shared axis with all dots ON it) ─────── */
 
@@ -697,13 +701,13 @@
   padding: 0 12px;
 }
 
-/* Labels above and below — two rows each via 4-lane collision system */
+/* Labels above and below — alternating to avoid collision */
 .strip-labels {
   position: relative;
-  height: 48px;
+  height: 36px;
 }
-.strip-labels-above { margin-bottom: 4px; }
-.strip-labels-below { margin-top: 4px; height: 48px; }
+.strip-labels-above { margin-bottom: 6px; }
+.strip-labels-below { margin-top: 6px; height: 32px; }
 
 .strip-axis-wrap {
   position: relative;
@@ -719,62 +723,25 @@
   border-radius: 1px;
 }
 
-/* Vegas vertical reference line — tall tick, no circle. */
+/* Vegas vertical reference line */
 .strip-vegas {
   position: absolute;
-  top: 50%;
-  height: 60px;
+  top: -10px;
+  bottom: -10px;
   width: 2px;
   background: var(--ink);
-  transform: translate(-1px, -50%);
+  transform: translateX(-1px);
   z-index: 3;
 }
-
-/* Zero anchor (spread chart only) — distinct red vertical line. */
-.strip-zero {
+.strip-vegas::before {
+  content: '';
   position: absolute;
-  top: 50%;
-  height: 60px;
-  width: 1.5px;
-  background: var(--rust);
-  transform: translate(-0.75px, -50%);
-  z-index: 2;
-  opacity: 0.85;
-}
-
-/* Historical outcome band — shaded region showing where games with
-   this Vegas line have historically landed (~p25 to p75). Used as a
-   fallback when no density curve is available. */
-.strip-hist-band {
-  position: absolute;
-  top: -8px;
-  bottom: -8px;
-  background: rgba(76, 124, 168, 0.16);
-  border-radius: 2px;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* Historical density CURVE — mirrored lobe drawn as inline SVG. Real
-   shape: tall where outcomes cluster, fading to nothing at the tails.
-   Anchored at exact axis center via top:50% + translateY so the upper
-   and lower lobes are guaranteed symmetric. */
-.strip-hist-curve {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 100%;
-  height: 56px;
-  z-index: 1;
-  pointer-events: none;
-  overflow: visible;
-}
-.strip-hist-curve path {
-  fill: rgba(76, 124, 168, 0.18);
-  stroke: rgba(76, 124, 168, 0.45);
-  stroke-width: 1;
+  top: -4px;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  background: var(--ink);
+  border-radius: 50%;
 }
 
 /* Dots — all sit on the axis line */
@@ -787,7 +754,7 @@
   border: 2px solid #fff;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  z-index: 4;
+  z-index: 2;
   box-shadow: 0 0 0 1px var(--text-mid);
 }
 .strip-dot-blend {
@@ -795,17 +762,7 @@
   height: 14px;
   background: var(--gold);
   box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px rgba(184,146,42,0.18);
-  z-index: 5;
-}
-/* When a cell fires, the model that triggered it gets the rust
-   treatment: same sizing as the blend dot, different color, clearly
-   marked as "this is the pick" not "this is the aggregate." */
-.strip-dot-pick {
-  width: 14px;
-  height: 14px;
-  background: var(--rust);
-  box-shadow: 0 0 0 1px var(--rust), 0 0 0 4px rgba(184,90,42,0.18);
-  z-index: 5;
+  z-index: 4;
 }
 
 /* Dot labels — small box with model name + value */
@@ -821,9 +778,6 @@
 }
 .strip-labels-above .strip-label { bottom: 4px; }
 .strip-labels-below .strip-label { top: 4px; }
-/* "Far" labels sit further from the axis to clear a "near" label. */
-.strip-labels-above .strip-label.strip-label-far { bottom: 26px; }
-.strip-labels-below .strip-label.strip-label-far { top: 26px; }
 .strip-label-name {
   font-size: 10px;
   font-weight: 700;
@@ -839,11 +793,8 @@
 }
 .strip-label-blend .strip-label-name { color: var(--gold); }
 .strip-label-blend .strip-label-value { color: var(--gold); }
-.strip-label-pick .strip-label-name { color: var(--rust); }
-.strip-label-pick .strip-label-value { color: var(--rust); }
 
-/* Connector line from label to dot — subtle. Near labels get a 4px
-   stub; far labels get a longer line stretching back to the axis. */
+/* Connector line from label to dot — subtle */
 .strip-labels-above .strip-label::after {
   content: '';
   position: absolute;
@@ -854,10 +805,6 @@
   background: var(--border);
   transform: translateX(-50%);
 }
-.strip-labels-above .strip-label.strip-label-far::after {
-  height: 26px;
-  bottom: -28px;
-}
 .strip-labels-below .strip-label::before {
   content: '';
   position: absolute;
@@ -867,10 +814,6 @@
   height: 4px;
   background: var(--border);
   transform: translateX(-50%);
-}
-.strip-labels-below .strip-label.strip-label-far::before {
-  height: 26px;
-  top: -28px;
 }
 
 /* Axis ticks */
@@ -891,9 +834,8 @@
   position: absolute;
   top: 6px;
   font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-mid);
+  font-size: 10px;
+  color: var(--text-light);
   letter-spacing: 0.3px;
   transform: translateX(-50%);
 }
@@ -1027,10 +969,80 @@
   flex-direction: column;
   gap: 16px;
 }
-/* The pick cards themselves are now rendered using .ll-row + accordion
-   classes from /css/components/live-lines.css for pixel-perfect parity
-   with the Live Lines page. The legacy .pick-* rules below only apply
-   to the empty-state placeholder. */
+.pick-card {
+  background: #fff;
+  border: 0.5px solid var(--border);
+  border-radius: 4px;
+  padding: 22px 24px;
+}
+.pick-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+.pick-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: var(--tier-bg);
+  color: var(--tier-fg);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.pick-market {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.pick-line {
+  font-family: var(--sans);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  letter-spacing: 0.2px;
+  margin-bottom: 4px;
+}
+.pick-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--text-mid);
+}
+.pick-meta-dot {
+  width: 4px; height: 4px;
+  background: var(--text-light);
+  border-radius: 50%;
+  display: inline-block;
+}
+.pick-outcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.pick-outcome.win  { background: var(--sage-pale); color: var(--sage); }
+.pick-outcome.loss { background: var(--rust-pale); color: var(--rust); }
+.pick-outcome.push { background: var(--cream-mid); color: var(--text-mid); }
+
+/* No-pick note */
 .pick-empty {
   background: #fff;
   border: 0.5px dashed var(--border);
@@ -1055,34 +1067,8 @@
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  font-style: italic;
+  margin-top: 1px;
 }
-
-/* Win/Loss/Push outcome indicator on graded pick rows, copied from
-   results.css since results.css isn't loaded on this page. The graded
-   outcome sits in the accordion in place of Live Lines' "Current" event. */
-.rs-outcome {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.rs-outcome-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.rs-outcome-label {
-  font-size: 12px;
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.05em;
-}
-.rs-outcome--win  .rs-outcome-dot { background: var(--sage); }
-.rs-outcome--win  .rs-outcome-label { color: var(--sage); }
-.rs-outcome--loss .rs-outcome-dot { background: var(--rust); }
-.rs-outcome--loss .rs-outcome-label { color: var(--rust); }
-.rs-outcome--push .rs-outcome-dot { background: var(--text-light); }
-.rs-outcome--push .rs-outcome-label { color: var(--text-light); }
 
 
 /* ============================================================
@@ -1092,20 +1078,7 @@
 .numbers-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-/* Fallback-season notice — shown when current-season data is unavailable
-   and we fell back to the prior season. Stays understated so it informs
-   without alarming. */
-.numbers-fallback-note {
-  background: var(--cream-dark);
-  border: 0.5px solid var(--border);
-  border-radius: 4px;
-  padding: 10px 16px;
-  font-family: var(--sans);
-  font-size: 12px;
-  color: var(--text-mid);
-  font-style: italic;
+  gap: 16px;
 }
 .numbers-card {
   background: #fff;
@@ -1114,9 +1087,8 @@
   overflow: hidden;
 }
 .numbers-card-head {
-  padding: 14px 24px 12px;
-  background: var(--cream-dark);
-  border-bottom: 1px solid var(--border);
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--cream-mid);
 }
 .numbers-card-title {
   font-family: var(--serif);
@@ -1125,66 +1097,17 @@
   color: var(--ink);
   margin: 0;
 }
-
-/* Team header row — repeated on each stat card so the reader doesn't
-   have to scroll back to the hero to remember which side is which. */
-.numbers-teamhead {
-  display: grid;
-  grid-template-columns: 1fr 140px 1fr;
-  align-items: center;
-  padding: 10px 24px 8px;
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--text-mid);
-}
-.numbers-teamhead-away { text-align: left; }
-.numbers-teamhead-home { text-align: right; }
-.numbers-teamhead-spacer { /* center column placeholder, aligns with row label column */ }
-
-/* Sub-head used inside categories that split by direction
-   (currently only Defense — Advanced). */
-.numbers-subhead {
-  font-family: var(--sans);
-  font-style: italic;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-mid);
-  padding: 12px 0 6px;
-  border-top: 1px solid var(--cream-mid);
-}
-.numbers-rows > .numbers-subhead:first-child {
-  border-top: 0;
-  padding-top: 4px;
-}
-.numbers-subhead-hint {
-  font-style: normal;
-  font-weight: 400;
-  color: var(--text-light);
-  margin-left: 6px;
-}
-
-@media (max-width: 600px) {
-  .numbers-teamhead {
-    grid-template-columns: 1fr 1fr;
-    padding: 10px 18px 8px;
-  }
-  .numbers-teamhead-spacer { display: none; }
-  .numbers-teamhead-home { text-align: right; }
-}
 .numbers-rows {
-  padding: 4px 24px 10px;
+  padding: 8px 24px 16px;
 }
 
 /* Stat row layout: away value | track | label | track | home value */
 .numbers-row {
   display: grid;
-  grid-template-columns: 60px 1fr 140px 1fr 60px;
+  grid-template-columns: 60px 1fr 110px 1fr 60px;
   align-items: center;
   gap: 10px;
-  padding: 3px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--cream-mid);
 }
 .numbers-row:last-child { border-bottom: 0; }
@@ -1192,21 +1115,20 @@
 .numbers-row-val {
   font-family: var(--sans);
   font-style: normal;
-  font-weight: 600;
-  font-size: 14px;
-  color: #2A261D;          /* near-ink; warm undertone preserved */
-  letter-spacing: 0.2px;
-  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-mid);
+  letter-spacing: 0.3px;
 }
-.numbers-row-val.away { text-align: center; }
-.numbers-row-val.home { text-align: center; }
+.numbers-row-val.away { text-align: right; }
+.numbers-row-val.home { text-align: left; }
 .numbers-row-val.lead {
-  color: #A88420;          /* warm gold, slightly deeper than --gold */
+  color: var(--ink);
   font-weight: 700;
 }
 .numbers-row-val.missing {
   font-style: normal;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-light);
   font-weight: 400;
 }
@@ -1214,64 +1136,27 @@
 .numbers-row-label {
   font-family: var(--sans);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-mid);
   text-align: center;
   letter-spacing: 0.3px;
   line-height: 1.3;
-  white-space: nowrap;
-  position: relative;
-  /* Option Y: vertical gutters flanking the center label,
-     same color as the row dividers, separating label from bars. */
-  padding: 0 12px;
 }
-/* Blend row label (used by the moneyline card for the PressBox row) */
-.numbers-row-label.is-blend {
-  color: var(--gold);
-  font-weight: 700;
-}
-/* Pick row label — when a cell fired, the firing model's row gets
-   rust treatment to clearly distinguish it from the other models. */
-.numbers-row-label.is-pick {
-  color: var(--rust);
-  font-weight: 700;
-}
-.numbers-row-label::before,
-.numbers-row-label::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
-  height: 70%;
-  background: var(--cream-mid);
-}
-.numbers-row-label::before { left: 0; }
-.numbers-row-label::after  { right: 0; }
 
-/* Option X (opt-in): additional verticals on the OUTER edges of
-   each bar track, so each bar is fully framed in cream-mid lines.
-   Activate by adding class="numbers-frame-full" to .numbers-stack. */
-.numbers-frame-full .numbers-row-track::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
-  height: 140%;
-  background: var(--cream-mid);
-}
-.numbers-frame-full .numbers-row-track.away::before  { left: 0; }
-.numbers-frame-full .numbers-row-track.home::before  { right: 0; }
-
-/* Value-anchored bars.
-   Width tracks RAW position in the league range (bigger number =
-   longer bar, always). Color carries the quality signal across
-   5 tiers running from ink (poor) to gold (elite). Defense rows are
-   labeled "Opp ..." so the reader knows shorter = better there. */
+/* Value-anchored bars: bar fills FROM CENTER outward.
+   Position tracks where value sits in league distribution.
+   - center = league median
+   - left edge = league min (for "lower better" stats, the GOOD side)
+   - right edge = league max
+   Bars on the away side fill RIGHT-TO-LEFT (toward away side).
+   Bars on the home side fill LEFT-TO-RIGHT (toward home side).
+   Color is QUALITY: gold for above-median (good given lower_better),
+   neutral for below. The fill always tracks raw position in the
+   league range — but visual length = how far from median, so
+   "elite" stats look long, "league average" stats look short. */
 .numbers-row-track {
   position: relative;
-  height: 10px;
+  height: 8px;
   background: transparent;
 }
 .numbers-row-track.away { direction: rtl; }
@@ -1291,60 +1176,27 @@
 }
 .numbers-row-fill.elite      { background: var(--gold); }
 .numbers-row-fill.above-avg  { background: var(--gold-light); }
-.numbers-row-fill.mid        { background: var(--text-light); }
-.numbers-row-fill.below-avg  { background: var(--text-mid); }
-.numbers-row-fill.poor       { background: var(--ink); }
+.numbers-row-fill.below-avg  { background: var(--text-light); }
+.numbers-row-fill.poor       { background: var(--border); }
 .numbers-row-fill.missing    { background: transparent; }
 
 /* Mobile: stack vertically per stat */
 @media (max-width: 600px) {
-  /* Tight horizontal 5-column layout: value | bar | label | bar | value
-     Values sit at the far edges so they align with the team-name
-     headers at the top. Bars grow inward toward the centered label. */
   .numbers-row {
-    grid-template-columns: 44px 1fr 70px 1fr 44px;
-    grid-template-rows: auto;
-    gap: 6px;
-    padding: 5px 0;
-    align-items: center;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 6px 12px;
+    padding: 14px 0;
   }
   .numbers-row-label {
-    grid-column: 3;
+    grid-column: 1 / -1;
     grid-row: 1;
     text-align: center;
-    padding: 0;
-    font-size: 10px;
-    letter-spacing: 0.3px;
-    color: var(--text-mid);
-    line-height: 1.2;
   }
-  .numbers-row-label::before,
-  .numbers-row-label::after { display: none; }
-  .numbers-row-val.away {
-    grid-column: 1;
-    grid-row: 1;
-    text-align: left;
-    font-size: 12px;
-    padding: 0;
-  }
-  .numbers-row-val.home {
-    grid-column: 5;
-    grid-row: 1;
-    text-align: right;
-    font-size: 12px;
-    padding: 0;
-  }
-  .numbers-row-track.away {
-    grid-column: 2;
-    grid-row: 1;
-    direction: rtl;
-    height: 6px;
-  }
-  .numbers-row-track.home {
-    grid-column: 4;
-    grid-row: 1;
-    height: 6px;
-  }
+  .numbers-row-val.away { grid-column: 1; grid-row: 2; text-align: left; font-size: 16px; }
+  .numbers-row-val.home { grid-column: 2; grid-row: 2; text-align: right; font-size: 16px; }
+  .numbers-row-track.away { grid-column: 1; grid-row: 3; direction: rtl; }
+  .numbers-row-track.home { grid-column: 2; grid-row: 3; }
 }
 
 
@@ -1443,9 +1295,6 @@ footer {
  * MOBILE RESPONSIVE
  * ============================================================ */
 
-/* ============================================================
- * MOBILE — tablets and below
- * ============================================================ */
 @media (max-width: 760px) {
   .ctx-inner { padding: 20px 16px 24px; }
   .ctx-teams { margin-bottom: 20px; }
@@ -1466,61 +1315,24 @@ footer {
   .storyline-text { font-size: 14px; }
   .storyline-lede { font-size: 16px; }
 
-  /* ── Spread / Total read-cards ─────────────────────────────── */
-  .read-card { padding: 14px 12px 16px; }
-  .read-card-head {
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 12px;
-    padding-bottom: 6px;
+  .read-card { padding: 18px 16px 22px; }
+  .read-card-head { flex-direction: column; align-items: flex-start; gap: 6px; }
+
+  .read-ml-odds-row {
+    grid-template-columns: 70px 1fr 1fr;
+    gap: 10px;
   }
-  .read-card-label { font-size: 10px; letter-spacing: 1.8px; }
-  .read-card-vegas { font-size: 11px; }
+  .read-ml-name { font-size: 10px; }
+  .read-ml-odds-anchor,
+  .read-ml-odds-other { font-size: 13px; }
+  .read-ml-foot {
+    grid-template-columns: 70px 1fr 1fr;
+    gap: 10px;
+  }
 
-  /* Tighter strip-plot side padding so labels have more room */
-  .strip-plot { padding: 0 4px; }
+  .pick-card { padding: 18px 18px; }
+  .pick-line { font-size: 19px; }
 
-  /* Mobile labels are smaller so they fit. Container heights stay
-     the same since the 4-lane collision needs vertical space when
-     labels are crammed. */
-  .strip-label-name { font-size: 9px; letter-spacing: 0.3px; }
-  .strip-label-value { font-size: 10px; }
-
-  /* Tick labels along the bottom — shrink + lighter so they're not
-     screaming for attention next to the model labels. */
-  .strip-tick { font-size: 9px; }
-
-  /* Density curve — slightly shorter on mobile so it doesn't
-     overwhelm the rest of the row. */
-  .strip-hist-curve { height: 44px; }
-  .strip-vegas, .strip-zero { height: 48px; }
-
-  /* ── Moneyline + stat cards on mobile ────────────────────────── */
-  /* Rows themselves use the stacked 2x3 layout from the
-     @media (max-width: 600px) block above. Don't override
-     grid-template-columns here — that layout is intentional.
-     The rules here just polish card chrome. */
-  .numbers-card-head { padding: 12px 14px 10px; }
-  .numbers-card-title { font-size: 14px; }
-  .numbers-teamhead-away,
-  .numbers-teamhead-home { font-size: 11px; padding: 8px 14px; }
-  .numbers-rows { padding: 4px 14px 8px; }
-
-  /* Fallback-season note */
-  .numbers-fallback-note { font-size: 11px; padding: 8px 12px; }
-}
-
-/* ============================================================
- * MOBILE — small phones
- * ============================================================ */
-@media (max-width: 480px) {
-  .read-card { padding: 12px 8px 14px; }
-  .strip-plot { padding: 0 2px; }
-
-  /* Slightly smaller text + tighter padding on small phones,
-     but keep the 600px stacked grid layout. */
-  .numbers-card-head { padding: 10px 12px 8px; }
-  .numbers-rows { padding: 2px 10px 6px; }
+  .numbers-card-head { padding: 14px 18px 12px; }
+  .numbers-rows { padding: 6px 18px 12px; }
 }
