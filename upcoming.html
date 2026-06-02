@@ -413,6 +413,192 @@
     text-transform: uppercase;
     color: rgba(248,245,238,0.70);
   }
+  /* ─── LIVE HERO CARD ─────────────────────────────────────────
+     When a game is in 'live' status, the card becomes a hero-style
+     broadcast card. Big italic score numerals, rust glow border,
+     pulsing LIVE badge, period/clock, down/distance, possession,
+     and per-market pick performance chips. */
+
+  .gc.slate.live-hero {
+    grid-column: span 2;        /* take full row width when in a grid */
+    min-height: 200px;
+    border: 2px solid var(--rust);
+    box-shadow: 0 0 0 1px rgba(178,75,55,0.3), 0 0 24px rgba(178,75,55,0.18);
+    position: relative;
+    overflow: hidden;
+    animation: gc-live-card-glow 2.4s ease-in-out infinite;
+  }
+  @keyframes gc-live-card-glow {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(178,75,55,0.3), 0 0 24px rgba(178,75,55,0.18); }
+    50%      { box-shadow: 0 0 0 1px rgba(178,75,55,0.5), 0 0 36px rgba(178,75,55,0.35); }
+  }
+  .gc.slate.live-hero.red-zone {
+    border-color: #d44a2a;
+    box-shadow: 0 0 0 1px rgba(212,74,42,0.5), 0 0 32px rgba(212,74,42,0.35);
+    animation: gc-live-card-redzone 1.4s ease-in-out infinite;
+  }
+  @keyframes gc-live-card-redzone {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(212,74,42,0.5), 0 0 32px rgba(212,74,42,0.35); }
+    50%      { box-shadow: 0 0 0 1px rgba(212,74,42,0.7), 0 0 44px rgba(212,74,42,0.55); }
+  }
+
+  /* Rust tint overlay sits on top of team-color gradient but under content */
+  .gc-live-tint {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+      rgba(178,75,55,0.25) 0%,
+      rgba(178,75,55,0.15) 50%,
+      rgba(178,75,55,0.30) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .gc.slate.live-hero .gc-content {
+    position: relative;
+    z-index: 2;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* LIVE badge strip */
+  .gc-live-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .gc-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--rust);
+    color: var(--cream);
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .gc-live-badge .gc-live-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--cream);
+    border-radius: 50%;
+    margin-right: 0;
+    animation: gc-live-pulse 1.4s ease-in-out infinite;
+    box-shadow: 0 0 0 0 var(--cream);
+  }
+  .gc-live-clock {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: var(--cream);
+    text-transform: uppercase;
+  }
+
+  /* Score block — mirrors game page final-score style, scaled to card */
+  .gc-live-score {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 4px 0;
+  }
+  .gc-live-team { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .gc-live-team.away { align-items: flex-end; }
+  .gc-live-team.home { align-items: flex-start; flex-direction: column-reverse; }
+  .gc-live-team-name {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--cream);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gc-live-num {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--cream);
+  }
+  .gc-live-team.loser .gc-live-num { opacity: 0.55; }
+  .gc-live-team.loser .gc-live-team-name { opacity: 0.7; }
+  .gc-live-dash {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    color: var(--gold-light);
+    padding: 0 4px;
+  }
+
+  /* Possession indicator — small filled circle next to team with ball */
+  .gc-possession-ball {
+    display: inline-block;
+    color: #f8d96b;            /* football leather glint */
+    font-size: 14px;
+    line-height: 1;
+    text-shadow: 0 0 4px rgba(248,217,107,0.6);
+  }
+
+  /* Down + distance + yard line */
+  .gc-live-situation {
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--cream);
+    text-transform: uppercase;
+    padding: 4px 0;
+    border-top: 1px solid rgba(248,245,238,0.18);
+    border-bottom: 1px solid rgba(248,245,238,0.18);
+  }
+
+  /* Per-market pick performance chips below the score */
+  .gc-live-perfs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .gc-live-perf {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.25);
+    color: var(--cream);
+  }
+  .gc-live-perf-label { opacity: 0.6; }
+  .gc-live-perf.perf-win    { background: var(--gold); color: var(--ink); }
+  .gc-live-perf.perf-loss   { background: rgba(178,75,55,0.6); }
+  .gc-live-perf.perf-push   { background: rgba(248,245,238,0.18); }
+  .gc-live-perf.perf-pending { background: rgba(248,245,238,0.12); }
+
+  @media (max-width: 600px) {
+    .gc.slate.live-hero { grid-column: 1; min-height: 180px; }
+    .gc-live-num { font-size: 44px; }
+    .gc-live-dash { font-size: 22px; }
+    .gc-live-team-name { font-size: 12px; }
+  }
+
   .gc.slate .gc-status.live { color: var(--rust-light); }
   .gc.slate .gc-status.final { color: var(--gold-light); }
   .gc.slate .gc-status.postponed { color: rgba(248,245,238,0.55); }
@@ -1124,47 +1310,37 @@ function renderSlateCard(g) {
   const homeRank = powerRankings[g.home_team];
   const awayRank = powerRankings[g.away_team];
 
-  // status drives the card's overall behavior. Default to 'scheduled'
-  // for older API responses that don't include the field yet.
   const status = g.status || (g.has_score ? 'final' : 'scheduled');
   const slots = (pick && pick.slots) || {};
-
-  // ── Status strip (top of card) ─────────────────────────────────
-  let statusHTML = '';
-  const timeText = g.time && g.time !== 'TBD' ? g.time : 'Kickoff TBD';
   const awayPts = g.away_points;
   const homePts = g.home_points;
   const hasScores = (awayPts !== null && awayPts !== undefined &&
                      homePts !== null && homePts !== undefined);
 
+  // ── LIVE state: hero card with broadcast data ──────────────────
+  // Layout differs from scheduled/final to communicate "this is
+  // happening RIGHT NOW". Score becomes the headline, LIVE indicator
+  // is prominent, period/clock/down/possession render below.
+  if (status === 'live') {
+    return renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRank, awayRank);
+  }
+
+  // ── Status strip for non-live states ──────────────────────────
+  let statusHTML = '';
+  const timeText = g.time && g.time !== 'TBD' ? g.time : 'Kickoff TBD';
   if (status === 'final') {
-    // Played — show final score
     const awayShort = g.away_team.substring(0,4).toUpperCase();
     const homeShort = g.home_team.substring(0,4).toUpperCase();
     statusHTML = `<span class="gc-status final">Final · ${awayShort} ${awayPts} ${homeShort} ${homePts}</span>`;
-  } else if (status === 'live') {
-    // Live — pulsing rust dot + score
-    if (hasScores) {
-      const awayShort = g.away_team.substring(0,4).toUpperCase();
-      const homeShort = g.home_team.substring(0,4).toUpperCase();
-      statusHTML = `<span class="gc-status live"><span class="gc-live-dot"></span>Live · ${awayShort} ${awayPts} ${homeShort} ${homePts}</span>`;
-    } else {
-      statusHTML = `<span class="gc-status live"><span class="gc-live-dot"></span>Live</span>`;
-    }
   } else if (status === 'postponed') {
     statusHTML = `<span class="gc-status postponed">Postponed</span>`;
   } else if (status === 'canceled') {
     statusHTML = `<span class="gc-status canceled">Canceled</span>`;
   } else {
-    // scheduled
     statusHTML = `<span class="gc-meta">${timeText}</span>`;
   }
 
-  // ── Pick slots row ─────────────────────────────────────────────
-  // Each slot renders independently. For live games, slot shows the
-  // pick's CURRENT performance state (winning/losing ATS, over hit, etc).
-  // For final games, slot shows W/L/P/V outcome. For scheduled games,
-  // slot shows the tier badge.
+  // ── Pick slots (no live perf, since live handled above) ──────
   const slot = (label, slotData, market) => {
     const tierFull = slotData && slotData.tier_full;
     const tierKey = ({
@@ -1174,7 +1350,6 @@ function renderSlateCard(g) {
       'lottery_shot': 'ls',
     })[tierFull];
 
-    // Final / void → outcome chip
     if (status === 'final' && slotData && slotData.result) {
       const r = slotData.result;
       const cls = ({win:'win', loss:'loss', push:'push', void:'void'})[r] || '';
@@ -1187,20 +1362,6 @@ function renderSlateCard(g) {
       `;
     }
 
-    // Live → performance state from current score (only if we have pick + scores)
-    if (status === 'live' && slotData && tierKey && hasScores) {
-      const perf = computeLivePerf(market, slotData, awayPts, homePts, g.home_team, g.away_team);
-      if (perf) {
-        return `
-          <div class="gc-pick-slot has-perf perf-${perf.cls}">
-            <span class="gc-pick-label">${label}</span>
-            <span class="gc-pick-perf">${perf.label}</span>
-          </div>
-        `;
-      }
-    }
-
-    // Default: tier badge if we have one, else empty placeholder
     if (tierKey) {
       return `
         <div class="gc-pick-slot has-tier">
@@ -1234,6 +1395,98 @@ function renderSlateCard(g) {
             ${slot('Total',  slots.total,  'total')}
             ${slot('ML',     slots.ml,     'ml')}
           </div>
+        </div>
+      </div>
+    </a>
+  `;
+}
+
+// ────── LIVE CARD (hero layout) ──────
+// Renders a card in live state. Big italic score numerals (mirrors
+// game page final-score block), pulsing LIVE indicator, period/clock,
+// down/distance, possession ball indicator, pick-performance overlay.
+function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRank, awayRank) {
+  const hasScores = (awayPts !== null && awayPts !== undefined &&
+                     homePts !== null && homePts !== undefined);
+
+  // Period/clock line
+  const period = g.current_period;
+  const clock = g.current_clock;
+  const down = g.current_down;
+  const distance = g.current_distance;
+  const yardLine = g.current_yard_line;
+  const possessionTeam = g.current_possession_team;
+  const isRedZone = g.is_red_zone;
+
+  // Loser dim — whichever team is trailing, dim their score slightly
+  const awayWinning = hasScores && awayPts > homePts;
+  const homeWinning = hasScores && homePts > awayPts;
+  const awayLoserCls = (homeWinning) ? ' loser' : '';
+  const homeLoserCls = (awayWinning) ? ' loser' : '';
+
+  // Period label
+  let periodLabel = '';
+  if (period) {
+    if (period <= 4) periodLabel = `Q${period}`;
+    else periodLabel = `OT${period - 4}`;
+  }
+
+  // Possession ball indicator — sits next to team name with the ball
+  const awayBall = (possessionTeam === g.away_team) ? '<span class="gc-possession-ball" title="Possession">●</span>' : '';
+  const homeBall = (possessionTeam === g.home_team) ? '<span class="gc-possession-ball" title="Possession">●</span>' : '';
+
+  // Down + distance line
+  let downDistance = '';
+  if (down && distance !== null && distance !== undefined) {
+    const ord = ({1:'1st', 2:'2nd', 3:'3rd', 4:'4th'})[down] || `${down}th`;
+    const distText = (distance === 0) ? 'goal' : distance;
+    downDistance = `${ord} & ${distText}`;
+    if (yardLine) downDistance += ` · ${yardLine}`;
+  } else if (yardLine) {
+    downDistance = yardLine;
+  }
+
+  // Pick performance overlay (mini, below the score block)
+  const perfChip = (market, slotData) => {
+    if (!slotData || !hasScores) return '';
+    const perf = computeLivePerf(market, slotData, awayPts, homePts, g.home_team, g.away_team);
+    if (!perf) return '';
+    return `
+      <div class="gc-live-perf perf-${perf.cls}">
+        <span class="gc-live-perf-label">${market === 'ml' ? 'ML' : market.toUpperCase()}</span>
+        <span class="gc-live-perf-val">${perf.label}</span>
+      </div>
+    `;
+  };
+
+  return `
+    <a class="gc-link" href="/game.html?id=${g.game_id}">
+      <div class="gc slate status-live live-hero${isRedZone ? ' red-zone' : ''}">
+        ${bgHTML(awayColor, homeColor)}
+        <div class="gc-live-tint"></div>
+        <div class="gc-content">
+          <div class="gc-live-strip">
+            <span class="gc-live-badge"><span class="gc-live-dot"></span>LIVE</span>
+            ${periodLabel || clock ? `<span class="gc-live-clock">${periodLabel}${clock ? ' · ' + clock : ''}</span>` : ''}
+          </div>
+          <div class="gc-live-score">
+            <div class="gc-live-team away${awayLoserCls}">
+              <div class="gc-live-team-name">${g.away_team.substring(0,4).toUpperCase()}${awayBall}</div>
+              <div class="gc-live-num">${hasScores ? awayPts : '—'}</div>
+            </div>
+            <span class="gc-live-dash">—</span>
+            <div class="gc-live-team home${homeLoserCls}">
+              <div class="gc-live-num">${hasScores ? homePts : '—'}</div>
+              <div class="gc-live-team-name">${homeBall}${g.home_team.substring(0,4).toUpperCase()}</div>
+            </div>
+          </div>
+          ${downDistance ? `<div class="gc-live-situation">${downDistance}</div>` : ''}
+          ${(slots.spread || slots.total || slots.ml) ? `
+          <div class="gc-live-perfs">
+            ${perfChip('spread', slots.spread)}
+            ${perfChip('total',  slots.total)}
+            ${perfChip('ml',     slots.ml)}
+          </div>` : ''}
         </div>
       </div>
     </a>
