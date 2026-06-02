@@ -22,7 +22,6 @@
   nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
   .nav-logo img { height: 68px; width: auto; display: block; }
-  .footer-logo img { height: 56px; width: auto; display: block; opacity: 0.85; }
   .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0; padding: 0; }
   .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--ink); }
@@ -109,7 +108,7 @@
 <!-- NAVIGATION -->
 <nav>
   <div class="nav-inner">
-    <a href="/" class="nav-logo"><img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics"></a>
+    <a href="/" class="nav-logo"><img src="/PA_Logo.png" alt="PressBox Analytics"></a>
     <ul class="nav-links" id="navDesktop">
       <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
       <li><a href="/results.html">Results</a></li>
@@ -233,7 +232,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
       </div>
 
-      <!-- Played: show final score. Pre-game: show projected score. -->
+      <!-- Played: show final score. Pre-game: show projected score.
+           Live: show pgLive hero block (below) with broadcast data. -->
       <div id="pgScore" class="pg-score" style="display:none;">
         <div class="pg-score-team away">
           <div class="pg-score-num" id="pgAwayNum"></div>
@@ -242,6 +242,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="pg-score-team home">
           <div class="pg-score-num" id="pgHomeNum"></div>
         </div>
+      </div>
+
+      <!-- Live hero block — populated by renderLiveHero() in game.js
+           when game.status === 'in_progress'. ESPN-sourced broadcast
+           data: period, clock, down/distance, possession, last play. -->
+      <div id="pgLive" class="pg-live" style="display:none;">
+        <div class="pg-live-strip">
+          <span class="pg-live-badge"><span class="pg-live-dot"></span>LIVE</span>
+          <span class="pg-live-clock" id="pgLiveClock"></span>
+        </div>
+        <div class="pg-live-score">
+          <div class="pg-live-team away">
+            <div class="pg-live-team-name" id="pgLiveAwayName"></div>
+            <div class="pg-live-num" id="pgLiveAwayNum">—</div>
+          </div>
+          <span class="pg-live-dash">—</span>
+          <div class="pg-live-team home">
+            <div class="pg-live-num" id="pgLiveHomeNum">—</div>
+            <div class="pg-live-team-name" id="pgLiveHomeName"></div>
+          </div>
+        </div>
+        <div class="pg-live-situation" id="pgLiveSituation"></div>
+        <div class="pg-live-lastplay" id="pgLiveLastPlay"></div>
       </div>
 
       <div id="preGameContent">
@@ -280,20 +303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     </section>
 
-    <!-- ZONE 3: THE PICKS (active pick or no-pick note) — comes BEFORE the chart so it leads the page after the storyline -->
-    <section class="game-section" id="pickSection">
-      <header class="game-section-head">
-        <div>
-          <div class="game-section-eyebrow">— THE PICK</div>
-          <h2 class="game-section-title">Where we <em>actually bet</em>.</h2>
-        </div>
-      </header>
-      <div class="pick-stack" id="pickStack">
-        <!-- Picks rendered by JS, Live Lines accordion pattern -->
-      </div>
-    </section>
-
-    <!-- ZONE 4: THE READ (model charts justifying the pick) -->
+    <!-- ZONE 3: THE READ (five-model projections) -->
     <section class="game-section" id="readSection">
       <header class="game-section-head">
         <div>
@@ -304,6 +314,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       </header>
       <div class="read-stack" id="readStack">
         <!-- Three chart cards rendered by JS: spread, total, moneyline -->
+      </div>
+    </section>
+
+    <!-- ZONE 4: THE PICK (active pick or no-pick note) -->
+    <section class="game-section" id="pickSection">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">— THE PICK</div>
+          <h2 class="game-section-title">Where we <em>actually bet</em>.</h2>
+        </div>
+      </header>
+      <div class="pick-stack" id="pickStack">
+        <!-- Picks rendered by JS, Live Lines accordion pattern -->
       </div>
     </section>
 
@@ -341,7 +364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
-    <div class="footer-logo"><img src="/pressbox-w2a-ink-cropped.png" alt="PressBox Analytics"></div>
+    <div class="footer-logo"><img src="/PA_Logo.png" alt="PressBox Analytics"></div>
     <div class="footer-meta-links">
       <a href="/about.html">About</a>
       <a href="/how-it-works.html">How It Works</a>
