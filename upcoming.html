@@ -1384,6 +1384,7 @@ function renderSlateCard(g) {
         <div class="gc-content">
           <div class="gc-strip">
             ${statusHTML}
+            ${(pick && pick.pending_data) ? '<span class="gc-meta" style="color:#c9a227;font-style:italic;">Pending 2026 data</span>' : ''}
           </div>
           <div class="gc-teams">
             ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
