@@ -249,6 +249,11 @@
     if (g.neutral_site) {
       metaParts.push(`<div class="ctx-meta-item">Neutral Site</div>`);
     }
+    // Disclaimer: this game's model inputs are released ahead of full
+    // 2026 data being loaded. Shown until the data backs them.
+    if (data.pending_data) {
+      metaParts.push(`<div class="ctx-meta-item" style="color:#c9a227;font-style:italic;">Pending 2026 data</div>`);
+    }
     els.meta.innerHTML = metaParts.join('<span class="ctx-meta-dot"></span>');
   }
 
