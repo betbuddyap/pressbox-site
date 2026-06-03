@@ -528,6 +528,7 @@
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
             <div class="ll-row-pick">${pickLine}</div>
+            ${p.pending_data ? '<div class="ll-row-pending" style="color:#c9a227;font-style:italic;font-size:0.78em;margin-top:2px;">Pending 2026 data</div>' : ''}
           </div>
           <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
