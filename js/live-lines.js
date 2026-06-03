@@ -464,15 +464,21 @@
     const byDay = new Map(); // dateKey → { dayLabel, byTime: Map<timeKey, picks[]> }
     for (const p of picks) {
       const k = parseKickoff(p.kickoff);
-      if (!k) continue;
-      if (!byDay.has(k.dateKey)) {
-        byDay.set(k.dateKey, { dayLabel: k.dayLabel, kickoff: p.kickoff, byTime: new Map() });
+      // Games without a confirmed kickoff (TBD / placeholder time) must
+      // still render — bucket them under "Kickoff TBD" instead of dropping.
+      const kk = k || { dateKey: 'tbd', dayLabel: 'Date TBD',
+                        timeKey: 'tbd', timeLabel: 'Kickoff TBD' };
+      if (!byDay.has(kk.dateKey)) {
+        // TBD bucket sorts last via a high sentinel kickoff.
+        byDay.set(kk.dateKey, { dayLabel: kk.dayLabel,
+                                kickoff: k ? p.kickoff : '\uffff',
+                                byTime: new Map() });
       }
-      const day = byDay.get(k.dateKey);
-      if (!day.byTime.has(k.timeKey)) {
-        day.byTime.set(k.timeKey, { timeLabel: k.timeLabel, picks: [] });
+      const day = byDay.get(kk.dateKey);
+      if (!day.byTime.has(kk.timeKey)) {
+        day.byTime.set(kk.timeKey, { timeLabel: kk.timeLabel, picks: [] });
       }
-      day.byTime.get(k.timeKey).picks.push(p);
+      day.byTime.get(kk.timeKey).picks.push(p);
     }
     // Convert to arrays, sort
     const days = [];
