@@ -834,7 +834,21 @@
     .section-meta { font-size: 10px; }
   }
 
-  </style>
+  
+  /* ── Auth paywall: blur the slate preview so picks are NOT readable ── */
+  .up-paywall-preview {
+    position: relative;
+    max-height: 300px;
+    overflow: hidden;
+    filter: blur(8px);
+    opacity: 0.55;
+    pointer-events: none;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 60%);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 60%);
+  }
+
+</style>
 </head>
 <body>
 
@@ -863,6 +877,7 @@
       <li><a href="/upcoming.html" class="active">Upcoming</a></li>
       <li><a href="/how-it-works.html" class="">How It Works</a></li>
       <li><a href="/about.html" class="">About</a></li>
+      <li><a href="/login.html" id="navAuth" style="opacity:0.7;">Sign in</a></li>
     </ul>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -877,6 +892,7 @@
   <a href="/upcoming.html">Upcoming</a>
   <a href="/how-it-works.html">How It Works</a>
   <a href="/about.html">About</a>
+  <a href="/login.html" id="navAuthMobile" style="opacity:0.7;">Sign in</a>
 </div>
 <script>
 function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
@@ -1120,7 +1136,7 @@ function renderPaywall() {
   content.innerHTML = `
     <div class="ll-container">
       ${PAYWALL_GATE_HEADER}
-      <div class="ll-paywall-blur">
+      <div class="up-paywall-preview">
         ${PAYWALL_LEGEND}
         <div class="section">
           <div class="section-head">
@@ -1131,7 +1147,6 @@ function renderPaywall() {
           </div>
           ${previewSlate}
         </div>
-        <div class="ll-paywall-fade"></div>
       </div>
       ${PAYWALL_GATE_CARD}
     </div>`;
@@ -1852,6 +1867,28 @@ function darken(hex, amt) {
   const db = Math.max(0, Math.round(b * (1 - amt)));
   return '#' + [dr, dg, db].map(x => x.toString(16).padStart(2, '0')).join('');
 }
+
+// Auth-aware nav: swap "Sign in" -> "Sign out" when a session exists (reuses sb).
+async function wireAuthNav() {
+  if (!sb) return;
+  let session = null;
+  try { const res = await sb.auth.getSession(); session = res?.data?.session || null; }
+  catch (e) { return; }
+  if (!session) return;  // signed out -> leave the "Sign in" links as-is
+  const handleSignOut = async (e) => {
+    e.preventDefault();
+    try { await sb.auth.signOut(); } catch (err) { console.error('signOut failed:', err); }
+    window.location.href = '/';
+  };
+  ['navAuth', 'navAuthMobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = 'Sign out';
+    el.href = '#';
+    el.addEventListener('click', handleSignOut);
+  });
+}
+wireAuthNav();
 
 init().catch(console.error);
 </script>
