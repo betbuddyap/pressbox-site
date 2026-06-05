@@ -28,7 +28,7 @@
   // Loaded from CDN script tag in live-lines.html. The anon key is
   // safe to expose — RLS protects data server-side.
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
-  const SUPABASE_ANON = 'REPLACE_ME_WITH_ANON_KEY';
+  const SUPABASE_ANON = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
   const sb = (typeof supabase !== 'undefined')
     ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
     : null;
