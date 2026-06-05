@@ -838,14 +838,14 @@
   /* ── Auth paywall: blur the slate preview so picks are NOT readable ── */
   .up-paywall-preview {
     position: relative;
-    max-height: 300px;
+    max-height: 460px;
     overflow: hidden;
-    filter: blur(8px);
-    opacity: 0.55;
+    filter: blur(6px);
+    opacity: 0.6;
     pointer-events: none;
     user-select: none;
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 60%);
-            mask-image: linear-gradient(to bottom, #000 0%, #000 18%, transparent 60%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 78%);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 78%);
   }
 
 </style>
@@ -1021,26 +1021,10 @@ async function resolveAuthMode() {
 }
 
 // ── Paywall ─────────────────────────────────────────────────────────
-// The GATE (header + pricing card + footer) matches Live Lines exactly.
-// The PREVIEW behind the blur is Upcoming's OWN slate, faded — rendered
-// through the real renderSlate() with stand-in games (anon can't fetch
-// real data), so it reads as "the Upcoming page, gated."
-
-const PAYWALL_GATE_HEADER = `
-  <header class="ll-paywall-header">
-    <div class="ll-paywall-eyebrow">— Live Picks</div>
-    <h1 class="ll-paywall-headline">
-      <span class="ll-paywall-headline-1">Every game. Every grade.</span>
-      <span class="ll-paywall-headline-2">Live.</span>
-    </h1>
-    <p class="ll-paywall-body">
-      The grade you see now is the bet you'd make now. Every FBS game with an open
-      line gets a tier — A+ down to No Edge — and a best book if there's edge to bet.
-      As the market moves, we re-grade every 30 minutes. <strong>The "Now" tier is
-      what matters for what you're about to bet.</strong> A full board every week,
-      across seven tiers.
-    </p>
-  </header>`;
+// The PREVIEW is Upcoming's OWN page — the Game-of-the-Week hero + slate —
+// faded down, with NO pick tags (no picks are seeded, no tier legend). The
+// page's own header sits above this already, so there's no Live Lines copy.
+// Only the pricing card is shared with Live Lines.
 
 const PAYWALL_GATE_CARD = `
   <div class="ll-paywall-card">
@@ -1083,42 +1067,45 @@ const PAYWALL_GATE_CARD = `
     </p>
   </div>`;
 
-const PAYWALL_LEGEND = `
-  <div class="section">
-    <div class="legend">
-      <div class="legend-item"><span class="legend-tag tier-ap">A+</span> <span class="legend-desc">Top conviction</span></div>
-      <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Strong edge</span></div>
-      <div class="legend-item"><span class="legend-tag tier-sm">Smart $</span> <span class="legend-desc">ML value</span></div>
-      <div class="legend-item"><span class="legend-tag tier-ls">Lottery</span> <span class="legend-desc">Long-shot ML</span></div>
-    </div>
-  </div>`;
+// Stand-in hero (Game of the Week). renderGotW has no pick tags by design.
+function buildPreviewHero() {
+  const g = {
+    game_id: 9000099,
+    away_team: 'Ohio State', home_team: 'Texas',
+    away_conference: 'Big Ten', home_conference: 'SEC',
+    conference_game: false,
+    time: '7:30 PM', date: 'Sat, Sep 5', raw_date: '2026-09-05T23:30:00+00:00',
+  };
+  teamColors['Ohio State'] = { primary: '#BB0000' };
+  teamColors['Texas']      = { primary: '#BF5700' };
+  powerRankings['Ohio State'] = 3; powerRankings['Texas'] = 1;
+  teamScores['Ohio State'] = 28.0; teamScores['Texas'] = 29.5;
+  return renderGotW(g);
+}
 
-// Render Upcoming's real slate with stand-in games for the faded teaser.
+// Stand-in slate. NO picks seeded → cards render with empty slots, no tier tags.
 function buildPreviewSlate() {
   const rows = [
-    // away, awayConf, home, homeConf, slots, awayColor, homeColor
-    ['Ohio State','Big Ten','Texas','SEC',            {spread:{tier_full:'A+'}},          '#BB0000','#BF5700'],
-    ['Alabama','SEC','Georgia','SEC',                 {spread:{tier_full:'A'}},           '#9E1B32','#BA0C2F'],
-    ['Oregon','Big Ten','Penn State','Big Ten',       {ml:{tier_full:'smart_money'}},     '#154733','#041E42'],
-    ['Notre Dame','FBS Independents','USC','Big Ten',  {total:{tier_full:'A'}},            '#0C2340','#990000'],
-    ['Clemson','ACC','LSU','SEC',                     {ml:{tier_full:'lottery_shot'}},    '#F56600','#461D7C'],
-    ['Ole Miss','SEC','Louisville','ACC',             {},                                 '#14213D','#AD0000'],
+    ['Alabama','SEC','Georgia','SEC','#9E1B32','#BA0C2F'],
+    ['Oregon','Big Ten','Penn State','Big Ten','#154733','#041E42'],
+    ['Notre Dame','FBS Independents','USC','Big Ten','#0C2340','#990000'],
+    ['Clemson','ACC','LSU','SEC','#F56600','#461D7C'],
+    ['Ole Miss','SEC','Louisville','ACC','#14213D','#AD0000'],
+    ['Michigan','Big Ten','Oklahoma','SEC','#00274C','#841617'],
   ];
   const preview = [];
   rows.forEach((r, idx) => {
-    const [away, awayConf, home, homeConf, slots, awayColor, homeColor] = r;
-    const gid = 9000000 + idx;  // synthetic, won't collide with real ids
+    const [away, awayConf, home, homeConf, awayColor, homeColor] = r;
+    const gid = 9000100 + idx;
     preview.push({
       game_id: gid, away_team: away, home_team: home,
       away_conference: awayConf, home_conference: homeConf,
       time: 'TBD', date: 'Sat, Sep 5', raw_date: '2026-09-05T16:00:00+00:00',
       status: 'scheduled', away_points: null, home_points: null,
     });
-    // Seed the globals the card renderer reads. Harmless on the gated
-    // path: init() returns right after renderPaywall(), nothing else runs.
-    picksByGameId[gid] = { slots };
     teamColors[away] = { primary: awayColor };
     teamColors[home] = { primary: homeColor };
+    // intentionally NOT seeding picksByGameId — keeps the preview tag-free
   });
   return renderSlate(preview);
 }
@@ -1129,15 +1116,23 @@ function renderPaywall() {
   const content = document.getElementById('content');
   if (!content) return;
 
-  let previewSlate = '';
-  try { previewSlate = buildPreviewSlate(); } catch (e) { console.warn('preview slate failed', e); }
+  let heroHTML = '', slateHTML = '';
+  try { heroHTML  = buildPreviewHero();  } catch (e) { console.warn('preview hero failed', e); }
+  try { slateHTML = buildPreviewSlate(); } catch (e) { console.warn('preview slate failed', e); }
 
   content.style.display = 'block';
   content.innerHTML = `
     <div class="ll-container">
-      ${PAYWALL_GATE_HEADER}
       <div class="up-paywall-preview">
-        ${PAYWALL_LEGEND}
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <div class="section-eyebrow">Featured</div>
+              <h2 class="section-title">PressBox Game <em>of the Week</em></h2>
+            </div>
+          </div>
+          ${heroHTML}
+        </div>
         <div class="section">
           <div class="section-head">
             <div>
@@ -1145,7 +1140,7 @@ function renderPaywall() {
               <h2 class="section-title">Every <em>Matchup</em></h2>
             </div>
           </div>
-          ${previewSlate}
+          ${slateHTML}
         </div>
       </div>
       ${PAYWALL_GATE_CARD}
