@@ -1004,8 +1004,13 @@ async function resolveAuthMode() {
   } catch (e) { return 'anon'; }
 }
 
-// Same paywall as Live Lines (ll-paywall-* classes from live-lines.css).
-const PAYWALL_HTML = `
+// ── Paywall ─────────────────────────────────────────────────────────
+// The GATE (header + pricing card + footer) matches Live Lines exactly.
+// The PREVIEW behind the blur is Upcoming's OWN slate, faded — rendered
+// through the real renderSlate() with stand-in games (anon can't fetch
+// real data), so it reads as "the Upcoming page, gated."
+
+const PAYWALL_GATE_HEADER = `
   <header class="ll-paywall-header">
     <div class="ll-paywall-eyebrow">— Live Picks</div>
     <h1 class="ll-paywall-headline">
@@ -1019,35 +1024,9 @@ const PAYWALL_HTML = `
       what matters for what you're about to bet.</strong> A full board every week,
       across seven tiers.
     </p>
-  </header>
+  </header>`;
 
-  <div class="ll-filters" aria-hidden="true" style="pointer-events:none;">
-    <span class="ll-filter-label">Pick Type</span>
-    <button class="ll-filter-pill" aria-pressed="true">All</button>
-    <button class="ll-filter-pill" aria-pressed="false">Spread</button>
-    <button class="ll-filter-pill" aria-pressed="false">Total</button>
-    <button class="ll-filter-pill" aria-pressed="false">ML</button>
-    <button class="ll-filter-pill" aria-pressed="false">A+ only</button>
-  </div>
-
-  <div class="ll-paywall-blur">
-    <article class="ll-row"><div class="ll-row-header">
-      <span class="ll-badge ll-badge--aplus">A+</span>
-      <div class="ll-row-content">
-        <div class="ll-row-matchup">Sample Matchup A</div>
-        <div class="ll-row-pick">Team +7 · FanDuel</div>
-      </div>
-    </div></article>
-    <article class="ll-row"><div class="ll-row-header">
-      <span class="ll-badge ll-badge--a">A</span>
-      <div class="ll-row-content">
-        <div class="ll-row-matchup">Sample Matchup B</div>
-        <div class="ll-row-pick">Team -3.5 · DraftKings</div>
-      </div>
-    </div></article>
-    <div class="ll-paywall-fade"></div>
-  </div>
-
+const PAYWALL_GATE_CARD = `
   <div class="ll-paywall-card">
     <h2 class="ll-paywall-card-headline">
       See every pick.<br>Graded live, all week.
@@ -1055,32 +1034,27 @@ const PAYWALL_HTML = `
     <p class="ll-paywall-card-subhead">
       Release pricing through Aug 22. Locked for as long as you're subscribed. Same access on every plan.
     </p>
-
     <div class="ll-paywall-plans">
       <div class="ll-paywall-plan">
         <div class="ll-paywall-plan-name">Weekly</div>
         <div class="ll-paywall-plan-price">
-          $5.99/wk<br>
-          <span class="ll-paywall-plan-release">release $3.99</span>
+          $5.99/wk<br><span class="ll-paywall-plan-release">release $3.99</span>
         </div>
       </div>
       <div class="ll-paywall-plan ll-paywall-plan--featured">
         <div class="ll-paywall-plan-badge">Most Picked</div>
         <div class="ll-paywall-plan-name">Monthly</div>
         <div class="ll-paywall-plan-price">
-          $18.99/mo<br>
-          <span class="ll-paywall-plan-release">release $11.99</span>
+          $18.99/mo<br><span class="ll-paywall-plan-release">release $11.99</span>
         </div>
       </div>
       <div class="ll-paywall-plan">
         <div class="ll-paywall-plan-name">Season Pass</div>
         <div class="ll-paywall-plan-price">
-          $49.99<br>
-          <span class="ll-paywall-plan-release">release $34.99</span>
+          $49.99<br><span class="ll-paywall-plan-release">release $34.99</span>
         </div>
       </div>
     </div>
-
     <a class="ll-paywall-cta" href="/subscribe.html">Get the picks →</a>
     <div class="ll-paywall-footer">Cancel anytime. No upsells. Same access on every plan.</div>
   </div>
@@ -1091,16 +1065,76 @@ const PAYWALL_HTML = `
       Every FBS game with an open line, graded across all seven tiers and
       re-graded every 30 minutes against the current best market line.
     </p>
-  </div>
-`;
+  </div>`;
+
+const PAYWALL_LEGEND = `
+  <div class="section">
+    <div class="legend">
+      <div class="legend-item"><span class="legend-tag tier-ap">A+</span> <span class="legend-desc">Top conviction</span></div>
+      <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Strong edge</span></div>
+      <div class="legend-item"><span class="legend-tag tier-sm">Smart $</span> <span class="legend-desc">ML value</span></div>
+      <div class="legend-item"><span class="legend-tag tier-ls">Lottery</span> <span class="legend-desc">Long-shot ML</span></div>
+    </div>
+  </div>`;
+
+// Render Upcoming's real slate with stand-in games for the faded teaser.
+function buildPreviewSlate() {
+  const rows = [
+    // away, awayConf, home, homeConf, slots, awayColor, homeColor
+    ['Ohio State','Big Ten','Texas','SEC',            {spread:{tier_full:'A+'}},          '#BB0000','#BF5700'],
+    ['Alabama','SEC','Georgia','SEC',                 {spread:{tier_full:'A'}},           '#9E1B32','#BA0C2F'],
+    ['Oregon','Big Ten','Penn State','Big Ten',       {ml:{tier_full:'smart_money'}},     '#154733','#041E42'],
+    ['Notre Dame','FBS Independents','USC','Big Ten',  {total:{tier_full:'A'}},            '#0C2340','#990000'],
+    ['Clemson','ACC','LSU','SEC',                     {ml:{tier_full:'lottery_shot'}},    '#F56600','#461D7C'],
+    ['Ole Miss','SEC','Louisville','ACC',             {},                                 '#14213D','#AD0000'],
+  ];
+  const preview = [];
+  rows.forEach((r, idx) => {
+    const [away, awayConf, home, homeConf, slots, awayColor, homeColor] = r;
+    const gid = 9000000 + idx;  // synthetic, won't collide with real ids
+    preview.push({
+      game_id: gid, away_team: away, home_team: home,
+      away_conference: awayConf, home_conference: homeConf,
+      time: 'TBD', date: 'Sat, Sep 5', raw_date: '2026-09-05T16:00:00+00:00',
+      status: 'scheduled', away_points: null, home_points: null,
+    });
+    // Seed the globals the card renderer reads. Harmless on the gated
+    // path: init() returns right after renderPaywall(), nothing else runs.
+    picksByGameId[gid] = { slots };
+    teamColors[away] = { primary: awayColor };
+    teamColors[home] = { primary: homeColor };
+  });
+  return renderSlate(preview);
+}
 
 function renderPaywall() {
   const loading = document.getElementById('loadingState');
   if (loading) loading.style.display = 'none';
   const content = document.getElementById('content');
   if (!content) return;
+
+  let previewSlate = '';
+  try { previewSlate = buildPreviewSlate(); } catch (e) { console.warn('preview slate failed', e); }
+
   content.style.display = 'block';
-  content.innerHTML = `<div class="ll-container">${PAYWALL_HTML}</div>`;
+  content.innerHTML = `
+    <div class="ll-container">
+      ${PAYWALL_GATE_HEADER}
+      <div class="ll-paywall-blur">
+        ${PAYWALL_LEGEND}
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <div class="section-eyebrow">The Slate</div>
+              <h2 class="section-title">Every <em>Matchup</em></h2>
+            </div>
+          </div>
+          ${previewSlate}
+        </div>
+        <div class="ll-paywall-fade"></div>
+      </div>
+      ${PAYWALL_GATE_CARD}
+    </div>`;
 }
 
 
