@@ -36,6 +36,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Shared styles so the auth paywall matches Live Lines exactly -->
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/components/live-lines.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: #F8F5EE; min-height: 100vh; }
@@ -955,9 +959,150 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     </div>
 </footer>
 
+<!-- Supabase JS client (loaded BEFORE the page script, which uses it for the auth gate) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const API = 'https://betbuddy-backend.onrender.com';
 const SEASON = 2026;
+
+// ── Supabase auth client — SAME gate as Live Lines ──────────────────
+// Publishable key is public by design (RLS protects data server-side).
+const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
+const sb = (typeof supabase !== 'undefined')
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+  : null;
+
+let authMode = null;  // 'paid' | 'anon' | 'auth-no-sub'
+
+class PaywallError extends Error {
+  constructor(msg) { super(msg); this.name = 'PaywallError'; }
+}
+
+async function getAccessToken() {
+  if (!sb) return null;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    return session?.access_token || null;
+  } catch (e) { return null; }
+}
+
+// Three modes, identical to Live Lines:
+//   'paid'  — signed in + active sub. Sees the slate.
+//   'anon'  — not signed in. Sees the paywall.
+//   'auth-no-sub' — signed in, no active sub (resolved when a gated
+//                   endpoint returns 402). Sees the paywall.
+// ?auth=anon forces the paywall for testing.
+async function resolveAuthMode() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('auth') === 'anon') return 'anon';
+  if (!sb) return 'anon';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return 'anon';
+    return 'paid';
+  } catch (e) { return 'anon'; }
+}
+
+// Same paywall as Live Lines (ll-paywall-* classes from live-lines.css).
+const PAYWALL_HTML = `
+  <header class="ll-paywall-header">
+    <div class="ll-paywall-eyebrow">— Live Picks</div>
+    <h1 class="ll-paywall-headline">
+      <span class="ll-paywall-headline-1">Every game. Every grade.</span>
+      <span class="ll-paywall-headline-2">Live.</span>
+    </h1>
+    <p class="ll-paywall-body">
+      The grade you see now is the bet you'd make now. Every FBS game with an open
+      line gets a tier — A+ down to No Edge — and a best book if there's edge to bet.
+      As the market moves, we re-grade every 30 minutes. <strong>The "Now" tier is
+      what matters for what you're about to bet.</strong> A full board every week,
+      across seven tiers.
+    </p>
+  </header>
+
+  <div class="ll-filters" aria-hidden="true" style="pointer-events:none;">
+    <span class="ll-filter-label">Pick Type</span>
+    <button class="ll-filter-pill" aria-pressed="true">All</button>
+    <button class="ll-filter-pill" aria-pressed="false">Spread</button>
+    <button class="ll-filter-pill" aria-pressed="false">Total</button>
+    <button class="ll-filter-pill" aria-pressed="false">ML</button>
+    <button class="ll-filter-pill" aria-pressed="false">A+ only</button>
+  </div>
+
+  <div class="ll-paywall-blur">
+    <article class="ll-row"><div class="ll-row-header">
+      <span class="ll-badge ll-badge--aplus">A+</span>
+      <div class="ll-row-content">
+        <div class="ll-row-matchup">Sample Matchup A</div>
+        <div class="ll-row-pick">Team +7 · FanDuel</div>
+      </div>
+    </div></article>
+    <article class="ll-row"><div class="ll-row-header">
+      <span class="ll-badge ll-badge--a">A</span>
+      <div class="ll-row-content">
+        <div class="ll-row-matchup">Sample Matchup B</div>
+        <div class="ll-row-pick">Team -3.5 · DraftKings</div>
+      </div>
+    </div></article>
+    <div class="ll-paywall-fade"></div>
+  </div>
+
+  <div class="ll-paywall-card">
+    <h2 class="ll-paywall-card-headline">
+      See every pick.<br>Graded live, all week.
+    </h2>
+    <p class="ll-paywall-card-subhead">
+      Release pricing through Aug 22. Locked for as long as you're subscribed. Same access on every plan.
+    </p>
+
+    <div class="ll-paywall-plans">
+      <div class="ll-paywall-plan">
+        <div class="ll-paywall-plan-name">Weekly</div>
+        <div class="ll-paywall-plan-price">
+          $5.99/wk<br>
+          <span class="ll-paywall-plan-release">release $3.99</span>
+        </div>
+      </div>
+      <div class="ll-paywall-plan ll-paywall-plan--featured">
+        <div class="ll-paywall-plan-badge">Most Picked</div>
+        <div class="ll-paywall-plan-name">Monthly</div>
+        <div class="ll-paywall-plan-price">
+          $18.99/mo<br>
+          <span class="ll-paywall-plan-release">release $11.99</span>
+        </div>
+      </div>
+      <div class="ll-paywall-plan">
+        <div class="ll-paywall-plan-name">Season Pass</div>
+        <div class="ll-paywall-plan-price">
+          $49.99<br>
+          <span class="ll-paywall-plan-release">release $34.99</span>
+        </div>
+      </div>
+    </div>
+
+    <a class="ll-paywall-cta" href="/subscribe.html">Get the picks →</a>
+    <div class="ll-paywall-footer">Cancel anytime. No upsells. Same access on every plan.</div>
+  </div>
+
+  <div class="ll-paywall-after">
+    <div class="ll-paywall-after-eyebrow">What's behind the gate</div>
+    <p class="ll-paywall-after-body">
+      Every FBS game with an open line, graded across all seven tiers and
+      re-graded every 30 minutes against the current best market line.
+    </p>
+  </div>
+`;
+
+function renderPaywall() {
+  const loading = document.getElementById('loadingState');
+  if (loading) loading.style.display = 'none';
+  const content = document.getElementById('content');
+  if (!content) return;
+  content.style.display = 'block';
+  content.innerHTML = `<div class="ll-container">${PAYWALL_HTML}</div>`;
+}
+
 
 const CONF_SHORT = {
   'ACC': 'ACC', 'Big 12': 'B12', 'Big Ten': 'B1G', 'SEC': 'SEC',
@@ -992,13 +1137,38 @@ let currentWeek = 1;
 let firstAvailableWeek = 1;
 
 async function init() {
+  // ── Auth gate — mirrors Live Lines exactly ──────────────────────
+  authMode = await resolveAuthMode();
+  if (authMode === 'anon') { renderPaywall(); return; }
+
+  const token = await getAccessToken();
+  const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
+
   const picksUrl = `${API}/picks/upcoming?season=${SEASON}${SIMULATE_PICKS ? '&simulate=true' : ''}`;
-  const [rankRes, colorsRes, gamesRes, picksRes] = await Promise.all([
+
+  // Public context endpoints — no gate; keep the graceful catch.
+  const [rankRes, colorsRes] = await Promise.all([
     fetch(`${API}/rankings/power?season=2025&limit=200`).then(r => r.json()).catch(() => null),
-    fetch(`${API}/teams/colors`).then(r => r.json()).catch(() => null),
-    fetch(`${API}/games/upcoming?season=${SEASON}`).then(r => r.json()).catch(() => null),
-    fetch(picksUrl).then(r => r.json()).catch(() => null)
+    fetch(`${API}/teams/colors`).then(r => r.json()).catch(() => null)
   ]);
+
+  // Gated endpoints — send the bearer token. 402/401 means signed in
+  // without an active sub (or no session) → downgrade to the paywall,
+  // exactly like Live Lines.
+  let gamesRes = null, picksRes = null;
+  try {
+    const [gRes, pRes] = await Promise.all([
+      fetch(`${API}/games/upcoming?season=${SEASON}`, { credentials: 'omit', headers: authHeaders }),
+      fetch(picksUrl, { credentials: 'omit', headers: authHeaders })
+    ]);
+    if (gRes.status === 402 || pRes.status === 402) throw new PaywallError('subscription required');
+    if (gRes.status === 401 || pRes.status === 401) throw new PaywallError('not authenticated');
+    gamesRes = await gRes.json().catch(() => null);
+    picksRes = await pRes.json().catch(() => null);
+  } catch (e) {
+    if (e instanceof PaywallError) { authMode = 'auth-no-sub'; renderPaywall(); return; }
+    console.error('upcoming feed failed', e);
+  }
 
   if (rankRes && rankRes.rankings) {
     rankRes.rankings.forEach(t => {
