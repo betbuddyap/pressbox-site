@@ -607,13 +607,22 @@
     const releasedDate = released?.at ? formatHistoryTime(released.at) : '';
 
     let eventsHtml = events.map(e => {
-      const isBookChange = e.is_book_change && !e.is_tier_change && !e.is_side_change;
-      const dot = isBookChange
-        ? `<span class="ll-event-dot" style="background:var(--text-mid);"></span>`
-        : `<span class="ll-event-dot"></span>`;
+      // Line moves get a directional arrow icon (sage = moved in your favor,
+      // rust = moved against you). Everything else keeps the timeline dot.
+      let marker;
+      if (e.is_line_change && e.line_direction === 'favorable') {
+        marker = `<span class="ll-event-icon ll-event-icon--up" aria-label="line moved in your favor">↑</span>`;
+      } else if (e.is_line_change && e.line_direction === 'unfavorable') {
+        marker = `<span class="ll-event-icon ll-event-icon--down" aria-label="line moved against you">↓</span>`;
+      } else {
+        const isBookChange = e.is_book_change && !e.is_tier_change && !e.is_side_change;
+        marker = isBookChange
+          ? `<span class="ll-event-dot" style="background:var(--text-mid);"></span>`
+          : `<span class="ll-event-dot"></span>`;
+      }
       return `
         <div class="ll-event">
-          ${dot}
+          ${marker}
           <div class="ll-event-title">${esc(e.summary || 'Pick updated')}</div>
           <div class="ll-event-time">${esc(formatHistoryTime(e.observed_at))}</div>
         </div>
