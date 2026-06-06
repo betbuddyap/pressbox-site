@@ -819,6 +819,7 @@
         <p class="ll-paywall-card-subhead">
           Release pricing through Aug 22. Locked for as long as you're subscribed. Same access on every plan.
         </p>
+        <p class="ll-paywall-first-charge" style="font-style:italic;color:#B8922A;font-size:13px;margin:10px 0 0;">First charge anchored to Aug 23 — pay nothing until picks drop for Week 0.</p>
 
         <div class="ll-paywall-plans">
           <div class="ll-paywall-plan">
