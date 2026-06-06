@@ -194,6 +194,8 @@
   .gc-ribbon.tier-sm::after { background: linear-gradient(135deg, var(--sage) 50%, transparent 50%); }
   .gc-ribbon.tier-ls { background: var(--rust); color: #fff; }
   .gc-ribbon.tier-ls::after { background: linear-gradient(135deg, var(--rust) 50%, transparent 50%); }
+  .gc-ribbon.tier-gl { background: var(--sage-mid); color: var(--ink); }
+  .gc-ribbon.tier-gl::after { background: linear-gradient(135deg, var(--sage-mid) 50%, transparent 50%); }
   .gc-ribbon.featured { background: var(--gold); color: var(--ink); }
   .gc-ribbon.featured::after { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
   .gc-ribbon.gotw    { background: var(--gold); color: var(--ink); }
@@ -333,6 +335,7 @@
   .parlay-leg-tier.tier-a  { background: var(--gold-light); color: var(--ink); }
   .parlay-leg-tier.tier-sm { background: var(--sage); color: #fff; }
   .parlay-leg-tier.tier-ls { background: var(--rust); color: #fff; }
+  .parlay-leg-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
   .parlay-leg-pick {
     flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
@@ -391,6 +394,7 @@
   .gc.compact .gc-pill-tier.tier-a  { background: var(--gold-light); color: var(--ink); }
   .gc.compact .gc-pill-tier.tier-sm { background: var(--sage); color: #fff; }
   .gc.compact .gc-pill-tier.tier-ls { background: var(--rust); color: #fff; }
+  .gc.compact .gc-pill-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
 
   /* ── SLATE CARD — the primary card for the new Upcoming page ── */
   /* Roomy enough for live state to be added later. Team names + kickoff/status
@@ -722,6 +726,7 @@
   .gc.slate .gc-pick-tier.tier-a  { background: #C0C5CC; color: var(--ink); }
   .gc.slate .gc-pick-tier.tier-sm { background: var(--sage); color: #fff; }
   .gc.slate .gc-pick-tier.tier-ls { background: var(--rust); color: #fff; }
+  .gc.slate .gc-pick-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
 
   @media (max-width: 720px) {
     .gc.slate { min-height: 168px; }
@@ -755,6 +760,7 @@
   .legend-tag.tier-a  { background: var(--gold-light); color: var(--ink); }
   .legend-tag.tier-sm { background: var(--sage); color: #fff; }
   .legend-tag.tier-ls { background: var(--rust); color: #fff; }
+  .legend-tag.tier-gl { background: var(--sage-mid); color: var(--ink); }
   .legend-desc { color: var(--text-light); }
 
   /* ── EMPTY / LOADING ── */
@@ -939,6 +945,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="legend-item"><span class="legend-tag tier-ap">A+</span> <span class="legend-desc">Top conviction</span></div>
         <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Strong edge</span></div>
         <div class="legend-item"><span class="legend-tag tier-sm">Smart $</span> <span class="legend-desc">ML value</span></div>
+        <div class="legend-item"><span class="legend-tag tier-gl">GL</span> <span class="legend-desc">Goldilocks · just-right ML</span></div>
         <div class="legend-item"><span class="legend-tag tier-ls">Lottery</span> <span class="legend-desc">Long-shot ML</span></div>
       </div>
     </div>
@@ -1157,7 +1164,7 @@ const CONF_SHORT = {
 };
 
 const TIER_LABEL = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
-const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
+const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'Smart $', gl: 'GL', ls: 'Lottery' };
 
 // Preview flag — when true, /picks/upcoming synthesizes stand-in lines
 // for games with no real odds posted yet (pre-July preview). Toggle
@@ -1564,6 +1571,8 @@ function renderSlateCard(g) {
       'A+':           'ap',
       'A':            'a',
       'smart_money':  'sm',
+      'goldilocks':   'gl',
+      'lottery':      'ls',
       'lottery_shot': 'ls',
     })[tierFull];
 
