@@ -545,24 +545,27 @@
       navLink.textContent = email;
       navLink.href = '/live-lines.html';
 
-      // Check subscription state by calling the gated feed endpoint
+      // Check subscription state with the lightweight status endpoint
+      // (single DB read). The feed endpoint computes the whole board, which
+      // made this take ~15s to recognize an active sub on return from the
+      // billing portal.
       const token = session.access_token;
-      const res = await fetch(`${API_BASE}/canonical/live-lines/feed?season=2026`, {
+      const res = await fetch(`${API_BASE}/api/billing/subscription-status`, {
         headers: { 'Authorization': `Bearer ${token}` },
         credentials: 'omit',
       });
+      const data = await res.json().catch(() => ({ active: false }));
 
-      if (res.status === 200) {
+      if (data.active) {
         // Active subscriber — show "already subscribed" state
         document.getElementById('already-subscribed').classList.add('show');
         document.getElementById('plans').style.display = 'none';
         document.querySelector('.reassurance').style.display = 'none';
-      } else if (res.status === 402) {
+      } else {
         // Signed in but no active sub — show welcome-back banner + plans
         document.getElementById('auth-banner-email').textContent = email;
         document.getElementById('auth-banner').classList.add('show');
       }
-      // 401 or other: treat as anon, show default plans
     } catch (err) {
       console.error('init failed:', err);
       // Fall through to anon state
