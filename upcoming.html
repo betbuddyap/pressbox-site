@@ -977,6 +977,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
 <!-- Supabase JS client (loaded BEFORE the page script, which uses it for the auth gate) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-nav.js" defer></script>
 <script>
 const API = 'https://betbuddy-backend.onrender.com';
 const SEASON = 2026;
@@ -1862,28 +1863,6 @@ function darken(hex, amt) {
   const db = Math.max(0, Math.round(b * (1 - amt)));
   return '#' + [dr, dg, db].map(x => x.toString(16).padStart(2, '0')).join('');
 }
-
-// Auth-aware nav: swap "Sign in" -> "Sign out" when a session exists (reuses sb).
-async function wireAuthNav() {
-  if (!sb) return;
-  let session = null;
-  try { const res = await sb.auth.getSession(); session = res?.data?.session || null; }
-  catch (e) { return; }
-  if (!session) return;  // signed out -> leave the "Sign in" links as-is
-  const handleSignOut = async (e) => {
-    e.preventDefault();
-    try { await sb.auth.signOut(); } catch (err) { console.error('signOut failed:', err); }
-    window.location.href = '/';
-  };
-  ['navAuth', 'navAuthMobile'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = 'Sign out';
-    el.href = '#';
-    el.addEventListener('click', handleSignOut);
-  });
-}
-wireAuthNav();
 
 init().catch(console.error);
 </script>
