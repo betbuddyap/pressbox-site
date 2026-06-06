@@ -501,6 +501,7 @@
 
 <!-- Supabase JS client -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-nav.js" defer></script>
 <script>
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
   const SUPABASE_ANON = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
@@ -539,11 +540,6 @@
       }
 
       const email = session.user.email;
-
-      // Update nav: show email instead of "Sign in"
-      const navLink = document.getElementById('nav-signin');
-      navLink.textContent = email;
-      navLink.href = '/live-lines.html';
 
       // Check subscription state with the lightweight status endpoint
       // (single DB read). The feed endpoint computes the whole board, which
