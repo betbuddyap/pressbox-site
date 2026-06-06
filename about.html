@@ -340,8 +340,8 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     </div>
     <div class="founder-info">
       <div class="founder-name">Austin Park</div>
-      <div class="founder-title">Founder & CFO · PressBox Analytics</div>
-      <p class="founder-bio">Austin spent his career as a CFO — building financial models, translating complex data into clear decisions, and cutting through the noise that clouds most business judgment. He applied the same discipline to college football betting and built something that actually works.</p>
+      <div class="founder-title">Founder · PressBox Analytics</div>
+      <p class="founder-bio">Austin is a CFO and statistician by trade — building financial models, translating complex data into clear decisions, and cutting through the noise that clouds most business judgment. He brought the same discipline to college football betting and built something that holds up under audit.</p>
       <div class="founder-links">
         <a href="https://www.linkedin.com/in/austinpark161/" target="_blank" class="founder-link">LinkedIn ↗</a>
         <a href="mailto:austin@pressboxanalytics.com" class="founder-link">Email</a>
@@ -352,20 +352,22 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <!-- Why -->
   <div class="section">
     <div class="section-label">The origin</div>
-    <h2 class="section-title">I got tired of watching people lose money on <em>other people's opinions.</em></h2>
+    <h2 class="section-title">It started with one question: <em>what's the most consistent predictor of winners and spreads in college football?</em></h2>
     <div class="section-body">
-      <p>I've bet on college football. I've also lost money on it — early on, chasing gut feelings and half-built models that weren't ready. Being a CFO teaches you quickly that a bad model is worse than no model at all, because it gives you false confidence.</p>
-      <p>What I kept noticing around me was how many people were getting swept up in sports betting — and how consistently they were losing. Not because they weren't smart, but because they were making decisions based on instinct, narratives, and whoever they'd heard on a podcast that week. The sportsbook is very good at exploiting exactly that.</p>
-      <p><strong>So I started asking whether an edge could actually be quantified.</strong> Over the last few years I've spent a lot of time — and a little bit of money — building, breaking, and refining models to find out. Nothing would make me happier than to see that work provide real value to the people out there who love wagering on sports but have never had a serious, data-driven source of analysis to lean on.</p>
+      <p>I spent two years working through it. I bounced through every stat you can think of — efficiency, success rate, drive quality, third-down conversion, every flavor of pace and tempo. I landed somewhere I didn't expect: time of possession.</p>
+      <p>Not just time of possession itself — but how elastic each team's TOP is against different opponents. Some teams hold the ball no matter who they play. Some teams' possession gets pushed around. That elasticity, weighted by opponent strength, became the basis of what's now Pace+.</p>
+      <p>For a full year I bet a dollar on every spread, total, and moneyline I could get to. Real money, real markets, every game. Pace+ was strong. It was also incomplete — there were specific kinds of matchups where it had blind spots.</p>
+      <p>That's what made me build the rest of the system. The question wasn't whether Pace+ could replace the public models. It was whether putting five reads on every game — SP+, Elo, PPA, advanced efficiency, and Pace+ — could fill the holes Pace+ alone couldn't.</p>
+      <p>The answer turned out to be yes. But not in the way I expected.</p>
     </div>
   </div>
 
   <!-- The discipline -->
   <div class="section">
     <div class="section-label">The discipline</div>
-    <h2 class="section-title">The first version of this model looked <em>too good.</em></h2>
+    <h2 class="section-title">The first full backtest looked <em>too good.</em></h2>
     <div class="section-body">
-      <p>The A+ picks were hitting at 75%. The featured products were hitting in the 80s and 90s. The moneyline plays were near-perfect. Anyone who's built a model knows what that means: something is broken, and you find it before you ship.</p>
+      <p>The A+ picks hit 75%. The moneylines were near-perfect. The featured plays cleared 90%. I'm a statistician. I knew immediately the numbers were contaminated. Anyone whose backtest looks that good has a bug, not a thesis.</p>
       <p>What was broken was look-ahead bias. The system was using full-season ratings to "predict" games whose outcomes the ratings already knew. We rebuilt the rating pipeline so every Week N projection uses only data from Week N−1 and earlier. The numbers came in lower, and they were real.</p>
       <p>Then we caught another version of the same bug in different parts of the model. Rebuilt again. Numbers came in lower again.</p>
       <p>Then we caught data corruption in the rating refresh — duplicate rows polluting the inputs. Fixed it. Rebuilt the backtest a third time.</p>
@@ -428,10 +430,17 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <!-- What's coming -->
   <div class="section">
     <div class="section-label">What's next</div>
-    <h2 class="section-title">The 2026 season is coming.<br><em>Picks drop in time for Week 0.</em></h2>
+    <h2 class="section-title">PressBox on day one <em>isn't PressBox on day 365.</em></h2>
     <div class="section-body">
-      <p>PressBox is launching as a subscription product for the 2026 college football season. Members will get every pick across all seven tiers — the A+ Board, the A Board, Smart Money, Goldilocks, Lottery, plus the No Edge calls — released early in the week and re-graded every 30 minutes as the market moves.</p>
-      <p>Release pricing locks for the life of your subscription. Subscribe before Week 0 and you keep your rate — no hikes, no upgrade pressure, no upsells.</p>
+      <p>Live today: the Board, the History, the Breakdown, and the Upcoming slate with live scores. Picks flow through the system on a 30-minute regrade cycle. Every grade change is journaled. Every line move is on the record.</p>
+      <p><strong>What's coming after launch:</strong></p>
+      <ul style="margin:0 0 1.2em;padding-left:1.2em;line-height:1.6;">
+        <li>A bet allocator — sizing each play against your bankroll and the tier's historical hit rate</li>
+        <li>A parlay builder and grader — assemble multi-leg bets and see them graded in the same journal as everything else</li>
+        <li>A user picks ledger — log your own bets alongside ours, with running profit/loss</li>
+        <li>Other sports — NFL is the natural next step</li>
+      </ul>
+      <p>The 2026 college football season is the first season under the locked spec. Picks drop in time for Week 0 (Aug 29). Release pricing — $3.99/wk, $11.99/mo, $34.99 Season Pass — locks for the life of your subscription. Subscribe today and your first charge is anchored to Aug 23, when picks start to drop. Pay nothing until then.</p>
     </div>
   </div>
 
