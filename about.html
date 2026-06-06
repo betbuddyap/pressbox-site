@@ -464,32 +464,6 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
 <!-- Auth-aware nav: "Sign in" when signed out, "Sign out" when signed in -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-(function () {
-  if (typeof supabase === 'undefined') return;
-  const sb = supabase.createClient(
-    'https://brwalcuodwxsynrpiqjc.supabase.co',
-    'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE'
-  );
-  document.addEventListener('DOMContentLoaded', async () => {
-    let session = null;
-    try { const r = await sb.auth.getSession(); session = r?.data?.session || null; }
-    catch (e) { return; }
-    if (!session) return;  // signed out -> leave the "Sign in" links as-is
-    const handleSignOut = async (e) => {
-      e.preventDefault();
-      try { await sb.auth.signOut(); } catch (err) { console.error('signOut failed:', err); }
-      window.location.href = '/';
-    };
-    ['navAuth', 'navAuthMobile'].forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.textContent = 'Sign out';
-      el.href = '#';
-      el.addEventListener('click', handleSignOut);
-    });
-  });
-})();
-</script>
+<script src="/js/auth-nav.js" defer></script>
 </body>
 </html>
