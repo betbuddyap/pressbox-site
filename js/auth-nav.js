@@ -2,31 +2,32 @@
  * auth-nav.js — Shared auth-aware nav state
  * ============================================================
  *
- * Drop this on any page that has a nav. It will:
+ * Drop this on any page that has a nav. On page load it checks the
+ * Supabase session and updates the nav for signed-in vs signed-out.
  *
- *   1. Check Supabase session on page load.
- *   2. If signed in:
- *      - Swap any element with class .js-auth-signin (the "Sign in" link)
- *        for a "Sign out" link that calls supabase.signOut() on click.
- *      - Show any element with class .js-auth-when-signed-in.
- *      - Hide any element with class .js-auth-when-signed-out.
- *      - Set text of any .js-auth-email element to the user's email.
- *   3. If signed out:
- *      - Default state (Sign in link visible, signed-in elements hidden).
+ * SIGNED IN  → nav link becomes "Account" → /account.html
+ *              (sign-out lives on the /account page)
+ * SIGNED OUT → nav link is "Sign in" → /login.html
+ *
+ * It supports TWO ways of marking the nav link, so it works with every
+ * page on the site:
+ *
+ *   1. By id   — id="navAuth" (desktop), id="navAuthMobile" (mobile),
+ *                or id="nav-signin" (subscribe page).
+ *   2. By class — class="js-auth-signin" (legacy convention), plus the
+ *                helper classes below.
+ *
+ * Optional helper classes (still supported):
+ *   .js-auth-when-signed-in   → shown only when signed in
+ *   .js-auth-when-signed-out  → shown only when signed out
+ *   .js-auth-email            → filled with the user's email
  *
  * USAGE
  * -----
- * In <head> or before </body>:
  *   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
- *   <script src="/js/auth-nav.js"></script>
+ *   <script src="/js/auth-nav.js" defer></script>
  *
- * In your nav:
- *   <a href="/login.html" class="js-auth-signin">Sign in</a>
- *
- * The script will rewrite that link to "Sign out" when signed in.
- *
- * Requires window.supabase (loaded from CDN) and a global anon key.
- * The anon key is intentionally exposed — it's the public key.
+ * The anon key is intentionally exposed — it's the public publishable key.
  * ============================================================ */
 (function () {
   'use strict';
@@ -34,14 +35,25 @@
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
   const SUPABASE_ANON = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
 
-  // Guard: if Supabase SDK didn't load, do nothing (page stays in default
-  // anon-display state).
+  // Guard: if Supabase SDK didn't load, do nothing (page stays in its
+  // default signed-out display state).
   if (typeof supabase === 'undefined') {
     console.warn('auth-nav: supabase SDK not loaded');
     return;
   }
 
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // Nav links identified by id, used across the site's page navs.
+  const NAV_IDS = ['navAuth', 'navAuthMobile', 'nav-signin'];
+
+  function setLink(el, signedIn) {
+    if (!el) return;
+    el.textContent = signedIn ? 'Account' : 'Sign in';
+    el.setAttribute('href', signedIn ? '/account.html' : '/login.html');
+    el.style.opacity = '';          // clear any dimmed "Sign in" styling
+    if (el.dataset) delete el.dataset.action;  // no longer a sign-out link
+  }
 
   async function applyAuthState() {
     let session = null;
@@ -53,42 +65,28 @@
       return;
     }
 
-    if (session) {
-      // SIGNED IN STATE
+    const signedIn = !!session;
+
+    // (1) id-based nav links
+    NAV_IDS.forEach(id => setLink(document.getElementById(id), signedIn));
+
+    // (2) class-based links (legacy convention) — same Account behavior
+    document.querySelectorAll('.js-auth-signin').forEach(el => setLink(el, signedIn));
+
+    if (signedIn) {
       const email = session.user?.email || '';
-
-      // Swap Sign In links → Sign Out
-      document.querySelectorAll('.js-auth-signin').forEach(el => {
-        el.textContent = 'Sign out';
-        el.href = '#';
-        el.dataset.action = 'signout';
-      });
-
-      // Show signed-in-only elements
-      document.querySelectorAll('.js-auth-when-signed-in').forEach(el => {
-        el.style.display = '';
-      });
-
-      // Hide signed-out-only elements
-      document.querySelectorAll('.js-auth-when-signed-out').forEach(el => {
-        el.style.display = 'none';
-      });
-
-      // Fill in email text
-      document.querySelectorAll('.js-auth-email').forEach(el => {
-        el.textContent = email;
-      });
+      document.querySelectorAll('.js-auth-when-signed-in').forEach(el => { el.style.display = ''; });
+      document.querySelectorAll('.js-auth-when-signed-out').forEach(el => { el.style.display = 'none'; });
+      document.querySelectorAll('.js-auth-email').forEach(el => { el.textContent = email; });
     } else {
-      // SIGNED OUT STATE — defaults are correct, but explicitly hide
-      // any signed-in-only elements that may have been pre-rendered.
-      document.querySelectorAll('.js-auth-when-signed-in').forEach(el => {
-        el.style.display = 'none';
-      });
+      document.querySelectorAll('.js-auth-when-signed-in').forEach(el => { el.style.display = 'none'; });
+      document.querySelectorAll('.js-auth-when-signed-out').forEach(el => { el.style.display = ''; });
     }
   }
 
-  // Sign-out click handler. Delegated to document so it works on
-  // re-rendered elements too.
+  // Legacy sign-out handler: still honored for any element that opts in
+  // with data-action="signout" (the nav no longer uses this, but keeping
+  // it means nothing that relied on it breaks).
   document.addEventListener('click', async (e) => {
     const target = e.target.closest('[data-action="signout"]');
     if (!target) return;
@@ -98,11 +96,9 @@
     } catch (err) {
       console.error('signOut failed:', err);
     }
-    // Redirect to home regardless of signOut success
     window.location.href = '/';
   });
 
-  // Initial apply on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyAuthState);
   } else {
