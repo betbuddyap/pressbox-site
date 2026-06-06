@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account — PressBox Analytics</title>
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<meta property="og:title" content="Account — PressBox Analytics">
+<meta property="og:description" content="Manage your PressBox subscription.">
+<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
+<meta name="theme-color" content="#0F0E0A">
+<meta name="robots" content="noindex,nofollow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background-color: #F8F5EE; min-height: 100vh; }
+  :root {
+    --cream:      #F8F5EE;
+    --cream-dark: #EFE9DC;
+    --cream-mid:  #E8E1D3;
+    --border:     #DDD6C8;
+    --text:       #1A1705;
+    --text-mid:   #6B6455;
+    --text-light: #A39A88;
+    --gold:       #B8922A;
+    --gold-light: #D4A83A;
+    --gold-pale:  #F5EDD0;
+    --ink:        #0F0E0A;
+    --error:      #B83A2A;
+    --serif:      'Libre Baskerville', Georgia, serif;
+    --sans:       'Source Sans 3', system-ui, sans-serif;
+    --max:        1200px;
+  }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Minimal nav (logo only) ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); }
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 80px;
+  }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+
+  /* ── Page layout ── */
+  .page {
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 64px 32px;
+  }
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+  .sub {
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-mid);
+    margin-bottom: 32px;
+  }
+
+  /* ── Account identity card ── */
+  .acct-card {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .acct-card-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  .acct-card-value {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    word-break: break-all;
+  }
+  .acct-status {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+  .acct-status--active { background: var(--gold-pale); color: #6B5318; border: 1px solid #E4C969; }
+  .acct-status--none   { background: var(--cream-mid); color: var(--text-mid); border: 1px solid var(--border); }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    display: block;
+    width: 100%;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 4px;
+    padding: 16px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-secondary {
+    display: block;
+    width: 100%;
+    background: transparent;
+    color: var(--text-mid);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    margin-top: 12px;
+  }
+  .btn-secondary:hover { border-color: var(--text-mid); color: var(--ink); }
+
+  /* ── Message banner ── */
+  .banner {
+    padding: 14px 18px;
+    border-radius: 4px;
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .banner.show { display: block; }
+  .banner-error { background: #FCE9E5; color: var(--error); border: 1px solid #F0C4BC; }
+
+  /* ── State containers ── */
+  .state { display: none; }
+  .state.show { display: block; }
+  .loading-text { font-family: var(--sans); font-size: 15px; color: var(--text-mid); }
+
+  /* ── Mobile ── */
+  @media (max-width: 480px) {
+    .nav-inner { padding: 0 20px; height: 64px; }
+    .nav-logo img { height: 52px; }
+    .page { padding: 40px 20px; }
+    h1 { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Minimal nav -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics">
+    </a>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- Loading -->
+  <div id="acct-loading" class="state show">
+    <p class="loading-text">Loading your account…</p>
+  </div>
+
+  <!-- Signed in, active subscription -->
+  <div id="acct-active" class="state">
+    <div class="eyebrow">Your account</div>
+    <h1>Account <em>settings.</em></h1>
+    <p class="sub">Manage your subscription, update your card, or view receipts.</p>
+
+    <div id="banner-error" class="banner banner-error"></div>
+
+    <div class="acct-card">
+      <div class="acct-card-label">Signed in as</div>
+      <div class="acct-card-value" data-email></div>
+      <span class="acct-status acct-status--active">Active subscription</span>
+    </div>
+
+    <button type="button" class="btn-primary" id="btn-manage-sub">Manage subscription</button>
+    <button type="button" class="btn-secondary" data-signout>Sign out</button>
+  </div>
+
+  <!-- Signed in, no active subscription -->
+  <div id="acct-nosub" class="state">
+    <div class="eyebrow">Your account</div>
+    <h1>Account <em>settings.</em></h1>
+    <p class="sub">You're signed in, but there's no active subscription on this account.</p>
+
+    <div id="banner-error-nosub" class="banner banner-error"></div>
+
+    <div class="acct-card">
+      <div class="acct-card-label">Signed in as</div>
+      <div class="acct-card-value" data-email></div>
+      <span class="acct-status acct-status--none">No active subscription</span>
+    </div>
+
+    <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
+    <button type="button" class="btn-secondary" data-signout>Sign out</button>
+  </div>
+
+</main>
+
+<!-- Supabase JS client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ── Supabase client + API base (same as the rest of the site) ───────
+  const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE';
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  const API_BASE = 'https://betbuddy-backend.onrender.com';
+
+  // ── UI helpers ──────────────────────────────────────────────────────
+  function showState(id) {
+    document.querySelectorAll('.state').forEach(el => el.classList.remove('show'));
+    document.getElementById(id).classList.add('show');
+  }
+  function showError(msg) {
+    document.querySelectorAll('.banner-error').forEach(el => {
+      el.textContent = msg;
+      el.classList.add('show');
+    });
+  }
+
+  // ── Init: must be signed in. Then detect subscription state. ────────
+  async function init() {
+    let session;
+    try {
+      ({ data: { session } } = await sb.auth.getSession());
+    } catch (err) {
+      session = null;
+    }
+
+    // Not signed in → go to login
+    if (!session) {
+      window.location.href = '/login.html';
+      return;
+    }
+
+    // Fill the email everywhere it's shown
+    const email = session.user.email || '';
+    document.querySelectorAll('[data-email]').forEach(el => { el.textContent = email; });
+
+    // Detect active sub by calling the gated feed (200 = active, 402 = no sub)
+    try {
+      const res = await fetch(`${API_BASE}/canonical/live-lines/feed?season=2026`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+        credentials: 'omit',
+      });
+      if (res.status === 401) {
+        // Token invalid/expired → re-auth
+        window.location.href = '/login.html';
+        return;
+      }
+      showState(res.status === 200 ? 'acct-active' : 'acct-nosub');
+    } catch (err) {
+      // Network hiccup — default to the active view so they can still try
+      // the portal; any failure there surfaces in the banner.
+      showState('acct-active');
+    }
+  }
+  init();
+
+  // ── Manage subscription → Stripe Billing Portal ─────────────────────
+  // Same call subscribe.html uses: POST with the user's JWT; backend looks
+  // up their stripe_customer_id and returns a portal URL to redirect to.
+  document.getElementById('btn-manage-sub').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const btn = e.currentTarget;
+    btn.textContent = 'Opening portal…';
+    btn.disabled = true;
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        window.location.href = '/login.html';
+        return;
+      }
+      const res = await fetch(`${API_BASE}/api/billing/create-portal-session`, {
+        method:  'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type':  'application/json',
+        },
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.detail || `Portal session failed (${res.status})`);
+      }
+      const { url } = await res.json();
+      if (!url) throw new Error('Portal URL missing from response');
+      window.location.href = url;
+    } catch (err) {
+      btn.textContent = 'Manage subscription';
+      btn.disabled = false;
+      showError(err.message || 'Could not open billing portal. Try again.');
+    }
+  });
+
+  // ── Sign out ────────────────────────────────────────────────────────
+  document.querySelectorAll('[data-signout]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await sb.auth.signOut(); } catch (_) {}
+      window.location.href = '/';
+    });
+  });
+</script>
+
+</body>
+</html>
