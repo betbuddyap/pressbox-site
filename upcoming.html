@@ -1166,19 +1166,10 @@ const CONF_SHORT = {
 const TIER_LABEL = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
 const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'Smart $', gl: 'GL', ls: 'Lottery' };
 
-// Preview flag — when true, /picks/upcoming synthesizes stand-in lines
-// for games with no real odds posted yet. DEFAULT OFF: the page serves the
-// real board (released picks only, badges gated to Live Lines games) straight
-// from the snapshot, which is instant. Append ?preview=1 to the URL for a
-// manual simulated-board preview, or ?preview=0 to force it off.
-const SIMULATE_PICKS = (() => {
-  const url = new URLSearchParams(window.location.search);
-  if (url.get('preview') === '0') return false;
-  if (url.get('preview') === '1') return true;
-  // Default: real board (no synthesized lines). The snapshot only covers the
-  // default request, so leaving this off is what keeps Upcoming fast.
-  return false;
-})();
+// Simulated stand-in lines (a pre-season test path) are permanently OFF.
+// The page always serves the real board — released picks only, badges gated
+// to Live Lines games — straight from the snapshot, which is what keeps it
+// instant. There is intentionally no toggle for the synthesized board.
 
 let allGames = [];
 let powerRankings = {};
@@ -1197,7 +1188,7 @@ async function init() {
   const token = await getAccessToken();
   const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
 
-  const picksUrl = `${API}/picks/upcoming?season=${SEASON}${SIMULATE_PICKS ? '&simulate=true' : ''}`;
+  const picksUrl = `${API}/picks/upcoming?season=${SEASON}`;
 
   // Public context endpoints — no gate; keep the graceful catch.
   const [rankRes, colorsRes] = await Promise.all([
