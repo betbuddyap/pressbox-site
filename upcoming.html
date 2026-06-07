@@ -1195,48 +1195,48 @@ async function init() {
   // first render naturally.
   let boardRendered = false;
 
-  // Rankings + colors are SLOW — the rankings endpoint does a live CFBD roster
-  // fetch (~6s cold). They only add power-rank context + team colors, never
-  // the picks themselves, so we DO NOT block the board on them. Fire them in
-  // the background: if they land before the board renders, the first render
-  // picks them up; if after, we re-render. This is what removes the cold-start
-  // wait — the board paints the instant the (fast, snapshot-served) picks land.
-  Promise.all([
-    fetch(`${API}/rankings/power?season=2025&limit=200`).then(r => r.json()).catch(() => null),
-    fetch(`${API}/teams/colors`).then(r => r.json()).catch(() => null)
-  ]).then(([rankRes, colorsRes]) => {
-    if (rankRes && rankRes.rankings) {
-      rankRes.rankings.forEach(t => {
-        powerRankings[t.team] = t.rank;
-        teamScores[t.team] = t.score;
-      });
-      if (rankRes.full) {
-        rankRes.full.forEach(t => { teamScores[t.team] = t.score; });
+  // Rankings are SLOW — the endpoint does a live CFBD roster fetch (~6s cold)
+  // and only adds power-rank badges + a strength-based sort, never the picks
+  // or the LOOK of the cards. So it goes in the BACKGROUND and re-renders when
+  // it lands. Colors are different: fast (24h server-side cache) and the thing
+  // that makes the cards look right, so they ride with the board below — that
+  // way the first paint is already colored instead of flashing dark.
+  fetch(`${API}/rankings/power?season=2025&limit=200`)
+    .then(r => r.json()).catch(() => null)
+    .then((rankRes) => {
+      if (rankRes && rankRes.rankings) {
+        rankRes.rankings.forEach(t => {
+          powerRankings[t.team] = t.rank;
+          teamScores[t.team] = t.score;
+        });
+        if (rankRes.full) {
+          rankRes.full.forEach(t => { teamScores[t.team] = t.score; });
+        }
       }
-    }
-    if (colorsRes && colorsRes.teams) teamColors = colorsRes.teams;
-    if (boardRendered) { try { renderWeek(currentWeek); } catch (e) {} }
-  }).catch(() => {});
+      if (boardRendered) { try { renderWeek(currentWeek); } catch (e) {} }
+    }).catch(() => {});
 
-  // Gated endpoints — send the bearer token. 402/401 means signed in
-  // without an active sub (or no session) → downgrade to the paywall,
-  // exactly like Live Lines. These are fast (snapshot-served), so we render
-  // as soon as they resolve.
-  let gamesRes = null, picksRes = null;
+  // Board + colors — all fast. Colors is public (no gate) and server-cached,
+  // so including it here colors the first paint. The 402/401 check applies
+  // only to the gated board endpoints (gRes/pRes).
+  let gamesRes = null, picksRes = null, colorsRes = null;
   try {
-    const [gRes, pRes] = await Promise.all([
+    const [gRes, pRes, colorsResRaw] = await Promise.all([
       fetch(`${API}/games/upcoming?season=${SEASON}`, { credentials: 'omit', headers: authHeaders }),
-      fetch(picksUrl, { credentials: 'omit', headers: authHeaders })
+      fetch(picksUrl, { credentials: 'omit', headers: authHeaders }),
+      fetch(`${API}/teams/colors`).then(r => r.json()).catch(() => null)
     ]);
     if (gRes.status === 402 || pRes.status === 402) throw new PaywallError('subscription required');
     if (gRes.status === 401 || pRes.status === 401) throw new PaywallError('not authenticated');
     gamesRes = await gRes.json().catch(() => null);
     picksRes = await pRes.json().catch(() => null);
+    colorsRes = colorsResRaw;
   } catch (e) {
     if (e instanceof PaywallError) { authMode = 'auth-no-sub'; renderPaywall(); return; }
     console.error('upcoming feed failed', e);
   }
 
+  if (colorsRes && colorsRes.teams) teamColors = colorsRes.teams;
   if (gamesRes && gamesRes.games) allGames = gamesRes.games;
   if (picksRes && picksRes.picks) picksByGameId = picksRes.picks;
 
