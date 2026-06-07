@@ -1167,16 +1167,17 @@ const TIER_LABEL = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
 const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'Smart $', gl: 'GL', ls: 'Lottery' };
 
 // Preview flag — when true, /picks/upcoming synthesizes stand-in lines
-// for games with no real odds posted yet (pre-July preview). Toggle
-// off once sportsbooks start publishing real Week 1 lines, or read
-// from the URL via ?preview=1 for a manual override.
+// for games with no real odds posted yet. DEFAULT OFF: the page serves the
+// real board (released picks only, badges gated to Live Lines games) straight
+// from the snapshot, which is instant. Append ?preview=1 to the URL for a
+// manual simulated-board preview, or ?preview=0 to force it off.
 const SIMULATE_PICKS = (() => {
   const url = new URLSearchParams(window.location.search);
   if (url.get('preview') === '0') return false;
   if (url.get('preview') === '1') return true;
-  // Default behavior: simulate until Aug 1, 2026 when real lines should
-  // be widely posted. Adjust this date as the season approaches.
-  return new Date() < new Date('2026-08-01T00:00:00-05:00');
+  // Default: real board (no synthesized lines). The snapshot only covers the
+  // default request, so leaving this off is what keeps Upcoming fast.
+  return false;
 })();
 
 let allGames = [];
