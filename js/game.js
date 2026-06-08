@@ -733,6 +733,7 @@
       ticksEl.appendChild(tick);
       const lab = document.createElement('div');
       lab.className = 'strip-tick-label';
+      if (key === 'anchor_spread' && t === 0) lab.classList.add('strip-tick-label-zero');
       lab.style.left = `${xPct(t)}%`;
       lab.textContent = (key === 'anchor_spread')
         ? (t > 0 ? '+' + t : t)
