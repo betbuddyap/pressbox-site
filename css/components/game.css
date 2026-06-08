@@ -1042,6 +1042,10 @@
   letter-spacing: 0.3px;
   transform: translateX(-50%);
 }
+.strip-tick-label-zero {
+  color: var(--rust);
+  font-weight: 700;
+}
 
 /* Vegas label - shown in card header, "Vegas: UNLV -10.5" */
 /* Legacy class shims (kept so old markup wouldn't blow up) */
