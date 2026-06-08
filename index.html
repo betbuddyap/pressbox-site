@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PressBox — The Best Seat in the House</title>
+<title>PressBox Analytics — Every College Football Bet, Graded</title>
 <!-- Favicon -->
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="PressBox Analytics">
 <meta property="og:url" content="https://pressboxanalytics.com/">
 <meta property="og:title" content="PressBox Analytics — College Football Picks That Win">
-<meta property="og:description" content="A live board of college football picks across seven tiers. Regraded every 30 minutes. 260-120 · 68.4% · +30.6% ROI across two seasons.">
+<meta property="og:description" content="PressBox grades every college football bet — spread, total, and moneyline — from A+ to No Edge, and names the best book for each. Re-graded every 30 minutes. 260-120 · 68.4% · +30.6% ROI across two seasons.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -24,14 +24,14 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="PressBox Analytics — College Football Picks That Win">
-<meta name="twitter:description" content="A live board of college football picks across seven tiers. Regraded every 30 minutes. 260-120 · 68.4% · +30.6% ROI across two seasons.">
+<meta name="twitter:description" content="PressBox grades every college football bet — spread, total, and moneyline — from A+ to No Edge, and names the best book for each. Re-graded every 30 minutes. 260-120 · 68.4% · +30.6% ROI across two seasons.">
 <meta name="twitter:image" content="https://pressboxanalytics.com/og-image.png">
 
 <!-- Theme color (mobile browser chrome) -->
 <meta name="theme-color" content="#0F0E0A">
 
 <!-- Description (general SEO) -->
-<meta name="description" content="A live board of college football picks across seven tiers. Regraded every 30 minutes. 260-120 · 68.4% · +30.6% ROI across two seasons.">
+<meta name="description" content="PressBox grades every college football bet — spread, total, and moneyline — from A+ to No Edge, and names the best book for each. Re-graded every 30 minutes. 260-120 · 68.4% · +30.6% ROI across two seasons.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -757,6 +757,147 @@
     .section-title { font-size: 26px !important; }
   }
 
+  /* ════════════════════════════════════════════════════════════
+     RESTRUCTURE 2026-06 — new homepage components.
+     All built on the existing tokens; no new aesthetic introduced.
+     ════════════════════════════════════════════════════════════ */
+
+  /* Plain-English hero (no card; single column) */
+  .hero-plain { padding: 72px 0 56px; background: var(--cream); }
+  .hero-plain .hero-headline { max-width: 760px; }
+  .hero-plain .hero-sub { max-width: 600px; font-weight: 400; color: var(--text-mid); }
+
+  /* Step walkthrough — adds a day/step eyebrow above the existing how-step */
+  .how-step-eyebrow {
+    font-family: var(--sans); font-size: 9px; font-weight: 600;
+    letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .steps-single { max-width: 760px; }
+
+  /* ── ANCHOR: faithful Live Lines pick-row mock (matches .ll-row) ── */
+  .anchor { padding: 64px 0 72px; background: var(--cream); border-top: 1px solid var(--border); }
+  .anchor-stage { max-width: 600px; margin: 44px auto 0; }
+  .llm { background: #FFFFFF; border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 12px 44px rgba(0,0,0,0.07); }
+  .llm-head { display: flex; align-items: center; gap: 14px; padding: 20px 18px; }
+  .llm-badge {
+    width: 52px; height: 46px; flex-shrink: 0; display: inline-flex; align-items: center;
+    justify-content: center; font-family: var(--sans); font-size: 17px; font-weight: 700;
+    letter-spacing: 0.02em; border: 1px solid var(--ink); border-radius: 6px;
+    background: var(--gold); color: var(--cream);
+  }
+  .llm-content { flex: 1 1 auto; min-width: 0; }
+  .llm-matchup { font-family: var(--sans); font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 3px; }
+  .llm-pick { font-family: var(--sans); font-size: 15px; color: var(--text-mid); line-height: 1.3; }
+  .llm-pick b { color: var(--ink); font-weight: 700; }
+  .llm-time { font-family: var(--sans); font-size: 12px; color: var(--text-light); margin-top: 5px; }
+  .llm-chevron { color: var(--text-mid); font-size: 13px; flex-shrink: 0; align-self: flex-start; padding-top: 4px; }
+  .llm-acc { border-top: 1px solid var(--border); background: var(--cream-dark); padding: 18px; }
+  .llm-acc-label { font-family: var(--sans); font-size: 9.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mid); margin-bottom: 16px; }
+  .llm-history { position: relative; padding-left: 24px; margin-bottom: 18px; }
+  .llm-history::before { content: ''; position: absolute; top: 8px; bottom: 8px; left: 7px; width: 1px; background: var(--border); }
+  .llm-event { position: relative; margin-bottom: 18px; }
+  .llm-event:last-child { margin-bottom: 0; }
+  .llm-event::before { content: ''; position: absolute; left: -21px; top: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+  .llm-event-title { font-family: var(--sans); font-size: 14px; color: var(--ink); line-height: 1.4; }
+  .llm-event-title strong { font-weight: 700; }
+  .llm-event-time { font-family: var(--sans); font-size: 12px; color: var(--text-light); line-height: 1.4; margin-top: 2px; }
+  .llm-books { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 16px; }
+  .llm-books span { font-family: var(--sans); font-size: 9.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mid); }
+  .llm-cta { display: block; background: var(--ink); color: var(--cream); text-align: center; font-family: var(--sans); font-size: 14px; font-weight: 700; padding: 14px; border-radius: 6px; text-decoration: none; margin-top: 16px; }
+  .llm-breakdown { display: block; text-align: center; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--gold); text-decoration: none; padding: 15px 0 2px; }
+  .anchor-caption { max-width: 600px; margin: 30px auto 0; font-family: var(--sans); font-size: 15px; color: var(--text-mid); line-height: 1.7; text-align: center; }
+  .anchor-caption b { color: var(--ink); font-weight: 600; }
+  .anchor-legend { max-width: 640px; margin: 32px auto 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 32px; }
+  .anchor-legend-item { display: flex; gap: 11px; align-items: flex-start; font-family: var(--sans); font-size: 13px; color: var(--text-mid); line-height: 1.5; }
+  .anchor-legend-item b { color: var(--ink); font-weight: 600; }
+  .anchor-legend-num { display: inline-flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: var(--cream); font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+
+  /* ── HOW RESULTS ARE GRADED ── */
+  .grade { padding: 88px 0; background: var(--cream); border-top: 1px solid var(--border); }
+  .grade-steps { margin-top: 44px; max-width: 760px; }
+  .grade-step { display: flex; gap: 22px; padding: 26px 0; border-bottom: 1px solid var(--border); }
+  .grade-step:first-child { border-top: 1px solid var(--border); }
+  .grade-step-k { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--cream-mid); line-height: 1; flex-shrink: 0; width: 34px; }
+  .grade-step-t { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 7px; }
+  .grade-step-d { font-family: var(--sans); font-size: 14px; font-weight: 300; color: var(--text-mid); line-height: 1.65; }
+  .grade-step-d strong { color: var(--ink); font-weight: 600; }
+  .grade-pull { margin-top: 36px; max-width: 760px; font-family: var(--serif); font-size: 21px; font-style: italic; color: var(--gold); line-height: 1.5; border-left: 3px solid var(--gold); padding-left: 24px; }
+
+  /* ── MODEL BREAKDOWN: dot plot (faithful to game-page read-card) ── */
+  .breakdown { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
+  .dp-stage { max-width: 600px; margin: 44px auto 0; background: #FFFFFF; border: 0.5px solid var(--border); border-radius: 4px; padding: 16px 28px 20px; box-shadow: 0 12px 44px rgba(0,0,0,0.07); }
+  .dp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--cream-mid); }
+  .dp-label { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink); }
+  .dp-vegas-head { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); }
+  .dp-vegas-head strong { color: var(--ink); font-weight: 700; }
+  .dp-plot { position: relative; padding: 0 12px; }
+  .dp-labels { position: relative; height: 48px; }
+  .dp-labels-above { margin-bottom: 4px; }
+  .dp-labels-below { margin-top: 4px; }
+  .dp-axis-wrap { position: relative; height: 24px; display: flex; align-items: center; }
+  .dp-axis { position: relative; width: 100%; height: 2px; background: var(--border); border-radius: 1px; }
+  .dp-hist { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); width: 100%; height: 56px; z-index: 1; pointer-events: none; overflow: visible; }
+  .dp-hist path { fill: rgba(76,124,168,0.18); stroke: rgba(76,124,168,0.45); stroke-width: 1; }
+  .dp-zero { position: absolute; top: 50%; height: 60px; width: 1.5px; background: #B85A2A; transform: translate(-0.75px, -50%); z-index: 2; opacity: 0.85; }
+  .dp-vegas { position: absolute; top: 50%; height: 60px; width: 2px; background: var(--ink); transform: translate(-1px, -50%); z-index: 3; }
+  .dp-dot { position: absolute; top: 50%; width: 10px; height: 10px; background: var(--text-mid); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 4; box-shadow: 0 0 0 1px var(--text-mid); }
+  .dp-dot-pick { width: 14px; height: 14px; background: #B85A2A; box-shadow: 0 0 0 1px #B85A2A, 0 0 0 4px rgba(184,90,42,0.18); z-index: 5; }
+  .dp-lab { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; white-space: nowrap; pointer-events: none; }
+  .dp-labels-above .dp-lab { bottom: 4px; }
+  .dp-labels-below .dp-lab { top: 4px; }
+  .dp-labels-above .dp-lab.dp-lab-far { bottom: 26px; }
+  .dp-labels-below .dp-lab.dp-lab-far { top: 26px; }
+  .dp-lab-name { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-mid); text-transform: uppercase; }
+  .dp-lab-val { font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--ink); letter-spacing: 0.3px; }
+  .dp-lab-pick .dp-lab-name, .dp-lab-pick .dp-lab-val { color: #B85A2A; }
+  .dp-labels-above .dp-lab::after { content: ''; position: absolute; bottom: -6px; left: 50%; width: 1px; height: 4px; background: var(--border); transform: translateX(-50%); }
+  .dp-labels-above .dp-lab.dp-lab-far::after { height: 26px; bottom: -28px; }
+  .dp-labels-below .dp-lab::before { content: ''; position: absolute; top: -6px; left: 50%; width: 1px; height: 4px; background: var(--border); transform: translateX(-50%); }
+  .dp-labels-below .dp-lab.dp-lab-far::before { height: 26px; top: -28px; }
+  .dp-ticks { position: relative; margin-top: 6px; height: 16px; }
+  .dp-tick { position: absolute; top: 0; width: 1px; height: 4px; background: var(--cream-mid); transform: translateX(-50%); }
+  .dp-tick-label { position: absolute; top: 6px; font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-mid); letter-spacing: 0.3px; transform: translateX(-50%); }
+  .dp-legend { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--cream-mid); }
+  .dp-legend-item { display: flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 12px; color: var(--text-mid); }
+  .dp-key { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .dp-key-veg { width: 2px; height: 14px; flex-shrink: 0; background: var(--ink); }
+  .dp-key-hist { width: 16px; height: 11px; flex-shrink: 0; border-radius: 2px; background: rgba(76,124,168,0.22); border: 1px solid rgba(76,124,168,0.45); }
+  .dp-caption { max-width: 600px; margin: 28px auto 0; font-family: var(--sans); font-size: 15px; color: var(--text-mid); line-height: 1.7; text-align: center; }
+  .dp-caption b { color: var(--ink); font-weight: 600; }
+
+  /* ── COMPARISON: them (ink) vs us (gold italic) ── */
+  .compare { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
+  .compare-list { margin-top: 44px; max-width: 760px; }
+  .compare-row { padding: 26px 0; border-bottom: 1px solid var(--border); }
+  .compare-row:first-child { border-top: 1px solid var(--border); }
+  .compare-them { font-family: var(--sans); font-size: 16px; font-weight: 300; color: var(--text-mid); line-height: 1.6; margin-bottom: 8px; }
+  .compare-us { font-family: var(--serif); font-size: 19px; font-style: italic; font-weight: 400; color: var(--gold); line-height: 1.5; }
+
+  /* ── PRICING ── */
+  .pricing { padding: 88px 0; background: var(--cream); border-top: 1px solid var(--border); }
+  .pricing-rows { margin-top: 40px; display: flex; gap: 48px; flex-wrap: wrap; }
+  .pricing-price { font-family: var(--serif); font-size: 36px; font-weight: 700; color: var(--text); line-height: 1; }
+  .pricing-price small { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); display: block; margin-top: 8px; }
+  .pricing-lock { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--gold); margin-top: 36px; }
+  .pricing-first { font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--text-mid); line-height: 1.7; margin-top: 12px; max-width: 540px; }
+  .pricing-first b { color: var(--text); font-weight: 600; }
+
+  /* ── NUMBERS (receipts) ── */
+  .numbers { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
+  .numbers-big { font-family: var(--serif); font-size: 46px; font-weight: 700; color: var(--text); line-height: 1.05; letter-spacing: -1px; margin-top: 36px; }
+  .numbers-big span { color: var(--gold); }
+  .numbers-line { font-family: var(--sans); font-size: 16px; font-weight: 300; color: var(--text-mid); line-height: 1.7; margin-top: 20px; max-width: 560px; }
+  .numbers-line strong { color: var(--text); font-weight: 600; }
+  .numbers-rebuild { font-family: var(--serif); font-size: 19px; font-style: italic; color: var(--gold); margin-top: 24px; }
+
+  @media (max-width: 600px) {
+    .anchor-legend { grid-template-columns: 1fr; }
+    .pricing-rows { gap: 26px; }
+    .numbers-big { font-size: 32px; }
+    .compare-us { font-size: 17px; }
+  }
+
   </style>
 </head>
 <body>
@@ -812,101 +953,327 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 </script>
 
 
-<!-- HERO -->
-<section class="hero" id="hero">
-  <div class="container" style="padding-top:64px;padding-bottom:64px;">
+<!-- 1 · HERO (plain-English) -->
+<section class="hero-plain" id="hero">
+  <div class="container">
     <div class="section-eyebrow">PressBox Analytics</div>
-    <h1 class="hero-headline">The whole board. The whole truth.<br><em>Every game. Every grade. Live.</em></h1>
-    <p class="hero-sub">Every college football game with an open line gets a tier from our five-model read. A+ down to No Edge — the whole slate, not just the bets we like. As the market moves, we re-grade every 30 minutes, so the grade you see now is the bet you'd make now.</p>
-    <p class="hero-sub" style="margin-top:20px;">Across the 2024 and 2025 seasons, the A+ Board hit <strong style="color:var(--ink);">68.4% on 260-120 with +30.6% ROI</strong>, and the difference between seasons was less than one percentage point. The system held up year over year because we built it to. Three audit passes, two rebuilds, every weak signal cut. The number that remains is real.</p>
-    <p class="hero-sub" style="margin-top:20px;">2026 is the first season under the locked spec. Picks drop in time for Week 0.</p>
+    <h1 class="hero-headline">Every line. Every game.<br><em>A+ to No Edge.</em></h1>
+    <p class="hero-sub">Every spread, total, and moneyline on every FBS-vs-FBS matchup gets a grade — from A+ all the way down to No Edge. Re-graded every 30 minutes, and every call we've ever made stays on the record, losses included.</p>
     <div class="hero-actions" style="margin-top:32px;">
       <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
-      <a href="/how-it-works.html" class="btn-ghost">How it works →</a>
+      <a href="/how-it-works.html" class="btn-ghost">See how it works →</a>
     </div>
   </div>
 </section>
 
-<!-- WHAT YOU GET -->
+<!-- 2 · ANCHOR — what one pick looks like -->
+<section class="anchor">
+  <div class="container">
+    <div class="section-eyebrow">The Board</div>
+    <h2 class="section-title">This is what one pick looks like.</h2>
+    <p class="section-sub">Every graded bet gets a row like this — here's the spread on Oklahoma @ Michigan. Here's how to read it.</p>
+
+    <div class="anchor-stage">
+      <div class="llm">
+        <div class="llm-head">
+          <div class="llm-badge">A+</div>
+          <div class="llm-content">
+            <div class="llm-matchup">Oklahoma @ Michigan</div>
+            <div class="llm-pick"><b>Oklahoma +3</b> · DraftKings + 2 others</div>
+            <div class="llm-time">Sat, Sep 12 · 12:00 PM ET</div>
+          </div>
+          <div class="llm-chevron">▲</div>
+        </div>
+        <div class="llm-acc">
+          <div class="llm-acc-label">History</div>
+          <div class="llm-history">
+            <div class="llm-event">
+              <div class="llm-event-title"><strong>Released A+</strong> · Oklahoma +2.5 at Bovada</div>
+              <div class="llm-event-time">Wed, Sep 9 · 6:12 PM</div>
+            </div>
+            <div class="llm-event">
+              <div class="llm-event-title">Line moved +2.5 → +3 · best book Bovada → DraftKings</div>
+              <div class="llm-event-time">Fri, Sep 11 · 9:40 AM</div>
+            </div>
+            <div class="llm-event">
+              <div class="llm-event-title"><strong>Current</strong> · A+ holding · Oklahoma +3 at DraftKings</div>
+              <div class="llm-event-time">Now</div>
+            </div>
+          </div>
+          <div class="llm-books"><span>Other books</span><span style="color:var(--text-light);font-size:12px;">▾</span></div>
+          <a href="/live-lines.html" class="llm-cta">Bet at DraftKings →</a>
+          <a href="/how-it-works.html" class="llm-breakdown">Full game breakdown →</a>
+        </div>
+      </div>
+
+      <div class="anchor-legend">
+        <div class="anchor-legend-item"><div><b>The grade.</b> The tier — A+ here. Our verdict on the gap between our read and the market.</div></div>
+        <div class="anchor-legend-item"><div><b>The matchup &amp; pick.</b> Which game, and the exact side and number to bet.</div></div>
+        <div class="anchor-legend-item"><div><b>The journal.</b> Every grade change and line move since release, on the record.</div></div>
+        <div class="anchor-legend-item"><div><b>The best book.</b> Where the line is best right now — named for you.</div></div>
+        <div class="anchor-legend-item"><div><b>Other books.</b> The same bet at every book carrying it, ranked.</div></div>
+        <div class="anchor-legend-item"><div><b>The breakdown.</b> Each model's read against the line and which one fired the pick.</div></div>
+      </div>
+
+      <p class="anchor-caption"><b>This is one row from the Board — a single bet.</b> Every graded spread, total, and moneyline gets its own. Click any row to expand the journal, the model reads, and the tier rationale.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · HOW IT WORKS (4-step walkthrough) -->
+<section class="how">
+  <div class="container">
+    <div class="section-eyebrow">How It Works</div>
+    <h2 class="section-title">From data to published tier — <em>your week with PressBox.</em></h2>
+    <div class="how-steps steps-single" style="margin-top:48px;">
+      <div class="how-step">
+        <div class="how-step-num">01</div>
+        <div>
+          <div class="how-step-eyebrow">Monday</div>
+          <div class="how-step-title">Grades drop for every open bet</div>
+          <div class="how-step-desc">The five models each read the matchup. We compare every read to the market on every line — spread, total, and moneyline — and grade each gap on its own. When a read meets a proven set of criteria, that bet fires and earns its tier. Every bet on the board gets published, tier and all.</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">02</div>
+        <div>
+          <div class="how-step-eyebrow">Tuesday through Saturday</div>
+          <div class="how-step-title">Grades update every 30 minutes</div>
+          <div class="how-step-desc">As books post lines, lines move, and best-book offers shift, we re-grade. Every change is journaled — you see the original release, the current state, and everything in between.</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">03</div>
+        <div>
+          <div class="how-step-eyebrow">Saturday</div>
+          <div class="how-step-title">You bet</div>
+          <div class="how-step-desc">Pull up the Board. Sort by tier. Cross-reference with your bankroll and your read on the games. We name the best book on every pick.</div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">04</div>
+        <div>
+          <div class="how-step-eyebrow">Sunday</div>
+          <div class="how-step-title">Results graded, the journal updates</div>
+          <div class="how-step-desc">Wins, losses, pushes, voids — every pick lands on the public Results page. Nothing hidden, no curation, no after-the-fact reframing.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · WHAT YOU GET (three surfaces, shortened) -->
 <section id="what-you-get" style="border-top:1px solid var(--border);background:var(--cream);">
-  <div class="container" style="padding-top:64px;padding-bottom:64px;">
+  <div class="container" style="padding-top:80px;padding-bottom:80px;">
     <div class="section-eyebrow">What You Get</div>
-    <h2 class="section-title">Three surfaces. <em>One discipline.</em></h2>
-    <p class="section-sub">The board, the history, and the math behind every pick.</p>
+    <h2 class="section-title">Four surfaces. <em>One discipline.</em></h2>
 
-    <div style="margin-top:48px;border-top:1px solid var(--border);padding-top:40px;">
-      <div class="section-eyebrow" style="color:var(--gold);">01 — The Board</div>
-      <h3 class="section-title" style="font-size:24px;">Every game. Every tier. <em>Live.</em></h3>
-      <div class="section-sub" style="margin-top:16px;">
-        <p>Every FBS matchup with an open line gets a row. Five models read it, the system picks a tier — A+ down through No Edge — and names the best book if there's edge to bet. As the market moves, we re-grade every 30 minutes. The board you see at noon isn't the board you saw at 9 AM.</p>
-        <p style="margin-top:16px;">A+ down to No Edge — <strong style="color:var(--ink);">the whole slate, not the cherry-picked subset.</strong> Games where the model couldn't find an edge get a row too. The full read, not the highlight reel.</p>
-      </div>
+    <div style="margin-top:48px;border-top:1px solid var(--border);padding-top:36px;">
+      <div class="section-eyebrow" style="color:var(--gold);">01 — The Board <span style="color:var(--text-light);font-weight:500;">(Live Lines)</span></div>
+      <p class="section-sub" style="margin-top:12px;">Every bet on the board — spread, total, and moneyline — tier-graded and best-book named. Every FBS-vs-FBS matchup with open lines; we don't grade games against FCS opponents. Re-graded every 30 minutes as the market moves. The "what's the bet right now" view.</p>
     </div>
 
-    <div style="margin-top:48px;border-top:1px solid var(--border);padding-top:40px;">
-      <div class="section-eyebrow" style="color:var(--gold);">02 — The History</div>
-      <h3 class="section-title" style="font-size:24px;">Every change, <em>journaled.</em></h3>
-      <div class="section-sub" style="margin-top:16px;">
-        <p>Picks don't sit still. Tiers move as the line moves. Best books change as the market shifts. Lines tighten and loosen all week.</p>
-        <p style="margin-top:16px;">An A+ pick that drops to A by Wednesday because the line tightened tells a story. An A that becomes No Edge by Saturday because the market caught up tells a different one. The board shows you where the pick is now. <strong style="color:var(--ink);">The history shows you how it got there</strong> — every step, every shift, on the record.</p>
-      </div>
+    <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
+      <div class="section-eyebrow" style="color:var(--gold);">02 — Upcoming</div>
+      <p class="section-sub" style="margin-top:12px;">The full slate ahead — every upcoming FBS-vs-FBS game on the schedule, with a tier badge on the matchups that already have bets live on the Board. And it doesn't stop at kickoff: once games go live, Upcoming follows them in real time with scores and in-game updates. The "what's coming, what's playing, and where the edges are" view.</p>
     </div>
 
-    <div style="margin-top:48px;border-top:1px solid var(--border);padding-top:40px;">
-      <div class="section-eyebrow" style="color:var(--gold);">03 — The Breakdown</div>
-      <h3 class="section-title" style="font-size:24px;">The math <em>behind every pick.</em></h3>
-      <div class="section-sub" style="margin-top:16px;">
-        <p>Tap any game on the board and you get the full read: five models with their independent projections, head-to-head stats across every category that matters, and the editorial breakdown of what we see and what the market might be missing.</p>
-        <p style="margin-top:16px;">The five models — SP+, Elo, PPA, Advanced, and our in-house Pace+ — each project the game on their own. We don't look for agreement. We look at how each model reads the game in the context of the other four. The numbers are laid out side by side. The read is in plain language. <strong style="color:var(--ink);">Enough to understand the pick, not enough to copy it.</strong></p>
+    <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
+      <div class="section-eyebrow" style="color:var(--gold);">03 — The History</div>
+      <p class="section-sub" style="margin-top:12px;">Every release-to-current journey on every pick. Tier upgrades, downgrades, line moves, best-book swaps — everything we did to a pick lives on the pick. You can audit any call back to its first publish.</p>
+    </div>
+
+    <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
+      <div class="section-eyebrow" style="color:var(--gold);">04 — The Breakdown <span style="color:var(--text-light);font-weight:500;">(Game Pages)</span></div>
+      <p class="section-sub" style="margin-top:12px;">Each model's read on a dot plot against the market line, the firing model highlighted when a bet is live, and the editorial write-up per game. Click any pick to go deep.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · WHY WE'RE DIFFERENT (comparison) -->
+<section class="compare">
+  <div class="container">
+    <div class="section-eyebrow">What Makes This Different</div>
+    <h2 class="section-title">Not another picks service.</h2>
+    <div class="compare-list">
+      <div class="compare-row">
+        <div class="compare-them">Most picks services give you 3–5 picks a week.</div>
+        <div class="compare-us">We grade every bet on the board — spread, total, and moneyline — every week.</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-them">Most picks services hide their losses.</div>
+        <div class="compare-us">We grade every bet we've ever published — wins, losses, pushes, voids.</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-them">Most picks services tell you when their models agree.</div>
+        <div class="compare-us">We tell you when the models disagree, because the disagreement is part of the signal.</div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-them">Most picks services give you a recommendation.</div>
+        <div class="compare-us">We give you the data and our verdict, then show you everything that shaped it — so you can disagree with us if you want.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- THE MODEL -->
-<section id="the-model" style="border-top:1px solid var(--border);">
-  <div class="container" style="padding-top:64px;padding-bottom:64px;">
+<!-- 6 · THE NUMBERS (receipts) -->
+<section class="numbers">
+  <div class="container">
+    <div class="section-eyebrow">The Receipts</div>
+    <h2 class="section-title">The numbers.</h2>
+    <div class="numbers-big">260–120 · <span>68.4%</span> · <span>+30.6% ROI</span></div>
+    <p class="numbers-line">A+ Board, 2024–2025. <strong>0.8 percentage point</strong> difference between seasons.</p>
+    <p class="numbers-line"><strong>1,056</strong> graded selections. Three audit passes. Two full rebuilds.</p>
+    <p class="numbers-rebuild">Every signal that didn't hold up year over year got cut. The number that remains is real.</p>
+    <div class="hero-actions" style="margin-top:32px;">
+      <a href="/results.html" class="btn-ghost">See full results →</a>
+    </div>
+  </div>
+</section>
+
+<!-- 6b · HOW RESULTS ARE GRADED (integrity) -->
+<section class="grade">
+  <div class="container">
+    <div class="section-eyebrow">How We Grade Ourselves</div>
+    <h2 class="section-title">We're scored on the number <em>we gave you.</em></h2>
+    <p class="section-sub">A record only means something if you can't move the goalposts. Here's exactly how a bet gets settled.</p>
+
+    <div class="grade-steps">
+      <div class="grade-step">
+        <div class="grade-step-k">01</div>
+        <div>
+          <div class="grade-step-t">A bet releases at three books</div>
+          <div class="grade-step-d">A bet only goes live once at least three sportsbooks are posting that market. The moment it releases, we <strong>freeze our model's number and the tier</strong> we published. That frozen number is the bet of record.</div>
+        </div>
+      </div>
+      <div class="grade-step">
+        <div class="grade-step-k">02</div>
+        <div>
+          <div class="grade-step-t">It re-grades against the live market every 30 minutes</div>
+          <div class="grade-step-d">As the line moves, the tier moves with it. A bet can climb, hold, or slip to <strong>No Edge</strong> as the market runs past our number. Every change is journaled on the pick.</div>
+        </div>
+      </div>
+      <div class="grade-step">
+        <div class="grade-step-k">03</div>
+        <div>
+          <div class="grade-step-t">When the game ends, we settle against our released line</div>
+          <div class="grade-step-d">Win, loss, push, or void is scored against <strong>the number we published at release</strong> — not the closing line, not whatever number would have looked best after the fact. If we released Oklahoma +2.5, we're graded on +2.5.</div>
+        </div>
+      </div>
+      <div class="grade-step">
+        <div class="grade-step-k">04</div>
+        <div>
+          <div class="grade-step-t">The result lands on the public Results page</div>
+          <div class="grade-step-d">Every settled bet is posted, win or lose. The two-season backtest that built the system runs on separate, frozen logic against historical closing-line data — <strong>immutable receipts</strong> we don't touch.</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="grade-pull">We grade ourselves on the number we gave you — not the one that would've looked best.</p>
+  </div>
+</section>
+
+<!-- 7 · THE FIVE MODELS (trimmed summary) -->
+<section id="the-model" style="border-top:1px solid var(--border);background:var(--cream);">
+  <div class="container" style="padding-top:80px;padding-bottom:80px;">
     <div class="section-eyebrow">The Model</div>
-    <h2 class="section-title">Five reads. <em>One discipline.</em></h2>
-    <p class="section-sub">Every game on the board runs through five independent models, each measuring something different. None of them tell the whole story alone. That's the point.</p>
+    <h2 class="section-title">Five reads. <em>One verdict per bet.</em></h2>
 
-    <div style="margin-top:40px;">
+    <div style="margin-top:36px;max-width:680px;">
+      <p class="section-sub" style="margin-bottom:18px;"><strong style="color:var(--ink);font-weight:700;">SP+</strong> — Bill Connelly's efficiency model. Adjusts for opponent strength.</p>
+      <p class="section-sub" style="margin-bottom:18px;"><strong style="color:var(--ink);font-weight:700;">Elo</strong> — Head-to-head record over time. Context only — it never fires a pick.</p>
+      <p class="section-sub" style="margin-bottom:18px;"><strong style="color:var(--ink);font-weight:700;">PPA</strong> — Expected points per play. The drive-by-drive read.</p>
+      <p class="section-sub" style="margin-bottom:18px;"><strong style="color:var(--ink);font-weight:700;">Advanced</strong> — Success rate, explosiveness, finishing drives. The "how" of efficiency.</p>
+      <p class="section-sub" style="margin-bottom:24px;"><strong style="color:var(--ink);font-weight:700;">Pace+</strong> — Our in-house model. Possession elasticity weighted by opponent strength.</p>
+      <p class="section-sub" style="border-top:1px solid var(--border);padding-top:24px;color:var(--text);">A bet doesn't fire because the models average out a certain way. It fires when one model's read lands inside a <strong style="color:var(--ink);">specific set of criteria</strong> — a proven combination of model, market, edge size, and line range. When that happens, we publish the pick and tell you <strong style="color:var(--ink);">which model fired it</strong>. When nothing lands, that's No Edge.</p>
+    </div>
 
-      <div style="margin-top:32px;">
-        <h3 style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink);margin:0 0 8px 0;">SP+ <em style="font-style:italic;color:var(--gold);font-weight:400;">· The efficiency baseline.</em></h3>
-        <p class="section-sub" style="margin-top:0;">Bill Connelly's tempo- and opponent-adjusted measure of college football efficiency. Forward-looking, not résumé-driven — it weighs how a team plays, not whether they've already won. If you're lucky in a win, SP+ doesn't give you full credit. If you're unlucky in a loss, it keeps believing in you.</p>
-      </div>
-
-      <div style="margin-top:32px;">
-        <h3 style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink);margin:0 0 8px 0;">Elo <em style="font-style:italic;color:var(--gold);font-weight:400;">· The head-to-head record.</em></h3>
-        <p class="section-sub" style="margin-top:0;">A rating that updates after every game based on who beat whom and by how much. Borrowed from chess and adapted for football. Slower to react than the efficiency models, faster to react than the polls. Tells us who's been winning against the schedule they've actually played.</p>
-      </div>
-
-      <div style="margin-top:32px;">
-        <h3 style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink);margin:0 0 8px 0;">PPA <em style="font-style:italic;color:var(--gold);font-weight:400;">· Points-per-play.</em></h3>
-        <p class="section-sub" style="margin-top:0;">Predicted Points Added on a play-by-play basis. Strips away score and clock context to ask: what is each snap actually worth? A team can dominate PPA and still lose the game. We care about the dominating, not the losing.</p>
-      </div>
-
-      <div style="margin-top:32px;">
-        <h3 style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink);margin:0 0 8px 0;">Advanced <em style="font-style:italic;color:var(--gold);font-weight:400;">· The deeper efficiency layer.</em></h3>
-        <p class="section-sub" style="margin-top:0;">Success rate, explosiveness, havoc, and field-position stats — the kind of numbers that separate teams who win because of how they play from teams who win because of luck. Where the box score lies, advanced stats usually catch it.</p>
-      </div>
-
-      <div style="margin-top:32px;">
-        <h3 style="font-family:var(--serif);font-size:18px;font-weight:700;color:var(--ink);margin:0 0 8px 0;">Pace+ <em style="font-style:italic;color:var(--gold);font-weight:400;">· In-house. The possession model.</em></h3>
-        <p class="section-sub" style="margin-top:0;">Built around the most consistent predictor we found: how elastic each team's time of possession is against different opponents. Some teams hold the ball no matter who they play. Some teams' possession gets pushed around. That elasticity, weighted by opponent strength, is the basis of Pace+. It's the backbone of our spread picks.</p>
-      </div>
-
+    <div class="hero-actions" style="margin-top:32px;">
+      <a href="/how-it-works.html" class="btn-ghost">Dig into the methodology →</a>
     </div>
   </div>
 </section>
 
-<!-- CLOSING CTA -->
+<!-- 7b · THE MODEL BREAKDOWN (dot plot) -->
+<section class="breakdown">
+  <div class="container">
+    <div class="section-eyebrow">The Breakdown</div>
+    <h2 class="section-title">Open any game. <em>See every read.</em></h2>
+    <p class="section-sub">On each game page, every model's number sits on one axis against the market line. This is the spread on Oklahoma @ Michigan.</p>
+
+    <div class="dp-stage">
+      <div class="dp-head">
+        <div class="dp-label">Spread</div>
+        <div class="dp-vegas-head">Vegas: <strong>Mich −3</strong></div>
+      </div>
+      <div class="dp-plot">
+        <div class="dp-labels dp-labels-above">
+          <div class="dp-lab" style="left:29.2%;"><span class="dp-lab-name">Elo</span><span class="dp-lab-val">−3.5</span></div>
+          <div class="dp-lab" style="left:45.8%;"><span class="dp-lab-name">SP+</span><span class="dp-lab-val">−1.5</span></div>
+          <div class="dp-lab dp-lab-pick" style="left:62.5%;"><span class="dp-lab-name">Pace+</span><span class="dp-lab-val">+0.5</span></div>
+        </div>
+        <div class="dp-axis-wrap">
+          <div class="dp-axis">
+            <svg class="dp-hist" viewBox="0 0 1000 100" preserveAspectRatio="none"><path d="M100,49 L180,45 L260,36 L340,24 L420,18 L500,23 L580,33 L660,41 L740,46 L820,49 L820,51 L740,54 L660,59 L580,67 L500,77 L420,82 L340,76 L260,64 L180,55 L100,51 Z"/></svg>
+            <div class="dp-zero" style="left:58.3%;"></div>
+            <div class="dp-vegas" style="left:33.3%;"></div>
+            <div class="dp-dot" style="left:29.2%;"></div>
+            <div class="dp-dot" style="left:41.7%;"></div>
+            <div class="dp-dot" style="left:45.8%;"></div>
+            <div class="dp-dot" style="left:54.2%;"></div>
+            <div class="dp-dot dp-dot-pick" style="left:62.5%;"></div>
+          </div>
+        </div>
+        <div class="dp-labels dp-labels-below">
+          <div class="dp-lab" style="left:41.7%;"><span class="dp-lab-name">PPA</span><span class="dp-lab-val">−2</span></div>
+          <div class="dp-lab" style="left:54.2%;"><span class="dp-lab-name">Adv</span><span class="dp-lab-val">−0.5</span></div>
+        </div>
+        <div class="dp-ticks">
+          <div class="dp-tick" style="left:0%;"></div><div class="dp-tick-label" style="left:0%;">−7</div>
+          <div class="dp-tick" style="left:16.7%;"></div><div class="dp-tick-label" style="left:16.7%;">−5</div>
+          <div class="dp-tick" style="left:33.3%;"></div><div class="dp-tick-label" style="left:33.3%;">−3</div>
+          <div class="dp-tick" style="left:50%;"></div><div class="dp-tick-label" style="left:50%;">−1</div>
+          <div class="dp-tick" style="left:66.7%;"></div><div class="dp-tick-label" style="left:66.7%;">+1</div>
+          <div class="dp-tick" style="left:83.3%;"></div><div class="dp-tick-label" style="left:83.3%;">+3</div>
+          <div class="dp-tick" style="left:100%;"></div><div class="dp-tick-label" style="left:100%;">+5</div>
+        </div>
+      </div>
+      <div class="dp-legend">
+        <div class="dp-legend-item"><span class="dp-key-veg"></span> Vegas line</div>
+        <div class="dp-legend-item"><span class="dp-key-hist"></span> Where these games land</div>
+        <div class="dp-legend-item"><span class="dp-key" style="background:var(--text-mid);"></span> Each model's read</div>
+        <div class="dp-legend-item"><span class="dp-key" style="background:#B85A2A;"></span> Firing model — the pick</div>
+      </div>
+    </div>
+
+    <p class="dp-caption">Five reads on one axis, against the market line — with the blue band showing where games at this number have historically landed. A bet fires when one model's read sits far enough off the line to meet a <b>specific set of criteria</b>: a proven combination of model, market, edge size, and line range. Here that's Pace+, and that firing model <b>is</b> the pick. When none of them meet the criteria, no dot turns rust and the read grades No Edge.</p>
+  </div>
+</section>
+
+<!-- 8 · PRICING -->
+<section class="pricing">
+  <div class="container">
+    <div class="section-eyebrow">Pricing</div>
+    <h2 class="section-title">Release pricing. <em>Locked for life.</em></h2>
+    <div class="pricing-rows">
+      <div class="pricing-price">$3.99<small>per week</small></div>
+      <div class="pricing-price">$11.99<small>per month</small></div>
+      <div class="pricing-price">$34.99<small>season pass</small></div>
+    </div>
+    <p class="pricing-lock">These are release prices. They lock for the life of your subscription. Resubscribers pay current pricing.</p>
+    <p class="pricing-first"><b>First charge anchored to Aug 23.</b> Subscribe today, pay nothing until picks drop for Week 0.</p>
+    <div class="hero-actions" style="margin-top:32px;">
+      <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · CLOSING (founder-voice payoff) -->
 <section id="closing" style="border-top:1px solid var(--border);background:var(--cream-dark);">
-  <div class="container" style="padding-top:80px;padding-bottom:80px;text-align:center;">
-    <div class="section-eyebrow">The 2026 Season</div>
-    <h2 class="section-title">Picks drop in time for Week 0.<br><em>Release pricing locked for as long as you're subscribed.</em></h2>
-    <p class="section-sub" style="margin:24px auto 32px;max-width:560px;">The first picks for 2026 release ahead of kickoff weekend. Subscribe at release pricing and you'll keep that rate for the life of your subscription — no rate hikes, no upgrade pressure, no upsells.</p>
+  <div class="container" style="padding-top:88px;padding-bottom:88px;text-align:center;">
+    <div class="section-eyebrow" style="justify-content:center;">The 2026 Season</div>
+    <h2 class="section-title">The whole board. <em>The whole truth.</em></h2>
+    <p class="section-sub" style="margin:18px auto 32px;max-width:520px;">2026 is the first season under the locked spec. Every game. Every grade. Live.</p>
     <div class="hero-actions" style="justify-content:center;">
       <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
     </div>
@@ -933,6 +1300,32 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
 <!-- Auth-aware nav: "Sign in" when signed out, "Sign out" when signed in -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/auth-nav.js" defer></script>
+<script>
+(function () {
+  if (typeof supabase === 'undefined') return;
+  const sb = supabase.createClient(
+    'https://brwalcuodwxsynrpiqjc.supabase.co',
+    'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE'
+  );
+  document.addEventListener('DOMContentLoaded', async () => {
+    let session = null;
+    try { const r = await sb.auth.getSession(); session = r?.data?.session || null; }
+    catch (e) { return; }
+    if (!session) return;  // signed out -> leave the "Sign in" links as-is
+    const handleSignOut = async (e) => {
+      e.preventDefault();
+      try { await sb.auth.signOut(); } catch (err) { console.error('signOut failed:', err); }
+      window.location.href = '/';
+    };
+    ['navAuth', 'navAuthMobile'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = 'Sign out';
+      el.href = '#';
+      el.addEventListener('click', handleSignOut);
+    });
+  });
+})();
+</script>
 </body>
 </html>
