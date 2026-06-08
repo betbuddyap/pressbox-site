@@ -731,6 +731,7 @@
   .gc.slate .gc-pick-tier.tier-sm { background: var(--sage); color: #fff; }
   .gc.slate .gc-pick-tier.tier-ls { background: var(--rust); color: #fff; }
   .gc.slate .gc-pick-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-ne { background: transparent; color: rgba(248,245,238,0.6); border-color: rgba(248,245,238,0.35); }
 
   @media (max-width: 720px) {
     .gc.slate { min-height: 168px; }
@@ -765,6 +766,7 @@
   .legend-tag.tier-sm { background: var(--sage); color: #fff; }
   .legend-tag.tier-ls { background: var(--rust); color: #fff; }
   .legend-tag.tier-gl { background: var(--sage-mid); color: var(--ink); }
+  .legend-tag.tier-ne { background: transparent; color: var(--text-light); border-color: var(--border); }
   .legend-desc { color: var(--text-light); }
 
   /* ── EMPTY / LOADING ── */
@@ -948,6 +950,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <div class="legend">
         <div class="legend-item"><span class="legend-tag tier-ap">A+</span> <span class="legend-desc">Top conviction</span></div>
         <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Strong edge</span></div>
+        <div class="legend-item"><span class="legend-tag tier-ne">NE</span> <span class="legend-desc">No actionable edge</span></div>
         <div class="legend-item"><span class="legend-tag tier-sm">SM</span> <span class="legend-desc">ML value</span></div>
         <div class="legend-item"><span class="legend-tag tier-gl">GL</span> <span class="legend-desc">Goldilocks · just-right ML</span></div>
         <div class="legend-item"><span class="legend-tag tier-ls">LT</span> <span class="legend-desc">Long-shot ML</span></div>
@@ -1168,7 +1171,7 @@ const CONF_SHORT = {
 };
 
 const TIER_LABEL = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
-const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'SM', gl: 'GL', ls: 'LT' };
+const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE' };
 
 // Simulated stand-in lines (a pre-season test path) are permanently OFF.
 // The page always serves the real board — released picks only, badges gated
@@ -1583,6 +1586,7 @@ function renderSlateCard(g) {
       'goldilocks':   'gl',
       'lottery':      'ls',
       'lottery_shot': 'ls',
+      'no_edge':      'ne',
     })[tierFull];
 
     if (status === 'final' && slotData && slotData.result) {
