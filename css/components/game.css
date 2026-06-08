@@ -879,7 +879,7 @@
 .strip-zero {
   position: absolute;
   top: 50%;
-  height: 60px;
+  height: 80px;
   width: 1.5px;
   background: var(--rust);
   transform: translate(-0.75px, -50%);
@@ -1640,7 +1640,8 @@ footer {
   /* Density curve — slightly shorter on mobile so it doesn't
      overwhelm the rest of the row. */
   .strip-hist-curve { height: 44px; }
-  .strip-vegas, .strip-zero { height: 48px; }
+  .strip-vegas { height: 48px; }
+  .strip-zero { height: 64px; }
 
   /* ── Moneyline + stat cards on mobile ────────────────────────── */
   /* Rows themselves use the stacked 2x3 layout from the
