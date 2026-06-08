@@ -51,6 +51,12 @@
     --gold-light: #D4A83A;
     --gold-pale:  #F5EDD0;
     --ink:        #0F0E0A;
+    /* tier-badge + accent colors — approximations; confirm vs tokens.css */
+    --rust:       #B85A2A;
+    --rust-light: #C9703F;
+    --silver:     #B6AE9E;
+    --sage:       #7E8A5C;
+    --sage-mid:   #A7B083;
     --serif:      'Libre Baskerville', Georgia, serif;
     --sans:       'Source Sans 3', system-ui, sans-serif;
     --max:        1200px;
@@ -270,6 +276,108 @@
   .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
   .footer-legal-links a:hover { color: var(--text-mid); }
 
+  /* ============ HOW-TO-USE JOURNEY COMPONENTS (2026-06) ============ */
+  .fork { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 28px; }
+  .fork-card { background:#fff; border:0.5px solid var(--border); border-radius:8px; padding:28px 26px; text-decoration:none; display:block; transition:border-color .2s, transform .2s; }
+  .fork-card:hover { border-color:var(--gold); transform:translateY(-2px); }
+  .fork-eyebrow { font-family:var(--sans); font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+  .fork-name { font-family:var(--serif); font-size:22px; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .fork-name em { font-style:italic; color:var(--gold); }
+  .fork-desc { font-family:var(--sans); font-size:14px; font-weight:300; color:var(--text-mid); line-height:1.6; }
+  .fork-go { font-family:var(--sans); font-size:12px; font-weight:600; color:var(--ink); margin-top:14px; display:inline-block; }
+  @media (max-width:640px){ .fork { grid-template-columns:1fr; } }
+
+  .llm { max-width:540px; background:#FFF; border:0.5px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:0 10px 36px rgba(0,0,0,0.06); margin-top:28px; }
+  .llm-head { display:flex; align-items:center; gap:14px; padding:20px 18px; }
+  .llm-badge { width:52px; height:46px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; font-family:var(--sans); font-size:17px; font-weight:700; border:1px solid var(--ink); border-radius:6px; background:var(--gold); color:var(--cream); }
+  .llm-content { flex:1 1 auto; min-width:0; }
+  .llm-matchup { font-family:var(--sans); font-size:17px; font-weight:600; color:var(--ink); line-height:1.3; margin-bottom:3px; }
+  .llm-pick { font-family:var(--sans); font-size:15px; color:var(--text-mid); line-height:1.3; }
+  .llm-pick b { color:var(--ink); font-weight:700; }
+  .llm-time { font-family:var(--sans); font-size:12px; color:var(--text-light); margin-top:5px; }
+  .llm-chevron { color:var(--text-mid); font-size:13px; flex-shrink:0; align-self:flex-start; padding-top:4px; }
+  .llm-acc { border-top:1px solid var(--border); background:var(--cream-dark); padding:18px; }
+  .llm-acc-label { font-family:var(--sans); font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mid); margin-bottom:16px; }
+  .llm-history { position:relative; padding-left:24px; margin-bottom:18px; }
+  .llm-history::before { content:''; position:absolute; top:8px; bottom:8px; left:7px; width:1px; background:var(--border); }
+  .llm-event { position:relative; margin-bottom:18px; }
+  .llm-event:last-child { margin-bottom:0; }
+  .llm-event::before { content:''; position:absolute; left:-21px; top:5px; width:8px; height:8px; border-radius:50%; background:var(--gold); }
+  .llm-event-title { font-family:var(--sans); font-size:14px; color:var(--ink); line-height:1.4; }
+  .llm-event-title strong { font-weight:700; }
+  .llm-event-time { font-family:var(--sans); font-size:12px; color:var(--text-light); line-height:1.4; margin-top:2px; }
+  .llm-books { display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--border); padding-top:16px; }
+  .llm-books span { font-family:var(--sans); font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mid); }
+  .llm-cta { display:block; background:var(--ink); color:var(--cream); text-align:center; font-family:var(--sans); font-size:14px; font-weight:700; padding:14px; border-radius:6px; text-decoration:none; margin-top:16px; }
+  .llm-breakdown { display:block; text-align:center; font-family:var(--sans); font-size:13px; font-weight:600; color:var(--gold); text-decoration:none; padding:15px 0 2px; }
+
+  .anno { max-width:540px; margin:22px 0 0; display:grid; grid-template-columns:1fr 1fr; gap:12px 28px; }
+  .anno-item { font-family:var(--sans); font-size:13px; color:var(--text-mid); line-height:1.5; }
+  .anno-item b { color:var(--ink); font-weight:600; }
+  @media (max-width:640px){ .anno { grid-template-columns:1fr; } }
+
+  .tier-group-label { font-family:var(--sans); font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text-light); margin:28px 0 14px; }
+  .tier-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .tier-card { background:#fff; border:0.5px solid var(--border); border-radius:8px; padding:18px; }
+  .tier-card-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .tier-chip { font-family:var(--sans); font-size:12px; font-weight:700; padding:5px 10px; border-radius:4px; letter-spacing:.3px; border:1px solid transparent; white-space:nowrap; }
+  .tier-chip-aplus { background:var(--gold); color:var(--cream); border-color:var(--ink); }
+  .tier-chip-a { background:var(--silver); color:var(--ink); border-color:var(--ink); }
+  .tier-chip-noedge { background:transparent; color:var(--text-light); border-color:var(--border); }
+  .tier-chip-sm { background:var(--sage); color:var(--cream); border-color:var(--ink); }
+  .tier-chip-gl { background:var(--sage-mid); color:var(--ink); border-color:var(--ink); }
+  .tier-chip-lt { background:var(--rust); color:var(--cream); border-color:var(--ink); }
+  .tier-card-name { font-family:var(--sans); font-size:14px; font-weight:700; color:var(--ink); }
+  .tier-card-desc { font-family:var(--sans); font-size:13px; font-weight:300; color:var(--text-mid); line-height:1.55; }
+  @media (max-width:760px){ .tier-grid { grid-template-columns:1fr; } }
+
+  .where { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:28px; }
+  .where-card { background:var(--cream-dark); border:1px solid var(--border); border-radius:8px; padding:22px; }
+  .where-n { font-family:var(--sans); font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; }
+  .where-t { font-family:var(--serif); font-size:17px; font-weight:700; color:var(--ink); margin-bottom:8px; }
+  .where-d { font-family:var(--sans); font-size:13px; font-weight:300; color:var(--text-mid); line-height:1.55; }
+  @media (max-width:760px){ .where { grid-template-columns:1fr; } }
+
+  .dp-stage { max-width:540px; margin:26px 0 0; background:#FFF; border:0.5px solid var(--border); border-radius:4px; padding:16px 24px 18px; box-shadow:0 10px 36px rgba(0,0,0,0.06); }
+  .dp-head { display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--cream-mid); }
+  .dp-label { font-family:var(--sans); font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--ink); }
+  .dp-vegas-head { font-family:var(--sans); font-size:12px; font-weight:600; color:var(--text-mid); }
+  .dp-vegas-head strong { color:var(--ink); font-weight:700; }
+  .dp-plot { position:relative; padding:0 12px; }
+  .dp-labels { position:relative; height:48px; }
+  .dp-labels-above { margin-bottom:4px; }
+  .dp-labels-below { margin-top:4px; }
+  .dp-axis-wrap { position:relative; height:24px; display:flex; align-items:center; }
+  .dp-axis { position:relative; width:100%; height:2px; background:var(--border); border-radius:1px; }
+  .dp-hist { position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); width:100%; height:56px; z-index:1; pointer-events:none; overflow:visible; }
+  .dp-hist path { fill:rgba(76,124,168,0.18); stroke:rgba(76,124,168,0.45); stroke-width:1; }
+  .dp-zero { position:absolute; top:50%; height:80px; width:1.5px; background:var(--rust); transform:translate(-0.75px,-50%); z-index:2; opacity:.85; }
+  .dp-vegas { position:absolute; top:50%; height:60px; width:1.5px; background:var(--ink); transform:translate(-0.75px,-50%); z-index:3; }
+  .dp-dot { position:absolute; top:50%; width:10px; height:10px; background:var(--text-mid); border:2px solid #fff; border-radius:50%; transform:translate(-50%,-50%); z-index:4; box-shadow:0 0 0 1px var(--text-mid); }
+  .dp-dot-pick { width:14px; height:14px; background:var(--rust); box-shadow:0 0 0 1px var(--rust),0 0 0 4px rgba(184,90,42,.18); z-index:5; }
+  .dp-lab { position:absolute; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; white-space:nowrap; pointer-events:none; }
+  .dp-labels-above .dp-lab { bottom:4px; }
+  .dp-labels-below .dp-lab { top:4px; }
+  .dp-lab-name { font-family:var(--sans); font-size:10px; font-weight:700; letter-spacing:.5px; color:var(--text-mid); text-transform:uppercase; }
+  .dp-lab-val { font-family:var(--sans); font-size:11px; font-weight:700; color:var(--ink); letter-spacing:.3px; }
+  .dp-lab-pick .dp-lab-name, .dp-lab-pick .dp-lab-val { color:var(--rust); }
+  .dp-labels-above .dp-lab::after { content:''; position:absolute; bottom:-6px; left:50%; width:1px; height:4px; background:var(--border); transform:translateX(-50%); }
+  .dp-labels-below .dp-lab::before { content:''; position:absolute; top:-6px; left:50%; width:1px; height:4px; background:var(--border); transform:translateX(-50%); }
+  .dp-ticks { position:relative; margin-top:6px; height:16px; }
+  .dp-tick { position:absolute; top:0; width:1px; height:4px; background:var(--cream-mid); transform:translateX(-50%); }
+  .dp-tick-label { position:absolute; top:6px; font-family:var(--sans); font-size:11px; font-weight:500; color:var(--text-mid); letter-spacing:.3px; transform:translateX(-50%); }
+  .dp-tick-label-zero { color:var(--rust); font-weight:700; }
+  .dp-legend { display:flex; gap:18px; flex-wrap:wrap; margin-top:24px; padding-top:16px; border-top:1px solid var(--cream-mid); }
+  .dp-legend-item { display:flex; align-items:center; gap:8px; font-family:var(--sans); font-size:12px; color:var(--text-mid); }
+  .dp-key { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+  .dp-key-veg { width:2px; height:14px; flex-shrink:0; background:var(--ink); }
+
+  .gp-list { list-style:none; margin:22px 0 0; padding:0; }
+  .gp-item { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
+  .gp-item:first-child { border-top:1px solid var(--border); }
+  .gp-dot { width:7px; height:7px; border-radius:50%; background:var(--gold); flex-shrink:0; margin-top:7px; }
+  .gp-t { font-family:var(--sans); font-size:15px; font-weight:600; color:var(--ink); }
+  .gp-d { font-family:var(--sans); font-size:14px; font-weight:300; color:var(--text-mid); line-height:1.55; }
 </style>
 </head>
 <body>
@@ -279,12 +387,12 @@
   <div class="ticker-track">
     A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
     <b>+30.6% ROI</b><span>·</span>
-    <b>Every FBS game</b> graded<span>·</span>
+    <b>Every FBS-vs-FBS game</b> graded<span>·</span>
     <b>0.8 percentage points</b> year-over-year stability<span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
     A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
     <b>+30.6% ROI</b><span>·</span>
-    <b>Every FBS game</b> graded<span>·</span>
+    <b>Every FBS-vs-FBS game</b> graded<span>·</span>
     <b>0.8 percentage points</b> year-over-year stability<span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
   </div>
@@ -332,120 +440,232 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- PAGE HEADER -->
 <div class="page-header">
   <div class="page-header-inner">
-    <div class="page-eyebrow">Methodology</div>
-    <h1 class="page-title">The model doesn't care<br>about <em>the narrative.</em></h1>
-    <p class="page-sub">Five independent models. Live grading. No gut feelings, no hot takes, no bias toward name brands. Here's how it actually works — enough to understand it, not enough to copy it.</p>
+    <div class="page-eyebrow">How It Works</div>
+    <h1 class="page-title">You're in.<br><em>Here's how to use it.</em></h1>
+    <p class="page-sub">Two ways to read the board — go straight to the bets, or work through the slate game by game. Here's the whole journey, from the moment you log in to the number you actually bet.</p>
   </div>
 </div>
 
 <!-- CONTENT -->
 <div class="content">
 
-  <!-- Section 1: The Problem -->
+  <!-- 1 · TWO WAYS IN -->
   <div class="section">
-    <div class="section-num">01</div>
-    <h2 class="section-title">Vegas is very, very good at their job.</h2>
+    <div class="section-num">01 — After you log in</div>
+    <h2 class="section-title">Pick your way in.</h2>
     <div class="section-body">
-      <p>The sportsbook doesn't set a line to predict the outcome. It sets a line to split the public 50/50 so they collect the vig on both sides. That means public money, media narratives, and fan bias all move lines away from their true probability.</p>
-      <p>That's the inefficiency we're looking for. <strong>When the market misprices a game, we want to find it before it corrects.</strong> Not because we have insider information — because we're measuring things the public doesn't weight correctly.</p>
+      <p>Everything runs off one board. You just choose how to look at it — straight at the bets, or game by game. Move between the two whenever you want.</p>
     </div>
-
-    <div class="callout">
-      <div class="callout-title">The only question that matters</div>
-      <div class="callout-body">Not "who wins?" — Vegas already knows that. The question is: <strong>where does the market reliably get the number wrong?</strong> Years of studying college football lines tell us which specific game patterns the public consistently misprices. Those are the games we hunt — not every line that looks off, just the ones that fit a pattern we've already mapped.</div>
+    <div class="fork">
+      <a href="/live-lines.html" class="fork-card">
+        <div class="fork-eyebrow">Live Lines</div>
+        <div class="fork-name">Start with <em>the bets.</em></div>
+        <div class="fork-desc">Every graded bet as its own row, ranked by grade. The fastest path from "what's worth betting" to a side, a number, and the best book to take it at.</div>
+        <span class="fork-go">Go to Live Lines →</span>
+      </a>
+      <a href="/upcoming.html" class="fork-card">
+        <div class="fork-eyebrow">Upcoming</div>
+        <div class="fork-name">Start with <em>the games.</em></div>
+        <div class="fork-desc">The full FBS-vs-FBS slate, matchup by matchup, with a grade badge on any game that has a live bet. Stays on through kickoff with live scores and updates.</div>
+        <span class="fork-go">Go to Upcoming →</span>
+      </a>
     </div>
   </div>
 
-  <!-- Section 2: The Model -->
+  <!-- 2 · READING A PICK -->
   <div class="section">
-    <div class="section-num">02</div>
-    <h2 class="section-title">Five reads. <em>One question.</em></h2>
+    <div class="section-num">02 — On Live Lines</div>
+    <h2 class="section-title">How a pick is <em>presented.</em></h2>
     <div class="section-body">
-      <p>Most public models try to be the one right answer. We don't. We run five different models on every game — each measuring something different, each with its own blind spots — and we look at how they interact.</p>
-      <p>SP+ measures efficiency. Elo measures head-to-head record. PPA measures expected points per play. Advanced stats measure the things the box score misses. Pace+, our in-house model, projects each team's possession elasticity against the matchup — how much time they'll hold the ball and what they'll do with it.</p>
-      <p>Each model answers the same question — what does the data say this game should look like — and they answer it differently. <strong>We don't look for agreement. We look at how each model reads the game in the context of the other four. The disagreement is part of the signal.</strong></p>
+      <p>On Live Lines, every bet is one row. The grade sits on the left; the bet and the best book sit in the middle. Tap any row to open its full history. Here's a real one — the spread on Oklahoma @ Michigan.</p>
+    </div>
+
+    <div class="llm">
+      <div class="llm-head">
+        <div class="llm-badge">A+</div>
+        <div class="llm-content">
+          <div class="llm-matchup">Oklahoma @ Michigan</div>
+          <div class="llm-pick"><b>Oklahoma +3</b> · DraftKings + 2 others</div>
+          <div class="llm-time">Sat, Sep 12 · 12:00 PM ET</div>
+        </div>
+        <div class="llm-chevron">▲</div>
+      </div>
+      <div class="llm-acc">
+        <div class="llm-acc-label">History</div>
+        <div class="llm-history">
+          <div class="llm-event">
+            <div class="llm-event-title"><strong>Released A+</strong> · Oklahoma +2.5 at Bovada</div>
+            <div class="llm-event-time">Wed, Sep 9 · 6:12 PM</div>
+          </div>
+          <div class="llm-event">
+            <div class="llm-event-title">Line moved +2.5 → +3 · best book Bovada → DraftKings</div>
+            <div class="llm-event-time">Fri, Sep 11 · 9:40 AM</div>
+          </div>
+          <div class="llm-event">
+            <div class="llm-event-title"><strong>Current</strong> · A+ holding · Oklahoma +3 at DraftKings</div>
+            <div class="llm-event-time">Now</div>
+          </div>
+        </div>
+        <div class="llm-books"><span>Other books</span><span style="color:var(--text-light);font-size:12px;">▾</span></div>
+        <a href="/live-lines.html" class="llm-cta">Bet at DraftKings →</a>
+        <a href="/how-it-works.html" class="llm-breakdown">Full game breakdown →</a>
+      </div>
+    </div>
+
+    <div class="anno">
+      <div class="anno-item"><b>The grade.</b> The tier — A+ here. It tells you our conviction at a glance.</div>
+      <div class="anno-item"><b>The pick &amp; best book.</b> The exact side and number, and where the line is best right now.</div>
+      <div class="anno-item"><b>The journal.</b> Open the row: release, every line move, and the current state — all on the record.</div>
+      <div class="anno-item"><b>Bet it / break it down.</b> Jump to the book, or open the full game page for the deep view.</div>
     </div>
   </div>
 
-  <!-- Section 3: The Tier System -->
+  <!-- 3 · WHAT THE GRADES MEAN -->
   <div class="section">
-    <div class="section-num">03</div>
-    <h2 class="section-title">The market mispricing <em>comes first.</em></h2>
+    <div class="section-num">03 — The grades</div>
+    <h2 class="section-title">What each grade <em>means.</em></h2>
     <div class="section-body">
-      <p>Picks don't start with the models. They start with the market.</p>
-      <p>We've spent years studying where the market consistently misprices certain types of college football games. Specific kinds of matchups, specific tempo profiles, specific spread or total ranges where the public's intuition reliably points one way and the data reliably points the other. Those are the situations we hunt.</p>
-      <p>Once we've found a game in one of those situations, we look at how the five models are reading it. The models aren't searching for picks — they're confirming whether the mispricing we expect is actually there. <strong>The market gap is the why. The model read is the how.</strong></p>
-      <p>A pick is published only when the situation, the line, and the model read all line up.</p>
+      <p>Spreads and totals share one scale. Moneylines get their own three, because a longshot and a near-pickem are completely different bets. Every grade is a published verdict — including the ones that say "pass."</p>
     </div>
 
-    <table class="tier-table">
-      <thead>
-        <tr>
-          <th>Tier</th>
-          <th>What it means</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="tier-badge tier-ap">A+</span></td>
-          <td><span class="tier-td-name">Highest conviction</span><br>The game fits one of our cleanest mispricing patterns and the model read confirms it without ambiguity. The most repeatable setup we publish.</td>
-        </tr>
-        <tr>
-          <td><span class="tier-badge tier-a">A</span></td>
-          <td><span class="tier-td-name">Strong signal</span><br>The game fits a mispricing pattern with strong model confirmation, just not the tightest one. Lower volume than A+ but still in profitable territory across the locked backtest.</td>
-        </tr>
-        <tr>
-          <td><span class="tier-badge tier-a">SM</span></td>
-          <td><span class="tier-td-name">Smart Money 💰</span><br>Moneyline plays on favorites in matchups where the model read and the market direction align. The price tells you what the market thinks; the read tells you why we agree.</td>
-        </tr>
-        <tr>
-          <td><span class="tier-badge tier-a">GL</span></td>
-          <td><span class="tier-td-name">Goldilocks 🐻</span><br>Mid-conviction moneyline plays. Neither too cautious nor too speculative — the middle ground.</td>
-        </tr>
-        <tr>
-          <td><span class="tier-badge tier-a">LT</span></td>
-          <td><span class="tier-td-name">Lottery 🎟</span><br>Long-shot moneyline picks. Hits less than a third of the time. The win rate is the feature, not the bug — the payouts are large enough to make the math work.</td>
-        </tr>
-        <tr>
-          <td><span class="tier-badge tier-a">NE</span></td>
-          <td><span class="tier-td-name">No Edge</span><br>The pick was released, but the line has since moved out of our band. We don't hide these. They show on the board with the rest.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="tier-group-label">Spread &amp; Total</div>
+    <div class="tier-grid">
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-aplus">A+</span><span class="tier-card-name">Highest conviction</span></div>
+        <div class="tier-card-desc">The cleanest setups we publish — a strong edge on a manageable number, with the model read and SP+ pulling the same way. Our most repeatable bet.</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-a">A</span><span class="tier-card-name">Strong edge</span></div>
+        <div class="tier-card-desc">A clear edge, just below A+ — strong model confirmation in profitable territory across the locked backtest, at lower volume.</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-noedge">No Edge</span><span class="tier-card-name">We'll pass</span></div>
+        <div class="tier-card-desc">We ran the game and didn't find an edge worth betting — or the market moved past the one we had. We publish it anyway, right on the board.</div>
+      </div>
+    </div>
+
+    <div class="tier-group-label">Moneyline</div>
+    <div class="tier-grid">
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-sm">💰 Smart Money</span></div>
+        <div class="tier-card-desc">Moneyline value at reasonable prices — near-pickem to modest favorites. The highest hit rate of the three ML grades.</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-gl">🐻 Goldilocks</span></div>
+        <div class="tier-card-desc">The middle-ground underdog — not chalk, not a longshot. Moderate dogs where the price and the read line up. Hits a little under half the time.</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-lt">🎟 Lottery</span></div>
+        <div class="tier-card-desc">Heavy underdogs and longshots. Hits less than a third of the time — but the payouts are big enough that the math works in your favor.</div>
+      </div>
+    </div>
   </div>
 
-  <!-- Section 4: What we don't do -->
+  <!-- 4 · WHERE THE GRADE SHOWS UP -->
   <div class="section">
-    <div class="section-num">04</div>
-    <h2 class="section-title">What the model <em>ignores.</em></h2>
+    <div class="section-num">04 — One grade, everywhere</div>
+    <h2 class="section-title">Where the grade <em>shows up.</em></h2>
     <div class="section-body">
-      <p>Discipline is as important as methodology. There are things that sound like they should matter that the data consistently shows don't — at least not in the way the public thinks.</p>
+      <p>A bet's grade follows it across the whole product. Same verdict, three views.</p>
+    </div>
+    <div class="where">
+      <div class="where-card">
+        <div class="where-n">Live Lines</div>
+        <div class="where-t">As a row</div>
+        <div class="where-d">The grade badge anchors each bet's row — the bet-first view, ranked so the strongest sit up top.</div>
+      </div>
+      <div class="where-card">
+        <div class="where-n">Upcoming</div>
+        <div class="where-t">As a badge</div>
+        <div class="where-d">The same grade rides on the matchup in the slate, so you can scan the week and see where the edges are.</div>
+      </div>
+      <div class="where-card">
+        <div class="where-n">Game page</div>
+        <div class="where-t">At the top</div>
+        <div class="where-d">Open any game and the grade leads the page, with the full reasoning laid out underneath it.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 · THE GAME PAGE -->
+  <div class="section">
+    <div class="section-num">05 — The deep view</div>
+    <h2 class="section-title">The game page.</h2>
+    <div class="section-body">
+      <p>Tap "full game breakdown" on any bet and you land on the deepest view on the site. It's where the grade gets explained — in writing, in the numbers, and in the model reads.</p>
     </div>
 
-    <div class="principle-list">
-      <div class="principle">
-        <div class="principle-icon">✕</div>
-        <div class="principle-text"><strong>Injuries announced after our pick is set.</strong> We pick off opening lines. We don't chase movement caused by news we didn't have when the pick was made.</div>
+    <ul class="gp-list">
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">A written breakdown</div><div class="gp-d">A plain-English read on the matchup — what the models see and why the bet landed where it did.</div></div></li>
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Every model's read</div><div class="gp-d">All five models on one axis against the market line, for each market. More on this just below.</div></div></li>
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Team &amp; advanced stats</div><div class="gp-d">The numbers behind the call — efficiency, tempo, and the advanced splits the box score misses.</div></div></li>
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Head-to-head history</div><div class="gp-d">How these two have met before.</div></div></li>
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Live scoring</div><div class="gp-d">Once the game kicks off, the page tracks it in real time.</div></div></li>
+    </ul>
+
+    <div class="section-body" style="margin-top:30px;">
+      <p>The model reads are the heart of it. Each model puts its number on one axis against the Vegas line. A bet fires when one model's read sits far enough off the line to meet a <strong>specific set of criteria</strong> — a proven combination of model, market, edge size, and line range. That firing model is the pick, shown in rust. When nothing meets the criteria, a single gold aggregate dot appears instead and the read grades No Edge.</p>
+    </div>
+
+    <div class="dp-stage">
+      <div class="dp-head">
+        <div class="dp-label">Spread</div>
+        <div class="dp-vegas-head">Vegas: <strong>Mich −3</strong></div>
       </div>
-      <div class="principle">
-        <div class="principle-icon">✕</div>
-        <div class="principle-text"><strong>Revenge games, rivalry narratives, must-win situations.</strong> These stories are already priced in by the public. We're looking for mispriced talent gaps, not motivation angles.</div>
+      <div class="dp-plot">
+        <div class="dp-labels dp-labels-above">
+          <div class="dp-lab" style="left:29.2%;"><span class="dp-lab-name">Elo</span><span class="dp-lab-val">−3.5</span></div>
+          <div class="dp-lab" style="left:45.8%;"><span class="dp-lab-name">SP+</span><span class="dp-lab-val">−1.5</span></div>
+          <div class="dp-lab dp-lab-pick" style="left:62.5%;"><span class="dp-lab-name">Pace+</span><span class="dp-lab-val">+0.5</span></div>
+        </div>
+        <div class="dp-axis-wrap">
+          <div class="dp-axis">
+            <svg class="dp-hist" viewBox="0 0 1000 100" preserveAspectRatio="none"><path d="M100,49 L180,45 L260,36 L340,24 L420,18 L500,23 L580,33 L660,41 L740,46 L820,49 L820,51 L740,54 L660,59 L580,67 L500,77 L420,82 L340,76 L260,64 L180,55 L100,51 Z"/></svg>
+            <div class="dp-zero" style="left:58.3%;"></div>
+            <div class="dp-vegas" style="left:33.3%;"></div>
+            <div class="dp-dot" style="left:29.2%;"></div>
+            <div class="dp-dot" style="left:41.7%;"></div>
+            <div class="dp-dot" style="left:45.8%;"></div>
+            <div class="dp-dot" style="left:54.2%;"></div>
+            <div class="dp-dot dp-dot-pick" style="left:62.5%;"></div>
+          </div>
+        </div>
+        <div class="dp-labels dp-labels-below">
+          <div class="dp-lab" style="left:41.7%;"><span class="dp-lab-name">PPA</span><span class="dp-lab-val">−2</span></div>
+          <div class="dp-lab" style="left:54.2%;"><span class="dp-lab-name">Adv</span><span class="dp-lab-val">−0.5</span></div>
+        </div>
+        <div class="dp-ticks">
+          <div class="dp-tick" style="left:0%;"></div><div class="dp-tick-label" style="left:0%;">−7</div>
+          <div class="dp-tick" style="left:16.7%;"></div><div class="dp-tick-label" style="left:16.7%;">−5</div>
+          <div class="dp-tick" style="left:33.3%;"></div><div class="dp-tick-label" style="left:33.3%;">−3</div>
+          <div class="dp-tick" style="left:50%;"></div><div class="dp-tick-label" style="left:50%;">−1</div>
+          <div class="dp-tick" style="left:58.3%;"></div><div class="dp-tick-label dp-tick-label-zero" style="left:58.3%;">0</div>
+          <div class="dp-tick" style="left:66.7%;"></div><div class="dp-tick-label" style="left:66.7%;">+1</div>
+          <div class="dp-tick" style="left:83.3%;"></div><div class="dp-tick-label" style="left:83.3%;">+3</div>
+          <div class="dp-tick" style="left:100%;"></div><div class="dp-tick-label" style="left:100%;">+5</div>
+        </div>
       </div>
-      <div class="principle">
-        <div class="principle-icon">✕</div>
-        <div class="principle-text"><strong>Recency bias.</strong> A team that scored 52 points last week isn't necessarily a better bet this week. The model weighs rolling performance but doesn't overreact to a single outlier.</div>
+      <div class="dp-legend">
+        <div class="dp-legend-item"><span class="dp-key-veg"></span> Vegas line</div>
+        <div class="dp-legend-item"><span class="dp-key" style="background:var(--text-mid);"></span> Each model's read</div>
+        <div class="dp-legend-item"><span class="dp-key" style="background:var(--rust);"></span> Firing model — the pick</div>
       </div>
-      <div class="principle">
-        <div class="principle-icon">✕</div>
-        <div class="principle-text"><strong>Brand names.</strong> Alabama, Georgia, Ohio State — the public always overvalues them. The models don't know or care what the ESPN narrative is.</div>
-      </div>
+    </div>
+  </div>
+
+  <!-- 6 · GRADED ON OUR NUMBER -->
+  <div class="section">
+    <div class="section-num">06 — After the game</div>
+    <h2 class="section-title">We're graded on the number <em>we gave you.</em></h2>
+    <div class="section-body">
+      <p>When a bet releases, we freeze the line and tier we published. It re-grades against the live market every 30 minutes and can slip to No Edge as the line moves. When the game ends, win or loss is scored against the number we released — not a friendlier closing line. Every result lands on the Results page, win or lose.</p>
     </div>
   </div>
 
   <!-- CTA -->
   <div class="cta-section">
-    <h2 class="cta-title">See the models in action.</h2>
-    <p class="cta-sub">Every pick, every week, every result — the full record, no cherry-picking.</p>
+    <h2 class="cta-title">See it for yourself.</h2>
+    <p class="cta-sub">Release pricing locked for the life of your subscription. First charge anchored to Aug 23 — pay nothing until picks drop for Week 0.</p>
     <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
   </div>
 
@@ -471,6 +691,32 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
 <!-- Auth-aware nav: "Sign in" when signed out, "Sign out" when signed in -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/auth-nav.js" defer></script>
+<script>
+(function () {
+  if (typeof supabase === 'undefined') return;
+  const sb = supabase.createClient(
+    'https://brwalcuodwxsynrpiqjc.supabase.co',
+    'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE'
+  );
+  document.addEventListener('DOMContentLoaded', async () => {
+    let session = null;
+    try { const r = await sb.auth.getSession(); session = r?.data?.session || null; }
+    catch (e) { return; }
+    if (!session) return;  // signed out -> leave the "Sign in" links as-is
+    const handleSignOut = async (e) => {
+      e.preventDefault();
+      try { await sb.auth.signOut(); } catch (err) { console.error('signOut failed:', err); }
+      window.location.href = '/';
+    };
+    ['navAuth', 'navAuthMobile'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = 'Sign out';
+      el.href = '#';
+      el.addEventListener('click', handleSignOut);
+    });
+  });
+})();
+</script>
 </body>
 </html>
