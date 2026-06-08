@@ -759,9 +759,9 @@
   /* ── LEGEND ── */
   .legend { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 14px 20px; background: var(--cream-dark); border-radius: 4px; margin-bottom: 24px; font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
   .legend-item { display: flex; align-items: center; gap: 8px; }
-  .legend-tag { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 3px 8px; border-radius: 0; }
+  .legend-tag { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; min-width: 28px; padding: 3px 6px; border: 1px solid var(--ink); border-radius: 3px; box-sizing: border-box; text-align: center; display: inline-block; }
   .legend-tag.tier-ap { background: var(--gold); color: var(--ink); }
-  .legend-tag.tier-a  { background: var(--gold-light); color: var(--ink); }
+  .legend-tag.tier-a  { background: #C0C5CC; color: var(--ink); }
   .legend-tag.tier-sm { background: var(--sage); color: #fff; }
   .legend-tag.tier-ls { background: var(--rust); color: #fff; }
   .legend-tag.tier-gl { background: var(--sage-mid); color: var(--ink); }
@@ -948,9 +948,9 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <div class="legend">
         <div class="legend-item"><span class="legend-tag tier-ap">A+</span> <span class="legend-desc">Top conviction</span></div>
         <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Strong edge</span></div>
-        <div class="legend-item"><span class="legend-tag tier-sm">Smart $</span> <span class="legend-desc">ML value</span></div>
+        <div class="legend-item"><span class="legend-tag tier-sm">SM</span> <span class="legend-desc">ML value</span></div>
         <div class="legend-item"><span class="legend-tag tier-gl">GL</span> <span class="legend-desc">Goldilocks · just-right ML</span></div>
-        <div class="legend-item"><span class="legend-tag tier-ls">Lottery</span> <span class="legend-desc">Long-shot ML</span></div>
+        <div class="legend-item"><span class="legend-tag tier-ls">LT</span> <span class="legend-desc">Long-shot ML</span></div>
       </div>
     </div>
 
