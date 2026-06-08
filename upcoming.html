@@ -684,14 +684,14 @@
   .gc.slate .gc-status { font-size: 11px; }
 
   /* Pick slots row — always shows three slots; empty if no pick */
-  .gc.slate .gc-picks {
+  .gc.slate .gc-picks, .gc.gotw-card .gc-picks {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 6px;
     padding-top: 10px;
     border-top: 1px solid rgba(248,245,238,0.12);
   }
-  .gc.slate .gc-pick-slot {
+  .gc.slate .gc-pick-slot, .gc.gotw-card .gc-pick-slot {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -699,7 +699,7 @@
     padding: 4px 6px;
     min-height: 24px;
   }
-  .gc.slate .gc-pick-label {
+  .gc.slate .gc-pick-label, .gc.gotw-card .gc-pick-label {
     font-family: var(--sans);
     font-size: 11px;
     font-weight: 700;
@@ -707,11 +707,11 @@
     text-transform: uppercase;
     color: rgba(248,245,238,0.55);
   }
-  .gc.slate .gc-pick-slot.empty .gc-pick-label { color: rgba(248,245,238,0.30); }
+  .gc.slate .gc-pick-slot.empty .gc-pick-label, .gc.gotw-card .gc-pick-slot.empty .gc-pick-label { color: rgba(248,245,238,0.30); }
   /* When the slot has a tier badge, fade the label slightly so the badge
      reads as the dominant element. */
-  .gc.slate .gc-pick-slot.has-tier .gc-pick-label { color: rgba(248,245,238,0.45); }
-  .gc.slate .gc-pick-tier {
+  .gc.slate .gc-pick-slot.has-tier .gc-pick-label, .gc.gotw-card .gc-pick-slot.has-tier .gc-pick-label { color: rgba(248,245,238,0.45); }
+  .gc.slate .gc-pick-tier, .gc.gotw-card .gc-pick-tier {
     font-family: var(--sans);
     font-size: 10px;
     font-weight: 800;
@@ -726,12 +726,12 @@
     box-sizing: border-box;
   }
   /* A+ = filled gold (top conviction). A = filled silver (strong edge). */
-  .gc.slate .gc-pick-tier.tier-ap { background: var(--gold); color: var(--ink); }
-  .gc.slate .gc-pick-tier.tier-a  { background: #C0C5CC; color: var(--ink); }
-  .gc.slate .gc-pick-tier.tier-sm { background: var(--sage); color: #fff; }
-  .gc.slate .gc-pick-tier.tier-ls { background: var(--rust); color: #fff; }
-  .gc.slate .gc-pick-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
-  .gc.slate .gc-pick-tier.tier-ne { background: transparent; color: rgba(248,245,238,0.6); border-color: rgba(248,245,238,0.35); }
+  .gc.slate .gc-pick-tier.tier-ap, .gc.gotw-card .gc-pick-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-a, .gc.gotw-card .gc-pick-tier.tier-a { background: #C0C5CC; color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-sm, .gc.gotw-card .gc-pick-tier.tier-sm { background: var(--sage); color: #fff; }
+  .gc.slate .gc-pick-tier.tier-ls, .gc.gotw-card .gc-pick-tier.tier-ls { background: var(--rust); color: #fff; }
+  .gc.slate .gc-pick-tier.tier-gl, .gc.gotw-card .gc-pick-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-ne, .gc.gotw-card .gc-pick-tier.tier-ne { background: transparent; color: rgba(248,245,238,0.6); border-color: rgba(248,245,238,0.35); }
 
   @media (max-width: 720px) {
     .gc.slate { min-height: 168px; }
@@ -740,9 +740,9 @@
     .gc.slate .gc-team-sub { font-size: 10px; }
     .gc.slate .gc-at { font-size: 13px; }
     .gc.slate .gc-meta { font-size: 12px; }
-    .gc.slate .gc-pick-label { font-size: 10px; }
-    .gc.slate .gc-pick-tier { font-size: 9px; padding: 2px 5px; min-width: 24px; }
-    .gc.slate .gc-pick-slot { gap: 4px; }
+    .gc.slate .gc-pick-label, .gc.gotw-card .gc-pick-label { font-size: 10px; }
+    .gc.slate .gc-pick-tier, .gc.gotw-card .gc-pick-tier { font-size: 9px; padding: 2px 5px; min-width: 24px; }
+    .gc.slate .gc-pick-slot, .gc.gotw-card .gc-pick-slot { gap: 4px; }
   }
 
   /* ── GRIDS (legacy, mostly unused now) ── */
@@ -1172,6 +1172,16 @@ const CONF_SHORT = {
 
 const TIER_LABEL = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
 const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE' };
+const TIER_KEY = { 'A+': 'ap', 'A': 'a', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'lottery_shot': 'ls', 'no_edge': 'ne' };
+// Hero (Game of the Week) pick badge — identical markup/look to the slate cards.
+function gotwSlot(label, slotData) {
+  const tierFull = slotData && slotData.tier_full;
+  const tierKey = TIER_KEY[tierFull];
+  if (tierKey) {
+    return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span><span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span></div>`;
+  }
+  return `<div class="gc-pick-slot empty"><span class="gc-pick-label">${label}</span></div>`;
+}
 
 // Simulated stand-in lines (a pre-season test path) are permanently OFF.
 // The page always serves the real board — released picks only, badges gated
@@ -1579,15 +1589,7 @@ function renderSlateCard(g) {
   // ── Pick slots (no live perf, since live handled above) ──────
   const slot = (label, slotData, market) => {
     const tierFull = slotData && slotData.tier_full;
-    const tierKey = ({
-      'A+':           'ap',
-      'A':            'a',
-      'smart_money':  'sm',
-      'goldilocks':   'gl',
-      'lottery':      'ls',
-      'lottery_shot': 'ls',
-      'no_edge':      'ne',
-    })[tierFull];
+    const tierKey = TIER_KEY[tierFull];
 
     if (status === 'final' && slotData && slotData.result) {
       const r = slotData.result;
@@ -1824,6 +1826,8 @@ function bgHTML(awayColor, homeColor) {
 }
 
 function renderGotW(g) {
+  const pick = picksByGameId[g.game_id];
+  const slots = (pick && pick.slots) || {};
   const homeColor = colorFor(g.home_team);
   const awayColor = colorFor(g.away_team);
   const homeRank = powerRankings[g.home_team];
@@ -1850,6 +1854,11 @@ function renderGotW(g) {
             ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
             <span class="gc-at">at</span>
             ${teamSideHTML(g.home_team, g.home_conference, homeRank, 'home')}
+          </div>
+          <div class="gc-picks">
+            ${gotwSlot('Spread', slots.spread)}
+            ${gotwSlot('Total',  slots.total)}
+            ${gotwSlot('ML',     slots.ml)}
           </div>
           <div class="gc-foot">
             <div class="gc-why">${whyParts.join(' ')}</div>
