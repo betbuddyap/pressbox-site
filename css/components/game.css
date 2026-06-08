@@ -869,9 +869,9 @@
   position: absolute;
   top: 50%;
   height: 60px;
-  width: 2px;
+  width: 1.5px;
   background: var(--ink);
-  transform: translate(-1px, -50%);
+  transform: translate(-0.75px, -50%);
   z-index: 3;
 }
 
