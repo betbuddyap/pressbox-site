@@ -364,6 +364,15 @@ function render() {
   if (!payload) return;
   const viewKey = VIEWS[state.view].key;
 
+  // Global strength-of-schedule rank (1 = toughest), across all FBS teams,
+  // independent of the conference filter — used in the panel's "Strength of
+  // schedule" row so it reads as a rank, not a raw rating.
+  state.sosRank = {};
+  (payload.teams || []).slice()
+    .filter(t => t.sos != null)
+    .sort((a, b) => b.sos - a.sos)
+    .forEach((t, i) => { state.sosRank[t.team] = i + 1; });
+
   let teams = (payload.teams || []).slice();
   if (state.conf !== 'All FBS') teams = teams.filter(t => t.conference === state.conf);
 
@@ -456,29 +465,21 @@ function buildPanel(t) {
   const modelRows = MODEL_ORDER.map(m => modelRow(m.label, models[m.key], false)).join('')
     + modelRow('Blend', models.blend, true);
 
-  // Spread of opinion across the four models — the product's whole point.
-  let spreadNote = '';
-  if (modelVals.length >= 2) {
-    const spread = Math.max(...modelVals) - Math.min(...modelVals);
-    spreadNote = `<div class="rk-spread-note">Model spread of <b>${spread.toFixed(1)}</b> pts — ${spread >= 12 ? 'the signals disagree sharply here.' : spread >= 6 ? 'some disagreement across signals.' : 'the signals are in tight agreement.'}</div>`;
-  }
+  // Rating variance = how far apart the four signals sit (max − min). The spread
+  // is the product's whole point, so it gets its own row.
+  const variance = modelVals.length >= 2
+    ? (Math.max(...modelVals) - Math.min(...modelVals)) : null;
 
-  // The roster / conference / coaching post-blend adjustment layer is retired —
-  // the offseason change now rides inside the model legs via the SP+ delta, so
-  // rating == blend. We surface that delta as a single "Offseason shift" line
-  // (only when nonzero) so the board explains why a team's blend differs from a
-  // naive 2025 read. It fades to zero — and the row disappears — once real games arrive.
-  const offDelta = t.offseason_delta != null ? Number(t.offseason_delta) : 0;
-  const offCls = offDelta > 0.05 ? 'pos' : (offDelta < -0.05 ? 'negv' : '');
-  const offRow = Math.abs(offDelta) >= 0.05
-    ? `<div class="rk-kv"><span class="rk-kv-k">Offseason shift (SP+)</span><span class="rk-kv-v ${offCls}">${fmtSigned(offDelta)}</span></div>`
-    : '';
+  // Strength of schedule as a national rank (1 = toughest). The raw rating reads
+  // like an adjustment and isn't meaningful on its own, so we show the rank.
+  const sosRank = state.sosRank ? state.sosRank[t.team] : null;
+  const sosTotal = state.payload ? (state.payload.teams || []).length : 0;
 
   const ctx = `
     <div class="rk-kv"><span class="rk-kv-k">Blended rating</span><span class="rk-kv-v">${fmtSigned(t.rating)}</span></div>
-    <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${fmtSigned(t.sos)}</span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Rating variance</span><span class="rk-kv-v">${variance == null ? '—' : variance.toFixed(1) + ' pts'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW · ${t.games_counted || 0} G)</span></span></div>
-    ${offRow}`;
+    <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${sosRank ? '#' + sosRank + ' <span style="color:var(--text-light);font-weight:500;">of ' + sosTotal + '</span>' : '—'}</span></div>`;
 
   return `
     <div class="rk-panel">
@@ -486,10 +487,9 @@ function buildPanel(t) {
         <div>
           <div class="rk-panel-h">The four signals</div>
           ${modelRows}
-          ${spreadNote}
         </div>
         <div>
-          <div class="rk-panel-h">Rating &amp; adjustments</div>
+          <div class="rk-panel-h">Rating &amp; schedule</div>
           ${ctx}
         </div>
       </div>
