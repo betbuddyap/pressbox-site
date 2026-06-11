@@ -160,6 +160,9 @@
   .rk-wl { font-family: var(--sans); font-size: 11px; font-weight: 800; text-align: center; border-radius: 4px; padding: 2px 0; }
   .rk-wl-w { background: rgba(46,107,62,0.14); color: #2E6B3E; }
   .rk-wl-l { background: rgba(26,23,5,0.06); color: var(--text-light); }
+  /* SOS schedule view: opponent + their blended rating */
+  .rk-gm-sos { grid-template-columns: 1fr auto; }
+  .rk-gm-oppr { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
 
   /* States */
   .rk-state { text-align: center; padding: 80px 24px; }
@@ -474,6 +477,9 @@ function buildPanel(t) {
   // On the Projected Record view, the dropdown shows the team's reconciled season —
   // the actual game-by-game W/L slate that ties out across the whole board.
   if (state.view === 'record') return buildSeasonPanel(t);
+  // On the Strength of Schedule view, the dropdown shows the opponents and their
+  // blended ratings — the numbers that average into SOS — not the team's own blend.
+  if (state.view === 'sos') return buildSosPanel(t);
   // Scale model bars on a symmetric ±M range so the zero line is meaningful.
   const modelVals = MODEL_ORDER.map(m => models[m.key]).filter(v => v != null);
   // Use the fixed board-wide scale (set in render) so bars are comparable across
@@ -573,6 +579,46 @@ function buildSeasonPanel(t) {
       </div>
       <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
       <div class="rk-spread-note">One consistent slate across the whole board — every game resolves to a single winner, and this ${wins}-${losses} reconciles to the ${escapeHtml(t.proj_record || '')} projection within a game.</div>
+    </div>`;
+}
+
+// Strength-of-schedule slate — opponents ranked by their blended rating, the
+// values that average into SOS. Shown on the Strength of Schedule view.
+function buildSosPanel(t) {
+  const games = Array.isArray(t.season) ? t.season.slice() : [];
+  if (!games.length) {
+    return `<div class="rk-panel">
+      <div class="rk-panel-h">Schedule</div>
+      <div class="rk-spread-note">No schedule available yet.</div>
+    </div>`;
+  }
+  games.sort((a, b) => (b.opp_rating ?? -999) - (a.opp_rating ?? -999)); // toughest first
+  const site = s => (s === 'away' ? '@' : 'vs');
+  const tag = (g) => {
+    let out = '';
+    if (g.site === 'neutral') out += ' <span class="rk-gm-tag">N</span>';
+    if (g.fcs) out += ' <span class="rk-gm-tag">FCS</span>';
+    return out;
+  };
+  const oppRow = (g) => `
+    <div class="rk-gm rk-gm-sos">
+      <span class="rk-gm-opp"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)}</span>
+      <span class="rk-gm-oppr">${g.opp_rating == null ? '—' : fmtSigned(g.opp_rating)}</span>
+    </div>`;
+  const half = Math.ceil(games.length / 2);
+  const left = games.slice(0, half).map(oppRow).join('');
+  const right = games.slice(half).map(oppRow).join('');
+  const sosRank = state.sosRank ? state.sosRank[t.team] : null;
+  const sosTotal = state.payload ? (state.payload.teams || []).length : 0;
+
+  return `
+    <div class="rk-panel">
+      <div class="rk-season-head">
+        <span class="rk-panel-h" style="margin:0;">Schedule — opponents by rating</span>
+        <span class="rk-season-rec">${t.sos != null ? fmtSigned(t.sos) : '—'}</span>
+      </div>
+      <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
+      <div class="rk-spread-note">Each row is that opponent's blended rating; their average is this team's strength of schedule${sosRank ? ` — #${sosRank} toughest of ${sosTotal}` : ''}.</div>
     </div>`;
 }
 
