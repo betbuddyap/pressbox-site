@@ -144,6 +144,7 @@
   .rk-kv-v { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
   .rk-kv-v.pos { color: #2E6B3E; }
   .rk-kv-v.negv { color: var(--rust); }
+  .rk-adj-parts { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); letter-spacing: 0.3px; padding: 8px 0 0; }
 
   /* States */
   .rk-state { text-align: center; padding: 80px 24px; }
@@ -286,7 +287,7 @@ const VIEWS = {
   record: { key: 'expected_wins', metricLabel: 'Proj. Record' },
 };
 
-const state = { view: 'rating', conf: 'SEC', payload: null };
+const state = { view: 'rating', conf: 'All FBS', payload: null };
 const els = {
   body:       document.getElementById('rkBody'),
   tabs:       document.getElementById('rkTabs'),
@@ -462,21 +463,24 @@ function buildPanel(t) {
     spreadNote = `<div class="rk-spread-note">Model spread of <b>${spread.toFixed(1)}</b> pts — ${spread >= 12 ? 'the signals disagree sharply here.' : spread >= 6 ? 'some disagreement across signals.' : 'the signals are in tight agreement.'}</div>`;
   }
 
-  const adj = (label, val, alwaysShow) => {
-    if (val == null) return '';
-    const n = Number(val);
-    if (!alwaysShow && Math.abs(n) < 0.05) return '';
-    const cls = n > 0 ? 'pos' : (n < 0 ? 'negv' : '');
-    return `<div class="rk-kv"><span class="rk-kv-k">${escapeHtml(label)}</span><span class="rk-kv-v ${cls}">${fmtSigned(n)}</span></div>`;
-  };
+  // Aggregate the three adjustments into one total. This sum is exactly what
+  // bridges the raw four-model blend to the final rating
+  // (rating ≈ blend + roster + conference + coaching), so the total is the
+  // meaningful figure; the components stay as a compact sub-line.
+  const rosterN = t.roster_adj != null ? Number(t.roster_adj) : 0;
+  const confN   = t.conf_adj   != null ? Number(t.conf_adj)   : 0;
+  const coachN  = t.coach_adj  != null ? Number(t.coach_adj)  : 0;
+  const adjTotal = rosterN + confN + coachN;
+  const adjCls = adjTotal > 0.05 ? 'pos' : (adjTotal < -0.05 ? 'negv' : '');
+  const parts = [`Roster ${fmtSigned(rosterN)}`, `Conf ${fmtSigned(confN)}`];
+  if (Math.abs(coachN) >= 0.05) parts.push(`Coaching ${fmtSigned(coachN)}`);
 
   const ctx = `
     <div class="rk-kv"><span class="rk-kv-k">Blended rating</span><span class="rk-kv-v">${fmtSigned(t.rating)}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${fmtSigned(t.sos)}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW · ${t.games_counted || 0} G)</span></span></div>
-    ${adj('Roster adjustment', t.roster_adj, true)}
-    ${adj('Conference prior', t.conf_adj, true)}
-    ${adj('Coaching change', t.coach_adj, false)}`;
+    <div class="rk-kv"><span class="rk-kv-k">Adjustments</span><span class="rk-kv-v ${adjCls}">${fmtSigned(adjTotal)}</span></div>
+    <div class="rk-adj-parts">${parts.join(' <span class="rk-dot">·</span> ')}</div>`;
 
   return `
     <div class="rk-panel">
