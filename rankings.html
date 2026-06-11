@@ -146,6 +146,21 @@
   .rk-kv-v.negv { color: var(--rust); }
   .rk-adj-parts { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); letter-spacing: 0.3px; padding: 8px 0 0; }
 
+  /* Reconciled season slate (Projected Record view) */
+  .rk-season-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .rk-season-rec { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .rk-season-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+  @media (max-width: 720px) { .rk-season-grid { grid-template-columns: 1fr; gap: 0; } }
+  .rk-gm { display: grid; grid-template-columns: 40px 1fr auto 22px; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--border); }
+  .rk-gm-wk { font-family: var(--sans); font-size: 10px; font-weight: 600; color: var(--text-light); letter-spacing: 0.4px; }
+  .rk-gm-opp { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rk-gm-site { color: var(--text-light); font-weight: 500; }
+  .rk-gm-wp { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); font-variant-numeric: tabular-nums; }
+  .rk-gm-tag { display: inline-block; font-size: 8px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 4px; border-radius: 3px; background: rgba(26,23,5,0.07); color: var(--text-light); vertical-align: 1px; }
+  .rk-wl { font-family: var(--sans); font-size: 11px; font-weight: 800; text-align: center; border-radius: 4px; padding: 2px 0; }
+  .rk-wl-w { background: rgba(46,107,62,0.14); color: #2E6B3E; }
+  .rk-wl-l { background: rgba(26,23,5,0.06); color: var(--text-light); }
+
   /* States */
   .rk-state { text-align: center; padding: 80px 24px; }
   .rk-state-title { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
@@ -373,6 +388,20 @@ function render() {
     .sort((a, b) => b.sos - a.sos)
     .forEach((t, i) => { state.sosRank[t.team] = i + 1; });
 
+  // Fixed bar scale across the ENTIRE board so bar length is comparable between
+  // teams and between signals — a +30.7 must look longer than a +17. Computed
+  // over every team's four signals + blend, independent of the conference filter,
+  // so switching conferences never rescales the bars. Floor of 10 guards an empty
+  // / early-season board from dividing by something tiny.
+  let _barMax = 10;
+  (payload.teams || []).forEach(t => {
+    const m = t.models || {};
+    ['sp', 'ppa', 'adv', 'pace', 'blend'].forEach(k => {
+      if (m[k] != null && !isNaN(m[k])) _barMax = Math.max(_barMax, Math.abs(Number(m[k])));
+    });
+  });
+  state.barScale = _barMax;
+
   let teams = (payload.teams || []).slice();
   if (state.conf !== 'All FBS') teams = teams.filter(t => t.conference === state.conf);
 
@@ -442,9 +471,15 @@ function render() {
 
 function buildPanel(t) {
   const models = t.models || {};
+  // On the Projected Record view, the dropdown shows the team's reconciled season —
+  // the actual game-by-game W/L slate that ties out across the whole board.
+  if (state.view === 'record') return buildSeasonPanel(t);
   // Scale model bars on a symmetric ±M range so the zero line is meaningful.
   const modelVals = MODEL_ORDER.map(m => models[m.key]).filter(v => v != null);
-  const maxAbs = Math.max(10, ...modelVals.map(v => Math.abs(v)), Math.abs(models.blend || 0));
+  // Use the fixed board-wide scale (set in render) so bars are comparable across
+  // teams; fall back to the per-team max only if the global scale is missing.
+  const maxAbs = state.barScale
+    || Math.max(10, ...modelVals.map(v => Math.abs(v)), Math.abs(models.blend || 0));
 
   function modelRow(name, val, isBlend) {
     const v = (val == null) ? null : Number(val);
@@ -493,6 +528,51 @@ function buildPanel(t) {
           ${ctx}
         </div>
       </div>
+    </div>`;
+}
+
+// Reconciled season slate — game-by-game W/L for the Projected Record view.
+function buildSeasonPanel(t) {
+  const games = Array.isArray(t.season) ? t.season : [];
+  if (!games.length) {
+    return `<div class="rk-panel">
+      <div class="rk-panel-h">Reconciled season</div>
+      <div class="rk-spread-note">No schedule available yet.</div>
+    </div>`;
+  }
+  const wins = games.filter(g => g.result === 'W').length;
+  const losses = games.length - wins;
+  const site = s => (s === 'away' ? '@' : 'vs');
+  const tag = (g) => {
+    let out = '';
+    if (g.site === 'neutral') out += ' <span class="rk-gm-tag">N</span>';
+    if (g.fcs) out += ' <span class="rk-gm-tag">FCS</span>';
+    return out;
+  };
+  const gameRow = (g) => {
+    const wl = g.result === 'W' ? 'w' : 'l';
+    const wp = (g.win_prob != null) ? Math.round(Number(g.win_prob) * 100) + '%' : '';
+    const wk = (g.week != null) ? 'Wk ' + g.week : '';
+    return `
+      <div class="rk-gm">
+        <span class="rk-gm-wk">${escapeHtml(wk)}</span>
+        <span class="rk-gm-opp"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)}</span>
+        <span class="rk-gm-wp">${wp}</span>
+        <span class="rk-wl rk-wl-${wl}">${g.result}</span>
+      </div>`;
+  };
+  const half = Math.ceil(games.length / 2);
+  const left = games.slice(0, half).map(gameRow).join('');
+  const right = games.slice(half).map(gameRow).join('');
+
+  return `
+    <div class="rk-panel">
+      <div class="rk-season-head">
+        <span class="rk-panel-h" style="margin:0;">Reconciled season</span>
+        <span class="rk-season-rec">${wins}-${losses}</span>
+      </div>
+      <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
+      <div class="rk-spread-note">One consistent slate across the whole board — every game resolves to a single winner, and this ${wins}-${losses} reconciles to the ${escapeHtml(t.proj_record || '')} projection within a game.</div>
     </div>`;
 }
 
