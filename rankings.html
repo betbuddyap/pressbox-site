@@ -463,24 +463,22 @@ function buildPanel(t) {
     spreadNote = `<div class="rk-spread-note">Model spread of <b>${spread.toFixed(1)}</b> pts — ${spread >= 12 ? 'the signals disagree sharply here.' : spread >= 6 ? 'some disagreement across signals.' : 'the signals are in tight agreement.'}</div>`;
   }
 
-  // Aggregate the three adjustments into one total. This sum is exactly what
-  // bridges the raw four-model blend to the final rating
-  // (rating ≈ blend + roster + conference + coaching), so the total is the
-  // meaningful figure; the components stay as a compact sub-line.
-  const rosterN = t.roster_adj != null ? Number(t.roster_adj) : 0;
-  const confN   = t.conf_adj   != null ? Number(t.conf_adj)   : 0;
-  const coachN  = t.coach_adj  != null ? Number(t.coach_adj)  : 0;
-  const adjTotal = rosterN + confN + coachN;
-  const adjCls = adjTotal > 0.05 ? 'pos' : (adjTotal < -0.05 ? 'negv' : '');
-  const parts = [`Roster ${fmtSigned(rosterN)}`, `Conf ${fmtSigned(confN)}`];
-  if (Math.abs(coachN) >= 0.05) parts.push(`Coaching ${fmtSigned(coachN)}`);
+  // The roster / conference / coaching post-blend adjustment layer is retired —
+  // the offseason change now rides inside the model legs via the SP+ delta, so
+  // rating == blend. We surface that delta as a single "Offseason shift" line
+  // (only when nonzero) so the board explains why a team's blend differs from a
+  // naive 2025 read. It fades to zero — and the row disappears — once real games arrive.
+  const offDelta = t.offseason_delta != null ? Number(t.offseason_delta) : 0;
+  const offCls = offDelta > 0.05 ? 'pos' : (offDelta < -0.05 ? 'negv' : '');
+  const offRow = Math.abs(offDelta) >= 0.05
+    ? `<div class="rk-kv"><span class="rk-kv-k">Offseason shift (SP+)</span><span class="rk-kv-v ${offCls}">${fmtSigned(offDelta)}</span></div>`
+    : '';
 
   const ctx = `
     <div class="rk-kv"><span class="rk-kv-k">Blended rating</span><span class="rk-kv-v">${fmtSigned(t.rating)}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${fmtSigned(t.sos)}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW · ${t.games_counted || 0} G)</span></span></div>
-    <div class="rk-kv"><span class="rk-kv-k">Adjustments</span><span class="rk-kv-v ${adjCls}">${fmtSigned(adjTotal)}</span></div>
-    <div class="rk-adj-parts">${parts.join(' <span class="rk-dot">·</span> ')}</div>`;
+    ${offRow}`;
 
   return `
     <div class="rk-panel">
