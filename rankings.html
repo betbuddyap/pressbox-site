@@ -3,319 +3,189 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Power Rankings — PressBox Analytics</title>
-<!-- Favicon -->
+<title>Rankings — PressBox Analytics</title>
+
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
 
-<!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PressBox Analytics">
 <meta property="og:url" content="https://pressboxanalytics.com/rankings.html">
-<meta property="og:title" content="Rankings — PressBox Analytics">
-<meta property="og:description" content="The PressBox Rating: our proprietary composite power ranking for every FBS team.">
+<meta property="og:title" content="Power Rankings — PressBox Analytics">
+<meta property="og:description" content="Every FBS team, ranked by a four-model blend. Filter by conference; see the signals behind each number.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="PressBox Analytics">
 
-<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Rankings — PressBox Analytics">
-<meta name="twitter:description" content="The PressBox Rating: our proprietary composite power ranking for every FBS team.">
+<meta name="twitter:title" content="Power Rankings — PressBox Analytics">
+<meta name="twitter:description" content="Every FBS team, ranked by a four-model blend. Filter by conference; see the signals behind each number.">
 <meta name="twitter:image" content="https://pressboxanalytics.com/og-image.png">
 
-<!-- Theme color (mobile browser chrome) -->
 <meta name="theme-color" content="#0F0E0A">
-
-<!-- Description (general SEO) -->
-<meta name="description" content="The PressBox Rating: our proprietary composite power ranking for every FBS team.">
+<meta name="description" content="Every FBS team, ranked by a four-model blend (SP+, PPA, Advanced, Pace+). Filter by conference; see the signals behind each number.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/tokens.css">
+
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #F8F5EE; min-height: 100vh; }
-  :root {
-    --cream: #F8F5EE; --cream-dark: #EFE9DC; --cream-mid: #E8E1D3;
-    --border: #DDD6C8; --text: #1A1705; --text-mid: #6B6455;
-    --text-light: #A39A88; --gold: #B8922A; --gold-light: #D4A83A;
-    --gold-pale: #F5EDD0; --ink: #0F0E0A;
-    --serif: 'Libre Baskerville', Georgia, serif;
-    --sans: 'Source Sans 3', system-ui, sans-serif;
-    --max: 1200px;
-  }
-  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --max: 1200px; }
+  body { font-family: var(--sans); color: var(--text); background: var(--cream); -webkit-font-smoothing: antialiased; }
 
-  /* TICKER */
-  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
-  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
-  .ticker-track span { margin: 0 28px; color: #2A2A20; }
-  .ticker-track b { color: var(--gold-light); }
-  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-  /* NAV */
+  /* ── NAV (shared chrome) ── */
   nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-logo { text-decoration: none; }
   .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
   .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--text); }
-  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: transparent; border: 0; padding: 4px; }
+  .nav-links a.nav-live { color: var(--rust) !important; font-weight: 700; letter-spacing: 0.3px; position: relative; text-transform: uppercase; font-size: 11px; }
+  .nav-links a.nav-live::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--rust); border-radius: 50%; margin-right: 7px; vertical-align: 2px; animation: pulse-live 2.4s ease-in-out infinite; }
+  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
+  @keyframes pulse-live { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
+
+  .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; outline: 0; width: 32px; height: 32px; }
   .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
   .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
   .mobile-menu.open { display: flex !important; }
   .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
-  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); }
-  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
+  .mobile-menu a.active { color: var(--gold); }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); line-height: 1; }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
   @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
 
-  /* PAGE HEADER */
-  .page-header { background: var(--ink); padding: 56px 0 48px; }
-  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
+  /* ── PAGE HEADER (shared chrome) ── */
+  .page-header { background: var(--ink); padding: 48px 0 32px; border-bottom: 1px solid #2A2A20; }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
   .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
   .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
   .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--cream); line-height: 1.1; }
   .page-title em { font-style: italic; color: var(--gold-light); }
-  .page-sub { font-size: 14px; font-weight: 300; color: #6A6A58; margin-top: 8px; max-width: 520px; line-height: 1.6; }
+  .page-sub { font-size: 14px; font-weight: 300; color: #8A8A78; margin-top: 10px; line-height: 1.6; max-width: 640px; }
 
-  /* CONTROLS */
-  .controls-bar { background: var(--cream-dark); border-bottom: 1px solid var(--border); padding: 0; position: sticky; top: 80px; z-index: 90; }
-  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 0; }
-  .view-tab { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-light); padding: 14px 20px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
-  .view-tab:hover { color: var(--text-mid); }
-  .view-tab.active { color: var(--text); border-bottom-color: var(--gold); }
-  .conf-select { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 7px 12px; cursor: pointer; margin-left: 12px; }
-  .controls-inner > .conf-select:first-of-type { margin-left: auto; }
+  /* ── CONTROLS BAR (modeled on .week-bar) ── */
+  .rk-bar { background: var(--cream-dark); border-bottom: 1px solid var(--border); position: sticky; top: 80px; z-index: 90; }
+  .rk-bar-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .rk-tabs { display: flex; align-items: center; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  .rk-tabs::-webkit-scrollbar { display: none; }
+  .rk-tab { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-light); padding: 14px 18px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .rk-tab:hover { color: var(--text-mid); }
+  .rk-tab.active { color: var(--text); border-bottom-color: var(--gold); }
+  .rk-conf-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .rk-conf-label { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); }
+  .rk-conf { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 8px 30px 8px 12px; cursor: pointer; appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23B8922A' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; }
+  .rk-conf:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
 
-  /* PLAYER ROW (extends rank-row with stats column) */
-  .player-table-header { display: grid; grid-template-columns: 48px 1fr 90px 120px; gap: 0; padding: 10px 16px; border-bottom: 2px solid var(--border); }
-  .player-row { display: grid; grid-template-columns: 48px 1fr 90px 120px; gap: 0; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.12s; text-decoration: none; color: inherit; }
-  .player-row:hover { background: var(--cream-dark); }
-  .player-row.top5 { background: linear-gradient(90deg, rgba(184,146,42,0.04), transparent); }
-  .player-row.top5 .rank-num { color: var(--gold); }
-  .player-pos-team { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
-  .player-stat { text-align: right; padding: 16px 0; font-size: 12px; color: var(--text-mid); font-weight: 500; }
-  .player-stat-label { font-size: 9px; color: var(--text-light); display: block; letter-spacing: 1px; text-transform: uppercase; }
+  /* ── MAIN ── */
+  .rk-main { max-width: var(--max); margin: 0 auto; padding: 28px 32px 80px; }
 
-  /* MAIN */
-  .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; display: grid; grid-template-columns: 1fr 320px; gap: 40px; align-items: start; }
-  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } .sidebar { display: none; } }
+  /* Provenance line */
+  .rk-provenance { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); letter-spacing: 0.4px; line-height: 1.6; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .rk-provenance b { color: var(--text-mid); font-weight: 600; }
+  .rk-provenance .rk-dot { margin: 0 8px; opacity: 0.5; }
 
-  /* RANKINGS TABLE */
-  .rankings-wrap { }
-  .table-header { display: grid; grid-template-columns: 48px 1fr 120px; gap: 0; padding: 10px 16px; border-bottom: 2px solid var(--border); }
-  .th { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
-  .th.r { text-align: right; }
+  /* Column header */
+  .rk-listhead { display: grid; grid-template-columns: 48px 1fr 132px; align-items: center; gap: 14px; padding: 0 16px 8px; }
+  .rk-listhead > span { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
+  .rk-listhead .rk-h-metric { text-align: right; }
 
-  .rank-row { display: grid; grid-template-columns: 48px 1fr 120px; gap: 0; padding: 0 16px; border-bottom: 1px solid var(--border); align-items: center; transition: background 0.12s; text-decoration: none; color: inherit; }
-  .rank-row:hover { background: var(--cream-dark); }
-  .rank-row.top5 { background: linear-gradient(90deg, rgba(184,146,42,0.04), transparent); }
+  /* Rows */
+  .rk-row { border-bottom: 1px solid var(--border); }
+  .rk-row-btn { width: 100%; display: grid; grid-template-columns: 48px 1fr 132px; align-items: center; gap: 14px; padding: 14px 16px; background: none; border: none; cursor: pointer; text-align: left; transition: background 0.12s; }
+  .rk-row-btn:hover { background: var(--cream-dark); }
+  .rk-row-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+  .rk-rank { font-family: var(--serif); font-size: 19px; font-weight: 700; color: var(--text-light); font-variant-numeric: tabular-nums; }
+  .rk-row.is-top .rk-rank { color: var(--gold); }
+  .rk-team { min-width: 0; }
+  .rk-team-name { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .rk-team-conf { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-light); margin-top: 3px; }
+  .rk-metric { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+  .rk-metric-val { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .rk-metric-val .rk-metric-sub { font-size: 11px; font-weight: 500; color: var(--text-light); margin-left: 6px; }
+  .rk-bar-track { width: 116px; height: 4px; border-radius: 2px; background: rgba(26,23,5,0.08); overflow: hidden; }
+  .rk-bar-fill { height: 100%; border-radius: 2px; background: var(--gold); }
+  .rk-bar-fill.neg { background: var(--text-light); }
+  .rk-chev { display: none; }
 
-  .rank-num { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--border); padding: 18px 0; }
-  .rank-row.top5 .rank-num { color: var(--gold); }
-  .rank-row:nth-child(1) .rank-num { font-size: 28px; }
+  /* Expand panel */
+  .rk-panel { display: none; padding: 4px 16px 22px; }
+  .rk-row.open .rk-panel { display: block; }
+  .rk-row.open .rk-row-btn { background: var(--cream-dark); }
+  .rk-panel-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; }
+  @media (max-width: 720px) { .rk-panel-grid { grid-template-columns: 1fr; gap: 20px; } }
+  .rk-panel-h { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
 
-  .rank-team { padding: 16px 0; }
-  .rank-team-name { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
-  .transfer-tag { font-family: var(--sans); font-size: 10px; font-weight: 500; color: var(--gold); background: rgba(190, 154, 92, 0.12); padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: 2px; letter-spacing: 0.5px; text-transform: uppercase; }
-  .rank-team-meta { display: flex; align-items: center; gap: 8px; }
-  .rank-conf { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
-  .conf-rank { font-size: 10px; color: var(--text-light); }
+  /* Model breakdown — the signature */
+  .rk-model { display: grid; grid-template-columns: 64px 1fr 52px; align-items: center; gap: 12px; margin-bottom: 9px; }
+  .rk-model:last-child { margin-bottom: 0; }
+  .rk-model-name { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text-mid); }
+  .rk-model.is-blend .rk-model-name { color: var(--gold); font-weight: 700; }
+  .rk-model-track { position: relative; height: 6px; background: rgba(26,23,5,0.07); border-radius: 3px; }
+  .rk-model-zero { position: absolute; top: -2px; bottom: -2px; width: 1px; background: rgba(26,23,5,0.25); }
+  .rk-model-fill { position: absolute; top: 0; height: 6px; border-radius: 3px; background: var(--text-mid); }
+  .rk-model.is-blend .rk-model-fill { background: var(--gold); }
+  .rk-model-val { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+  .rk-spread-note { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); margin-top: 12px; line-height: 1.5; }
 
-  .rank-score { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); text-align: right; padding: 16px 0; }
-  .rank-score.neg { color: var(--text-light); }
+  /* Adjustments + context */
+  .rk-kv { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px dashed var(--border); }
+  .rk-kv:last-child { border-bottom: none; }
+  .rk-kv-k { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); }
+  .rk-kv-v { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .rk-kv-v.pos { color: #2E6B3E; }
+  .rk-kv-v.negv { color: var(--rust); }
 
-  .rank-stat { text-align: right; padding: 16px 0; }
-  .rank-stat-val { font-size: 13px; font-weight: 600; color: var(--text-mid); }
-  .rank-stat-val.good { color: #4A7A4A; }
-  .rank-stat-val.bad { color: #7A4A4A; }
+  /* States */
+  .rk-state { text-align: center; padding: 80px 24px; }
+  .rk-state-title { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .rk-state-sub { font-family: var(--sans); font-size: 14px; color: var(--text-light); line-height: 1.6; }
+  .rk-skel { height: 64px; border-bottom: 1px solid var(--border); background: linear-gradient(90deg, rgba(26,23,5,0.03) 25%, rgba(26,23,5,0.06) 50%, rgba(26,23,5,0.03) 75%); background-size: 200% 100%; animation: rk-shimmer 1.3s ease-in-out infinite; }
+  @keyframes rk-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-  /* Score bar */
-  .score-bar-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-  .score-bar { width: 60px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .score-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; }
-
-  /* DIVIDERS */
-  .conf-divider { grid-column: 1 / -1; padding: 6px 16px; background: var(--cream-mid); border-bottom: 1px solid var(--border); }
-  .conf-divider-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); }
-
-  /* SIDEBAR */
-  .sidebar { display: flex; flex-direction: column; gap: 24px; }
-  .sidebar-card { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 24px; }
-  .sidebar-title { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .sidebar-title em { font-style: italic; color: var(--gold); }
-  .method-item { margin-bottom: 14px; }
-  .method-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-mid); margin-bottom: 4px; display: flex; justify-content: space-between; }
-  .method-pct { color: var(--gold); }
-  .method-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 4px; }
-  .method-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; }
-  .method-desc { font-size: 11px; color: var(--text-light); line-height: 1.5; }
-
-  .conf-standings { display: flex; flex-direction: column; gap: 0; }
-  .conf-standing-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .conf-standing-row:last-child { border-bottom: none; }
-  .conf-standing-name { font-size: 12px; font-weight: 600; color: var(--text); }
-  .conf-standing-top { font-size: 11px; color: var(--text-light); }
-  .conf-standing-score { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--gold); }
-
-  /* LOADING */
-  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; }
-  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-light); }
-
-  /* FOOTER */
-  footer { background: var(--ink); padding: 32px 0; }
-  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
-  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
-  .footer-links { display: flex; gap: 20px; }
-  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
-
-  /* ── LIVE LINES NAV TREATMENT ── */
-  /* Live Lines is the "what's actionable right now" surface — rust pulsing dot
-     signals "we have live picks." The dot stays on every page; on the Live Lines
-     page itself, .active turns it dark to indicate "you are here." */
-  .nav-links a.nav-live {
-    color: var(--rust) !important;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    position: relative;
-    text-transform: uppercase;
-    font-size: 11px;
-  }
-  .nav-links a.nav-live::before {
-    content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: var(--rust);
-    border-radius: 50%;
-    margin-right: 7px;
-    vertical-align: 2px;
-    animation: pulse-live 2.4s ease-in-out infinite;
-  }
-  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
-  .nav-links a.nav-live.active { color: var(--text) !important; }
-  .nav-links a.nav-live.active::before { background: var(--text); animation: none; }
-  @keyframes pulse-live {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-  }
-  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
-
-  /* ── HAMBURGER (consistent) ── */
-  .hamburger {
-    display: none;
-    flex-direction: column !important;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    cursor: pointer;
-    padding: 4px;
-    background: transparent;
-    border: 0;
-    outline: 0;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 0;
-    box-shadow: none;
-    width: 32px;
-    height: 32px;
-  }
-  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
-  .mobile-menu {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--cream);
-    z-index: 300;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 36px;
-  }
-  .mobile-menu.open { display: flex !important; }
-  .mobile-menu a {
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text);
-    text-decoration: none;
-  }
-  .mobile-menu .close-btn {
-    position: absolute;
-    top: 28px; right: 28px;
-    font-size: 28px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: var(--text);
-    line-height: 1;
-  }
-  .mobile-menu .btn-mobile {
-    background: var(--ink);
-    color: var(--cream) !important;
-    padding: 14px 32px;
-    border-radius: 4px;
-    font-family: var(--sans) !important;
-    font-size: 14px !important;
-    font-weight: 600;
-  }
-  @media (min-width: 961px) { .hamburger { display: none !important; } }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
-
-  /* ── UNIFIED FOOTER ── */
-  footer { background: var(--cream-dark); border-top: 1px solid var(--border); margin-top: 80px; padding: 48px 0 32px; }
+  /* ── FOOTER (shared chrome) ── */
+  footer { background: var(--cream); border-top: 1px solid var(--border); padding: 48px 0 40px; }
   .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
   .footer-logo img { height: 56px; width: auto; display: block; opacity: 0.85; }
   .footer-meta-links { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
-  .footer-meta-links a { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .footer-meta-links a { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); text-decoration: none; }
   .footer-meta-links a:hover { color: var(--text); }
+  .footer-meta-links span { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-light); }
   .footer-note { font-family: var(--sans); font-size: 11px; color: var(--text-light); text-align: center; max-width: 600px; line-height: 1.6; }
-  .footer-legal-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-  .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
-  .footer-legal-links a:hover { color: var(--text-mid); }
 
-
-
-  /* ── MOBILE POLISH ── */
-  @media (max-width: 700px) {
-    .table-header, .rank-row { grid-template-columns: 40px 1fr 90px; padding: 0 12px; }
-    .player-table-header, .player-row { grid-template-columns: 40px 1fr 60px 80px; padding: 0 12px; }
-    .rank-team-name { font-size: 15px; }
-    .main { padding: 24px 16px 60px; }
-    .view-tab { font-size: 11px; padding: 10px 12px; }
+  @media (max-width: 720px) {
+    .nav-inner { padding: 0 18px; }
+    .page-header { padding: 36px 0 26px; }
+    .page-header-inner { padding: 0 18px; }
+    .page-title { font-size: 32px; }
+    .rk-bar-inner { padding: 0 18px; flex-direction: column; align-items: stretch; gap: 0; }
+    .rk-conf-wrap { padding: 12px 0 4px; justify-content: space-between; }
+    .rk-conf { flex: 1; }
+    .rk-tabs { order: 2; border-top: 1px solid var(--border); }
+    .rk-tab { flex: 1; text-align: center; padding: 13px 6px; }
+    .rk-main { padding: 22px 18px 64px; }
+    .rk-listhead, .rk-row-btn { grid-template-columns: 36px 1fr 104px; gap: 10px; }
+    .rk-team-name { font-size: 15px; }
+    .rk-bar-track { width: 92px; }
+    .footer-inner { padding: 0 18px; }
   }
-  @media (max-width: 480px) {
-    .table-header, .rank-row { grid-template-columns: 32px 1fr 70px; }
-    .player-table-header, .player-row { grid-template-columns: 32px 1fr 50px 60px; gap: 4px; }
-    .rank-team-name { font-size: 13px; }
-    .rank-num { font-size: 14px; }
+  @media (prefers-reduced-motion: reduce) {
+    .nav-links a.nav-live::before { animation: none; }
+    .rk-skel { animation: none; }
   }
-
-  </style>
+</style>
 </head>
 <body>
 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-track">
-    A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b> · Point-in-time backtest<span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
-    2026 picks drop in time for <b>Week 0</b><span>·</span>
-    A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b> · Point-in-time backtest<span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
-    2026 picks drop in time for <b>Week 0</b><span>·</span>
-  </div>
-</div>
-
-<!-- NAV -->
 <nav>
   <div class="nav-inner">
     <a href="/" class="nav-logo">
@@ -323,8 +193,11 @@
     </a>
     <ul class="nav-links">
       <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
+      <li><a href="/upcoming.html" class="">Upcoming</a></li>
+      <li><a href="/rankings.html" class="active">Rankings</a></li>
       <li><a href="/how-it-works.html" class="">How It Works</a></li>
       <li><a href="/about.html" class="">About</a></li>
+      <li><a href="/login.html" id="navAuth" style="opacity:0.7;">Sign in</a></li>
     </ul>
     <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -336,96 +209,48 @@
 <div class="mobile-menu" id="mobileMenu">
   <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
   <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
+  <a href="/upcoming.html">Upcoming</a>
+  <a href="/rankings.html" class="active">Rankings</a>
   <a href="/how-it-works.html">How It Works</a>
   <a href="/about.html">About</a>
+  <a href="/login.html" id="navAuthMobile" style="opacity:0.7;">Sign in</a>
 </div>
 <script>
 function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
 </script>
 
-
-
-
 <!-- PAGE HEADER -->
 <div class="page-header">
   <div class="page-header-inner">
-    <div>
-      <div class="page-eyebrow" id="pageEyebrow">Preseason 2026</div>
-      <h1 class="page-title" id="pageTitle">The <em>PressBox Rating.</em></h1>
-      <p class="page-sub" id="pageSub">Our proprietary composite. The same numbers that drive every pick on the site. No ballots, no bias — just the signal.</p>
-    </div>
+    <div class="page-eyebrow" id="rkEyebrow">FBS · 2026</div>
+    <h1 class="page-title">Power <em>Rankings</em></h1>
+    <p class="page-sub" id="rkSub">Every FBS team, ranked by a four-model blend. Each number is four independent signals, where they agree and where they don't.</p>
   </div>
 </div>
 
 <!-- CONTROLS -->
-<div class="controls-bar">
-  <div class="controls-inner">
-    <button class="view-tab active" id="tab-all" onclick="setView('all')">All 133 Teams</button>
-    <button class="view-tab" id="tab-25" onclick="setView('25')">Top 25</button>
-    <button class="view-tab" id="tab-conf" onclick="setView('conf')">By Conference</button>
-    <button class="view-tab" id="tab-players" onclick="setView('players')">Players</button>
-    <select class="conf-select" id="confSelect" onchange="filterConf(this.value)" style="display:none;">
-      <option value="">All Conferences</option>
-      <option value="SEC">SEC</option>
-      <option value="Big Ten">Big Ten</option>
-      <option value="Big 12">Big 12</option>
-      <option value="ACC">ACC</option>
-      <option value="American Athletic">American Athletic</option>
-      <option value="Mountain West">Mountain West</option>
-      <option value="Sun Belt">Sun Belt</option>
-      <option value="Pac-12">Pac-12</option>
-      <option value="Mid-American">Mid-American</option>
-      <option value="Conference USA">Conference USA</option>
-      <option value="FBS Independents">Independents</option>
-    </select>
-    <select class="conf-select" id="posSelect" onchange="filterPos(this.value)" style="display:none;">
-      <option value="">All Positions</option>
-      <option value="QB">Quarterbacks</option>
-      <option value="RB">Running Backs</option>
-      <option value="WR">Wide Receivers</option>
-      <option value="TE">Tight Ends</option>
-      <option value="LB">Linebackers</option>
-      <option value="DB">Defensive Backs</option>
-      <option value="DL">Defensive Line</option>
-    </select>
+<div class="rk-bar">
+  <div class="rk-bar-inner">
+    <div class="rk-tabs" id="rkTabs" role="tablist">
+      <button class="rk-tab active" data-view="rating"  role="tab">Rankings</button>
+      <button class="rk-tab"        data-view="sos"     role="tab">Strength of Schedule</button>
+      <button class="rk-tab"        data-view="record"  role="tab">Projected Record</button>
+    </div>
+    <div class="rk-conf-wrap">
+      <span class="rk-conf-label">Conference</span>
+      <select class="rk-conf" id="rkConf" aria-label="Filter by conference"></select>
+    </div>
   </div>
 </div>
 
 <!-- MAIN -->
-<div class="main">
-  <!-- RANKINGS TABLE -->
-  <div class="rankings-wrap">
-    <div class="loading" id="loadingState">
-      <div class="spinner"></div>
-      <div class="loading-text">Loading rankings...</div>
-    </div>
-    <div id="rankingsContainer" style="display:none;">
-      <div class="table-header" id="teamHeader">
-        <div class="th">Rk</div>
-        <div class="th">Team</div>
-        <div class="th r">Score</div>
-      </div>
-      <div class="player-table-header" id="playerHeader" style="display:none;">
-        <div class="th">Rk</div>
-        <div class="th">Player</div>
-        <div class="th r">Key Stat</div>
-        <div class="th r">Score</div>
-      </div>
-      <div id="rankingsList"></div>
-    </div>
+<main class="rk-main">
+  <div class="rk-provenance" id="rkProvenance"></div>
+  <div id="rkBody">
+    <div class="rk-skel"></div><div class="rk-skel"></div><div class="rk-skel"></div>
+    <div class="rk-skel"></div><div class="rk-skel"></div><div class="rk-skel"></div>
   </div>
-
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <!-- Conference leaders -->
-    <div class="sidebar-card">
-      <div class="sidebar-title">Conference <em>Leaders</em></div>
-      <div class="conf-standings" id="confLeaders">
-        <div class="loading-text" style="font-size:12px;">Loading...</div>
-      </div>
-    </div>
-  </div>
-</div>
+</main>
 
 <!-- FOOTER -->
 <footer>
@@ -436,270 +261,261 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="footer-meta-links">
       <a href="/how-it-works.html">How It Works</a>
       <a href="/about.html">About</a>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Privacy</span>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Terms</span>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Contact</span>
+      <span>Privacy</span><span>Terms</span><span>Contact</span>
     </div>
     <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
-    </div>
+  </div>
 </footer>
 
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-nav.js" defer></script>
 <script>
 const API = 'https://betbuddy-backend.onrender.com';
-let allRankings = [];
-let allPlayers = [];
-let currentView = 'all';
-let currentConf = '';
-let currentPos = '';
-let playersLoaded = false;
+const SEASON = 2026;
 
-// Max score for bar scaling
-let maxScore = 60;
-let maxPlayerScore = 100;
+const MODEL_ORDER = [
+  { key: 'sp',   label: 'SP+' },
+  { key: 'ppa',  label: 'PPA' },
+  { key: 'adv',  label: 'Advanced' },
+  { key: 'pace', label: 'Pace+' },
+];
 
-async function init() {
-  const res = await fetch(`${API}/rankings/power?season=2025&limit=200`);
-  const data = await res.json();
-  allRankings = data.full || data.rankings || [];
-  maxScore = allRankings[0]?.score || 60;
+const VIEWS = {
+  rating: { key: 'rating',        metricLabel: 'Rating' },
+  sos:    { key: 'sos',           metricLabel: 'SOS' },
+  record: { key: 'expected_wins', metricLabel: 'Proj. Record' },
+};
 
-  buildConfLeaders();
-  render();
+const state = { view: 'rating', conf: 'SEC', payload: null };
+const els = {
+  body:       document.getElementById('rkBody'),
+  tabs:       document.getElementById('rkTabs'),
+  conf:       document.getElementById('rkConf'),
+  provenance: document.getElementById('rkProvenance'),
+  eyebrow:    document.getElementById('rkEyebrow'),
+  sub:        document.getElementById('rkSub'),
+};
 
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('rankingsContainer').style.display = 'block';
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function fmtSigned(v, dp = 1) {
+  if (v == null || isNaN(v)) return '—';
+  const n = Number(v);
+  return (n >= 0 ? '+' : '') + n.toFixed(dp);
 }
 
-async function loadPlayers() {
-  if (playersLoaded) return;
-  // Pull all players in one shot, we'll filter client-side
-  const url = `${API}/players/rankings?season=2025&limit=2000`;
-  const res = await fetch(url);
-  const data = await res.json();
-  allPlayers = data.full || data.players || [];
-  maxPlayerScore = allPlayers[0]?.score || 100;
-  playersLoaded = true;
-}
-
-function setView(v) {
-  currentView = v;
-  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(`tab-${v}`).classList.add('active');
-
-  const isPlayers = v === 'players';
-  document.getElementById('confSelect').style.display = v === 'conf' ? 'block' : 'none';
-  document.getElementById('posSelect').style.display = isPlayers ? 'block' : 'none';
-  document.getElementById('teamHeader').style.display = isPlayers ? 'none' : 'grid';
-  document.getElementById('playerHeader').style.display = isPlayers ? 'grid' : 'none';
-
-  // Update page header copy
-  if (isPlayers) {
-    document.getElementById('pageEyebrow').textContent = '2026 Returning Starters';
-    document.getElementById('pageTitle').innerHTML = 'Player <em>Rankings</em>';
-    document.getElementById('pageSub').textContent = 'Cross-position composite scores for players returning in 2026, based on 2025 production relative to position group. Seniors and 2026 NFL Draft declarees are excluded.';
-  } else {
-    document.getElementById('pageEyebrow').textContent = 'Preseason 2026';
-    document.getElementById('pageTitle').innerHTML = 'The <em>PressBox Rating.</em>';
-    document.getElementById('pageSub').textContent = "Our proprietary composite. The same numbers that drive every pick on the site. No ballots, no bias — just the signal.";
-  }
-
-  if (isPlayers) {
-    showLoadingInList();
-    loadPlayers().then(render).catch(err => {
-      console.error(err);
-      document.getElementById('rankingsList').innerHTML = '<div class="loading-text" style="padding:40px;text-align:center;color:#B87878;">Failed to load players. Please refresh.</div>';
-    });
-  } else {
+// ── Load ────────────────────────────────────────────────────────────
+fetch(`${API}/rankings/teams?season=${SEASON}`)
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(payload => {
+    state.payload = payload;
+    buildConfOptions(payload);
+    buildProvenance(payload);
     render();
+  })
+  .catch(err => {
+    els.body.innerHTML = `
+      <div class="rk-state">
+        <div class="rk-state-title">Rankings are taking a timeout</div>
+        <div class="rk-state-sub">We couldn't load the board just now. Refresh in a moment and it should be back.</div>
+      </div>`;
+    console.error('rankings load failed:', err);
+  });
+
+function buildConfOptions(payload) {
+  const confs = payload.conferences || [];
+  const opts = ['All FBS', ...confs];
+  els.conf.innerHTML = opts.map(c =>
+    `<option value="${escapeHtml(c)}"${c === state.conf ? ' selected' : ''}>${escapeHtml(c)}</option>`
+  ).join('');
+  // If SEC isn't present for some reason, fall back to the first real conference.
+  if (!opts.includes(state.conf)) {
+    state.conf = confs[0] || 'All FBS';
+    els.conf.value = state.conf;
   }
 }
 
-function filterConf(conf) {
-  currentConf = conf;
-  render();
+function buildProvenance(payload) {
+  const phase = payload.rollover && payload.rollover.phase;
+  const phaseLabel = phase === 'preseason' ? 'Preseason projection' : (phase ? phase[0].toUpperCase() + phase.slice(1) : 'In-season');
+  const roster = payload.roster_adjustment || {};
+  const coaching = payload.coaching || {};
+  const bits = [];
+  bits.push(`<b>${escapeHtml(phaseLabel)}</b>`);
+  bits.push(`Four-model blend — SP+, PPA, Advanced, Pace+ <span style="opacity:.7">(Elo excluded)</span>`);
+  if (roster.applied) bits.push(`Roster-adjusted <span style="opacity:.7">(${roster.teams_with_data || 0} teams)</span>`);
+  if (coaching.applied && coaching.new_hc_count) bits.push(`Coaching-adjusted <span style="opacity:.7">(${coaching.new_hc_count} new HCs)</span>`);
+  bits.push(`${payload.total || 0} teams`);
+  els.provenance.innerHTML = bits.join('<span class="rk-dot">·</span>');
+
+  if (phase === 'preseason') {
+    els.eyebrow.textContent = `FBS · ${SEASON} · Preseason`;
+    els.sub.textContent = 'Preseason projection — every FBS team ranked by a four-model blend, adjusted for the transfer portal and new coaching staffs. Each number is four independent signals, where they agree and where they don\u2019t.';
+  }
 }
 
-function filterPos(pos) {
-  currentPos = pos;
-  render();
-}
-
-function showLoadingInList() {
-  document.getElementById('rankingsList').innerHTML = '<div style="padding:60px 0;display:flex;flex-direction:column;align-items:center;gap:12px;"><div class="spinner"></div><div class="loading-text">Loading players...</div></div>';
-}
-
+// ── Render ──────────────────────────────────────────────────────────
 function render() {
-  const list = document.getElementById('rankingsList');
+  const payload = state.payload;
+  if (!payload) return;
+  const viewKey = VIEWS[state.view].key;
 
-  if (currentView === 'players') {
-    let players = [...allPlayers];
-    players = players.filter(p => p.returning_2026);
-    if (currentPos) players = players.filter(p => p.position === currentPos || p.position_group === currentPos);
+  let teams = (payload.teams || []).slice();
+  if (state.conf !== 'All FBS') teams = teams.filter(t => t.conference === state.conf);
 
-    // Re-rank within the filtered set so the displayed rank matches what the user is seeing
-    players = players.map((p, i) => ({...p, displayRank: i + 1}));
+  teams.sort((a, b) => (b[viewKey] ?? -Infinity) - (a[viewKey] ?? -Infinity));
 
-    if (!players.length) {
-      list.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--text-light);font-size:13px;">No players match these filters.</div>';
-      return;
-    }
-
-    list.innerHTML = players.slice(0, 200).map(p => playerRow(p)).join('');
+  if (!teams.length) {
+    els.body.innerHTML = `
+      <div class="rk-state">
+        <div class="rk-state-title">No teams here yet</div>
+        <div class="rk-state-sub">Nothing to rank for this conference right now.</div>
+      </div>`;
     return;
   }
 
-  // Team rankings (existing logic)
-  let teams = [...allRankings];
+  // Bar scaling across the currently displayed set.
+  const vals = teams.map(t => t[viewKey]).filter(v => v != null && !isNaN(v));
+  const vmin = Math.min(...vals), vmax = Math.max(...vals);
+  const span = (vmax - vmin) || 1;
+  const isRecord = state.view === 'record';
+  const metricHead = state.view === 'rating' ? 'Rating'
+                   : state.view === 'sos'    ? 'Sched. strength'
+                   : 'Proj. record';
 
-  if (currentView === '25') {
-    teams = teams.slice(0, 25);
-  } else if (currentView === 'conf' && currentConf) {
-    teams = teams.filter(t => t.conference === currentConf);
-  }
+  const head = `
+    <div class="rk-listhead">
+      <span>#</span><span>Team</span><span class="rk-h-metric">${metricHead}</span>
+    </div>`;
 
-  if (currentView === 'conf' && !currentConf) {
-    // Group by conference
-    const byConf = {};
-    allRankings.forEach(t => {
-      if (!byConf[t.conference]) byConf[t.conference] = [];
-      byConf[t.conference].push(t);
-    });
-    const confOrder = ['SEC','Big Ten','Big 12','ACC','American Athletic','Mountain West','Sun Belt','Pac-12','Mid-American','Conference USA','FBS Independents'];
-    list.innerHTML = confOrder.map(conf => {
-      const confTeams = byConf[conf] || [];
-      if (!confTeams.length) return '';
-      return `
-        <div class="conf-divider"><span class="conf-divider-label">${conf}</span></div>
-        ${confTeams.map(t => rankRow(t)).join('')}
-      `;
-    }).join('');
-  } else {
-    list.innerHTML = teams.map(t => rankRow(t)).join('');
-  }
-}
+  const rows = teams.map((t, i) => {
+    const rank = i + 1;
+    const v = t[viewKey];
+    const pct = (v == null || isNaN(v)) ? 0 : Math.max(3, Math.round(((v - vmin) / span) * 100));
+    // SOS is magnitude, not quality — render its fill muted; rating/record use gold.
+    const fillClass = state.view === 'sos' ? 'neg' : '';
 
-function rankRow(t) {
-  const isTop5 = t.rank <= 5;
-  const score = t.score || 0;
-  const barPct = Math.max(0, Math.min(100, ((score + 60) / (maxScore + 60)) * 100));
-  return `
-    <a class="rank-row ${isTop5 ? 'top5' : ''}" href="/team.html?team=${encodeURIComponent(t.team)}">
-      <div class="rank-num">${t.rank}</div>
-      <div class="rank-team">
-        <div class="rank-team-name">${t.team}</div>
-        <div class="rank-team-meta">
-          <span class="rank-conf">${t.conference}</span>
-          <span class="conf-rank">#${t.conference_rank} in conf</span>
-        </div>
-      </div>
-      <div class="rank-score ${score < 0 ? 'neg' : ''}">
-        <div class="score-bar-wrap">
-          <div class="score-bar"><div class="score-bar-fill" style="width:${barPct}%"></div></div>
-          ${score >= 0 ? '+' : ''}${score.toFixed(1)}
-        </div>
-      </div>
-    </a>
-  `;
-}
+    let metricMain, metricSub = '';
+    if (isRecord) {
+      metricMain = escapeHtml(t.proj_record || '—');
+      metricSub = `<span class="rk-metric-sub">${(t.expected_wins != null) ? Number(t.expected_wins).toFixed(1) + ' xW' : ''}</span>`;
+    } else {
+      metricMain = fmtSigned(v);
+    }
 
-function playerRow(p) {
-  const isTop5 = p.displayRank <= 5;
-  const score = p.score || 0;
-  const barPct = Math.max(0, Math.min(100, (score / maxPlayerScore) * 100));
-  const stat = keyStatFor(p);
-  const pos = p.position || p.position_group || '';
-  const transferTag = (p.transferred && p.prior_team)
-    ? `<span class="transfer-tag">via ${p.prior_team}</span>`
-    : '';
-  return `
-    <div class="player-row ${isTop5 ? 'top5' : ''}">
-      <div class="rank-num">${p.displayRank}</div>
-      <div class="rank-team">
-        <div class="rank-team-name">${p.name || 'Unknown'} ${transferTag}</div>
-        <div class="rank-team-meta">
-          <span class="player-pos-team">${pos} · ${p.team || ''}</span>
-          <span class="conf-rank">${p.conference || ''}</span>
-        </div>
-      </div>
-      <div class="player-stat">
-        <span class="player-stat-label">${stat.label}</span>
-        ${stat.value}
-      </div>
-      <div class="rank-score">
-        <div class="score-bar-wrap">
-          <div class="score-bar"><div class="score-bar-fill" style="width:${barPct}%"></div></div>
-          ${score.toFixed(1)}
-        </div>
-      </div>
-    </div>
-  `;
-}
+    const confTag = state.conf === 'All FBS'
+      ? `<div class="rk-team-conf">${escapeHtml(t.conference || '')}</div>` : '';
 
-function keyStatFor(p) {
-  // Show the most relevant stat for the position
-  const pos = (p.position || p.position_group || '').toUpperCase();
-
-  // Skill players come from player_seasons — they have PPA stats, not raw yards
-  if (pos === 'QB') {
-    if (p.ppa_total_pass != null) return { label: 'Pass PPA', value: p.ppa_total_pass.toFixed(1) };
-    if (p.player_value  != null) return { label: 'Player Val', value: p.player_value.toFixed(2) };
-  }
-  if (pos === 'RB' || pos === 'HB' || pos === 'FB') {
-    if (p.ppa_total_rush != null) return { label: 'Rush PPA', value: p.ppa_total_rush.toFixed(1) };
-    if (p.player_value  != null) return { label: 'Player Val', value: p.player_value.toFixed(2) };
-  }
-  if (pos === 'WR' || pos === 'TE') {
-    if (p.ppa_total_all != null) return { label: 'Rec PPA', value: p.ppa_total_all.toFixed(1) };
-    if (p.player_value != null) return { label: 'Player Val', value: p.player_value.toFixed(2) };
-  }
-  // Defenders come from player_stats — they have counting stats
-  if (pos === 'LB' || pos === 'ILB' || pos === 'OLB' || pos === 'MLB') {
-    if (p.tackles != null) return { label: 'Tackles', value: p.tackles };
-  }
-  if (pos === 'DL' || pos === 'DE' || pos === 'DT' || pos === 'NT' || pos === 'EDGE') {
-    if (p.sacks != null && p.sacks > 0) return { label: 'Sacks', value: p.sacks };
-    if (p.tackles_for_loss != null) return { label: 'TFL', value: p.tackles_for_loss };
-    if (p.tackles != null) return { label: 'Tackles', value: p.tackles };
-  }
-  if (pos === 'DB' || pos === 'CB' || pos === 'S' || pos === 'SS' || pos === 'FS' || pos === 'NB') {
-    if (p.def_interceptions != null && p.def_interceptions > 0)
-      return { label: 'INTs', value: p.def_interceptions };
-    if (p.passes_broken_up != null && p.passes_broken_up > 0)
-      return { label: 'PBUs', value: p.passes_broken_up };
-    if (p.tackles != null) return { label: 'Tackles', value: p.tackles };
-  }
-
-  // Generic fallback
-  if (p.player_value != null) return { label: 'Player Val', value: p.player_value.toFixed(2) };
-  return { label: '—', value: '—' };
-}
-
-function buildConfLeaders() {
-  const confOrder = ['SEC','Big Ten','Big 12','ACC','American Athletic','Mountain West','Sun Belt','Pac-12','Mid-American','Conference USA'];
-  const leaders = {};
-  allRankings.forEach(t => {
-    if (!leaders[t.conference]) leaders[t.conference] = t;
-  });
-
-  document.getElementById('confLeaders').innerHTML = confOrder.map(conf => {
-    const t = leaders[conf];
-    if (!t) return '';
     return `
-      <div class="conf-standing-row">
-        <div>
-          <div class="conf-standing-name">${t.team}</div>
-          <div class="conf-standing-top">${conf}</div>
-        </div>
-        <div class="conf-standing-score">#${t.rank}</div>
-      </div>
-    `;
+      <div class="rk-row${rank <= 3 ? ' is-top' : ''}" data-team="${escapeHtml(t.team)}">
+        <button class="rk-row-btn" aria-expanded="false">
+          <span class="rk-rank">${rank}</span>
+          <span class="rk-team">
+            <span class="rk-team-name">${escapeHtml(t.team)}</span>
+            ${confTag}
+          </span>
+          <span class="rk-metric">
+            <span class="rk-metric-val">${metricMain}${metricSub}</span>
+            <span class="rk-bar-track"><span class="rk-bar-fill ${fillClass}" style="width:${pct}%;"></span></span>
+          </span>
+        </button>
+        ${buildPanel(t)}
+      </div>`;
   }).join('');
+
+  els.body.innerHTML = head + rows;
+  wireRows();
 }
 
-init().catch(e => {
-  console.error(e);
-  document.getElementById('loadingState').innerHTML = '<div class="loading-text" style="color:#B87878;">Failed to load rankings. Please refresh.</div>';
+function buildPanel(t) {
+  const models = t.models || {};
+  // Scale model bars on a symmetric ±M range so the zero line is meaningful.
+  const modelVals = MODEL_ORDER.map(m => models[m.key]).filter(v => v != null);
+  const maxAbs = Math.max(10, ...modelVals.map(v => Math.abs(v)), Math.abs(models.blend || 0));
+
+  function modelRow(name, val, isBlend) {
+    const v = (val == null) ? null : Number(val);
+    let fill = '';
+    if (v != null) {
+      const half = Math.min(50, Math.abs(v) / maxAbs * 50);
+      const left = v >= 0 ? 50 : 50 - half;
+      fill = `<span class="rk-model-fill" style="left:${left}%;width:${half}%;"></span>`;
+    }
+    return `
+      <div class="rk-model${isBlend ? ' is-blend' : ''}">
+        <span class="rk-model-name">${escapeHtml(name)}</span>
+        <span class="rk-model-track"><span class="rk-model-zero" style="left:50%;"></span>${fill}</span>
+        <span class="rk-model-val">${v == null ? '—' : fmtSigned(v)}</span>
+      </div>`;
+  }
+
+  const modelRows = MODEL_ORDER.map(m => modelRow(m.label, models[m.key], false)).join('')
+    + modelRow('Blend', models.blend, true);
+
+  // Spread of opinion across the four models — the product's whole point.
+  let spreadNote = '';
+  if (modelVals.length >= 2) {
+    const spread = Math.max(...modelVals) - Math.min(...modelVals);
+    spreadNote = `<div class="rk-spread-note">Model spread of <b>${spread.toFixed(1)}</b> pts — ${spread >= 12 ? 'the signals disagree sharply here.' : spread >= 6 ? 'some disagreement across signals.' : 'the signals are in tight agreement.'}</div>`;
+  }
+
+  const adj = (label, val, alwaysShow) => {
+    if (val == null) return '';
+    const n = Number(val);
+    if (!alwaysShow && Math.abs(n) < 0.05) return '';
+    const cls = n > 0 ? 'pos' : (n < 0 ? 'negv' : '');
+    return `<div class="rk-kv"><span class="rk-kv-k">${escapeHtml(label)}</span><span class="rk-kv-v ${cls}">${fmtSigned(n)}</span></div>`;
+  };
+
+  const ctx = `
+    <div class="rk-kv"><span class="rk-kv-k">Blended rating</span><span class="rk-kv-v">${fmtSigned(t.rating)}</span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${fmtSigned(t.sos)}</span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW · ${t.games_counted || 0} G)</span></span></div>
+    ${adj('Roster adjustment', t.roster_adj, true)}
+    ${adj('Conference prior', t.conf_adj, true)}
+    ${adj('Coaching change', t.coach_adj, false)}`;
+
+  return `
+    <div class="rk-panel">
+      <div class="rk-panel-grid">
+        <div>
+          <div class="rk-panel-h">The four signals</div>
+          ${modelRows}
+          ${spreadNote}
+        </div>
+        <div>
+          <div class="rk-panel-h">Rating &amp; adjustments</div>
+          ${ctx}
+        </div>
+      </div>
+    </div>`;
+}
+
+function wireRows() {
+  els.body.querySelectorAll('.rk-row-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const row = btn.closest('.rk-row');
+      const open = row.classList.toggle('open');
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  });
+}
+
+// ── Controls ────────────────────────────────────────────────────────
+els.tabs.addEventListener('click', e => {
+  const tab = e.target.closest('.rk-tab');
+  if (!tab) return;
+  state.view = tab.dataset.view;
+  els.tabs.querySelectorAll('.rk-tab').forEach(t => t.classList.toggle('active', t === tab));
+  render();
+});
+
+els.conf.addEventListener('change', () => {
+  state.conf = els.conf.value;
+  render();
 });
 </script>
 </body>
