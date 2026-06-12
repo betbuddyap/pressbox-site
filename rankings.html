@@ -163,7 +163,7 @@
   .rk-kv-v.negv { color: var(--rust); }
   .rk-adj-parts { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); letter-spacing: 0.3px; padding: 8px 0 0; }
 
-  /* Reconciled season slate (Projected Record view) */
+  /* Projected season (Projected Record view) */
   .rk-season-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   .rk-season-rec { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
   .rk-season-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
@@ -177,6 +177,15 @@
   .rk-wl { font-family: var(--sans); font-size: 11px; font-weight: 800; text-align: center; border-radius: 4px; padding: 2px 0; }
   .rk-wl-w { background: rgba(46,107,62,0.14); color: #2E6B3E; }
   .rk-wl-l { background: rgba(26,23,5,0.06); color: var(--text-light); }
+  /* Toss-up class + danger spots + per-game complexion (Projected Record view) */
+  .rk-wl-t { background: rgba(176,124,18,0.16); color: #8A5E00; }
+  .rk-gm-cx { font-size: 9px; font-weight: 700; letter-spacing: 0.3px; color: var(--text-light); text-transform: uppercase; }
+  .rk-gm.is-danger { background: rgba(176,124,18,0.05); box-shadow: inset 2px 0 0 #B07C12; padding-left: 6px; }
+  .rk-reasons { display: inline-flex; gap: 3px; flex-wrap: wrap; vertical-align: 1px; }
+  .rk-reason { font-size: 8px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 4px; border-radius: 3px; background: rgba(176,124,18,0.14); color: #8A5E00; }
+  .rk-danger-strip { margin: 0 0 14px; padding: 10px 12px; border-radius: 8px; background: rgba(176,124,18,0.06); border: 1px solid rgba(176,124,18,0.18); font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); line-height: 1.7; }
+  .rk-danger-strip b { color: #8A5E00; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; font-size: 10px; margin-right: 4px; }
+  .rk-season-band { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-light); margin-left: 4px; }
   /* SOS schedule view: opponent + their blended rating */
   .rk-gm-sos { grid-template-columns: 1fr auto; }
   .rk-gm-oppr { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
@@ -460,7 +469,7 @@ function render() {
     let metricMain, metricSub = '';
     if (isRecord) {
       metricMain = escapeHtml(t.proj_record || '—');
-      metricSub = `<span class="rk-metric-sub">${(t.expected_wins != null) ? Number(t.expected_wins).toFixed(1) + ' xW' : ''}</span>`;
+      metricSub = `<span class="rk-metric-sub">${(t.proj_band != null) ? '(±' + Number(t.proj_band).toFixed(1) + ')' : ''}</span>`;
     } else {
       metricMain = fmtSigned(v);
     }
@@ -491,8 +500,8 @@ function render() {
 
 function buildPanel(t) {
   const models = t.models || {};
-  // On the Projected Record view, the dropdown shows the team's reconciled season —
-  // the actual game-by-game W/L slate that ties out across the whole board.
+  // On the Projected Record view, the dropdown shows the team's projected season —
+  // each game's complexion and the danger spots, read off its own win probabilities.
   if (state.view === 'record') return buildSeasonPanel(t);
   // On the Strength of Schedule view, the dropdown shows the opponents and their
   // blended ratings — the numbers that average into SOS — not the team's own blend.
@@ -536,7 +545,7 @@ function buildPanel(t) {
   const ctx = `
     <div class="rk-kv"><span class="rk-kv-k">Blended rating</span><span class="rk-kv-v">${fmtSigned(t.rating)}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Rating variance</span><span class="rk-kv-v">${variance == null ? '—' : variance.toFixed(1) + ' pts'}</span></div>
-    <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW · ${t.games_counted || 0} G)</span></span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(±${t.proj_band != null ? Number(t.proj_band).toFixed(1) : '—'} · ${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW)</span></span></div>
     <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${sosRank ? '#' + sosRank + ' <span style="color:var(--text-light);font-weight:500;">of ' + sosTotal + '</span>' : '—'}</span></div>`;
 
   return `
@@ -554,17 +563,18 @@ function buildPanel(t) {
     </div>`;
 }
 
-// Reconciled season slate — game-by-game W/L for the Projected Record view.
+// Projected season — game-by-game complexion for the Projected Record view. No
+// forced slate: every game is labeled by its own win probability, so both teams'
+// cards always agree (a 64% home Lean is the visitor's 36% road Underdog). Danger
+// games are the winnable road spots in tough conditions.
 function buildSeasonPanel(t) {
   const games = Array.isArray(t.season) ? t.season : [];
   if (!games.length) {
     return `<div class="rk-panel">
-      <div class="rk-panel-h">Reconciled season</div>
+      <div class="rk-panel-h">Projected season</div>
       <div class="rk-spread-note">No schedule available yet.</div>
     </div>`;
   }
-  const wins = games.filter(g => g.result === 'W').length;
-  const losses = games.length - wins;
   const site = s => (s === 'away' ? '@' : 'vs');
   const tag = (g) => {
     let out = '';
@@ -573,29 +583,47 @@ function buildSeasonPanel(t) {
     return out;
   };
   const gameRow = (g) => {
-    const wl = g.result === 'W' ? 'w' : 'l';
+    const cls = g.result === 'W' ? 'w' : (g.result === 'L' ? 'l' : 't');
     const wp = (g.win_prob != null) ? Math.round(Number(g.win_prob) * 100) + '%' : '';
     const wk = (g.week != null) ? 'Wk ' + g.week : '';
+    const reasons = (g.danger && Array.isArray(g.reasons) && g.reasons.length)
+      ? `<span class="rk-reasons">${g.reasons.map(r => `<span class="rk-reason">${escapeHtml(r)}</span>`).join('')}</span>` : '';
     return `
-      <div class="rk-gm">
+      <div class="rk-gm${g.danger ? ' is-danger' : ''}">
         <span class="rk-gm-wk">${escapeHtml(wk)}</span>
-        <span class="rk-gm-opp"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)}</span>
-        <span class="rk-gm-wp">${wp}</span>
-        <span class="rk-wl rk-wl-${wl}">${g.result}</span>
+        <span class="rk-gm-opp"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)} ${reasons}</span>
+        <span class="rk-gm-wp">${wp} <span class="rk-gm-cx">${escapeHtml(g.complexion || '')}</span></span>
+        <span class="rk-wl rk-wl-${cls}">${g.result}</span>
       </div>`;
   };
   const half = Math.ceil(games.length / 2);
   const left = games.slice(0, half).map(gameRow).join('');
   const right = games.slice(half).map(gameRow).join('');
 
+  const band = (t.proj_band != null) ? ' (±' + Number(t.proj_band).toFixed(1) + ')' : '';
+  const range = (t.proj_lo != null && t.proj_hi != null) ? `${t.proj_lo}\u2013${t.proj_hi} wins` : '';
+  const breakdown = [
+    (t.likely_w != null ? t.likely_w + ' likely W' : ''),
+    (t.tossup ? t.tossup + ' toss-up' : ''),
+    (t.likely_l ? t.likely_l + ' likely L' : '')
+  ].filter(Boolean).join(' \u00b7 ');
+
+  const danger = Array.isArray(t.danger) ? t.danger : [];
+  const dangerStrip = danger.length ? `
+      <div class="rk-danger-strip"><b>Danger</b>${danger.map(d =>
+        `${escapeHtml(d.opp)} <span style="color:var(--text-light);">${Math.round(Number(d.win_prob) * 100)}%</span>` +
+        (Array.isArray(d.reasons) && d.reasons.length ? ` <span style="color:var(--text-light);">(${d.reasons.map(escapeHtml).join(' \u00b7 ')})</span>` : '')
+      ).join(' &nbsp;\u00b7&nbsp; ')}</div>` : '';
+
   return `
     <div class="rk-panel">
       <div class="rk-season-head">
-        <span class="rk-panel-h" style="margin:0;">Reconciled season</span>
-        <span class="rk-season-rec">${wins}-${losses}</span>
+        <span class="rk-panel-h" style="margin:0;">Projected season</span>
+        <span class="rk-season-rec">${escapeHtml(t.proj_record || '—')}<span class="rk-season-band">${band}</span></span>
       </div>
+      ${dangerStrip}
       <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
-      <div class="rk-spread-note">One consistent slate across the whole board — every game resolves to a single winner, and this ${wins}-${losses} reconciles to the ${escapeHtml(t.proj_record || '')} projection within a game.</div>
+      <div class="rk-spread-note">Each game's win probability comes from the four-model rating plus home field and rest, travel, and altitude spots. Expected wins is the sum of those probabilities; the ± band is the standard deviation — how far the schedule can swing${range ? ', roughly ' + range : ''}.${breakdown ? ' ' + breakdown + '.' : ''} Danger games are the winnable road spots in tough conditions.</div>
     </div>`;
 }
 
