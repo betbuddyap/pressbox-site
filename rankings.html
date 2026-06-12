@@ -637,18 +637,20 @@ function buildSosPanel(t) {
       <div class="rk-spread-note">No schedule available yet.</div>
     </div>`;
   }
-  games.sort((a, b) => (b.opp_rating ?? -999) - (a.opp_rating ?? -999)); // toughest first
+  games.sort((a, b) => (b.eff_opp ?? b.opp_rating ?? -999) - (a.eff_opp ?? a.opp_rating ?? -999)); // toughest draw first
   const site = s => (s === 'away' ? '@' : 'vs');
   const tag = (g) => {
     let out = '';
     if (g.site === 'neutral') out += ' <span class="rk-gm-tag">N</span>';
     if (g.fcs) out += ' <span class="rk-gm-tag">FCS</span>';
+    if (g.site === 'away' && g.eff_opp != null && g.opp_rating != null && (g.eff_opp - g.opp_rating) >= 1)
+      out += ` <span class="rk-gm-tag" style="background:rgba(176,124,18,0.14);color:#8A5E00;">ROAD +${(g.eff_opp - g.opp_rating).toFixed(1)}</span>`;
     return out;
   };
   const oppRow = (g) => `
     <div class="rk-gm rk-gm-sos">
       <span class="rk-gm-opp"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)}</span>
-      <span class="rk-gm-oppr">${g.opp_rating == null ? '—' : fmtSigned(g.opp_rating)}</span>
+      <span class="rk-gm-oppr">${g.eff_opp == null ? (g.opp_rating == null ? '—' : fmtSigned(g.opp_rating)) : fmtSigned(g.eff_opp)}</span>
     </div>`;
   const half = Math.ceil(games.length / 2);
   const left = games.slice(0, half).map(oppRow).join('');
@@ -659,11 +661,11 @@ function buildSosPanel(t) {
   return `
     <div class="rk-panel">
       <div class="rk-season-head">
-        <span class="rk-panel-h" style="margin:0;">Schedule — opponents by rating</span>
+        <span class="rk-panel-h" style="margin:0;">Schedule — opponents by difficulty</span>
         <span class="rk-season-rec">${t.sos != null ? fmtSigned(t.sos) : '—'}</span>
       </div>
       <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
-      <div class="rk-spread-note">Each row is that opponent's blended rating; their average is this team's strength of schedule${sosRank ? ` — #${sosRank} toughest of ${sosTotal}` : ''}.</div>
+      <div class="rk-spread-note">Each row is the opponent's difficulty adjusted for where you play it and the travel — a strong team on the road counts for more than the same team at home. Their average is this team's strength of schedule${sosRank ? ` — #${sosRank} toughest of ${sosTotal}` : ''}.</div>
     </div>`;
 }
 
