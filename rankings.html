@@ -361,14 +361,20 @@ function fmtSigned(v, dp = 1) {
   const n = Number(v);
   return (n >= 0 ? '+' : '') + n.toFixed(dp);
 }
-// Spot chips for a game (road / jet-lag / short week / altitude / night). 'night'
-// is suppressed for now: 2026 kickoff times are placeholders this far out, so it
-// fires on nearly every game and drowns the tags that actually vary. Flip
-// SHOW_NIGHT to true once real kick times are published.
+// Spot chips for a game (jet-lag / short week / altitude / road / night). 'road' and
+// 'night' are suppressed from the chips: the SOS panel already shows a "ROAD +X" tag
+// with the magnitude (plain "road" is redundant), and 2026 kickoff times are
+// placeholders this far out so "night" fires on nearly every game. The chips that
+// remain — jet-lag, short week, altitude — add info the numbers don't. Flip the flags
+// to surface either again.
 const SHOW_NIGHT = false;
+const SHOW_ROAD  = false;
 function spotChips(reasons) {
   if (!Array.isArray(reasons) || !reasons.length) return '';
-  const rs = SHOW_NIGHT ? reasons : reasons.filter(r => r !== 'night');
+  const drop = new Set();
+  if (!SHOW_NIGHT) drop.add('night');
+  if (!SHOW_ROAD)  drop.add('road');
+  const rs = reasons.filter(r => !drop.has(r));
   if (!rs.length) return '';
   return `<span class="rk-reasons">${rs.map(r => `<span class="rk-reason">${escapeHtml(r)}</span>`).join('')}</span>`;
 }
