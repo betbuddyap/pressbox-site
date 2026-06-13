@@ -170,7 +170,8 @@
   @media (max-width: 720px) { .rk-season-grid { grid-template-columns: 1fr; gap: 0; } }
   .rk-gm { display: grid; grid-template-columns: 40px 1fr auto 22px; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--border); }
   .rk-gm-wk { font-family: var(--sans); font-size: 10px; font-weight: 600; color: var(--text-light); letter-spacing: 0.4px; }
-  .rk-gm-opp { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rk-gm-opp { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
+  .rk-gm-oppname { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .rk-gm-site { color: var(--text-light); font-weight: 500; }
   .rk-gm-wp { font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-light); font-variant-numeric: tabular-nums; }
   .rk-gm-tag { display: inline-block; font-size: 8px; font-weight: 700; letter-spacing: 0.5px; padding: 1px 4px; border-radius: 3px; background: rgba(26,23,5,0.07); color: var(--text-light); vertical-align: 1px; }
@@ -181,7 +182,17 @@
   .rk-wl-t { background: rgba(176,124,18,0.16); color: #8A5E00; }
   .rk-gm-cx { font-size: 9px; font-weight: 700; letter-spacing: 0.3px; color: var(--text-light); text-transform: uppercase; }
   .rk-gm.is-danger { background: rgba(176,124,18,0.05); box-shadow: inset 2px 0 0 #B07C12; padding-left: 6px; }
-  .rk-reasons { display: inline-flex; gap: 3px; flex-wrap: wrap; vertical-align: 1px; }
+  /* Risk gradient on every game (Projected Record): toss-up wins (orange) > leans (amber) >
+     comfortable wins still carrying a travel/scheduling spot (faint). */
+  .rk-gm.is-tossup { background: rgba(192,86,28,0.06); box-shadow: inset 2px 0 0 #C0561C; padding-left: 6px; }
+  .rk-gm.is-lean   { background: rgba(176,124,18,0.05); box-shadow: inset 2px 0 0 #B07C12; padding-left: 6px; }
+  .rk-gm.is-spot   { box-shadow: inset 2px 0 0 rgba(176,124,18,0.45); padding-left: 6px; }
+  .rk-gm-cx.cx-lock    { color: #2E6B3E; }
+  .rk-gm-cx.cx-favored { color: var(--text-light); }
+  .rk-gm-cx.cx-lean    { color: #B07C12; }
+  .rk-gm-cx.cx-tossup  { color: #C0561C; }
+  .rk-gm-cx.cx-loss    { color: var(--text-light); }
+  .rk-reasons { display: flex; gap: 3px; flex-wrap: wrap; }
   .rk-reason { font-size: 8px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 4px; border-radius: 3px; background: rgba(176,124,18,0.14); color: #8A5E00; }
   .rk-danger-strip { margin: 0 0 14px; padding: 10px 12px; border-radius: 8px; background: rgba(176,124,18,0.06); border: 1px solid rgba(176,124,18,0.18); font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); line-height: 1.7; }
   .rk-danger-strip b { color: #8A5E00; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; font-size: 10px; margin-right: 4px; }
@@ -583,16 +594,25 @@ function buildSeasonPanel(t) {
     return out;
   };
   const gameRow = (g) => {
-    const cls = g.result === 'W' ? 'w' : (g.result === 'L' ? 'l' : 't');
+    const cls = g.result === 'L' ? 'l' : 'w';
     const wp = (g.win_prob != null) ? Math.round(Number(g.win_prob) * 100) + '%' : '';
     const wk = (g.week != null) ? 'Wk ' + g.week : '';
-    const reasons = (g.danger && Array.isArray(g.reasons) && g.reasons.length)
+    const hasReasons = Array.isArray(g.reasons) && g.reasons.length;
+    const reasons = hasReasons
       ? `<span class="rk-reasons">${g.reasons.map(r => `<span class="rk-reason">${escapeHtml(r)}</span>`).join('')}</span>` : '';
+    // Highlight where the record can crack: toss-up wins first, then leans, then a
+    // comfortable win that still carries a travel/scheduling spot.
+    const riskCls = g.risk === 'tossup' ? ' is-tossup'
+                  : g.risk === 'lean'   ? ' is-lean'
+                  : (hasReasons && g.result === 'W') ? ' is-spot' : '';
     return `
-      <div class="rk-gm${g.danger ? ' is-danger' : ''}">
+      <div class="rk-gm${riskCls}">
         <span class="rk-gm-wk">${escapeHtml(wk)}</span>
-        <span class="rk-gm-opp"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)} ${reasons}</span>
-        <span class="rk-gm-wp">${wp} <span class="rk-gm-cx">${escapeHtml(g.complexion || '')}</span></span>
+        <span class="rk-gm-opp">
+          <span class="rk-gm-oppname"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)}</span>
+          ${reasons}
+        </span>
+        <span class="rk-gm-wp">${wp} <span class="rk-gm-cx cx-${escapeHtml(g.risk || '')}">${escapeHtml(g.complexion || '')}</span></span>
         <span class="rk-wl rk-wl-${cls}">${g.result}</span>
       </div>`;
   };
@@ -603,9 +623,9 @@ function buildSeasonPanel(t) {
   const band = (t.proj_band != null) ? ' (±' + Number(t.proj_band).toFixed(1) + ')' : '';
   const range = (t.proj_lo != null && t.proj_hi != null) ? `${t.proj_lo}\u2013${t.proj_hi} wins` : '';
   const breakdown = [
-    (t.likely_w != null ? t.likely_w + ' likely W' : ''),
-    (t.tossup ? t.tossup + ' toss-up' : ''),
-    (t.likely_l ? t.likely_l + ' likely L' : '')
+    (t.likely_w != null ? t.likely_w + ' W' : ''),
+    (t.likely_l ? t.likely_l + ' L' : ''),
+    (t.watch ? t.watch + ' to watch' : '')
   ].filter(Boolean).join(' \u00b7 ');
 
   const danger = Array.isArray(t.danger) ? t.danger : [];
@@ -623,7 +643,7 @@ function buildSeasonPanel(t) {
       </div>
       ${dangerStrip}
       <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
-      <div class="rk-spread-note">Each game's win probability comes from the four-model rating plus home field and rest, travel, and altitude spots. Expected wins is the sum of those probabilities; the ± band is the standard deviation — how far the schedule can swing${range ? ', roughly ' + range : ''}.${breakdown ? ' ' + breakdown + '.' : ''} Danger games are the winnable road spots in tough conditions.</div>
+      <div class="rk-spread-note">Record is the most-likely result — every game the team is favored in counts as a win. Games are shaded by how safe that win is: <span style="color:#C0561C;font-weight:700;">toss-ups</span> and <span style="color:#B07C12;font-weight:700;">leans</span> are where it can crack, and any game carrying a road, travel, short-week, night, or altitude spot is tagged. Expected wins sums the win probabilities; the ± band is how far the slate can swing${range ? ', roughly ' + range : ''}.${breakdown ? ' ' + breakdown + '.' : ''}</div>
     </div>`;
 }
 
@@ -647,11 +667,19 @@ function buildSosPanel(t) {
       out += ` <span class="rk-gm-tag" style="background:rgba(176,124,18,0.14);color:#8A5E00;">ROAD +${(g.eff_opp - g.opp_rating).toFixed(1)}</span>`;
     return out;
   };
-  const oppRow = (g) => `
+  const oppRow = (g) => {
+    const hasReasons = Array.isArray(g.reasons) && g.reasons.length;
+    const reasons = hasReasons
+      ? `<span class="rk-reasons">${g.reasons.map(r => `<span class="rk-reason">${escapeHtml(r)}</span>`).join('')}</span>` : '';
+    return `
     <div class="rk-gm rk-gm-sos">
-      <span class="rk-gm-opp"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)}</span>
+      <span class="rk-gm-opp">
+        <span class="rk-gm-oppname"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)}</span>
+        ${reasons}
+      </span>
       <span class="rk-gm-oppr">${g.eff_opp == null ? (g.opp_rating == null ? '—' : fmtSigned(g.opp_rating)) : fmtSigned(g.eff_opp)}</span>
     </div>`;
+  };
   const half = Math.ceil(games.length / 2);
   const left = games.slice(0, half).map(oppRow).join('');
   const right = games.slice(half).map(oppRow).join('');
