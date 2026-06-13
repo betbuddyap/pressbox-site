@@ -193,6 +193,7 @@
   .rk-gm-cx.cx-loss    { color: var(--text-light); }
   .rk-reasons { display: inline-flex; gap: 3px; vertical-align: 1px; }
   .rk-reason { font-size: 8px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 4px; border-radius: 3px; background: rgba(176,124,18,0.14); color: #8A5E00; }
+  .rk-reason-pos { background: rgba(46,107,62,0.14); color: #2E6B3E; }
   .rk-danger-strip { margin: 0 0 14px; padding: 10px 12px; border-radius: 8px; background: rgba(176,124,18,0.06); border: 1px solid rgba(176,124,18,0.18); font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); line-height: 1.7; }
   .rk-danger-strip b { color: #8A5E00; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; font-size: 10px; margin-right: 4px; }
   .rk-season-band { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-light); margin-left: 4px; }
@@ -369,6 +370,7 @@ function fmtSigned(v, dp = 1) {
 // to surface either again.
 const SHOW_NIGHT = false;
 const SHOW_ROAD  = false;
+const POSITIVE_SPOTS = new Set(['rested', 'off bye']);   // green chips — a rest edge helps
 function spotChips(reasons) {
   if (!Array.isArray(reasons) || !reasons.length) return '';
   const drop = new Set();
@@ -376,7 +378,10 @@ function spotChips(reasons) {
   if (!SHOW_ROAD)  drop.add('road');
   const rs = reasons.filter(r => !drop.has(r));
   if (!rs.length) return '';
-  return `<span class="rk-reasons">${rs.map(r => `<span class="rk-reason">${escapeHtml(r)}</span>`).join('')}</span>`;
+  return `<span class="rk-reasons">${rs.map(r => {
+    const cls = POSITIVE_SPOTS.has(r) ? 'rk-reason rk-reason-pos' : 'rk-reason';
+    return `<span class="${cls}">${escapeHtml(r)}</span>`;
+  }).join('')}</span>`;
 }
 
 // ── Load ────────────────────────────────────────────────────────────
@@ -614,11 +619,14 @@ function buildSeasonPanel(t) {
     const wp = (g.win_prob != null) ? Math.round(Number(g.win_prob) * 100) + '%' : '';
     const wk = (g.week != null) ? 'Wk ' + g.week : '';
     const chips = spotChips(g.reasons);
+    const adverse = Array.isArray(g.reasons) &&
+      g.reasons.some(r => r === 'jet-lag' || r === 'short week' || r === 'altitude');
     // Highlight where the record can crack: toss-up wins first, then leans, then a
-    // comfortable win that still carries a (shown) travel/scheduling spot.
+    // comfortable win that still carries an adverse travel/scheduling spot. A rest
+    // edge (rested / off bye) is positive, so it never triggers the highlight.
     const riskCls = g.risk === 'tossup' ? ' is-tossup'
                   : g.risk === 'lean'   ? ' is-lean'
-                  : (chips && g.result === 'W') ? ' is-spot' : '';
+                  : (adverse && g.result === 'W') ? ' is-spot' : '';
     return `
       <div class="rk-gm${riskCls}">
         <span class="rk-gm-wk">${escapeHtml(wk)}</span>
