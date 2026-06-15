@@ -503,7 +503,8 @@ function render() {
     let metricMain, metricSub = '';
     if (isRecord) {
       metricMain = escapeHtml(t.proj_record || '—');
-      metricSub = `<span class="rk-metric-sub">${(t.proj_band != null) ? '(±' + Number(t.proj_band).toFixed(1) + ')' : ''}</span>`;
+      const sv = swingVariance(t);
+      metricSub = `<span class="rk-metric-sub">${sv != null ? 'Swing ' + sv.toFixed(1) : ''}</span>`;
     } else {
       metricMain = fmtSigned(v);
     }
@@ -575,11 +576,13 @@ function buildPanel(t) {
   // like an adjustment and isn't meaningful on its own, so we show the rank.
   const sosRank = state.sosRank ? state.sosRank[t.team] : null;
   const sosTotal = state.payload ? (state.payload.teams || []).length : 0;
+  const svDetail = swingVariance(t);
 
   const ctx = `
     <div class="rk-kv"><span class="rk-kv-k">Blended rating</span><span class="rk-kv-v">${fmtSigned(t.rating)}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Rating variance</span><span class="rk-kv-v">${variance == null ? '—' : variance.toFixed(1) + ' pts'}</span></div>
-    <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(±${t.proj_band != null ? Number(t.proj_band).toFixed(1) : '—'} · ${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW)</span></span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW)</span></span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Swing variance</span><span class="rk-kv-v">${svDetail != null ? svDetail.toFixed(1) + ' <span style="color:var(--text-light);font-weight:500;">/ 10</span>' : '—'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${sosRank ? '#' + sosRank + ' <span style="color:var(--text-light);font-weight:500;">of ' + sosTotal + '</span>' : '—'}</span></div>`;
 
   return `
@@ -595,6 +598,20 @@ function buildPanel(t) {
         </div>
       </div>
     </div>`;
+}
+
+// Swing variance — how many of a team's games are genuine coin-flips. Each game
+// is weighted by a closeness kernel (1.0 at 50/50, ~0.3 at 70/30, ~0 by 80/20),
+// summed and normalized to a 0–10 scale: near 0 when every game is settled (locks
+// OR blowout losses), climbing as more land near 50/50. It is a closeness index,
+// NOT the win-total standard deviation — that SD is bounded and barely moves.
+function swingVariance(t) {
+  const games = Array.isArray(t.season) ? t.season : [];
+  const ps = games.map(g => Number(g.win_prob)).filter(p => isFinite(p));
+  if (!ps.length) return null;
+  const sigma = 0.18;
+  const raw = ps.reduce((s, p) => s + Math.exp(-Math.pow((p - 0.5) / sigma, 2)), 0);
+  return raw / ps.length * 10;
 }
 
 // Projected season — game-by-game complexion for the Projected Record view. No
@@ -641,8 +658,8 @@ function buildSeasonPanel(t) {
   const left = games.slice(0, half).map(gameRow).join('');
   const right = games.slice(half).map(gameRow).join('');
 
-  const band = (t.proj_band != null) ? ' (±' + Number(t.proj_band).toFixed(1) + ')' : '';
-  const range = (t.proj_lo != null && t.proj_hi != null) ? `${t.proj_lo}\u2013${t.proj_hi} wins` : '';
+  const sv = swingVariance(t);
+  const swingTxt = (sv != null) ? ' Swing ' + sv.toFixed(1) : '';
   const breakdown = [
     (t.likely_w != null ? t.likely_w + ' W' : ''),
     (t.likely_l ? t.likely_l + ' L' : ''),
@@ -660,11 +677,11 @@ function buildSeasonPanel(t) {
     <div class="rk-panel">
       <div class="rk-season-head">
         <span class="rk-panel-h" style="margin:0;">Projected season</span>
-        <span class="rk-season-rec">${escapeHtml(t.proj_record || '—')}<span class="rk-season-band">${band}</span></span>
+        <span class="rk-season-rec">${escapeHtml(t.proj_record || '—')}<span class="rk-season-band">${swingTxt}</span></span>
       </div>
       ${dangerStrip}
       <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
-      <div class="rk-spread-note">Record is the most-likely result — every game the team is favored in counts as a win. Games are shaded by how safe that win is: <span style="color:#C0561C;font-weight:700;">toss-ups</span> and <span style="color:#B07C12;font-weight:700;">leans</span> are where it can crack, and any game carrying a road, travel, short-week, night, or altitude spot is tagged. Expected wins sums the win probabilities; the ± band is how far the slate can swing${range ? ', roughly ' + range : ''}.${breakdown ? ' ' + breakdown + '.' : ''}</div>
+      <div class="rk-spread-note">Record is the most-likely result — every game the team is favored in counts as a win. Games are shaded by how safe that win is: <span style="color:#C0561C;font-weight:700;">toss-ups</span> and <span style="color:#B07C12;font-weight:700;">leans</span> are where it can crack, and any game carrying a road, travel, short-week, night, or altitude spot is tagged. Expected wins sums the win probabilities. Swing variance scores how many games are genuine coin-flips — near 0 when every game is settled, climbing as more land near 50/50.${breakdown ? ' ' + breakdown + '.' : ''}</div>
     </div>`;
 }
 
