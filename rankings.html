@@ -581,7 +581,7 @@ function buildPanel(t) {
   const ctx = `
     <div class="rk-kv"><span class="rk-kv-k">Blended rating</span><span class="rk-kv-v">${fmtSigned(t.rating)}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Rating variance</span><span class="rk-kv-v">${variance == null ? '—' : variance.toFixed(1) + ' pts'}</span></div>
-    <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')} <span style="color:var(--text-light);font-weight:500;">(${t.expected_wins != null ? Number(t.expected_wins).toFixed(1) : '—'} xW)</span></span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Swing variance</span><span class="rk-kv-v">${svDetail != null ? svDetail.toFixed(1) + ' <span style="color:var(--text-light);font-weight:500;">/ 10</span>' : '—'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${sosRank ? '#' + sosRank + ' <span style="color:var(--text-light);font-weight:500;">of ' + sosTotal + '</span>' : '—'}</span></div>`;
 
@@ -681,7 +681,7 @@ function buildSeasonPanel(t) {
       </div>
       ${dangerStrip}
       <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
-      <div class="rk-spread-note">Record is the most-likely result — every game the team is favored in counts as a win. Games are shaded by how safe that win is: <span style="color:#C0561C;font-weight:700;">toss-ups</span> and <span style="color:#B07C12;font-weight:700;">leans</span> are where it can crack, and any game carrying a road, travel, short-week, night, or altitude spot is tagged. Expected wins sums the win probabilities. Swing variance scores how many games are genuine coin-flips — near 0 when every game is settled, climbing as more land near 50/50.${breakdown ? ' ' + breakdown + '.' : ''}</div>
+      <div class="rk-spread-note">Record is the most-likely result — every game the team is favored in counts as a win. Games are shaded by how safe that win is: <span style="color:#C0561C;font-weight:700;">toss-ups</span> and <span style="color:#B07C12;font-weight:700;">leans</span> are where it can crack, and any game carrying a road, travel, short-week, night, or altitude spot is tagged. Swing variance scores how many games are genuine coin-flips — near 0 when every game is settled, climbing as more land near 50/50.${breakdown ? ' ' + breakdown + '.' : ''}</div>
     </div>`;
 }
 
