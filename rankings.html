@@ -127,7 +127,8 @@
   .rk-team-name { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
   .rk-team-conf { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-light); margin-top: 3px; }
   .rk-metric { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-  .rk-metric-val { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .rk-metric-val { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rk-metric-subline { font-size: 11px; font-weight: 500; color: var(--text-light); white-space: nowrap; }
   .rk-metric-val .rk-metric-sub { font-size: 11px; font-weight: 500; color: var(--text-light); margin-left: 6px; }
   .rk-rec-lbl { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-light); }
   .rk-rec-sep { color: var(--text-light); font-weight: 400; margin: 0 3px; }
@@ -509,7 +510,7 @@ function render() {
       metricMain = `<span class="rk-rec-lbl">Favored</span> ${escapeHtml(t.proj_record || '—')}`
                  + ` <span class="rk-rec-sep">/</span> `
                  + `<span class="rk-rec-lbl">Win prob.</span> ${wpr || '—'}`;
-      metricSub = `<span class="rk-metric-sub">${sv != null ? 'Win var ' + sv.toFixed(1) : ''}</span>`;
+      metricSub = sv != null ? 'Win var ' + sv.toFixed(1) : '';
     } else {
       metricMain = fmtSigned(v);
     }
@@ -526,7 +527,8 @@ function render() {
             ${confTag}
           </span>
           <span class="rk-metric">
-            <span class="rk-metric-val">${metricMain}${metricSub}</span>
+            <span class="rk-metric-val">${metricMain}</span>
+            ${metricSub ? `<span class="rk-metric-subline">${metricSub}</span>` : ''}
             <span class="rk-bar-track"><span class="rk-bar-fill ${fillClass}" style="width:${pct}%;"></span></span>
           </span>
         </button>
