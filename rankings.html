@@ -129,6 +129,8 @@
   .rk-metric { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
   .rk-metric-val { font-family: var(--sans); font-size: 16px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
   .rk-metric-val .rk-metric-sub { font-size: 11px; font-weight: 500; color: var(--text-light); margin-left: 6px; }
+  .rk-rec-lbl { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-light); }
+  .rk-rec-sep { color: var(--text-light); font-weight: 400; margin: 0 3px; }
   .rk-bar-track { width: 116px; height: 4px; border-radius: 2px; background: rgba(26,23,5,0.08); overflow: hidden; }
   .rk-bar-fill { height: 100%; border-radius: 2px; background: var(--gold); }
   .rk-bar-fill.neg { background: var(--text-light); }
@@ -502,8 +504,11 @@ function render() {
 
     let metricMain, metricSub = '';
     if (isRecord) {
-      metricMain = escapeHtml(t.proj_record || '—');
       const sv = swingVariance(t);
+      const wpr = winProbRecord(t);
+      metricMain = `<span class="rk-rec-lbl">Favored</span> ${escapeHtml(t.proj_record || '—')}`
+                 + ` <span class="rk-rec-sep">/</span> `
+                 + `<span class="rk-rec-lbl">Win prob.</span> ${wpr || '—'}`;
       metricSub = `<span class="rk-metric-sub">${sv != null ? 'Win var ' + sv.toFixed(1) : ''}</span>`;
     } else {
       metricMain = fmtSigned(v);
@@ -579,9 +584,9 @@ function buildPanel(t) {
   const svDetail = swingVariance(t);
 
   const ctx = `
-    <div class="rk-kv"><span class="rk-kv-k">Blended rating</span><span class="rk-kv-v">${fmtSigned(t.rating)}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Rating variance</span><span class="rk-kv-v">${variance == null ? '—' : variance.toFixed(1) + ' pts'}</span></div>
-    <div class="rk-kv"><span class="rk-kv-k">Projected record</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')}</span></div>
+    <div class="rk-kv"><span class="rk-kv-k">W/L Favored</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')}</span></div>
+    <div class="rk-kv"><span class="rk-kv-k">W/L Probability</span><span class="rk-kv-v">${winProbRecord(t) || '—'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Win variance</span><span class="rk-kv-v">${svDetail != null ? svDetail.toFixed(1) + ' <span style="color:var(--text-light);font-weight:500;">/ 10</span>' : '—'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${sosRank ? '#' + sosRank + ' <span style="color:var(--text-light);font-weight:500;">of ' + sosTotal + '</span>' : '—'}</span></div>`;
 
@@ -612,6 +617,19 @@ function swingVariance(t) {
   const sigma = 0.18;
   const raw = ps.reduce((s, p) => s + Math.exp(-Math.pow((p - 0.5) / sigma, 2)), 0);
   return raw / ps.length * 10;
+}
+
+// Win-probability record — round(expected wins)-(games - that). Expected wins
+// is the sum of per-game win probabilities, so this discounts the toss-ups the
+// favored record counts as full wins. Data is already in the payload.
+function winProbRecord(t) {
+  const ew = Number(t.expected_wins);
+  if (!isFinite(ew)) return null;
+  const n = (t.games_counted != null) ? Number(t.games_counted)
+            : (Array.isArray(t.season) ? t.season.length : null);
+  if (!n) return null;
+  const w = Math.round(ew);
+  return `${w}-${n - w}`;
 }
 
 // Projected season — game-by-game complexion for the Projected Record view. No
