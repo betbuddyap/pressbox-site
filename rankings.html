@@ -131,6 +131,7 @@
   .rk-metric-subline { font-size: 11px; font-weight: 500; color: var(--text-light); white-space: nowrap; }
   .rk-metric-val .rk-metric-sub { font-size: 11px; font-weight: 500; color: var(--text-light); margin-left: 6px; }
   .rk-rec-lbl { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-light); }
+  .rk-rec-num { font-family: var(--serif); }
   .rk-rec-sep { color: var(--text-light); font-weight: 400; margin: 0 3px; }
   .rk-bar-track { width: 116px; height: 4px; border-radius: 2px; background: rgba(26,23,5,0.08); overflow: hidden; }
   .rk-bar-fill { height: 100%; border-radius: 2px; background: var(--gold); }
@@ -507,9 +508,9 @@ function render() {
     if (isRecord) {
       const sv = swingVariance(t);
       const wpr = winProbRecord(t);
-      metricMain = `<span class="rk-rec-lbl">Favored</span> ${escapeHtml(t.proj_record || '—')}`
+      metricMain = `<span class="rk-rec-lbl">Favored</span> <span class="rk-rec-num">${escapeHtml(t.proj_record || '—')}</span>`
                  + ` <span class="rk-rec-sep">/</span> `
-                 + `<span class="rk-rec-lbl">Win prob.</span> ${wpr || '—'}`;
+                 + `<span class="rk-rec-lbl">Win prob.</span> <span class="rk-rec-num">${wpr || '—'}</span>`;
       metricSub = sv != null ? 'Win var ' + sv.toFixed(1) : '';
     } else {
       metricMain = fmtSigned(v);
@@ -678,8 +679,6 @@ function buildSeasonPanel(t) {
   const left = games.slice(0, half).map(gameRow).join('');
   const right = games.slice(half).map(gameRow).join('');
 
-  const sv = swingVariance(t);
-  const swingTxt = (sv != null) ? ' Win var ' + sv.toFixed(1) : '';
   const breakdown = [
     (t.likely_w != null ? t.likely_w + ' W' : ''),
     (t.likely_l ? t.likely_l + ' L' : ''),
@@ -697,7 +696,6 @@ function buildSeasonPanel(t) {
     <div class="rk-panel">
       <div class="rk-season-head">
         <span class="rk-panel-h" style="margin:0;">Projected season</span>
-        <span class="rk-season-rec">${escapeHtml(t.proj_record || '—')}<span class="rk-season-band">${swingTxt}</span></span>
       </div>
       ${dangerStrip}
       <div class="rk-season-grid"><div>${left}</div><div>${right}</div></div>
