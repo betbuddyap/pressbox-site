@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parlay Builder — PressBox Analytics</title>
+<meta name="description" content="Build a parlay from our graded picks or your own selections. Every leg shows our probability against the market — and what the ticket is really worth.">
+<meta property="og:title" content="Parlay Builder — PressBox Analytics">
+<meta property="og:url" content="https://pressboxanalytics.com/parlay.html">
+<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/tokens.css">
+
+<style>
+  :root { --max: 1100px; --pos: #3E7D5A; }
+
+  *{ box-sizing: border-box; }
+  html, body { margin: 0; background: var(--cream); color: var(--text); -webkit-font-smoothing: antialiased; font-family: var(--sans); }
+
+  /* ── Nav (cream — tools colorway) ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0; padding: 0; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+  .nav-links a.nav-live { color: var(--rust); font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; font-size: 11px; }
+  .nav-links a.nav-live::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--rust); border-radius: 50%; margin-right: 7px; vertical-align: 2px; animation: pulse-live 2.4s ease-in-out infinite; }
+  .nav-links a.nav-live:hover { color: var(--rust-light); }
+  @keyframes pulse-live { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(.85);} }
+  .hamburger { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; width: 32px; height: 32px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--ink); border-radius: 2px; }
+  .mobile-menu { display: none; position: fixed; inset: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--ink); text-decoration: none; }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--ink); }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* ── Masthead (cream) ── */
+  .page-header { background: var(--cream); padding: 48px 0 32px; border-bottom: 1px solid var(--border); }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--text); line-height: 1.1; margin: 0; }
+  .page-title em { font-style: italic; color: var(--gold); }
+  .page-sub { font-size: 15px; font-weight: 300; color: var(--text-mid); margin: 10px 0 0; line-height: 1.6; max-width: 600px; }
+
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 28px 32px 80px; }
+
+  /* ── Mode switch ── */
+  .pb-modes { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 26px; }
+  .pb-mode { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text-light); background: var(--cream); border: none; padding: 11px 26px; cursor: pointer; transition: all .15s; }
+  .pb-mode + .pb-mode { border-left: 1px solid var(--border); }
+  .pb-mode.active { background: var(--ink); color: var(--cream); }
+
+  /* ── Controls (prebuilt) ── */
+  .pb-controls { display: grid; gap: 18px; margin-bottom: 22px; }
+  .pb-ctrl-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); margin-bottom: 9px; }
+  .pb-seg { display: inline-flex; flex-wrap: wrap; gap: 8px; }
+  .pb-chip { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text-mid); background: var(--cream); border: 1px solid var(--border); border-radius: 5px; padding: 9px 16px; cursor: pointer; transition: all .15s; }
+  .pb-chip:hover { border-color: var(--gold); }
+  .pb-chip.active { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+  .pb-chip-sub { display: block; font-size: 10px; font-weight: 500; opacity: .7; margin-top: 1px; }
+
+  .pb-btn { font-family: var(--sans); font-size: 14px; font-weight: 700; letter-spacing: .3px; color: var(--cream); background: var(--ink); border: none; border-radius: 5px; padding: 13px 28px; cursor: pointer; transition: opacity .15s; }
+  .pb-btn:hover { opacity: .88; }
+  .pb-btn:disabled { opacity: .4; cursor: default; }
+
+  /* ── Leg card ── */
+  .pb-legs { display: grid; gap: 10px; margin: 18px 0; }
+  .pb-leg { border: 1px solid var(--border); border-radius: 7px; background: #FFFDF8; padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; }
+  .pb-leg.selectable { cursor: pointer; transition: border-color .12s, background .12s; }
+  .pb-leg.selectable:hover { border-color: var(--gold); }
+  .pb-leg.picked { border-color: var(--gold); background: var(--gold-pale, #F5EDD0); }
+  .pb-leg-main { min-width: 0; }
+  .pb-leg-match { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--text-light); }
+  .pb-leg-pick { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+  .pb-leg-pick .ln { color: var(--gold); }
+  .pb-leg-meta { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+  .pb-tier { display: inline-block; font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: 1px; }
+  .pb-tier.ap { background: var(--gold); color: var(--ink); }
+  .pb-tier.a { background: var(--gold-light, #E8C964); color: var(--ink); }
+  .pb-tier.sm, .pb-tier.gl, .pb-tier.ls { background: var(--cream-mid, #E8E1D3); color: var(--text-mid); }
+  .pb-tier.blended { background: var(--ink); color: var(--cream); }
+
+  .pb-leg-prob { text-align: right; white-space: nowrap; }
+  .pb-prob-row { font-size: 12px; color: var(--text-mid); }
+  .pb-prob-row b { font-family: var(--sans); font-size: 15px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .pb-prob-vs { color: var(--text-light); font-size: 11px; margin-top: 1px; }
+  .pb-edge { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .pb-edge.up { color: var(--pos); }
+  .pb-edge.dn { color: var(--rust); }
+
+  /* ── Ticket summary ── */
+  .pb-ticket { border: 1px solid var(--border); border-radius: 9px; background: var(--ink); color: var(--cream); padding: 22px 24px; margin-top: 16px; }
+  .pb-tk-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px 14px; }
+  .pb-tk-cell .k { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #8A8A7A; margin-bottom: 5px; }
+  .pb-tk-cell .v { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--cream); line-height: 1; font-variant-numeric: tabular-nums; }
+  .pb-tk-cell .v.gold { color: var(--gold-light, #E8C964); }
+  .pb-tk-cell .v.pos { color: #7FC79B; }
+  .pb-tk-cell .v.small { font-size: 19px; }
+  .pb-tk-compare { margin-top: 18px; padding-top: 16px; border-top: 1px solid #2A2A20; font-size: 13px; color: #C9C7BA; line-height: 1.6; }
+  .pb-tk-compare b { color: var(--cream); }
+  .pb-warn { margin-top: 14px; padding: 11px 14px; border-radius: 6px; background: rgba(176,72,31,.18); border: 1px solid rgba(176,72,31,.5); color: #F0C9B6; font-size: 12px; line-height: 1.5; }
+
+  .pb-note { font-size: 12px; color: var(--text-light); line-height: 1.6; margin: 8px 2px 0; }
+  .pb-empty { border: 1px dashed var(--border); border-radius: 8px; padding: 30px; text-align: center; color: var(--text-light); font-size: 14px; }
+  .pb-slipbar { position: sticky; bottom: 0; background: var(--cream); border-top: 1px solid var(--border); padding: 14px 0; margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .pb-slip-count { font-size: 13px; color: var(--text-mid); font-weight: 600; }
+  .pb-hide { display: none !important; }
+  @media (max-width: 700px) { .pb-tk-grid { grid-template-columns: repeat(2, 1fr); } .page-title { font-size: 32px; } }
+</style>
+</head>
+
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics"></a>
+    <ul class="nav-links">
+      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
+      <li><a href="/upcoming.html">Upcoming</a></li>
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/rankings.html">Rankings</a></li>
+      <li><a href="/how-it-works.html">How It Works</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/login.html" id="navAuth" style="opacity:.7;">Sign in</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="toggleMenu()" aria-label="Close menu">✕</button>
+  <a href="/live-lines.html">Live Lines</a>
+  <a href="/upcoming.html">Upcoming</a>
+  <a href="/results.html">Results</a>
+  <a href="/rankings.html">Rankings</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/about.html">About</a>
+  <a href="/login.html" id="navAuthMobile" style="opacity:.7;">Sign in</a>
+</div>
+
+<!-- MASTHEAD -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">2026 Season</div>
+    <h1 class="page-title">Parlay <em>Builder</em></h1>
+    <p class="page-sub">Stack our graded picks, or build your own. Every leg shows our probability against the market — and what the ticket is actually worth.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="pb-modes">
+    <button class="pb-mode active" id="modePrebuilt" onclick="setMode('prebuilt')">Pre-built</button>
+    <button class="pb-mode" id="modeCustom" onclick="setMode('custom')">Build your own</button>
+  </div>
+
+  <!-- PRE-BUILT -->
+  <section id="panelPrebuilt">
+    <div class="pb-controls">
+      <div>
+        <div class="pb-ctrl-label">Markets</div>
+        <div class="pb-seg" id="segBet"></div>
+      </div>
+      <div>
+        <div class="pb-ctrl-label">Goal</div>
+        <div class="pb-seg" id="segGoal"></div>
+      </div>
+      <div>
+        <div class="pb-ctrl-label">Legs</div>
+        <div class="pb-seg" id="segLegs"></div>
+      </div>
+    </div>
+    <button class="pb-btn" id="buildBtn" onclick="buildPrebuilt()">Build ticket</button>
+    <div id="prebuiltOut"></div>
+  </section>
+
+  <!-- CUSTOM -->
+  <section id="panelCustom" class="pb-hide">
+    <p class="pb-note">Tap the picks you want. They're our graded board for the season — every leg priced our way against the market.</p>
+    <div id="boardOut"></div>
+    <div class="pb-slipbar pb-hide" id="slipbar">
+      <span class="pb-slip-count" id="slipCount">0 legs selected</span>
+      <span style="display:flex;gap:10px;">
+        <button class="pb-btn" style="background:none;color:var(--text-mid);border:1px solid var(--border);" onclick="clearSlip()">Clear</button>
+        <button class="pb-btn" id="gradeBtn" onclick="gradeCustom()">Grade ticket</button>
+      </span>
+    </div>
+    <div id="customOut"></div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-nav.js" defer></script>
+<script>
+const API = 'https://betbuddy-backend.onrender.com';
+const SEASON = 2026;
+
+function toggleMenu(){ document.getElementById('mobileMenu').classList.toggle('open'); }
+
+// ── state ──
+let mode = 'prebuilt';
+const pre = { bet_type: 'all', goal: 'balance', legs: 3 };
+let board = [];
+const slip = new Set();
+
+const BET_OPTS  = [['all','All'],['spread','Spread'],['total','Total'],['ml','Moneyline']];
+const GOAL_OPTS = [['balance','Best value','highest EV'],['max_win','Safest','most likely'],['max_return','Biggest payout','longest odds']];
+const LEG_OPTS  = [2,3,4,5,6];
+
+// ── format helpers ──
+const pct  = p => p==null ? '—' : Math.round(p*100)+'%';
+const pct1 = p => p==null ? '—' : (p*100).toFixed(1)+'%';
+const am   = o => o==null ? '—' : (o>0 ? '+'+o : ''+o);
+const money= x => x==null ? '—' : (x<0?'-$':'$')+Math.abs(x).toFixed(0);
+const tierClass = t => ({'A+':'ap','A':'a','smart_money':'sm','goldilocks':'gl','lottery':'ls'})[t] || 'sm';
+const tierLabel = t => ({'A+':'A+','A':'A','smart_money':'Smart','goldilocks':'Goldilocks','lottery':'Lottery'})[t] || (t||'');
+
+function esc(s){ const d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
+
+// ── controls render ──
+function renderControls(){
+  document.getElementById('segBet').innerHTML = BET_OPTS.map(([v,l]) =>
+    `<button class="pb-chip ${pre.bet_type===v?'active':''}" onclick="setPre('bet_type','${v}')">${l}</button>`).join('');
+  document.getElementById('segGoal').innerHTML = GOAL_OPTS.map(([v,l,s]) =>
+    `<button class="pb-chip ${pre.goal===v?'active':''}" onclick="setPre('goal','${v}')">${l}<span class="pb-chip-sub">${s}</span></button>`).join('');
+  document.getElementById('segLegs').innerHTML = LEG_OPTS.map(n =>
+    `<button class="pb-chip ${pre.legs===n?'active':''}" onclick="setPre('legs',${n})">${n}</button>`).join('');
+}
+function setPre(k,v){ pre[k]=v; renderControls(); }
+
+function setMode(m){
+  mode = m;
+  document.getElementById('modePrebuilt').classList.toggle('active', m==='prebuilt');
+  document.getElementById('modeCustom').classList.toggle('active', m==='custom');
+  document.getElementById('panelPrebuilt').classList.toggle('pb-hide', m!=='prebuilt');
+  document.getElementById('panelCustom').classList.toggle('pb-hide', m!=='custom');
+  if (m==='custom' && !board.length) loadBoard();
+}
+
+// ── leg card markup ──
+function edgeSpan(e){
+  if (e==null) return '';
+  const up = e>=0;
+  return `<span class="pb-edge ${up?'up':'dn'}">${up?'+':''}${Math.round(e*100)} edge</span>`;
+}
+function legCard(l, opts={}){
+  const sel = opts.selectable;
+  const picked = slip.has(l.leg_id);
+  const badge = l.source==='blended'
+      ? `<span class="pb-tier blended">Your pick</span>`
+      : `<span class="pb-tier ${tierClass(l.tier)}">${esc(tierLabel(l.tier))}</span>`;
+  const book = l.book && l.book.name ? l.book.name : '';
+  return `
+  <div class="pb-leg ${sel?'selectable':''} ${picked?'picked':''}" ${sel?`onclick="toggleLeg('${l.leg_id}')"`:''}>
+    <div class="pb-leg-main">
+      <div class="pb-leg-match">${esc(l.matchup||'')}</div>
+      <div class="pb-leg-pick">${esc(l.side||'')} <span class="ln">${esc(l.line||'')}</span> ${badge}</div>
+      <div class="pb-leg-meta">${esc(book)}${book?' · ':''}${am(l.price_american)}</div>
+    </div>
+    <div class="pb-leg-prob">
+      <div class="pb-prob-row">Ours <b>${pct(l.our_prob)}</b></div>
+      <div class="pb-prob-vs">Vegas ${pct(l.vegas_implied)} · ${edgeSpan(l.edge)}</div>
+    </div>
+  </div>`;
+}
+
+// ── ticket summary ──
+function ticketSummary(c, corr){
+  const evPos = c.ev_per_100!=null && c.ev_per_100>0;
+  const compare = (c.market_fair_prob!=null)
+    ? `We make this ticket <b>${pct1(c.our_prob)}</b> to hit. The market prices it at <b>${pct1(c.market_fair_prob)}</b>, and the payout needs <b>${pct1(c.breakeven_prob)}</b> just to break even.`
+    : `We make this ticket <b>${pct1(c.our_prob)}</b> to hit. The payout needs <b>${pct1(c.breakeven_prob)}</b> just to break even.`;
+  const warn = corr && !corr.independence_valid
+    ? `<div class="pb-warn">Two or more legs are in the same game, so they move together. The combined number assumes they're independent — treat it as a ceiling, not a true price.</div>` : '';
+  return `
+  <div class="pb-ticket">
+    <div class="pb-tk-grid">
+      <div class="pb-tk-cell"><div class="k">Our probability</div><div class="v gold">${pct1(c.our_prob)}</div></div>
+      <div class="pb-tk-cell"><div class="k">Parlay odds</div><div class="v">${am(c.american_odds)}</div></div>
+      <div class="pb-tk-cell"><div class="k">Pays (on $100)</div><div class="v small">${money(c.payout_per_100)}</div></div>
+      <div class="pb-tk-cell"><div class="k">Edge (per $100)</div><div class="v small ${evPos?'pos':''}">${money(c.ev_per_100)}</div></div>
+    </div>
+    <div class="pb-tk-compare">${compare} Our fair price would be <b>${am(c.fair_american)}</b>.</div>
+    ${warn}
+  </div>`;
+}
+
+function renderTicket(d, el){
+  if (d.error){ el.innerHTML = `<div class="pb-empty">${esc(d.error)}</div>`; return; }
+  const legs = d.legs||[];
+  if (!legs.length){ el.innerHTML = `<div class="pb-empty">${esc(d.note||'No legs to grade yet.')}</div>`; return; }
+  const noteRow = d.note ? `<p class="pb-note">${esc(d.note)}</p>` : '';
+  el.innerHTML =
+    `<div class="pb-legs">${legs.map(l=>legCard(l)).join('')}</div>`
+    + ticketSummary(d.combined, d.correlation)
+    + noteRow;
+}
+
+// ── PRE-BUILT ──
+async function buildPrebuilt(){
+  const out = document.getElementById('prebuiltOut');
+  const btn = document.getElementById('buildBtn');
+  btn.disabled = true; out.innerHTML = `<div class="pb-empty">Building your ticket…</div>`;
+  try {
+    const u = `${API}/parlay/prebuilt?season=${SEASON}&legs=${pre.legs}&bet_type=${pre.bet_type}&goal=${pre.goal}`;
+    const d = await (await fetch(u)).json();
+    renderTicket(d, out);
+  } catch(e){
+    out.innerHTML = `<div class="pb-empty">Couldn't reach the board. Refresh and try again.</div>`;
+  } finally { btn.disabled = false; }
+}
+
+// ── CUSTOM ──
+async function loadBoard(){
+  const out = document.getElementById('boardOut');
+  out.innerHTML = `<div class="pb-empty">Loading the board…</div>`;
+  try {
+    const d = await (await fetch(`${API}/parlay/board?season=${SEASON}`)).json();
+    board = d.legs || [];
+    renderBoard();
+  } catch(e){
+    out.innerHTML = `<div class="pb-empty">Couldn't load the board. Refresh and try again.</div>`;
+  }
+}
+function renderBoard(){
+  const out = document.getElementById('boardOut');
+  if (!board.length){ out.innerHTML = `<div class="pb-empty">No released picks on the board yet.</div>`; return; }
+  out.innerHTML = `<div class="pb-legs">${board.map(l=>legCard(l,{selectable:true})).join('')}</div>`;
+  syncSlip();
+}
+function toggleLeg(id){
+  // ids arrive as strings from the DOM; board leg_ids are numbers
+  const leg = board.find(l => String(l.leg_id)===String(id));
+  if (!leg) return;
+  if (slip.has(leg.leg_id)) slip.delete(leg.leg_id); else slip.add(leg.leg_id);
+  renderBoard();
+}
+function clearSlip(){ slip.clear(); document.getElementById('customOut').innerHTML=''; renderBoard(); }
+function syncSlip(){
+  const bar = document.getElementById('slipbar');
+  const n = slip.size;
+  bar.classList.toggle('pb-hide', n===0);
+  document.getElementById('slipCount').textContent = `${n} leg${n===1?'':'s'} selected`;
+  document.getElementById('gradeBtn').disabled = n<2;
+  document.querySelectorAll('#boardOut .pb-leg').forEach(()=>{});
+}
+async function gradeCustom(){
+  const out = document.getElementById('customOut');
+  const btn = document.getElementById('gradeBtn');
+  btn.disabled = true; out.innerHTML = `<div class="pb-empty">Grading…</div>`;
+  try {
+    const d = await (await fetch(`${API}/parlay/grade`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ season: SEASON, leg_ids: [...slip] })
+    })).json();
+    renderTicket(d, out);
+    out.scrollIntoView({behavior:'smooth', block:'nearest'});
+  } catch(e){
+    out.innerHTML = `<div class="pb-empty">Couldn't grade that ticket. Try again.</div>`;
+  } finally { btn.disabled = slip.size<2; }
+}
+
+renderControls();
+</script>
+</body>
+</html>
