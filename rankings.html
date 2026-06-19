@@ -471,7 +471,19 @@ function render() {
   let teams = (payload.teams || []).slice();
   if (state.conf !== 'All FBS') teams = teams.filter(t => t.conference === state.conf);
 
-  teams.sort((a, b) => (b[viewKey] ?? -Infinity) - (a[viewKey] ?? -Infinity));
+  if (state.view === 'record') {
+    // Headline on this tab is the Favored record, so order by favored wins
+    // (highest first), breaking ties by the win-probability total.
+    const favWins = t => {
+      const m = String(t.proj_record || '').match(/^(\d+)/);
+      return m ? Number(m[1]) : -Infinity;
+    };
+    teams.sort((a, b) =>
+      (favWins(b) - favWins(a)) ||
+      ((b.expected_wins ?? -Infinity) - (a.expected_wins ?? -Infinity)));
+  } else {
+    teams.sort((a, b) => (b[viewKey] ?? -Infinity) - (a[viewKey] ?? -Infinity));
+  }
 
   if (!teams.length) {
     els.body.innerHTML = `
