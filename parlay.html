@@ -3,22 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Parlay Builder — PressBox Analytics</title>
-<meta name="description" content="Build a parlay from our graded picks or your own selections. Every leg shows our probability against the market — and what the ticket is really worth.">
-<meta property="og:title" content="Parlay Builder — PressBox Analytics">
-<meta property="og:url" content="https://pressboxanalytics.com/parlay.html">
-<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
+<title>Build a Parlay — PressBox Analytics</title>
+<meta name="description" content="Build a parlay from live picks. Every leg priced against the current best market line, with the true combined edge.">
 
+<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-<!-- Tokens FIRST, components AFTER — reuse the live-lines visual language -->
+<!-- Tokens FIRST, components AFTER — same as live-lines so cards match exactly -->
 <link rel="stylesheet" href="/css/tokens.css">
 <link rel="stylesheet" href="/css/components/live-lines.css">
 
 <style>
-  /* ── Site nav (same as live-lines.html — keep in sync) ── */
+  /* ── Site nav (copied from live-lines.html — keep in sync across pages) ── */
   :root { --max: 1200px; }
   nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
@@ -26,315 +24,403 @@
   .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0; padding: 0; }
   .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color: var(--ink); }
-  .nav-links a.nav-live { color: var(--rust); font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; font-size: 11px; }
+  .nav-links a.nav-live { color: var(--rust) !important; font-weight: 700; letter-spacing: 0.3px; position: relative; text-transform: uppercase; font-size: 11px; }
   .nav-links a.nav-live::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--rust); border-radius: 50%; margin-right: 7px; vertical-align: 2px; animation: pulse-live 2.4s ease-in-out infinite; }
-  .nav-links a.nav-live:hover { color: var(--rust-light); }
-  @keyframes pulse-live { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.5;transform:scale(.85);} }
-  .hamburger { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; width: 32px; height: 32px; }
-  .hamburger span { display: block; width: 22px; height: 2px; background: var(--ink); border-radius: 2px; }
-  .mobile-menu { display: none; position: fixed; inset: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
-  .mobile-menu.open { display: flex; }
-  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--ink); text-decoration: none; }
-  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--ink); }
-  @media (min-width: 961px) { .hamburger { display: none !important; } }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+  @keyframes pulse-live { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+  @media (max-width: 640px) { .nav-inner { padding: 0 18px; } .nav-links { gap: 16px; } }
 
-  /* ── Parlay-specific, built on the same tokens as live-lines ── */
-  .pb-mode-bar { margin-bottom: var(--space-5); }
-  .pb-section-gap { margin-top: var(--space-4); }
+  /* ── Parlay-specific (everything else reuses live-lines.css ll- classes) ── */
 
-  .pb-build {
-    font-family: var(--sans); font-size: var(--text-base); font-weight: var(--weight-bold);
-    letter-spacing: .3px; color: var(--cream); background: var(--ink); border: none;
-    border-radius: var(--radius-md); padding: 12px 26px; cursor: pointer; margin-top: var(--space-4);
-    transition: opacity .15s;
+  /* Selected-leg state layered over the shared ll-row card */
+  .ll-row.pl-selected { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold) inset; }
+  .ll-row.pl-selected .ll-row-header { background: color-mix(in srgb, var(--gold) 8%, transparent); }
+
+  /* Select indicator sits where the accordion chevron would be */
+  .pl-check {
+    flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid var(--border); display: grid; place-items: center;
+    color: transparent; transition: all 0.15s;
   }
-  .pb-build:hover { opacity: .88; }
-  .pb-build:disabled { opacity: .4; cursor: default; }
+  .ll-row.pl-selected .pl-check { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+  .pl-check svg { width: 13px; height: 13px; }
 
-  /* selectable board rows */
-  .pb-pick { cursor: pointer; }
-  .pb-pick[aria-pressed="true"] { background: var(--gold-pale); border-color: var(--gold); }
-  .pb-leg-stat { font-size: var(--text-eyebrow); color: var(--text-light); margin-top: 3px; letter-spacing: .02em; }
-  .pb-leg-stat b { color: var(--ink); font-weight: var(--weight-bold); }
-  .pb-edge--up { color: var(--sage); font-weight: var(--weight-bold); }
-  .pb-edge--dn { color: var(--rust); font-weight: var(--weight-bold); }
-  .pb-check {
-    width: 24px; height: 24px; flex-shrink: 0; border-radius: var(--radius-full);
-    border: 1.5px solid var(--border); display: inline-flex; align-items: center; justify-content: center;
-    font-size: 13px; color: var(--text-light); line-height: 1;
+  /* No-edge legs are selectable but visually muted */
+  .ll-row.ll-row--no-edge .ll-row-matchup { opacity: 0.85; }
+
+  /* ── Sticky slip ─────────────────────────────────────────── */
+  .pl-slip {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
+    background: var(--ink); color: var(--cream);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    transform: translateY(calc(100% - 60px)); transition: transform 0.28s ease;
+    max-height: 78vh; display: flex; flex-direction: column;
   }
-  .pb-pick[aria-pressed="true"] .pb-check { background: var(--gold); border-color: var(--gold); color: var(--cream); }
-
-  /* slip bar */
-  .pb-slip {
-    position: sticky; bottom: 0; background: var(--cream); border-top: 1px solid var(--border);
-    padding: var(--space-3) 0; margin-top: var(--space-3);
-    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  .pl-slip.pl-open { transform: translateY(0); }
+  .pl-slip-handle {
+    height: 60px; flex: 0 0 60px; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 20px; cursor: pointer;
+    max-width: var(--max); margin: 0 auto; width: 100%;
   }
-  .pb-slip-count { font-size: var(--text-base); color: var(--text-mid); font-weight: var(--weight-semi); }
-  .pb-slip-actions { display: flex; gap: 10px; }
-  .pb-clear { font-family: var(--sans); font-size: var(--text-base); font-weight: var(--weight-semi); color: var(--text-mid); background: none; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 11px 18px; cursor: pointer; }
+  .pl-slip-count { font-family: var(--sans); font-weight: 700; font-size: 15px; letter-spacing: 0.2px; }
+  .pl-slip-count span { color: var(--gold-light); }
+  .pl-slip-cta { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--cream); opacity: 0.75; }
+  .pl-slip-body { overflow-y: auto; padding: 0 20px 24px; max-width: var(--max); margin: 0 auto; width: 100%; }
 
-  /* ticket summary */
-  .pb-ticket { margin-top: var(--space-4); }
-  .pb-summary { background: #FFFFFF; border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-5) var(--space-4); margin-top: var(--space-2); }
-  .pb-sum-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4) var(--space-3); }
-  .pb-sum-cell .k { font-size: var(--text-eyebrow); font-weight: var(--weight-semi); letter-spacing: .1em; text-transform: uppercase; color: var(--text-mid); margin-bottom: 5px; }
-  .pb-sum-cell .v { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); line-height: 1; font-variant-numeric: tabular-nums; }
-  .pb-sum-cell .v.gold { color: var(--gold); }
-  .pb-sum-cell .v.pos { color: var(--sage); }
-  .pb-sum-cell .v.sm { font-size: var(--text-lg); }
-  .pb-sum-line { margin: var(--space-4) 0 0; padding-top: var(--space-3); border-top: 1px solid var(--cream-mid); font-size: var(--text-base); color: var(--text-mid); line-height: 1.6; }
-  .pb-sum-line b { color: var(--ink); font-weight: var(--weight-semi); }
-  .pb-warn { margin-top: var(--space-3); padding: 11px 14px; border-radius: var(--radius-md); background: var(--gold-pale); border: 1px solid var(--gold); color: var(--ink); font-size: var(--text-base); line-height: 1.5; }
+  .pl-leg { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .pl-leg-main { flex: 1 1 auto; min-width: 0; }
+  .pl-leg-matchup { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--cream); }
+  .pl-leg-pick { font-family: var(--sans); font-size: 12px; color: #B9B9AC; margin-top: 2px; }
+  .pl-leg-pick .ll-row-pick-num { font-family: var(--mono, monospace); color: var(--cream); }
+  .pl-leg-flag { font-size: 11px; color: #E08A5B; margin-top: 3px; }
+  .pl-leg-x { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; border: none; background: rgba(255,255,255,0.08); color: var(--cream); cursor: pointer; font-size: 15px; line-height: 1; display: grid; place-items: center; }
+  .pl-leg-x:hover { background: rgba(255,255,255,0.18); }
 
-  .pb-empty { border: 1px dashed var(--border); border-radius: 12px; padding: 30px; text-align: center; color: var(--text-light); font-size: var(--text-base); }
-  .pb-note { font-size: var(--text-base); color: var(--text-light); line-height: 1.6; margin: 0 0 var(--space-3); }
-  [hidden] { display: none !important; }
-  @media (max-width: 600px) { .pb-sum-grid { grid-template-columns: repeat(2, 1fr); } }
+  .pl-grade-btn { width: 100%; margin-top: 16px; padding: 14px; border: none; border-radius: 6px; background: var(--gold); color: var(--ink); font-family: var(--sans); font-weight: 700; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: background 0.15s; }
+  .pl-grade-btn:hover { background: var(--gold-light); }
+  .pl-grade-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .pl-result { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); }
+  .pl-result-hero { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .pl-result-odds { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--gold-light); }
+  .pl-result-payout { font-family: var(--sans); font-size: 13px; color: #B9B9AC; }
+  .pl-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin-top: 16px; }
+  .pl-stat { display: flex; flex-direction: column; gap: 2px; }
+  .pl-stat-k { font-family: var(--sans); font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase; color: #8A8A7A; }
+  .pl-stat-v { font-family: var(--mono, monospace); font-size: 15px; color: var(--cream); }
+  .pl-stat-v.pos { color: #7FA86A; }
+  .pl-stat-v.neg { color: #E08A5B; }
+  .pl-corr { margin-top: 14px; padding: 10px 12px; border-radius: 6px; font-family: var(--sans); font-size: 12px; line-height: 1.5; background: rgba(255,255,255,0.05); color: #C7C7B8; }
+  .pl-corr.pl-corr-warn { background: color-mix(in srgb, var(--rust) 22%, transparent); color: #F0C9B4; }
+
+  .pl-empty-slip { padding: 24px 0 8px; font-family: var(--sans); font-size: 13px; color: #8A8A7A; text-align: center; }
+  .pl-page-pad { height: 84px; }
 </style>
 </head>
+<body>
 
-<body class="ll-page">
-
-<!-- NAV -->
 <nav>
   <div class="nav-inner">
-    <a href="/" class="nav-logo"><img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics"></a>
+    <a href="/" class="nav-logo"><img src="/pressboxw2ainkcropped.png" alt="PressBox Analytics"></a>
     <ul class="nav-links">
-      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
-      <li><a href="/upcoming.html">Upcoming</a></li>
-      <li><a href="/results.html">Results</a></li>
-      <li><a href="/rankings.html">Rankings</a></li>
-      <li><a href="/how-it-works.html">How It Works</a></li>
-      <li><a href="/about.html">About</a></li>
-      <li><a href="/login.html" id="navAuth" style="opacity:.7;">Sign in</a></li>
+      <li><a href="/live-lines" class="nav-live">Live Lines</a></li>
+      <li><a href="/parlay" class="active">Parlay</a></li>
+      <li><a href="/how-it-works">How It Works</a></li>
+      <li><a href="/about">About</a></li>
     </ul>
-    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
 </nav>
-<div class="mobile-menu" id="mobileMenu">
-  <button class="close-btn" onclick="toggleMenu()" aria-label="Close menu">✕</button>
-  <a href="/live-lines.html">Live Lines</a>
-  <a href="/upcoming.html">Upcoming</a>
-  <a href="/results.html">Results</a>
-  <a href="/rankings.html">Rankings</a>
-  <a href="/how-it-works.html">How It Works</a>
-  <a href="/about.html">About</a>
-  <a href="/login.html" id="navAuthMobile" style="opacity:.7;">Sign in</a>
-</div>
 
-<main class="ll-container">
-  <div class="ll-header">
-    <div class="ll-eyebrow"><span class="ll-eyebrow-dot ll-eyebrow-dot--static"></span> 2026 Season</div>
-    <h1 class="ll-headline">Parlay Builder</h1>
-    <p class="ll-meta">Stack our graded picks or build your own. Every leg shows our probability against the market — and what the ticket is really worth.</p>
-  </div>
-
-  <!-- mode -->
-  <div class="ll-filters pb-mode-bar">
-    <span class="ll-filter-label">Mode</span>
-    <button class="ll-filter-pill" id="modePrebuilt" aria-pressed="true" onclick="setMode('prebuilt')">Pre-built</button>
-    <button class="ll-filter-pill" id="modeCustom" aria-pressed="false" onclick="setMode('custom')">Build your own</button>
-  </div>
-
-  <!-- PRE-BUILT -->
-  <section id="panelPrebuilt">
-    <div class="ll-filters"><span class="ll-filter-label">Markets</span><span id="segBet"></span></div>
-    <div class="ll-filters"><span class="ll-filter-label">Goal</span><span id="segGoal"></span></div>
-    <div class="ll-filters"><span class="ll-filter-label">Legs</span><span id="segLegs"></span></div>
-    <button class="pb-build" id="buildBtn" onclick="buildPrebuilt()">Build ticket</button>
-    <div id="prebuiltOut" class="pb-section-gap"></div>
-  </section>
-
-  <!-- CUSTOM -->
-  <section id="panelCustom" hidden>
-    <p class="pb-note">Tap the picks you want — they're our graded board for the season, by week. Pick two or more, then grade the ticket.</p>
-    <div id="boardOut"></div>
-    <div class="pb-slip" id="slip" hidden>
-      <span class="pb-slip-count" id="slipCount">0 legs selected</span>
-      <span class="pb-slip-actions">
-        <button class="pb-clear" onclick="clearSlip()">Clear</button>
-        <button class="pb-build" id="gradeBtn" style="margin-top:0;" onclick="gradeCustom()" disabled>Grade ticket</button>
-      </span>
-    </div>
-    <div id="customOut" class="pb-section-gap"></div>
-  </section>
+<main class="ll-page">
+  <div class="ll-container" id="pl-root"></div>
+  <div class="pl-page-pad"></div>
 </main>
 
+<aside class="pl-slip" id="pl-slip" aria-label="Parlay slip">
+  <div class="pl-slip-handle" id="pl-slip-handle" role="button" tabindex="0">
+    <div class="pl-slip-count"><span id="pl-count">0</span> legs</div>
+    <div class="pl-slip-cta" id="pl-slip-cta">Tap picks to build</div>
+  </div>
+  <div class="pl-slip-body" id="pl-slip-body"></div>
+</aside>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/auth-nav.js" defer></script>
 <script>
-const API = 'https://betbuddy-backend.onrender.com';
-const SEASON = 2026;
+(function () {
+  'use strict';
 
-function toggleMenu(){ document.getElementById('mobileMenu').classList.toggle('open'); }
+  // ── Config (identical to live-lines) ────────────────────────
+  const API_BASE = 'https://betbuddy-backend.onrender.com';
+  const FEED_URL  = `${API_BASE}/canonical/live-lines/feed`;
+  const GRADE_URL = `${API_BASE}/parlay/grade`;
+  const SEASON = 2026;
 
-let mode = 'prebuilt';
-const pre = { bet_type: 'all', goal: 'balance', legs: 3 };
-let board = [];
-const slip = new Set();
+  // Paste the SAME anon key that's in live-lines.js (safe to expose; RLS
+  // protects data server-side). Without it the feed auth can't resolve.
+  const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
+  const SUPABASE_ANON = 'REPLACE_ME_WITH_ANON_KEY';
+  const sb = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
 
-const BET_OPTS  = [['all','All'],['spread','Spread'],['total','Total'],['ml','Moneyline']];
-const GOAL_OPTS = [['balance','Best value'],['max_win','Safest'],['max_return','Biggest payout']];
-const LEG_OPTS  = [2,3,4,5,6];
+  const state = {
+    week: null, weeks: [], picks: [],
+    selected: new Map(),   // pick_id -> pick object
+    slipOpen: false, grade: null, grading: false,
+  };
 
-const pct  = p => p==null ? '—' : Math.round(p*100)+'%';
-const pct1 = p => p==null ? '—' : (p*100).toFixed(1)+'%';
-const am   = o => o==null ? '—' : (o>0 ? '+'+o : ''+o);
-const money= x => x==null ? '—' : (x<0?'-$':'$')+Math.abs(x).toFixed(0);
-const BADGE = { 'A+':['aplus','A+'], 'A':['a','A'], 'smart_money':['smart_money','SM'],
-                'goldilocks':['goldilocks','GL'], 'lottery':['lottery','LO'] };
-function esc(s){ const d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
+  const root = document.getElementById('pl-root');
 
-// ── filter pills ──
-function pill(active, on, label){ return `<button class="ll-filter-pill" aria-pressed="${active}" onclick="${on}">${label}</button>`; }
-function renderControls(){
-  document.getElementById('segBet').innerHTML  = BET_OPTS.map(([v,l]) => pill(pre.bet_type===v, `setPre('bet_type','${v}')`, l)).join('');
-  document.getElementById('segGoal').innerHTML = GOAL_OPTS.map(([v,l]) => pill(pre.goal===v, `setPre('goal','${v}')`, l)).join('');
-  document.getElementById('segLegs').innerHTML = LEG_OPTS.map(n => pill(pre.legs===n, `setPre('legs',${n})`, n)).join('');
-}
-function setPre(k,v){ pre[k]=v; renderControls(); }
+  // ── Utilities (mirrored from live-lines) ─────────────────────
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function weekLabel(w) { return w === 0 ? 'Week 0' : `Week ${w}`; }
 
-function setMode(m){
-  mode = m;
-  document.getElementById('modePrebuilt').setAttribute('aria-pressed', m==='prebuilt');
-  document.getElementById('modeCustom').setAttribute('aria-pressed', m==='custom');
-  document.getElementById('panelPrebuilt').hidden = m!=='prebuilt';
-  document.getElementById('panelCustom').hidden = m!=='custom';
-  if (m==='custom' && !board.length) loadBoard();
-}
+  const TIER_SORT = { 'A+': 7, 'smart_money': 6, 'A': 5, 'goldilocks': 4, 'lottery': 3, 'no_edge': 0 };
 
-// ── leg rows (live-lines ll-row) ──
-function badge(l){
-  if (l.source==='blended') return `<span class="ll-badge ll-badge--no_edge">YOU</span>`;
-  const [cls,txt] = BADGE[l.tier] || ['no_edge','—'];
-  return `<span class="ll-badge ll-badge--${cls}">${txt}</span>`;
-}
-function edgeTxt(e){ if (e==null) return ''; const up=e>=0; return `<span class="pb-edge--${up?'up':'dn'}">${up?'+':''}${Math.round(e*100)}</span>`; }
-function statLine(l){ return `Ours <b>${pct(l.our_prob)}</b> · Vegas ${pct(l.vegas_implied)} · ${edgeTxt(l.edge)} edge`; }
+  function parseKickoff(iso) {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    const dayLabel = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'America/New_York' });
+    const timeLabel = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York', timeZoneName: 'short' })
+      .replace(' EDT', ' ET').replace(' EST', ' ET');
+    const dateKey = d.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+    return { dayLabel, timeLabel, dateKey, timeKey: timeLabel };
+  }
 
-function boardRow(l){
-  const on = slip.has(l.leg_id);
-  return `
-  <div class="ll-row pb-pick" role="button" tabindex="0" aria-pressed="${on}" onclick="toggleLeg('${l.leg_id}')">
-    <span class="ll-row-header">
-      ${badge(l)}
-      <span class="ll-row-content">
-        <p class="ll-row-matchup">${esc(l.matchup||'')}</p>
-        <p class="ll-row-pick">${esc(l.side||'')} <span class="ll-row-pick-num">${esc(l.line||'')}</span></p>
-        <p class="pb-leg-stat">${statLine(l)}</p>
-      </span>
-      <span class="pb-check">${on?'✓':'+'}</span>
-    </span>
-  </div>`;
-}
-function ticketRow(l){
-  return `
-  <div class="ll-row">
-    <span class="ll-row-header" style="cursor:default;">
-      ${badge(l)}
-      <span class="ll-row-content">
-        <p class="ll-row-matchup">${esc(l.matchup||'')}</p>
-        <p class="ll-row-pick">${esc(l.side||'')} <span class="ll-row-pick-num">${esc(l.line||'')}</span> · ${am(l.price_american)}</p>
-        <p class="pb-leg-stat">${statLine(l)}</p>
-      </span>
-    </span>
-  </div>`;
-}
+  function renderBadge(tier) {
+    const map = {
+      'A+':          { label: 'A+', aria: 'A plus tier',      key: 'aplus' },
+      'A':           { label: 'A',  aria: 'A tier',           key: 'a' },
+      'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
+      'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
+      'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
+      'no_edge':     { label: 'NE', aria: 'No edge', key: 'no_edge' },
+    };
+    const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
+  }
 
-// ── ticket summary ──
-function summary(c, corr){
-  const evPos = c.ev_per_100!=null && c.ev_per_100>0;
-  const line = (c.market_fair_prob!=null)
-    ? `We make this ticket <b>${pct1(c.our_prob)}</b> to hit. The market prices it at <b>${pct1(c.market_fair_prob)}</b>, and the payout needs <b>${pct1(c.breakeven_prob)}</b> just to break even. Our fair price would be <b>${am(c.fair_american)}</b>.`
-    : `We make this ticket <b>${pct1(c.our_prob)}</b> to hit. The payout needs <b>${pct1(c.breakeven_prob)}</b> just to break even.`;
-  const warn = (corr && !corr.independence_valid)
-    ? `<div class="pb-warn">Two or more legs are in the same game, so they move together. The combined number assumes they're independent — treat it as a ceiling, not a true price.</div>` : '';
-  return `
-  <div class="pb-summary">
-    <div class="pb-sum-grid">
-      <div class="pb-sum-cell"><div class="k">Our probability</div><div class="v gold">${pct1(c.our_prob)}</div></div>
-      <div class="pb-sum-cell"><div class="k">Parlay odds</div><div class="v">${am(c.american_odds)}</div></div>
-      <div class="pb-sum-cell"><div class="k">Pays on $100</div><div class="v sm">${money(c.payout_per_100)}</div></div>
-      <div class="pb-sum-cell"><div class="k">Edge per $100</div><div class="v sm ${evPos?'pos':''}">${money(c.ev_per_100)}</div></div>
-    </div>
-    <p class="pb-sum-line">${line}</p>
-    ${warn}
-  </div>`;
-}
+  function pickLineText(p) {
+    if (!p.side) return '—';
+    const bookName = esc(p.book?.name || '');
+    const tied = Number(p.tied_books_count || 0);
+    let bookText = bookName;
+    if (tied === 1) bookText = `${bookName} + 1 other`;
+    else if (tied > 1) bookText = `${bookName} + ${tied} others`;
+    const bookSuffix = bookName ? ` · ${bookText}` : '';
+    if (p.market === 'ml') return `${esc(p.side)} ML <span class="ll-row-pick-num">${esc(p.line)}</span>${bookSuffix}`;
+    return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span>${bookSuffix}`;
+  }
 
-function renderTicket(d, el){
-  if (d.error){ el.innerHTML = `<div class="pb-empty">${esc(d.error)}</div>`; return; }
-  const legs = d.legs || [];
-  if (!legs.length){ el.innerHTML = `<div class="pb-empty">${esc(d.note || 'No legs to grade yet.')}</div>`; return; }
-  const note = d.note ? `<p class="pb-note" style="margin-top:var(--space-3);">${esc(d.note)}</p>` : '';
-  el.innerHTML = `<div class="pb-ticket">${legs.map(ticketRow).join('')}${summary(d.combined, d.correlation)}${note}</div>`;
-}
+  // ── Auth (mirrored) ──────────────────────────────────────────
+  async function getAccessToken() {
+    if (!sb) return null;
+    try { const { data: { session } } = await sb.auth.getSession(); return session?.access_token || null; }
+    catch (e) { return null; }
+  }
 
-// ── PRE-BUILT ──
-async function buildPrebuilt(){
-  const out = document.getElementById('prebuiltOut'), btn = document.getElementById('buildBtn');
-  btn.disabled = true; out.innerHTML = `<div class="pb-empty">Building your ticket…</div>`;
-  try {
-    const u = `${API}/parlay/prebuilt?season=${SEASON}&legs=${pre.legs}&bet_type=${pre.bet_type}&goal=${pre.goal}`;
-    renderTicket(await (await fetch(u)).json(), out);
-  } catch(e){ out.innerHTML = `<div class="pb-empty">Couldn't reach the board. Refresh and try again.</div>`; }
-  finally { btn.disabled = false; }
-}
+  // ── Network ──────────────────────────────────────────────────
+  async function fetchFeed() {
+    const headers = {};
+    const token = await getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${FEED_URL}?season=${SEASON}`, { credentials: 'omit', headers });
+    if (res.status === 401 || res.status === 402) throw new Error('auth');
+    if (!res.ok) throw new Error(`feed HTTP ${res.status}`);
+    const payload = await res.json();
+    if (payload.error) throw new Error(payload.error);
+    state.weeks = (payload.weeks || []).slice().sort((a, b) => a - b);
+    if (state.week === null && state.weeks.length > 0) state.week = state.weeks[0];
+    return payload.picks || [];
+  }
 
-// ── CUSTOM (grouped by week) ──
-async function loadBoard(){
-  const out = document.getElementById('boardOut');
-  out.innerHTML = `<div class="pb-empty">Loading the board…</div>`;
-  try {
-    const d = await (await fetch(`${API}/parlay/board?season=${SEASON}`)).json();
-    board = d.legs || [];
-    renderBoard();
-  } catch(e){ out.innerHTML = `<div class="pb-empty">Couldn't load the board. Refresh and try again.</div>`; }
-}
-function renderBoard(){
-  const out = document.getElementById('boardOut');
-  if (!board.length){ out.innerHTML = `<div class="pb-empty">No released picks on the board yet.</div>`; return; }
-  const byWeek = {};
-  board.forEach(l => { const w = (l.week==null) ? 'x' : l.week; (byWeek[w] = byWeek[w] || []).push(l); });
-  const weeks = Object.keys(byWeek).sort((a,b) => (a==='x') - (b==='x') || Number(a)-Number(b));
-  out.innerHTML = weeks.map(w => {
-    const label = w==='x' ? 'Other' : `Week ${w}`;
-    const rows = byWeek[w].slice().sort((a,b)=> (b.edge||0)-(a.edge||0)).map(boardRow).join('');
-    return `<h2 class="ll-day-header">${label}</h2>${rows}`;
-  }).join('');
-  syncSlip();
-}
-function toggleLeg(id){
-  const leg = board.find(l => String(l.leg_id)===String(id));
-  if (!leg) return;
-  slip.has(leg.leg_id) ? slip.delete(leg.leg_id) : slip.add(leg.leg_id);
-  renderBoard();
-}
-function clearSlip(){ slip.clear(); document.getElementById('customOut').innerHTML=''; renderBoard(); }
-function syncSlip(){
-  const n = slip.size;
-  document.getElementById('slip').hidden = n===0;
-  document.getElementById('slipCount').textContent = `${n} leg${n===1?'':'s'} selected`;
-  document.getElementById('gradeBtn').disabled = n<2;
-}
-async function gradeCustom(){
-  const out = document.getElementById('customOut'), btn = document.getElementById('gradeBtn');
-  btn.disabled = true; out.innerHTML = `<div class="pb-empty">Grading…</div>`;
-  try {
-    const d = await (await fetch(`${API}/parlay/grade`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ season: SEASON, leg_ids: [...slip] })
-    })).json();
-    renderTicket(d, out);
-    out.scrollIntoView({behavior:'smooth', block:'nearest'});
-  } catch(e){ out.innerHTML = `<div class="pb-empty">Couldn't grade that ticket. Try again.</div>`; }
-  finally { btn.disabled = slip.size<2; }
-}
+  async function gradeTicket() {
+    const legIds = [...state.selected.keys()];
+    if (!legIds.length) return;
+    state.grading = true; renderSlip();
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      const token = await getAccessToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(GRADE_URL, { method: 'POST', credentials: 'omit', headers,
+        body: JSON.stringify({ season: SEASON, leg_ids: legIds }) });
+      if (!res.ok) throw new Error(`grade HTTP ${res.status}`);
+      state.grade = await res.json();
+    } catch (e) { state.grade = { error: e.message }; }
+    finally { state.grading = false; renderSlip(); }
+  }
 
-renderControls();
+  // ── Board render (day → time → ll-row cards) ─────────────────
+  function groupPicks(picks) {
+    const byDay = new Map();
+    for (const p of picks) {
+      const k = parseKickoff(p.kickoff);
+      if (!k) continue;
+      if (!byDay.has(k.dateKey)) byDay.set(k.dateKey, { dayLabel: k.dayLabel, kickoff: p.kickoff, byTime: new Map() });
+      const day = byDay.get(k.dateKey);
+      if (!day.byTime.has(k.timeKey)) day.byTime.set(k.timeKey, { timeLabel: k.timeLabel, picks: [] });
+      day.byTime.get(k.timeKey).picks.push(p);
+    }
+    const days = [];
+    for (const [dateKey, day] of byDay) {
+      const times = [];
+      for (const [timeKey, tg] of day.byTime) {
+        tg.picks.sort((a, b) => {
+          const ar = TIER_SORT[a.tier] || 0, br = TIER_SORT[b.tier] || 0;
+          if (br !== ar) return br - ar;
+          return (a.matchup || '').localeCompare(b.matchup || '');
+        });
+        times.push({ timeKey, timeLabel: tg.timeLabel, picks: tg.picks });
+      }
+      times.sort((a, b) => (a.picks[0]?.kickoff || '').localeCompare(b.picks[0]?.kickoff || ''));
+      days.push({ dateKey, dayLabel: day.dayLabel, kickoff: day.kickoff, times });
+    }
+    days.sort((a, b) => (a.kickoff || '').localeCompare(b.kickoff || ''));
+    return days;
+  }
+
+  function renderLegRow(p) {
+    const isNoEdge = p.tier === 'no_edge';
+    const isSel = state.selected.has(p.pick_id);
+    return `
+      <article class="ll-row ${isNoEdge ? 'll-row--no-edge' : ''} ${isSel ? 'pl-selected' : ''}" data-pick-id="${esc(p.pick_id)}">
+        <button class="ll-row-header" data-action="select" aria-pressed="${isSel ? 'true' : 'false'}">
+          ${renderBadge(p.tier)}
+          <div class="ll-row-content">
+            <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
+            <div class="ll-row-pick">${pickLineText(p)}</div>
+          </div>
+          <span class="pl-check" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+      </article>`;
+  }
+
+  function renderDayBucket(day) {
+    return `
+      <section class="ll-day">
+        <h2 class="ll-day-header">${esc(day.dayLabel)}</h2>
+        ${day.times.map(t => `
+          <div class="ll-time-header">${esc(t.timeLabel)}</div>
+          ${t.picks.map(renderLegRow).join('')}
+        `).join('')}
+      </section>`;
+  }
+
+  function renderWeekTabs() {
+    if (!state.weeks || state.weeks.length <= 1) return '';
+    return `
+      <div class="ll-week-bar"><div class="ll-week-bar-inner" role="tablist" aria-label="Pick week">
+        ${state.weeks.map(w => `
+          <button class="ll-week-tab ${w === state.week ? 'active' : ''}" data-week="${w}"
+                  role="tab" aria-selected="${w === state.week ? 'true' : 'false'}">${esc(weekLabel(w))}</button>
+        `).join('')}
+      </div></div>`;
+  }
+
+  function render() {
+    const inWeek = state.picks.filter(p => state.week === null || p.week === state.week);
+    const days = groupPicks(inWeek);
+    root.innerHTML = `
+      <header class="ll-header">
+        <div class="ll-eyebrow"><span class="ll-eyebrow-dot ll-eyebrow-dot--static"></span> Parlay Builder</div>
+        <h1 class="ll-headline">${esc(weekLabel(state.week ?? 0))}</h1>
+        <div class="ll-meta">Tap any pick to add it as a leg. Every leg is priced against the current best line; the slip shows your true combined edge.</div>
+      </header>
+      ${renderWeekTabs()}
+      ${days.length ? days.map(renderDayBucket).join('') :
+        '<p style="padding:var(--space-6) 0;color:var(--text-mid);">No open picks for this week yet.</p>'}
+    `;
+    renderSlip();
+  }
+
+  function renderError(kind) {
+    root.innerHTML = kind === 'auth'
+      ? `<header class="ll-header"><h1 class="ll-headline">Sign in to build a parlay</h1>
+         <div class="ll-meta">The parlay builder uses your live picks. <a href="/login" style="color:var(--gold);">Log in</a> to continue.</div></header>`
+      : `<header class="ll-header"><h1 class="ll-headline">Couldn’t load picks</h1>
+         <div class="ll-meta">Something went wrong fetching the board. Refresh to try again.</div></header>`;
+  }
+
+  // ── Slip render ──────────────────────────────────────────────
+  function fmtSigned(n) { return (Number(n) > 0 ? '+' : '') + n; }
+
+  function renderSlip() {
+    const slip = document.getElementById('pl-slip');
+    const count = state.selected.size;
+    document.getElementById('pl-count').textContent = count;
+    document.getElementById('pl-slip-cta').textContent =
+      count === 0 ? 'Tap picks to build' : (state.slipOpen ? 'Tap to collapse' : 'Tap to review & grade');
+    slip.classList.toggle('pl-open', state.slipOpen && count > 0);
+
+    const body = document.getElementById('pl-slip-body');
+    if (count === 0) { body.innerHTML = `<div class="pl-empty-slip">No legs yet. Tap picks above to add them.</div>`; return; }
+
+    const legs = [...state.selected.values()];
+    const missing = new Set((state.grade && state.grade.missing_leg_ids) || []);
+    const legsHtml = legs.map(p => {
+      const flagged = missing.has(p.pick_id);
+      return `
+        <div class="pl-leg">
+          <div class="pl-leg-main">
+            <div class="pl-leg-matchup">${esc(p.matchup || '—')}</div>
+            <div class="pl-leg-pick">${pickLineText(p)}</div>
+            ${flagged ? `<div class="pl-leg-flag">No edge — can’t be priced as a leg. Remove it to grade the rest.</div>` : ''}
+          </div>
+          <button class="pl-leg-x" data-remove="${esc(p.pick_id)}" aria-label="Remove leg">&times;</button>
+        </div>`;
+    }).join('');
+
+    body.innerHTML = `
+      ${legsHtml}
+      <button class="pl-grade-btn" id="pl-grade-btn" ${state.grading ? 'disabled' : ''}>
+        ${state.grading ? 'Grading…' : `Grade ${count}-leg parlay`}
+      </button>
+      ${renderResult()}`;
+  }
+
+  function renderResult() {
+    const g = state.grade;
+    if (!g) return '';
+    if (g.error) return `<div class="pl-corr pl-corr-warn">Couldn’t grade this ticket: ${esc(g.error)}</div>`;
+    // _combine_ticket returns the combined stats at the top level of the grade payload.
+    const t = g.ticket || g.combined || g;
+    if (t.american_odds == null && t.our_prob == null) {
+      return `<div class="pl-corr">Add at least two priceable legs to see combined odds.</div>`;
+    }
+    const corr = g.correlation || {};
+    const ev = Number(t.ev_per_100);
+    const edge = t.edge_vs_price != null ? Math.round(t.edge_vs_price * 1000) / 10 : null;
+    return `
+      <div class="pl-result">
+        <div class="pl-result-hero">
+          <div class="pl-result-odds">${t.american_odds != null ? fmtSigned(t.american_odds) : '—'}</div>
+          <div class="pl-result-payout">$100 returns $${t.payout_per_100 != null ? Number(t.payout_per_100).toFixed(0) : '—'}</div>
+        </div>
+        <div class="pl-stat-grid">
+          <div class="pl-stat"><span class="pl-stat-k">Our win prob</span><span class="pl-stat-v">${t.our_prob != null ? (t.our_prob * 100).toFixed(1) + '%' : '—'}</span></div>
+          <div class="pl-stat"><span class="pl-stat-k">Break-even</span><span class="pl-stat-v">${t.breakeven_prob != null ? (t.breakeven_prob * 100).toFixed(1) + '%' : '—'}</span></div>
+          <div class="pl-stat"><span class="pl-stat-k">Fair odds</span><span class="pl-stat-v">${t.fair_american != null ? fmtSigned(t.fair_american) : '—'}</span></div>
+          <div class="pl-stat"><span class="pl-stat-k">Edge vs price</span><span class="pl-stat-v ${edge > 0 ? 'pos' : 'neg'}">${edge != null ? fmtSigned(edge) + ' pts' : '—'}</span></div>
+          <div class="pl-stat"><span class="pl-stat-k">EV / $100</span><span class="pl-stat-v ${ev > 0 ? 'pos' : 'neg'}">${isFinite(ev) ? fmtSigned(ev.toFixed(2)) : '—'}</span></div>
+          <div class="pl-stat"><span class="pl-stat-k">Legs priced</span><span class="pl-stat-v">${g.leg_count ?? (g.legs ? g.legs.length : '—')}</span></div>
+        </div>
+        ${corr.note ? `<div class="pl-corr ${corr.independence_valid === false ? 'pl-corr-warn' : ''}">${esc(corr.note)}</div>` : ''}
+      </div>`;
+  }
+
+  // ── Events ───────────────────────────────────────────────────
+  function toggleLeg(pickId) {
+    const p = state.picks.find(x => String(x.pick_id) === String(pickId));
+    if (!p) return;
+    if (state.selected.has(p.pick_id)) state.selected.delete(p.pick_id);
+    else { state.selected.set(p.pick_id, p); if (!state.slipOpen) state.slipOpen = true; }
+    state.grade = null;    // selection changed → prior grade is stale
+    render();
+  }
+
+  function keyMatching(v) { for (const k of state.selected.keys()) if (String(k) === String(v)) return k; return v; }
+
+  document.addEventListener('click', (e) => {
+    const selBtn = e.target.closest('[data-action="select"]');
+    if (selBtn) { toggleLeg(selBtn.closest('[data-pick-id]').dataset.pickId); return; }
+    const tab = e.target.closest('.ll-week-tab');
+    if (tab) { state.week = parseInt(tab.dataset.week, 10); render(); return; }
+    const rm = e.target.closest('[data-remove]');
+    if (rm) { state.selected.delete(keyMatching(rm.dataset.remove)); state.grade = null; render(); return; }
+    if (e.target.closest('#pl-grade-btn')) { gradeTicket(); return; }
+    if (e.target.closest('#pl-slip-handle') && state.selected.size > 0) { state.slipOpen = !state.slipOpen; renderSlip(); }
+  });
+
+  // ── Init ─────────────────────────────────────────────────────
+  (async function init() {
+    root.innerHTML = `<header class="ll-header"><h1 class="ll-headline">Loading…</h1></header>`;
+    try { state.picks = await fetchFeed(); render(); }
+    catch (e) { renderError(e.message === 'auth' ? 'auth' : 'error'); }
+  })();
+})();
 </script>
 </body>
 </html>
