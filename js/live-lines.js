@@ -73,11 +73,36 @@
 
   // Get the current Supabase access token (JWT) if any. Returns null
   // for anonymous users.
-  async function getAccessToken() {
-    if (!sb) return null;
+  // Read the stored session token straight from localStorage — synchronous,
+  // no network, no token refresh. getSession() goes to the auth server and can
+  // stall 30s+ when the token needs refreshing (e.g. returning after idle),
+  // which blocks the whole board. This avoids that.
+  function _tokenFromStorage() {
     try {
-      const { data: { session } } = await sb.auth.getSession();
-      return session?.access_token || null;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+          const v = JSON.parse(localStorage.getItem(k) || 'null');
+          const tok = v && (v.access_token
+                        || (v.currentSession && v.currentSession.access_token)
+                        || (Array.isArray(v) && v[0]));
+          if (tok) return tok;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  async function getAccessToken() {
+    const cached = _tokenFromStorage();
+    if (cached) return cached;
+    if (!sb) return null;
+    // Fallback only, never allowed to hang the page (4s hard cap).
+    try {
+      const timeout = new Promise((res) => setTimeout(() => res(null), 4000));
+      const live = sb.auth.getSession().then(
+        (r) => (r && r.data && r.data.session && r.data.session.access_token) || null);
+      return await Promise.race([live, timeout]);
     } catch (e) {
       return null;
     }
@@ -92,14 +117,16 @@
     // No Supabase client loaded means SDK didn't load — treat as anon.
     if (!sb) return 'anon';
 
+    // Fast path: a token in localStorage means a session exists — no network.
+    // Default to 'paid'; the first fetchFeed downgrades to 'auth-no-sub' on 402.
+    if (_tokenFromStorage()) return 'paid';
+
+    // No stored token — confirm via a capped getSession (never hang the page).
     try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) return 'anon';
-      // Has a session — distinguish subscriber from logged-in-no-sub
-      // based on what the feed endpoint returns. We default to 'paid'
-      // here; if the first fetchFeed returns 402, we downgrade to
-      // 'auth-no-sub' there.
-      return 'paid';
+      const timeout = new Promise((res) => setTimeout(() => res(null), 4000));
+      const live = sb.auth.getSession().then((r) => (r && r.data && r.data.session) || null);
+      const session = await Promise.race([live, timeout]);
+      return session ? 'paid' : 'anon';
     } catch (e) {
       return 'anon';
     }
