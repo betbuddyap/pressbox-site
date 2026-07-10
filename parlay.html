@@ -714,13 +714,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Init ─────────────────────────────────────────────────────
   (async function init() {
-    root.innerHTML = `<header class="ll-header"><h1 class="ll-headline">Loading…</h1></header>`;
+    render();  // paint immediately — Pre-built shows the shimmer skeleton, not black text
+
+    // Presets are their own endpoint; load them now, never waiting on the board feed.
+    if (state.mode === 'prebuilt') fetchPresets();
+
+    // Board feed loads in the background so Build-your-own is ready when tapped.
+    // It gates the paywall too (401/402), same as presets.
     try {
       state.picks = await fetchFeed();
-      render();
-      if (state.mode === 'prebuilt' && !state.presets && !state.presetsLoading) fetchPresets();
+      if (state.mode === 'custom') render();
+      else if (state.mode === 'prebuilt' && !state.presets && !state.presetsLoading) fetchPresets();
+    } catch (e) {
+      if (e.message === 'paywall') renderPaywall();
+      // non-paywall feed error: leave the Pre-built gallery as-is (it has its own data)
     }
-    catch (e) { if (e.message === 'paywall') renderPaywall(); else renderError(); }
   })();
 })();
 </script>
