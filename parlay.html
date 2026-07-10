@@ -112,7 +112,8 @@
   .pl-preset-section { margin: var(--space-6) 0 var(--space-5); }
   .pl-preset-section-title { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin: 0; }
   .pl-preset-section-sub { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: 2px 0 var(--space-4); }
-  .pl-preset-row { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .pl-preset-row { display: grid; gap: var(--space-4); grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+  @media (max-width: 860px) { .pl-preset-row { grid-template-columns: 1fr; } }
   .pl-preset-card { background: #fff; border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-4); display: flex; flex-direction: column; }
   .pl-preset-legcount { font-family: var(--sans); font-size: 11px; font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: 0.7px; color: var(--gold); margin-bottom: var(--space-3); }
   .pl-preset-legs { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -126,6 +127,10 @@
   .pl-prob-v { display: block; font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin-top: 4px; line-height: 1; }
   .pl-prob--ours .pl-prob-v { color: var(--gold); }
   .pl-preset-odds { text-align: center; font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin-top: var(--space-3); }
+
+  /* ── Parlay: build-your-own instruction banner ── */
+  .pl-build-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); background: var(--cream-mid); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin: var(--space-5) 0 var(--space-2); line-height: 1.5; }
+  .pl-build-hint strong { color: var(--ink); font-weight: var(--weight-semi); }
 
   /* Where to bet it */
   .pl-bestbook { margin-top: var(--space-3); padding: 10px 12px; border-radius: var(--radius-md); background: var(--cream-mid); font-family: var(--sans); font-size: var(--text-sm); color: var(--ink); }
@@ -421,6 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const inWeek = state.picks.filter(p => state.week === null || p.week === state.week);
     const days = groupPicks(inWeek);
     return `
+      <div class="pl-build-hint"><strong>Tap any pick to add it as a leg.</strong> Add two or more, then tap the slip at the bottom to grade your parlay. Every leg is priced against the current best line.</div>
       ${renderWeekTabs()}
       ${days.length ? days.map(renderDayBucket).join('') :
         '<p style="padding:var(--space-6) 0;color:var(--text-mid);">No open picks for this week yet.</p>'}
