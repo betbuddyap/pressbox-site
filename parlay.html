@@ -137,7 +137,7 @@
   // Paste the SAME anon key that's in live-lines.js (safe to expose; RLS
   // protects data server-side). Without it the feed auth can't resolve.
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
-  const SUPABASE_ANON = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyd2FsY3VvZHd4c3lucnBpcWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NzMyNzQsImV4cCI6MjA5MjA0OTI3NH0.HjHkM1Ir9LGutCfAEQsOWOjQ6I5-otzGoReLvrPs6iQ;
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyd2FsY3VvZHd4c3lucnBpcWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NzMyNzQsImV4cCI6MjA5MjA0OTI3NH0.HjHkM1Ir9LGutCfAEQsOWOjQ6I5-otzGoReLvrPs6iQ';
   const sb = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
 
   const state = {
