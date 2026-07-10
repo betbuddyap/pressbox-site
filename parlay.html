@@ -105,35 +105,32 @@
 
   .pl-empty-slip { padding: 24px 0 8px; font-family: var(--sans); font-size: 13px; color: #8A8A7A; text-align: center; }
   .pl-page-pad { height: 84px; }
-  /* ── Parlay: mode toggle ── */
-  .pl-mode { display: flex; gap: 8px; margin-top: 18px; }
-  .pl-mode-btn { font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text-mid); cursor: pointer; transition: all 0.15s; }
-  .pl-mode-btn:hover { color: var(--ink); }
-  .pl-mode-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  /* ── Parlay: mode toggle (uses .ll-filter-pill for the site's square selector) ── */
+  .pl-mode { display: flex; gap: var(--space-2); margin-top: var(--space-4); }
 
   /* ── Parlay: pre-built preset gallery ── */
-  .pl-preset-gallery { display: grid; gap: 20px; margin: 26px 0 44px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
-  .pl-preset-card { border: 1px solid var(--border); border-radius: 10px; background: #fff; padding: 22px; display: flex; flex-direction: column; }
-  .pl-preset-name { font-family: var(--serif); font-size: 21px; font-weight: 700; color: var(--ink); line-height: 1.15; }
-  .pl-preset-sub { font-family: var(--sans); font-size: 13px; color: var(--text-mid); margin-top: 4px; }
-  .pl-preset-legs { margin: 16px 0 4px; display: flex; flex-direction: column; gap: 10px; }
-  .pl-preset-leg { display: flex; align-items: flex-start; gap: 10px; }
-  .pl-preset-leg-body { flex: 1; min-width: 0; }
-  .pl-preset-leg-matchup { font-family: var(--sans); font-size: 12px; color: var(--text-mid); }
-  .pl-preset-leg-pick { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--ink); margin-top: 1px; }
+  .pl-preset-section { margin: var(--space-6) 0 var(--space-5); }
+  .pl-preset-section-title { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin: 0; }
+  .pl-preset-section-sub { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: 2px 0 var(--space-4); }
+  .pl-preset-row { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .pl-preset-card { background: #fff; border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-4); display: flex; flex-direction: column; }
+  .pl-preset-legcount { font-family: var(--sans); font-size: 11px; font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: 0.7px; color: var(--gold); margin-bottom: var(--space-3); }
+  .pl-preset-legs { display: flex; flex-direction: column; gap: var(--space-2); }
+  .pl-preset-legs .ll-row { margin: 0; }
+  .pl-preset-legs .ll-row-header { cursor: default; }
 
-  /* Shared: our hit probability vs Vegas's implied (used by cards + custom slip) */
-  .pl-preset-probs { display: flex; border-top: 1px solid var(--border); margin-top: 16px; padding-top: 16px; }
+  /* Shared: our hit probability vs Vegas's implied (cards + custom slip) */
+  .pl-preset-probs { display: flex; border-top: 0.5px solid var(--border); margin-top: var(--space-4); padding-top: var(--space-4); }
   .pl-prob { flex: 1; text-align: center; }
-  .pl-prob-k { display: block; font-family: var(--sans); font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-mid); }
-  .pl-prob-v { display: block; font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--ink); margin-top: 4px; line-height: 1; }
-  .pl-prob--ours .pl-prob-v { color: #B8922A; }
-  .pl-preset-odds { text-align: center; font-family: var(--sans); font-size: 12px; color: var(--text-mid); margin-top: 12px; }
+  .pl-prob-k { display: block; font-family: var(--sans); font-size: 10.5px; font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-mid); }
+  .pl-prob-v { display: block; font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin-top: 4px; line-height: 1; }
+  .pl-prob--ours .pl-prob-v { color: var(--gold); }
+  .pl-preset-odds { text-align: center; font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin-top: var(--space-3); }
 
   /* Where to bet it */
-  .pl-bestbook { margin-top: 14px; padding: 10px 12px; border-radius: 6px; background: var(--cream); font-family: var(--sans); font-size: 13px; color: var(--ink); }
-  .pl-bestbook-k { font-weight: 700; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.6px; color: var(--text-mid); margin-right: 6px; }
-  .pl-bestbook a { color: #B8922A; font-weight: 600; text-decoration: none; }
+  .pl-bestbook { margin-top: var(--space-3); padding: 10px 12px; border-radius: var(--radius-md); background: var(--cream-mid); font-family: var(--sans); font-size: var(--text-sm); color: var(--ink); }
+  .pl-bestbook-k { font-weight: var(--weight-bold); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.6px; color: var(--text-mid); margin-right: 6px; }
+  .pl-bestbook a { color: var(--gold); font-weight: var(--weight-semi); text-decoration: none; }
   .pl-bestbook a:hover { text-decoration: underline; }
   .pl-bestbook-note { color: var(--text-mid); }
 </style>
@@ -224,7 +221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     week: null, weeks: [], picks: [],
     selected: new Map(),   // pick_id -> pick object
     slipOpen: false, grade: null, grading: false,
-    mode: 'prebuilt',          // 'prebuilt' (gallery) | 'custom' (build-your-own board)
+    mode: 'prebuilt',          // open on the pre-built gallery (fast: no model on the presets path)
     presets: null, presetsLoading: false, presetsError: false,
   };
 
@@ -409,8 +406,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <h1 class="ll-headline">Parlays</h1>
         <div class="ll-meta">Pre-built cards from our strongest edges, or build your own from the full board. Every leg is priced against the current best line.</div>
         <div class="pl-mode" role="tablist" aria-label="Parlay mode">
-          <button class="pl-mode-btn ${state.mode==='prebuilt'?'active':''}" data-mode="prebuilt" role="tab" aria-selected="${state.mode==='prebuilt'}">Pre-built</button>
-          <button class="pl-mode-btn ${state.mode==='custom'?'active':''}" data-mode="custom" role="tab" aria-selected="${state.mode==='custom'}">Build your own</button>
+          <button class="ll-filter-pill pl-mode-btn" data-mode="prebuilt" aria-pressed="${state.mode==='prebuilt'}">Pre-built</button>
+          <button class="ll-filter-pill pl-mode-btn" data-mode="custom" aria-pressed="${state.mode==='custom'}">Build your own</button>
         </div>
       </header>
       ${state.mode === 'prebuilt' ? renderPresetsView() : renderBuildView()}
@@ -431,27 +428,75 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ── Pre-built presets gallery ────────────────────────────────
+  const _TYPE_ORDER = ['best', 'safest', 'longshot'];
+
   function renderPresetsView() {
-    if (state.presetsError) return `<p style="padding:var(--space-6) 0;color:var(--text-mid);">Couldn\u2019t load pre-built parlays. Refresh to try again.</p>`;
-    if (!state.presets) return `<p style="padding:var(--space-6) 0;color:var(--text-mid);">Loading pre-built parlays\u2026</p>`;
-    if (!state.presets.length) return `<p style="padding:var(--space-6) 0;color:var(--text-mid);">No pre-built parlays available for this week yet.</p>`;
-    return `<div class="pl-preset-gallery">${state.presets.map(renderPresetCard).join('')}</div>`;
+    if (state.presetsError) return `<p class="ll-meta" style="padding:var(--space-6) 0;">Couldn\u2019t load pre-built parlays. Refresh to try again.</p>`;
+    if (!state.presets) return renderPresetsLoading();
+    if (!state.presets.length) return `<p class="ll-meta" style="padding:var(--space-6) 0;">No pre-built parlays available for this week yet.</p>`;
+
+    // Group the 9 presets into their three types, ordered Best \u2192 Safest \u2192 Longshot,
+    // each type's cards ordered by leg count.
+    const groups = new Map();
+    for (const pre of state.presets) {
+      const t = pre.type || 'other';
+      if (!groups.has(t)) groups.set(t, []);
+      groups.get(t).push(pre);
+    }
+    const rank = t => { const i = _TYPE_ORDER.indexOf(t); return i === -1 ? 99 : i; };
+    const types = [...groups.keys()].sort((a, b) => rank(a) - rank(b));
+
+    return types.map(t => {
+      const cards = groups.get(t).slice().sort((a, b) =>
+        (a.requested_legs || a.leg_count || 0) - (b.requested_legs || b.leg_count || 0));
+      const head = cards[0] || {};
+      return `
+        <section class="pl-preset-section">
+          <h2 class="pl-preset-section-title">${esc(head.name || t)}</h2>
+          <div class="pl-preset-section-sub">${esc(head.subtitle || '')}</div>
+          <div class="pl-preset-row">${cards.map(renderPresetCard).join('')}</div>
+        </section>`;
+    }).join('');
+  }
+
+  function renderPresetsLoading() {
+    const card = `
+      <article class="pl-preset-card">
+        <div class="ll-skeleton" style="width:42%;height:12px;margin-bottom:14px;"></div>
+        ${[1,2,3].map(() => `
+          <div class="ll-row-skeleton">
+            <div class="ll-skeleton ll-skeleton--badge"></div>
+            <div style="flex:1;">
+              <div class="ll-skeleton ll-skeleton--line-a"></div>
+              <div class="ll-skeleton ll-skeleton--line-b"></div>
+            </div>
+          </div>`).join('')}
+        <div class="ll-skeleton" style="display:block;width:100%;height:46px;margin-top:16px;"></div>
+      </article>`;
+    return `
+      <section class="pl-preset-section">
+        <div class="ll-skeleton ll-skeleton--day"></div>
+        <div class="pl-preset-row">${card}${card}${card}</div>
+      </section>`;
   }
 
   function renderPresetCard(pre) {
     const c = pre.combined || {};
+    const n = pre.requested_legs || pre.leg_count || (pre.legs ? pre.legs.length : 0);
+    // Legs use the board's own .ll-row markup so they read identically to Live Lines.
     const legs = (pre.legs || []).map(leg => `
-      <div class="pl-preset-leg">
-        ${renderBadge(leg.tier)}
-        <div class="pl-preset-leg-body">
-          <div class="pl-preset-leg-matchup">${esc(leg.matchup || '\u2014')}</div>
-          <div class="pl-preset-leg-pick">${pickLineText(leg)}</div>
+      <article class="ll-row">
+        <div class="ll-row-header" style="cursor:default;">
+          ${renderBadge(leg.tier)}
+          <div class="ll-row-content">
+            <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
+            <div class="ll-row-pick">${pickLineText(leg)}</div>
+          </div>
         </div>
-      </div>`).join('');
+      </article>`).join('');
     return `
       <article class="pl-preset-card">
-        <div class="pl-preset-name">${esc(pre.name || '')}</div>
-        <div class="pl-preset-sub">${esc(pre.subtitle || '')}</div>
+        <div class="pl-preset-legcount">${n}-Leg Parlay</div>
         <div class="pl-preset-legs">${legs}</div>
         ${renderProbPair(c.our_prob, c.market_fair_prob)}
         <div class="pl-preset-odds">${c.american_odds != null ? fmtSigned(c.american_odds) : '\u2014'} \u00b7 $100 returns $${c.payout_per_100 != null ? Number(c.payout_per_100).toFixed(0) : '\u2014'}</div>
