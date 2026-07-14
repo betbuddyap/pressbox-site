@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!res.ok) throw new Error(`feed HTTP ${res.status}`);
     const payload = await res.json();
     if (payload.error) throw new Error(payload.error);
-    state.weeks = (payload.weeks || []).slice().sort((a, b) => a - b);
+    mergeWeeks(payload.weeks);
     if (state.week === null && state.weeks.length > 0) state.week = state.weeks[0];
     return payload.picks || [];
   }
@@ -394,6 +394,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       </section>`;
   }
 
+  // Accumulate weeks from every source (feed + presets) into one sorted union
+  // so the shared selector never loses a week to whichever fetch resolves last.
+  function mergeWeeks(incoming) {
+    if (!Array.isArray(incoming) || !incoming.length) return;
+    const set = new Set([...(state.weeks || []), ...incoming]);
+    state.weeks = [...set].sort((a, b) => a - b);
+  }
+
   function renderWeekTabs() {
     if (!state.weeks || state.weeks.length <= 1) return '';
     return `
@@ -416,6 +424,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <button class="ll-filter-pill pl-mode-btn" data-mode="custom" aria-pressed="${state.mode==='custom'}">Build your own</button>
         </div>
       </header>
+      ${renderWeekTabs()}
       ${state.mode === 'prebuilt' ? renderPresetsView() : renderBuildView()}
     `;
     const slip = document.getElementById('pl-slip');
@@ -428,7 +437,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const days = groupPicks(inWeek);
     return `
       <div class="pl-build-hint"><strong>Tap any pick to add it as a leg.</strong> Add two or more, then tap the slip at the bottom to grade your parlay. Every leg is priced against the current best line.</div>
-      ${renderWeekTabs()}
       ${days.length ? days.map(renderDayBucket).join('') :
         '<p style="padding:var(--space-6) 0;color:var(--text-mid);">No open picks for this week yet.</p>'}
     `;
@@ -453,7 +461,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rank = t => { const i = _TYPE_ORDER.indexOf(t); return i === -1 ? 99 : i; };
     const types = [...groups.keys()].sort((a, b) => rank(a) - rank(b));
 
-    return renderWeekTabs() + types.map(t => {
+    return types.map(t => {
       const cards = groups.get(t).slice().sort((a, b) =>
         (a.requested_legs || a.leg_count || 0) - (b.requested_legs || b.leg_count || 0));
       const head = cards[0] || {};
@@ -579,7 +587,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!res.ok) throw new Error(`presets HTTP ${res.status}`);
       const payload = await res.json();
       state.presets = payload.presets || [];
-      if (Array.isArray(payload.weeks) && payload.weeks.length) state.weeks = payload.weeks;
+      mergeWeeks(payload.weeks);
       if (state.week == null && payload.week != null) state.week = payload.week;
     } catch (e) { state.presetsError = true; }
     finally { state.presetsLoading = false; render(); }
