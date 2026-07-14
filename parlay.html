@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     selected: new Map(),   // pick_id -> pick object
     slipOpen: false, grade: null, grading: false,
     mode: 'prebuilt',          // open on the pre-built gallery (fast: no model on the presets path)
-    presets: null, presetsLoading: false, presetsError: false,
+    presets: null, presetPool: null, presetsLoading: false, presetsError: false,
   };
 
   const root = document.getElementById('pl-root');
@@ -448,7 +448,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderPresetsView() {
     if (state.presetsError) return `<p class="ll-meta" style="padding:var(--space-6) 0;">Couldn\u2019t load pre-built parlays. Refresh to try again.</p>`;
     if (!state.presets) return renderPresetsLoading();
-    if (!state.presets.length) return `<p class="ll-meta" style="padding:var(--space-6) 0;">No pre-built parlays available for this week yet.</p>`;
+    if (!state.presets.length) {
+      const msg = (state.presetPool === 0)
+        ? `No picks carry an edge for this week yet \u2014 pre-built parlays build from our +edge picks, so they'll appear once the board fills in.`
+        : `Not enough independent picks this week to build a parlay yet (each leg has to come from a different game).`;
+      return `<p class="ll-meta" style="padding:var(--space-6) 0;">${msg}</p>`;
+    }
 
     // Group the 9 presets into their three types, ordered Best \u2192 Safest \u2192 Longshot,
     // each type's cards ordered by leg count.
@@ -587,6 +592,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!res.ok) throw new Error(`presets HTTP ${res.status}`);
       const payload = await res.json();
       state.presets = payload.presets || [];
+      state.presetPool = (payload.pool_size != null) ? payload.pool_size : null;
       mergeWeeks(payload.weeks);
       if (state.week == null && payload.week != null) state.week = payload.week;
     } catch (e) { state.presetsError = true; }
