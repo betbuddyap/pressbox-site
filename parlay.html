@@ -114,14 +114,18 @@
   .pl-preset-section-sub { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: 2px 0 var(--space-4); }
   .pl-preset-row { display: grid; gap: var(--space-4); grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
   @media (max-width: 860px) { .pl-preset-row { grid-template-columns: 1fr; } }
-  .pl-preset-card { background: #fff; border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-4); display: flex; flex-direction: column; }
-  .pl-preset-legcount { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: var(--space-3); }
+  .pl-preset-card { background: #fff; border: 0.5px solid var(--border); border-radius: 12px; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .pl-preset-card, .pl-preset-card * { box-sizing: border-box; }
+  .pl-preset-head { padding: var(--space-4); }
+  /* Bottom panel copies live-lines' .ll-accordion exactly: cream-dark, top border, own padding */
+  .pl-preset-panel { background: var(--cream-dark); border-top: 1px solid var(--border); padding: var(--space-4); }
+  .pl-preset-legcount { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin: 0 0 var(--space-3); }
   .pl-preset-legs { display: flex; flex-direction: column; gap: var(--space-2); }
   .pl-preset-legs .ll-row { margin: 0; }
   .pl-preset-legs .ll-row-header { cursor: default; }
 
   /* Shared: our hit probability vs Vegas's implied (cards + custom slip) */
-  .pl-preset-probs { display: flex; border-top: 0.5px solid var(--border); margin-top: var(--space-4); padding-top: var(--space-4); }
+  .pl-preset-probs { display: flex; }
   .pl-prob { flex: 1; text-align: center; }
   .pl-prob-k { display: block; font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); }
   .pl-prob-v { display: block; font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin-top: 4px; line-height: 1; }
@@ -449,7 +453,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rank = t => { const i = _TYPE_ORDER.indexOf(t); return i === -1 ? 99 : i; };
     const types = [...groups.keys()].sort((a, b) => rank(a) - rank(b));
 
-    return types.map(t => {
+    return renderWeekTabs() + types.map(t => {
       const cards = groups.get(t).slice().sort((a, b) =>
         (a.requested_legs || a.leg_count || 0) - (b.requested_legs || b.leg_count || 0));
       const head = cards[0] || {};
@@ -499,11 +503,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       </article>`).join('');
     return `
       <article class="pl-preset-card">
-        <div class="pl-preset-legcount">${n}-Leg Parlay</div>
-        <div class="pl-preset-legs">${legs}</div>
-        ${renderProbPair(c.our_prob, c.market_fair_prob)}
-        ${renderBestBook(pre.best_book, pre.book_breakdown)}
-        ${pre.note ? `<div class="pl-corr">${esc(pre.note)}</div>` : ''}
+        <div class="pl-preset-head">
+          <div class="pl-preset-legcount">${n}-Leg Parlay</div>
+          <div class="pl-preset-legs">${legs}</div>
+        </div>
+        <div class="pl-preset-panel">
+          ${renderProbPair(c.our_prob, c.market_fair_prob)}
+          ${renderBestBook(pre.best_book, pre.book_breakdown)}
+          ${pre.note ? `<div class="pl-corr">${esc(pre.note)}</div>` : ''}
+        </div>
       </article>`;
   }
 
@@ -560,15 +568,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function fetchPresets() {
     state.presetsLoading = true; state.presetsError = false;
+    state.presets = null; render();  // show the skeleton immediately (first load AND week switches)
     try {
       const headers = {};
       const token = await getAccessToken();
       if (token) headers['Authorization'] = `Bearer ${token}`;
-      const res = await fetch(`${PRESETS_URL}?season=${SEASON}`, { credentials:'omit', headers });
+      const weekParam = (state.week != null) ? `&week=${state.week}` : '';
+      const res = await fetch(`${PRESETS_URL}?season=${SEASON}${weekParam}`, { credentials:'omit', headers });
       if (res.status === 401 || res.status === 402) { state.presetsLoading = false; renderPaywall(); return; }
       if (!res.ok) throw new Error(`presets HTTP ${res.status}`);
       const payload = await res.json();
       state.presets = payload.presets || [];
+      if (Array.isArray(payload.weeks) && payload.weeks.length) state.weeks = payload.weeks;
+      if (state.week == null && payload.week != null) state.week = payload.week;
     } catch (e) { state.presetsError = true; }
     finally { state.presetsLoading = false; render(); }
   }
@@ -741,7 +753,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const selBtn = e.target.closest('[data-action="select"]');
     if (selBtn) { toggleLeg(selBtn.closest('[data-pick-id]').dataset.pickId); return; }
     const tab = e.target.closest('.ll-week-tab');
-    if (tab) { state.week = parseInt(tab.dataset.week, 10); render(); return; }
+    if (tab) {
+      const w = parseInt(tab.dataset.week, 10);
+      if (w !== state.week) {
+        state.week = w;
+        if (state.mode === 'prebuilt') fetchPresets(); else render();
+      }
+      return;
+    }
     const rm = e.target.closest('[data-remove]');
     if (rm) { state.selected.delete(keyMatching(rm.dataset.remove)); state.grade = null; render(); return; }
     if (e.target.closest('#pl-grade-btn')) { gradeTicket(); return; }
