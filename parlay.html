@@ -450,7 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!state.presets) return renderPresetsLoading();
     if (!state.presets.length) {
       const msg = (state.presetPool === 0)
-        ? `No picks carry an edge for this week yet \u2014 pre-built parlays build from our +edge picks, so they'll appear once the board fills in.`
+        ? `These picks aren't ready to parlay yet \u2014 we need live odds on the board before we can price them into a card. They'll show up here automatically once the lines post.`
         : `Not enough independent picks this week to build a parlay yet (each leg has to come from a different game).`;
       return `<p class="ll-meta" style="padding:var(--space-6) 0;">${msg}</p>`;
     }
