@@ -132,21 +132,9 @@
   .pl-build-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); background: var(--cream-mid); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin: var(--space-5) 0 var(--space-2); line-height: 1.5; }
   .pl-build-hint strong { color: var(--ink); font-weight: var(--weight-semi); }
 
-  /* Where to bet it: best-payout book (black button) + other-books dropdown */
-  .pl-book { margin-top: var(--space-3); }
-  .pl-book-best { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-sizing: border-box; background: var(--ink); color: #F8F5EE; font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi); text-decoration: none; padding: 11px 14px; border-radius: var(--radius-md); }
-  .pl-book-best:hover { opacity: 0.92; }
-  .pl-book-best--nolink { cursor: default; }
-  .pl-book-odds { font-family: var(--serif); font-weight: var(--weight-bold); }
-  .pl-book-toggle { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-sizing: border-box; margin-top: 6px; background: none; border: 0.5px solid var(--border); color: var(--text-mid); font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; padding: 8px; border-radius: var(--radius-md); cursor: pointer; }
-  .pl-book-toggle:hover { color: var(--ink); border-color: var(--text-mid); }
-  .pl-book-caret { font-size: 10px; transition: transform 0.15s ease; }
-  .pl-book-toggle[aria-expanded="true"] .pl-book-caret { transform: rotate(180deg); }
-  .pl-book-list { margin-top: 6px; border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
-  .pl-book-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; font-family: var(--sans); font-size: var(--text-sm); color: var(--ink); text-decoration: none; border-bottom: 0.5px solid var(--border); }
-  .pl-book-item:last-child { border-bottom: none; }
-  .pl-book-item:hover { background: var(--cream-mid); }
-  .pl-book-item .pl-book-odds { color: var(--text-mid); }
+  /* Where to bet it: reuses live-lines' .ll-bet-button + .ll-other-books widget
+     verbatim (styled in live-lines.css) so it's pixel-identical to the board. */
+  .pl-book { margin-top: var(--space-4); }
 </style>
 </head>
 <body class="ll-page">
@@ -537,28 +525,37 @@ document.addEventListener('DOMContentLoaded', async () => {
   // "Where to bet it": the book that pays the most for the whole card (product
   // of each leg's odds there), with a dropdown of the other books' combined
   // prices. best = {book, url, american_odds, ...}; breakdown = full sorted list.
+  // "Where to bet it": renders with live-lines' OWN classes so it is 1:1 with
+  // the board — .ll-other-books collapsible (chevron) + .ll-bet-button CTA.
+  // best/breakdown items: {book, url, american_odds, ...}.
   function renderBestBook(best, breakdown) {
     if (!best || !best.book) return '';
     const oddsStr = (v) => v != null ? fmtSigned(v) : '\u2014';
-    const bestOdds = oddsStr(best.american_odds);
-    const btn = best.url
-      ? `<a class="pl-book-best" href="${esc(best.url)}" target="_blank" rel="noopener">Bet at ${esc(best.book)}<span class="pl-book-odds">${bestOdds}</span></a>`
-      : `<span class="pl-book-best pl-book-best--nolink">Bet at ${esc(best.book)}<span class="pl-book-odds">${bestOdds}</span></span>`;
+    const linkIcon = `<svg class="ll-book-name-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4h6v6M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
 
     const others = (Array.isArray(breakdown) ? breakdown : []).filter(b => b.book !== best.book);
-    let drop = '';
-    if (others.length) {
-      const items = others.map(b => {
-        const inner = `<span>${esc(b.book)}</span><span class="pl-book-odds">${oddsStr(b.american_odds)}</span>`;
-        return b.url
-          ? `<a class="pl-book-item" href="${esc(b.url)}" target="_blank" rel="noopener">${inner}</a>`
-          : `<span class="pl-book-item">${inner}</span>`;
-      }).join('');
-      drop = `
-        <button class="pl-book-toggle" type="button" aria-expanded="false">Other books<span class="pl-book-caret">\u25be</span></button>
-        <div class="pl-book-list" hidden>${items}</div>`;
-    }
-    return `<div class="pl-book">${btn}${drop}</div>`;
+    const rows = others.map(b => {
+      const inner = `<span class="ll-book-name">${esc(b.book)}${b.url ? linkIcon : ''}</span><span class="ll-book-line">${oddsStr(b.american_odds)}</span>`;
+      return b.url
+        ? `<a class="ll-book-row" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" aria-label="Bet at ${esc(b.book)} (opens in new tab)">${inner}</a>`
+        : `<div class="ll-book-row">${inner}</div>`;
+    }).join('');
+    const otherBooks = others.length ? `
+      <div class="ll-other-books">
+        <button type="button" class="ll-other-books-header" aria-expanded="false">
+          <span class="ll-accordion-section-label" style="margin:0;">Other books</span>
+          <svg class="ll-other-books-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="ll-other-books-rows" style="display:none;margin-top:var(--space-2);">${rows}</div>
+      </div>` : '';
+
+    const bestOdds = best.american_odds != null ? ' ' + fmtSigned(best.american_odds) : '';
+    const btn = best.url
+      ? `<a class="ll-bet-button" href="${esc(best.url)}" target="_blank" rel="noopener noreferrer" aria-label="Bet at ${esc(best.book)} (opens in new tab)" style="margin-top:var(--space-3);">Bet at ${esc(best.book)}${bestOdds} \u2192</a>`
+      : `<span class="ll-bet-button" style="margin-top:var(--space-3);cursor:default;">Bet at ${esc(best.book)}${bestOdds}</span>`;
+
+    // Same order as the board: other books first, then the bet button.
+    return `<div class="pl-book">${otherBooks}${btn}</div>`;
   }
 
   async function fetchPresets() {
@@ -703,7 +700,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="pl-result">
         ${renderProbPair(t.our_prob, vegas)}
         <div class="pl-preset-odds">${t.american_odds != null ? fmtSigned(t.american_odds) : '\u2014'} \u00b7 $100 returns $${t.payout_per_100 != null ? Number(t.payout_per_100).toFixed(0) : '\u2014'}${legN != null ? ' \u00b7 ' + legN + ' legs' : ''}</div>
-        ${renderBestBook(g.best_book, g.book_breakdown)}
         ${corr.note ? `<div class="pl-corr ${corr.independence_valid === false ? 'pl-corr-warn' : ''}">${esc(corr.note)}</div>` : ''}
       </div>`;
   }
@@ -721,12 +717,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   function keyMatching(v) { for (const k of state.selected.keys()) if (String(k) === String(v)) return k; return v; }
 
   document.addEventListener('click', (e) => {
-    const bookToggle = e.target.closest('.pl-book-toggle');
-    if (bookToggle) {
-      const list = bookToggle.parentElement.querySelector('.pl-book-list');
-      const open = bookToggle.getAttribute('aria-expanded') === 'true';
-      bookToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-      if (list) list.hidden = open;
+    const obHeader = e.target.closest('.ll-other-books-header');
+    if (obHeader) {
+      const wrap = obHeader.closest('.ll-other-books');
+      const rows = wrap && wrap.querySelector('.ll-other-books-rows');
+      const chev = obHeader.querySelector('.ll-other-books-chevron');
+      const open = obHeader.getAttribute('aria-expanded') === 'true';
+      obHeader.setAttribute('aria-expanded', open ? 'false' : 'true');
+      if (rows) rows.style.display = open ? 'none' : 'block';
+      if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
       return;
     }
     const modeBtn = e.target.closest('.pl-mode-btn');
