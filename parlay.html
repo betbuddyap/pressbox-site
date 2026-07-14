@@ -70,52 +70,52 @@
   .pl-slip-handle {
     height: 60px; flex: 0 0 60px; display: flex; align-items: center;
     justify-content: space-between; padding: 0 20px; cursor: pointer;
-    max-width: var(--max); margin: 0 auto; width: 100%;
+    max-width: 920px; margin: 0 auto; width: 100%;
   }
-  .pl-slip-count { font-family: var(--sans); font-weight: 700; font-size: 15px; letter-spacing: 0.2px; }
+  .pl-slip-count { font-family: var(--sans); font-weight: var(--weight-bold); font-size: var(--text-base); letter-spacing: 0.2px; }
   .pl-slip-count span { color: var(--gold-light); }
-  .pl-slip-cta { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--cream); opacity: 0.75; }
-  .pl-slip-body { overflow-y: auto; padding: 0 20px 24px; max-width: var(--max); margin: 0 auto; width: 100%; }
+  .pl-slip-cta { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream); opacity: 0.75; }
+  .pl-slip-body { overflow-y: auto; padding: 0 20px 24px; max-width: 920px; margin: 0 auto; width: 100%; }
 
   .pl-leg { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.07); }
   .pl-leg-main { flex: 1 1 auto; min-width: 0; }
-  .pl-leg-matchup { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--cream); }
-  .pl-leg-pick { font-family: var(--sans); font-size: 12px; color: #B9B9AC; margin-top: 2px; }
-  .pl-leg-pick .ll-row-pick-num { font-family: var(--mono, monospace); color: var(--cream); }
-  .pl-leg-flag { font-size: 11px; color: #E08A5B; margin-top: 3px; }
+  .pl-leg-matchup { font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi); color: var(--cream); }
+  .pl-leg-pick { font-family: var(--sans); font-size: var(--text-sm); color: #B9B9AC; margin-top: 2px; }
+  .pl-leg-pick .ll-row-pick-num { font-family: 'JetBrains Mono', monospace; color: var(--cream); }
+  .pl-leg-flag { font-size: var(--text-sm); color: #E08A5B; margin-top: 3px; }
   .pl-leg-x { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; border: none; background: rgba(255,255,255,0.08); color: var(--cream); cursor: pointer; font-size: 15px; line-height: 1; display: grid; place-items: center; }
   .pl-leg-x:hover { background: rgba(255,255,255,0.18); }
 
-  .pl-grade-btn { width: 100%; margin-top: 16px; padding: 14px; border: none; border-radius: 6px; background: var(--gold); color: var(--ink); font-family: var(--sans); font-weight: 700; font-size: 14px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: background 0.15s; }
+  .pl-grade-btn { width: 100%; margin-top: 16px; padding: 14px; border: none; border-radius: var(--radius-md); background: var(--gold); color: var(--ink); font-family: var(--sans); font-weight: var(--weight-bold); font-size: var(--text-base); letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: background 0.15s; }
   .pl-grade-btn:hover { background: var(--gold-light); }
   .pl-grade-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .pl-result { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); }
   .pl-result-hero { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .pl-result-odds { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--gold-light); }
-  .pl-result-payout { font-family: var(--sans); font-size: 13px; color: #B9B9AC; }
+  .pl-result-odds { font-family: var(--serif); font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--gold-light); }
+  .pl-result-payout { font-family: var(--sans); font-size: var(--text-sm); color: #B9B9AC; }
   .pl-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin-top: 16px; }
   .pl-stat { display: flex; flex-direction: column; gap: 2px; }
-  .pl-stat-k { font-family: var(--sans); font-size: 11px; letter-spacing: 0.4px; text-transform: uppercase; color: #8A8A7A; }
-  .pl-stat-v { font-family: var(--mono, monospace); font-size: 15px; color: var(--cream); }
+  .pl-stat-k { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); letter-spacing: 0.1em; text-transform: uppercase; color: #8A8A7A; }
+  .pl-stat-v { font-family: 'JetBrains Mono', monospace; font-size: var(--text-base); color: var(--cream); }
   .pl-stat-v.pos { color: #7FA86A; }
   .pl-stat-v.neg { color: #E08A5B; }
-  .pl-corr { margin-top: 14px; padding: 10px 12px; border-radius: 6px; font-family: var(--sans); font-size: 12px; line-height: 1.5; background: rgba(255,255,255,0.05); color: #C7C7B8; }
+  .pl-corr { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-md); font-family: var(--sans); font-size: var(--text-sm); line-height: 1.5; background: rgba(255,255,255,0.05); color: #C7C7B8; }
   .pl-corr.pl-corr-warn { background: color-mix(in srgb, var(--rust) 22%, transparent); color: #F0C9B4; }
 
-  .pl-empty-slip { padding: 24px 0 8px; font-family: var(--sans); font-size: 13px; color: #8A8A7A; text-align: center; }
+  .pl-empty-slip { padding: 24px 0 8px; font-family: var(--sans); font-size: var(--text-sm); color: #8A8A7A; text-align: center; }
   .pl-page-pad { height: 84px; }
   /* ── Parlay: mode toggle (uses .ll-filter-pill for the site's square selector) ── */
   .pl-mode { display: flex; gap: var(--space-2); margin-top: var(--space-4); }
 
   /* ── Parlay: pre-built preset gallery ── */
   .pl-preset-section { margin: var(--space-6) 0 var(--space-5); }
-  .pl-preset-section-title { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin: 0; }
+  .pl-preset-section-title { font-family: var(--serif); font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); margin: 0; }
   .pl-preset-section-sub { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: 2px 0 var(--space-4); }
   .pl-preset-row { display: grid; gap: var(--space-4); grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
   @media (max-width: 860px) { .pl-preset-row { grid-template-columns: 1fr; } }
   .pl-preset-card { background: #fff; border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-4); display: flex; flex-direction: column; }
-  .pl-preset-legcount { font-family: var(--sans); font-size: 11px; font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: 0.7px; color: var(--gold); margin-bottom: var(--space-3); }
+  .pl-preset-legcount { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: var(--space-3); }
   .pl-preset-legs { display: flex; flex-direction: column; gap: var(--space-2); }
   .pl-preset-legs .ll-row { margin: 0; }
   .pl-preset-legs .ll-row-header { cursor: default; }
@@ -123,7 +123,7 @@
   /* Shared: our hit probability vs Vegas's implied (cards + custom slip) */
   .pl-preset-probs { display: flex; border-top: 0.5px solid var(--border); margin-top: var(--space-4); padding-top: var(--space-4); }
   .pl-prob { flex: 1; text-align: center; }
-  .pl-prob-k { display: block; font-family: var(--sans); font-size: 10.5px; font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-mid); }
+  .pl-prob-k { display: block; font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); }
   .pl-prob-v { display: block; font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin-top: 4px; line-height: 1; }
   .pl-prob--ours .pl-prob-v { color: var(--gold); }
   .pl-preset-odds { text-align: center; font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin-top: var(--space-3); }
@@ -138,7 +138,7 @@
   .pl-book-best:hover { opacity: 0.92; }
   .pl-book-best--nolink { cursor: default; }
   .pl-book-odds { font-family: var(--serif); font-weight: var(--weight-bold); }
-  .pl-book-toggle { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-sizing: border-box; margin-top: 6px; background: none; border: 0.5px solid var(--border); color: var(--text-mid); font-family: var(--sans); font-size: 12px; font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.5px; padding: 8px; border-radius: var(--radius-md); cursor: pointer; }
+  .pl-book-toggle { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-sizing: border-box; margin-top: 6px; background: none; border: 0.5px solid var(--border); color: var(--text-mid); font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; padding: 8px; border-radius: var(--radius-md); cursor: pointer; }
   .pl-book-toggle:hover { color: var(--ink); border-color: var(--text-mid); }
   .pl-book-caret { font-size: 10px; transition: transform 0.15s ease; }
   .pl-book-toggle[aria-expanded="true"] .pl-book-caret { transform: rotate(180deg); }
@@ -149,7 +149,7 @@
   .pl-book-item .pl-book-odds { color: var(--text-mid); }
 </style>
 </head>
-<body>
+<body class="ll-page">
 
 <nav>
   <div class="nav-inner">
@@ -200,8 +200,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 </script>
 
-<main class="ll-page">
-  <div class="ll-container" id="pl-root"></div>
+<main class="ll-container">
+  <div id="pl-root"></div>
   <div class="pl-page-pad"></div>
 </main>
 
@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="ll-paywall-card">
         <h2 class="ll-paywall-card-headline">See every pick.<br>Graded live, all week.</h2>
         <p class="ll-paywall-card-subhead">Release pricing through Aug 22. Locked for as long as you're subscribed. Same access on every plan.</p>
-        <p class="ll-paywall-first-charge" style="font-style:italic;color:#B8922A;font-size:13px;margin:10px 0 0;">First charge anchored to Aug 23 — pay nothing until picks drop for Week 0.</p>
+        <p class="ll-paywall-first-charge" style="font-style:italic;color:#B8922A;font-size:var(--text-sm);margin:10px 0 0;">First charge anchored to Aug 23 — pay nothing until picks drop for Week 0.</p>
         <div class="ll-paywall-plans">
           <div class="ll-paywall-plan">
             <div class="ll-paywall-plan-name">Weekly</div>
