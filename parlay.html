@@ -132,12 +132,21 @@
   .pl-build-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); background: var(--cream-mid); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin: var(--space-5) 0 var(--space-2); line-height: 1.5; }
   .pl-build-hint strong { color: var(--ink); font-weight: var(--weight-semi); }
 
-  /* Where to bet it */
-  .pl-bestbook { margin-top: var(--space-3); padding: 10px 12px; border-radius: var(--radius-md); background: var(--cream-mid); font-family: var(--sans); font-size: var(--text-sm); color: var(--ink); }
-  .pl-bestbook-k { font-weight: var(--weight-bold); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.6px; color: var(--text-mid); margin-right: 6px; }
-  .pl-bestbook a { color: var(--gold); font-weight: var(--weight-semi); text-decoration: none; }
-  .pl-bestbook a:hover { text-decoration: underline; }
-  .pl-bestbook-note { color: var(--text-mid); }
+  /* Where to bet it: best-payout book (black button) + other-books dropdown */
+  .pl-book { margin-top: var(--space-3); }
+  .pl-book-best { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; box-sizing: border-box; background: var(--ink); color: #F8F5EE; font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi); text-decoration: none; padding: 11px 14px; border-radius: var(--radius-md); }
+  .pl-book-best:hover { opacity: 0.92; }
+  .pl-book-best--nolink { cursor: default; }
+  .pl-book-odds { font-family: var(--serif); font-weight: var(--weight-bold); }
+  .pl-book-toggle { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-sizing: border-box; margin-top: 6px; background: none; border: 0.5px solid var(--border); color: var(--text-mid); font-family: var(--sans); font-size: 12px; font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.5px; padding: 8px; border-radius: var(--radius-md); cursor: pointer; }
+  .pl-book-toggle:hover { color: var(--ink); border-color: var(--text-mid); }
+  .pl-book-caret { font-size: 10px; transition: transform 0.15s ease; }
+  .pl-book-toggle[aria-expanded="true"] .pl-book-caret { transform: rotate(180deg); }
+  .pl-book-list { margin-top: 6px; border: 0.5px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+  .pl-book-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; font-family: var(--sans); font-size: var(--text-sm); color: var(--ink); text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .pl-book-item:last-child { border-bottom: none; }
+  .pl-book-item:hover { background: var(--cream-mid); }
+  .pl-book-item .pl-book-odds { color: var(--text-mid); }
 </style>
 </head>
 <body>
@@ -505,8 +514,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="pl-preset-legcount">${n}-Leg Parlay</div>
         <div class="pl-preset-legs">${legs}</div>
         ${renderProbPair(c.our_prob, c.market_fair_prob)}
-        <div class="pl-preset-odds">${c.american_odds != null ? fmtSigned(c.american_odds) : '\u2014'} \u00b7 $100 returns $${c.payout_per_100 != null ? Number(c.payout_per_100).toFixed(0) : '\u2014'}</div>
-        ${renderBestBook(pre.best_book)}
+        ${renderBestBook(pre.best_book, pre.book_breakdown)}
         ${pre.note ? `<div class="pl-corr">${esc(pre.note)}</div>` : ''}
       </article>`;
   }
@@ -526,16 +534,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>`;
   }
 
-  // "Where to bet it": single book that takes the whole card at the best number.
-  // Renders only when the backend supplies best_book (defensive to shape).
-  function renderBestBook(bb) {
-    if (!bb) return '';
-    const name = esc((bb.book && bb.book.name) || bb.book_name || bb.name || '');
-    if (!name) return '';
-    const url = (bb.book && bb.book.url) || bb.book_url || bb.url || '';
-    const note = bb.note ? ` <span class="pl-bestbook-note">${esc(bb.note)}</span>` : '';
-    const label = url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${name}</a>` : name;
-    return `<div class="pl-bestbook"><span class="pl-bestbook-k">Where to bet it</span> ${label}${note}</div>`;
+  // "Where to bet it": the book that pays the most for the whole card (product
+  // of each leg's odds there), with a dropdown of the other books' combined
+  // prices. best = {book, url, american_odds, ...}; breakdown = full sorted list.
+  function renderBestBook(best, breakdown) {
+    if (!best || !best.book) return '';
+    const oddsStr = (v) => v != null ? fmtSigned(v) : '\u2014';
+    const bestOdds = oddsStr(best.american_odds);
+    const btn = best.url
+      ? `<a class="pl-book-best" href="${esc(best.url)}" target="_blank" rel="noopener">Bet at ${esc(best.book)}<span class="pl-book-odds">${bestOdds}</span></a>`
+      : `<span class="pl-book-best pl-book-best--nolink">Bet at ${esc(best.book)}<span class="pl-book-odds">${bestOdds}</span></span>`;
+
+    const others = (Array.isArray(breakdown) ? breakdown : []).filter(b => b.book !== best.book);
+    let drop = '';
+    if (others.length) {
+      const items = others.map(b => {
+        const inner = `<span>${esc(b.book)}</span><span class="pl-book-odds">${oddsStr(b.american_odds)}</span>`;
+        return b.url
+          ? `<a class="pl-book-item" href="${esc(b.url)}" target="_blank" rel="noopener">${inner}</a>`
+          : `<span class="pl-book-item">${inner}</span>`;
+      }).join('');
+      drop = `
+        <button class="pl-book-toggle" type="button" aria-expanded="false">Other books<span class="pl-book-caret">\u25be</span></button>
+        <div class="pl-book-list" hidden>${items}</div>`;
+    }
+    return `<div class="pl-book">${btn}${drop}</div>`;
   }
 
   async function fetchPresets() {
@@ -680,7 +703,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="pl-result">
         ${renderProbPair(t.our_prob, vegas)}
         <div class="pl-preset-odds">${t.american_odds != null ? fmtSigned(t.american_odds) : '\u2014'} \u00b7 $100 returns $${t.payout_per_100 != null ? Number(t.payout_per_100).toFixed(0) : '\u2014'}${legN != null ? ' \u00b7 ' + legN + ' legs' : ''}</div>
-        ${renderBestBook(g.best_book)}
+        ${renderBestBook(g.best_book, g.book_breakdown)}
         ${corr.note ? `<div class="pl-corr ${corr.independence_valid === false ? 'pl-corr-warn' : ''}">${esc(corr.note)}</div>` : ''}
       </div>`;
   }
@@ -698,6 +721,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   function keyMatching(v) { for (const k of state.selected.keys()) if (String(k) === String(v)) return k; return v; }
 
   document.addEventListener('click', (e) => {
+    const bookToggle = e.target.closest('.pl-book-toggle');
+    if (bookToggle) {
+      const list = bookToggle.parentElement.querySelector('.pl-book-list');
+      const open = bookToggle.getAttribute('aria-expanded') === 'true';
+      bookToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+      if (list) list.hidden = open;
+      return;
+    }
     const modeBtn = e.target.closest('.pl-mode-btn');
     if (modeBtn) {
       const m = modeBtn.dataset.mode;
