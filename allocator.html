@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bankroll Allocator — PressBox Analytics</title>
+<meta name="description" content="Size every +edge pick against a single bankroll with fractional-Kelly stake sizing. Win probability vs. the market price, half-Kelly by default.">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Tokens FIRST, components AFTER — same as live-lines/parlay so cards match exactly -->
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/components/live-lines.css">
+
+<style>
+  /* ── Site nav (copied from live-lines.html — keep in sync across pages) ── */
+  :root { --max: 1200px; }
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0; padding: 0; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+  .nav-links a.nav-live { color: var(--rust) !important; font-weight: 700; letter-spacing: 0.3px; position: relative; text-transform: uppercase; font-size: 11px; }
+  .nav-links a.nav-live::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--rust); border-radius: 50%; margin-right: 7px; vertical-align: 2px; animation: pulse-live 2.4s ease-in-out infinite; }
+  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
+  .nav-links a.nav-live.active { color: var(--ink) !important; }
+  .nav-links a.nav-live.active::before { background: var(--ink); animation: none; }
+  @keyframes pulse-live { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
+  .hamburger { display: none; flex-direction: column !important; align-items: center; justify-content: center; gap: 5px; cursor: pointer; padding: 4px; background: transparent; border: 0; outline: 0; -webkit-appearance: none; appearance: none; border-radius: 0; box-shadow: none; width: 32px; height: 32px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--ink); border-radius: 2px; }
+  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+  .mobile-menu.open { display: flex !important; }
+  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--ink); text-decoration: none; }
+  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--ink); line-height: 1; }
+  @media (min-width: 961px) { .hamburger { display: none !important; } }
+  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* ── Allocator-specific (everything else reuses live-lines.css ll- classes) ── */
+  .al-intro { margin: var(--space-6) 0 var(--space-5); }
+  .al-eyebrow { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin: 0 0 var(--space-2); }
+  .al-headline { font-family: var(--serif); font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--ink); margin: 0 0 var(--space-2); line-height: 1.1; }
+  .al-sub { font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid); margin: 0; max-width: 62ch; line-height: 1.55; }
+
+  /* Controls panel */
+  .al-controls { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-5); align-items: end; background: var(--cream-dark); border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-5); margin-bottom: var(--space-5); }
+  @media (max-width: 720px) { .al-controls { grid-template-columns: 1fr; gap: var(--space-4); } }
+  .al-field-label { display: block; font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); margin: 0 0 var(--space-2); }
+  .al-money-wrap { position: relative; display: inline-flex; align-items: center; }
+  .al-money-wrap .al-prefix { position: absolute; left: 14px; font-family: 'JetBrains Mono', monospace; font-size: var(--text-lg); color: var(--text-mid); pointer-events: none; }
+  .al-input { font-family: 'JetBrains Mono', monospace; font-size: var(--text-lg); color: var(--ink); background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
+  .al-input:focus { outline: none; border-color: var(--gold); }
+  .al-input.al-money { padding-left: 30px; }
+  .al-cap-wrap { position: relative; display: inline-flex; align-items: center; max-width: 130px; }
+  .al-cap-wrap .al-suffix { position: absolute; right: 14px; font-family: 'JetBrains Mono', monospace; font-size: var(--text-lg); color: var(--text-mid); pointer-events: none; }
+  .al-frac { display: flex; gap: var(--space-2); }
+  .al-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: var(--space-2) 0 0; }
+
+  /* Summary bar */
+  .al-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-6); padding: var(--space-4) 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--space-4); }
+  .al-summary-stat { display: flex; flex-direction: column; gap: 2px; }
+  .al-summary-k { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); }
+  .al-summary-v { font-family: 'JetBrains Mono', monospace; font-size: var(--text-xl); font-weight: var(--weight-semi); color: var(--ink); }
+  .al-summary-v.al-hero { color: var(--gold); }
+  .al-warn { background: color-mix(in srgb, var(--rust) 14%, transparent); border: 1px solid color-mix(in srgb, var(--rust) 35%, transparent); color: var(--rust); font-family: var(--sans); font-size: var(--text-sm); line-height: 1.5; padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: var(--space-4); }
+
+  /* Bet rows reuse .ll-row; the stake column is the hero */
+  .al-row-stake { margin-left: auto; text-align: right; flex: 0 0 auto; padding-left: var(--space-3); }
+  .al-stake-amt { font-family: 'JetBrains Mono', monospace; font-size: var(--text-xl); font-weight: var(--weight-semi); color: var(--ink); line-height: 1.1; }
+  .al-stake-sub { font-family: var(--sans); font-size: var(--text-eyebrow); color: var(--text-mid); margin-top: 3px; letter-spacing: 0.02em; }
+  .al-row-bet { display: block; margin-top: var(--space-3); }
+  .al-empty { padding: var(--space-6) 0; font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid); }
+  .al-page-pad { height: 48px; }
+</style>
+</head>
+<body class="ll-page">
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
+    </a>
+    <ul class="nav-links">
+      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
+      <li><a href="/upcoming.html">Upcoming</a></li>
+      <li><a href="/parlay.html">Parlay</a></li>
+      <li><a href="/rankings.html">Rankings</a></li>
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/login.html" id="navAuth" style="opacity:0.7;">Sign in</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
+  <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
+  <a href="/upcoming.html">Upcoming</a>
+  <a href="/parlay.html">Parlay</a>
+  <a href="/rankings.html">Rankings</a>
+  <a href="/results.html">Results</a>
+  <a href="/login.html" id="navAuthMobile" style="opacity:0.7;">Sign in</a>
+</div>
+<script>
+function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!window.supabase) return;
+  const sb = window.supabase.createClient('https://brwalcuodwxsynrpiqjc.supabase.co',
+    'sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE');
+  let session = null;
+  try { session = (await sb.auth.getSession())?.data?.session || null; } catch (e) { return; }
+  if (!session) return;
+  const handleSignOut = async (e) => { e.preventDefault(); try { await sb.auth.signOut(); } catch (err) {} window.location.href = '/'; };
+  ['navAuth', 'navAuthMobile'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    el.textContent = 'Sign out'; el.href = '#'; el.addEventListener('click', handleSignOut);
+  });
+});
+</script>
+
+<main class="ll-container">
+  <div id="al-root"></div>
+  <div class="al-page-pad"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ── Config (identical base to live-lines / parlay) ───────────
+  const API_BASE  = 'https://betbuddy-backend.onrender.com';
+  const BOARD_URL = `${API_BASE}/parlay/board`;
+  const SEASON    = 2026;
+
+  const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyd2FsY3VvZHd4c3lucnBpcWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NzMyNzQsImV4cCI6MjA5MjA0OTI3NH0.HjHkM1Ir9LGutCfAEQsOWOjQ6I5-otzGoReLvrPs6iQ';
+  const sb = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+
+  // Kelly fraction presets
+  const FRACTIONS = [
+    { key: 'quarter', label: '\u00bc Kelly', value: 0.25 },
+    { key: 'half',    label: '\u00bd Kelly', value: 0.50 },
+    { key: 'full',    label: 'Full Kelly',   value: 1.00 },
+  ];
+
+  const state = {
+    legs: [], weeks: [], week: null,
+    bankroll: 1000,
+    fractionKey: 'half',
+    capPct: 5,
+    filters: { market: null, aplusOnly: false },
+    loading: true, error: false,
+  };
+
+  const root = document.getElementById('al-root');
+
+  // ── Utilities (mirrored from live-lines / parlay) ────────────
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function weekLabel(w) { return w === 0 ? 'Week 0' : `Week ${w}`; }
+  function fmtSigned(n) { return (Number(n) > 0 ? '+' : '') + n; }
+  function fmtMoney(n) {
+    const v = Math.round(Number(n) || 0);
+    return v.toLocaleString('en-US');
+  }
+  function fractionValue() {
+    const f = FRACTIONS.find(f => f.key === state.fractionKey);
+    return f ? f.value : 0.5;
+  }
+
+  function renderBadge(tier) {
+    const map = {
+      'A+':          { label: 'A+', aria: 'A plus tier',      key: 'aplus' },
+      'A':           { label: 'A',  aria: 'A tier',           key: 'a' },
+      'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
+      'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
+      'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
+      'no_edge':     { label: 'NE', aria: 'No edge',          key: 'no_edge' },
+    };
+    const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
+  }
+
+  function pickText(leg) {
+    const bookName = leg.book && leg.book.name ? ` \u00b7 ${esc(leg.book.name)}` : '';
+    if (leg.market === 'ml') return `${esc(leg.side)} ML <span class="ll-row-pick-num">${esc(leg.line)}</span>${bookName}`;
+    return `${esc(leg.side)} <span class="ll-row-pick-num">${esc(leg.line)}</span>${bookName}`;
+  }
+
+  // ── Auth (mirrored from parlay — localStorage fast-path, 4s cap) ──
+  async function getAccessToken() {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+          const v = JSON.parse(localStorage.getItem(k) || 'null');
+          const tok = v && (v.access_token
+                        || (v.currentSession && v.currentSession.access_token)
+                        || (Array.isArray(v) && v[0]));
+          if (tok) return tok;
+        }
+      }
+    } catch (e) {}
+    if (!sb) return null;
+    try {
+      const timeout = new Promise((res) => setTimeout(() => res(null), 4000));
+      const live = sb.auth.getSession().then(
+        (r) => (r && r.data && r.data.session && r.data.session.access_token) || null);
+      return await Promise.race([live, timeout]);
+    } catch (e) { return null; }
+  }
+
+  // ── Network ──────────────────────────────────────────────────
+  async function fetchBoard() {
+    state.loading = true; state.error = false; render();
+    try {
+      const headers = {};
+      const token = await getAccessToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch(`${BOARD_URL}?season=${SEASON}`, { credentials: 'omit', headers });
+      if (res.status === 401 || res.status === 402) { state.loading = false; renderPaywall(); return; }
+      if (!res.ok) throw new Error(`board HTTP ${res.status}`);
+      const payload = await res.json();
+      const legs = (payload.legs || []).filter(l => l && l.our_prob != null && l.decimal_odds != null);
+      state.legs = legs;
+      // Derive the week bar from the legs themselves (board returns the whole pool).
+      const weeks = [...new Set(legs.map(l => l.week).filter(w => w != null))].sort((a, b) => a - b);
+      state.weeks = weeks;
+      if (state.week == null) state.week = (payload.week != null && weeks.includes(payload.week)) ? payload.week : (weeks[0] ?? null);
+      state.loading = false;
+      render();
+    } catch (e) {
+      state.loading = false; state.error = true; render();
+    }
+  }
+
+  // ── Kelly sizing ─────────────────────────────────────────────
+  // full Kelly fraction of bankroll for win prob p at decimal odds dec.
+  function fullKelly(p, dec) {
+    if (!(p > 0) || !(dec > 1)) return 0;
+    const b = dec - 1;
+    return (b * p - (1 - p)) / b;   // = (p*dec - 1) / (dec - 1)
+  }
+
+  function matchesFilters(leg) {
+    if (state.week != null && leg.week !== state.week) return false;
+    if (state.filters.aplusOnly && leg.tier !== 'A+') return false;
+    if (state.filters.market && leg.market !== state.filters.market) return false;
+    return true;
+  }
+
+  function computeRows() {
+    const bankroll = Number(state.bankroll) || 0;
+    const frac = fractionValue();
+    const cap = (Number(state.capPct) || 0) / 100;
+    const rows = [];
+    for (const leg of state.legs) {
+      if (!matchesFilters(leg)) continue;
+      const p = leg.our_prob, dec = leg.decimal_odds;
+      const fk = fullKelly(p, dec);
+      if (!(fk > 0)) continue;                 // +EV picks only
+      let stakeFrac = frac * fk;
+      if (cap > 0) stakeFrac = Math.min(stakeFrac, cap);
+      if (!(stakeFrac > 0)) continue;
+      const stake = bankroll * stakeFrac;
+      const ev = (p * dec - 1);                // expected return per $1 staked
+      rows.push({ leg, p, dec, fk, stakeFrac, stake, ev });
+    }
+    rows.sort((a, b) => b.stake - a.stake);
+    return rows;
+  }
+
+  // ── Render pieces ────────────────────────────────────────────
+  function introHTML() {
+    return `
+      <div class="al-intro">
+        <p class="al-eyebrow">— Bankroll Allocator</p>
+        <h1 class="al-headline">Size every bet. Not by gut.</h1>
+        <p class="al-sub">
+          Enter one bankroll and every +edge pick on the board is sized by fractional
+          Kelly — bigger where the model's win probability most outruns the price, zero
+          where there's no edge. Half-Kelly by default, because full Kelly is right in
+          theory and brutal in practice.
+        </p>
+      </div>`;
+  }
+
+  function controlsHTML() {
+    const fracPills = FRACTIONS.map(f =>
+      `<button type="button" class="ll-filter-pill al-frac-pill${state.fractionKey === f.key ? ' active' : ''}"
+               data-frac="${f.key}" aria-pressed="${state.fractionKey === f.key ? 'true' : 'false'}">${f.label}</button>`
+    ).join('');
+    return `
+      <div class="al-controls">
+        <div>
+          <label class="al-field-label" for="al-bankroll">Bankroll</label>
+          <div class="al-money-wrap">
+            <span class="al-prefix">$</span>
+            <input class="al-input al-money" id="al-bankroll" type="text" inputmode="numeric"
+                   value="${esc(fmtMoney(state.bankroll))}" aria-label="Bankroll in dollars">
+          </div>
+        </div>
+        <div>
+          <label class="al-field-label">Kelly fraction</label>
+          <div class="al-frac">${fracPills}</div>
+        </div>
+        <div>
+          <label class="al-field-label" for="al-cap">Max per bet</label>
+          <div class="al-cap-wrap">
+            <input class="al-input" id="al-cap" type="text" inputmode="numeric"
+                   value="${esc(String(state.capPct))}" aria-label="Maximum stake per bet as percent of bankroll">
+            <span class="al-suffix">%</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function weekTabsHTML() {
+    if (!state.weeks || state.weeks.length <= 1) return '';
+    return `
+      <div class="ll-week-bar"><div class="ll-week-bar-inner" role="tablist" aria-label="Board week">
+        ${state.weeks.map(w => `
+          <button class="ll-week-tab ${w === state.week ? 'active' : ''}" data-week="${w}"
+                  role="tab" aria-selected="${w === state.week ? 'true' : 'false'}">${esc(weekLabel(w))}</button>
+        `).join('')}
+      </div></div>`;
+  }
+
+  function filtersHTML() {
+    const f = state.filters;
+    const pill = (key, label, active) =>
+      `<button type="button" class="ll-filter-pill${active ? ' active' : ''}" data-filter="${key}"
+               aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
+    const anyMarket = !!f.market || f.aplusOnly;
+    return `
+      <div class="ll-filters" style="margin-bottom:var(--space-4);">
+        ${pill('all', 'All', !anyMarket)}
+        ${pill('spread', 'Spread', f.market === 'spread')}
+        ${pill('total', 'Total', f.market === 'total')}
+        ${pill('ml', 'Moneyline', f.market === 'ml')}
+        ${pill('aplus', 'A+ only', f.aplusOnly)}
+      </div>`;
+  }
+
+  function summaryHTML(rows) {
+    const bankroll = Number(state.bankroll) || 0;
+    const totalStake = rows.reduce((s, r) => s + r.stake, 0);
+    const totalEV = rows.reduce((s, r) => s + r.stake * r.ev, 0);
+    const pct = bankroll > 0 ? (totalStake / bankroll * 100) : 0;
+    const over = pct > 100.5;
+    const warn = over ? `
+      <div class="al-warn">
+        These stakes total ${pct.toFixed(0)}% of your bankroll — more than you can place at once.
+        Kelly sizes each bet as if it's the only one, so treat this as sizing across the week as
+        bets settle, or lower the Kelly fraction / per-bet cap to fit it all today.
+      </div>` : '';
+    return `
+      ${warn}
+      <div class="al-summary">
+        <div class="al-summary-stat">
+          <span class="al-summary-k">Total to stake</span>
+          <span class="al-summary-v al-hero">$${fmtMoney(totalStake)}</span>
+        </div>
+        <div class="al-summary-stat">
+          <span class="al-summary-k">Bets</span>
+          <span class="al-summary-v">${rows.length}</span>
+        </div>
+        <div class="al-summary-stat">
+          <span class="al-summary-k">Bankroll deployed</span>
+          <span class="al-summary-v">${pct.toFixed(1)}%</span>
+        </div>
+        <div class="al-summary-stat">
+          <span class="al-summary-k">Model expected profit</span>
+          <span class="al-summary-v">${totalEV >= 0 ? '+' : '\u2212'}$${fmtMoney(Math.abs(totalEV))}</span>
+        </div>
+      </div>`;
+  }
+
+  function rowHTML(r) {
+    const leg = r.leg;
+    const price = leg.price_american != null ? fmtSigned(leg.price_american) : '';
+    const betBtn = (leg.book && leg.book.url)
+      ? `<a class="ll-bet-button al-row-bet" href="${esc(leg.book.url)}" target="_blank" rel="noopener noreferrer"
+            aria-label="Bet at ${esc(leg.book.name)} (opens in new tab)">Bet $${fmtMoney(r.stake)} at ${esc(leg.book.name)}${price ? ' ' + price : ''} \u2192</a>`
+      : '';
+    return `
+      <article class="ll-row">
+        <div class="ll-row-header" style="align-items:center;cursor:default;">
+          ${renderBadge(leg.tier)}
+          <div class="ll-row-content">
+            <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
+            <div class="ll-row-pick">${pickText(leg)}</div>
+          </div>
+          <div class="al-row-stake">
+            <div class="al-stake-amt">$${fmtMoney(r.stake)}</div>
+            <div class="al-stake-sub">${(r.p * 100).toFixed(0)}% win \u00b7 ${price || '\u2014'} \u00b7 ${(r.stakeFrac * 100).toFixed(1)}% roll</div>
+          </div>
+        </div>
+        ${betBtn}
+      </article>`;
+  }
+
+  function listHTML(rows) {
+    if (!rows.length) {
+      const bankroll = Number(state.bankroll) || 0;
+      if (!(bankroll > 0)) return `<div class="al-empty">Enter a bankroll above to size the board.</div>`;
+      return `<div class="al-empty">No +edge bets match these filters right now. Try clearing a filter or switching weeks.</div>`;
+    }
+    return rows.map(rowHTML).join('');
+  }
+
+  // ── Top-level render ─────────────────────────────────────────
+  function render() {
+    if (state.loading) {
+      root.innerHTML = `${introHTML()}<div class="al-empty">Loading the board…</div>`;
+      return;
+    }
+    if (state.error) {
+      root.innerHTML = `${introHTML()}<div class="al-empty">Couldn't load the board. Refresh to try again.</div>`;
+      return;
+    }
+    const rows = computeRows();
+    root.innerHTML = `
+      ${introHTML()}
+      ${controlsHTML()}
+      ${weekTabsHTML()}
+      ${filtersHTML()}
+      <div id="al-summary">${summaryHTML(rows)}</div>
+      <div id="al-results">${listHTML(rows)}</div>`;
+    bindInputs();
+  }
+
+  // Recompute only the summary + list (used on text input so focus is kept).
+  function recompute() {
+    const rows = computeRows();
+    const s = document.getElementById('al-summary');
+    const l = document.getElementById('al-results');
+    if (s) s.innerHTML = summaryHTML(rows);
+    if (l) l.innerHTML = listHTML(rows);
+  }
+
+  function bindInputs() {
+    const bank = document.getElementById('al-bankroll');
+    if (bank) {
+      bank.addEventListener('input', () => {
+        const digits = bank.value.replace(/[^0-9]/g, '');
+        state.bankroll = digits ? parseInt(digits, 10) : 0;
+        recompute();
+      });
+      bank.addEventListener('blur', () => { bank.value = fmtMoney(state.bankroll); });
+    }
+    const cap = document.getElementById('al-cap');
+    if (cap) {
+      cap.addEventListener('input', () => {
+        const digits = cap.value.replace(/[^0-9]/g, '');
+        let v = digits ? parseInt(digits, 10) : 0;
+        if (v > 100) v = 100;
+        state.capPct = v;
+        recompute();
+      });
+    }
+  }
+
+  // ── Paywall (mirrors parlay copy/markup) ─────────────────────
+  function renderPaywall() {
+    root.innerHTML = `
+      <header class="ll-paywall-header">
+        <div class="ll-paywall-eyebrow">— Bankroll Allocator</div>
+        <h1 class="ll-paywall-headline">
+          <span class="ll-paywall-headline-1">Size every bet.</span>
+          <span class="ll-paywall-headline-2">Against your bankroll.</span>
+        </h1>
+        <p class="ll-paywall-body">
+          Enter one bankroll and every +edge pick is sized by fractional Kelly — the
+          math sharps use to bet more where the edge is bigger and nothing where it
+          isn't. Updates as the board re-grades against the current best line.
+        </p>
+      </header>
+
+      <div class="ll-paywall-blur">
+        <article class="ll-row"><div class="ll-row-header">
+          <span class="ll-badge ll-badge--aplus">A+</span>
+          <div class="ll-row-content">
+            <div class="ll-row-matchup">Sample Matchup A</div>
+            <div class="ll-row-pick">Team +7 · FanDuel</div>
+          </div>
+        </div></article>
+        <article class="ll-row"><div class="ll-row-header">
+          <span class="ll-badge ll-badge--a">A</span>
+          <div class="ll-row-content">
+            <div class="ll-row-matchup">Sample Matchup B</div>
+            <div class="ll-row-pick">Under 54.5 · DraftKings</div>
+          </div>
+        </div></article>
+        <div class="ll-paywall-fade"></div>
+      </div>
+
+      <div class="ll-paywall-card">
+        <h2 class="ll-paywall-card-headline">See every pick.<br>Sized to your bankroll.</h2>
+        <p class="ll-paywall-card-subhead">Release pricing through Aug 22. Locked for as long as you're subscribed. Same access on every plan.</p>
+        <p class="ll-paywall-first-charge" style="font-style:italic;color:#B8922A;font-size:var(--text-sm);margin:10px 0 0;">First charge anchored to Aug 23 — pay nothing until picks drop for Week 0.</p>
+        <div class="ll-paywall-plans">
+          <div class="ll-paywall-plan">
+            <div class="ll-paywall-plan-name">Weekly</div>
+            <div class="ll-paywall-plan-price">$5.99/wk<br><span class="ll-paywall-plan-release">release $3.99</span></div>
+          </div>
+          <div class="ll-paywall-plan ll-paywall-plan--featured">
+            <div class="ll-paywall-plan-badge">Most Picked</div>
+            <div class="ll-paywall-plan-name">Monthly</div>
+            <div class="ll-paywall-plan-price">$18.99/mo<br><span class="ll-paywall-plan-release">release $11.99</span></div>
+          </div>
+          <div class="ll-paywall-plan">
+            <div class="ll-paywall-plan-name">Season Pass</div>
+            <div class="ll-paywall-plan-price">$49.99<br><span class="ll-paywall-plan-release">release $34.99</span></div>
+          </div>
+        </div>
+        <a class="ll-paywall-cta" href="/subscribe.html">Get the picks →</a>
+        <div class="ll-paywall-footer">Cancel anytime. No upsells. Same access on every plan.</div>
+      </div>
+    `;
+  }
+
+  // ── Events (delegated; pills + week tabs) ────────────────────
+  document.addEventListener('click', (e) => {
+    const frac = e.target.closest('.al-frac-pill[data-frac]');
+    if (frac) { state.fractionKey = frac.dataset.frac; render(); return; }
+
+    const fpill = e.target.closest('.ll-filter-pill[data-filter]');
+    if (fpill && !fpill.classList.contains('al-frac-pill')) {
+      const key = fpill.dataset.filter;
+      const f = state.filters;
+      if (key === 'all') { f.market = null; f.aplusOnly = false; }
+      else if (key === 'aplus') { f.aplusOnly = !f.aplusOnly; if (f.aplusOnly) f.market = null; }
+      else { f.market = (f.market === key) ? null : key; }
+      render();
+      return;
+    }
+
+    const wtab = e.target.closest('.ll-week-tab[data-week]');
+    if (wtab) { state.week = Number(wtab.dataset.week); render(); return; }
+  });
+
+  // ── Init ─────────────────────────────────────────────────────
+  render();          // paint intro + loading immediately
+  fetchBoard();
+})();
+</script>
+
+</body>
+</html>
