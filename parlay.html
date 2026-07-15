@@ -90,7 +90,7 @@
   .pl-grade-btn:hover { background: var(--gold-light); }
   .pl-grade-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  .pl-result { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); }
+  .pl-result { margin-top: 18px; background: var(--cream-dark); border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-4); }
   .pl-result-hero { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
   .pl-result-odds { font-family: var(--serif); font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--gold-light); }
   .pl-result-payout { font-family: var(--sans); font-size: var(--text-sm); color: #B9B9AC; }
@@ -100,20 +100,12 @@
   .pl-stat-v { font-family: 'JetBrains Mono', monospace; font-size: var(--text-base); color: var(--cream); }
   .pl-stat-v.pos { color: #7FA86A; }
   .pl-stat-v.neg { color: #E08A5B; }
-  .pl-corr { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-md); font-family: var(--sans); font-size: var(--text-sm); line-height: 1.5; background: rgba(255,255,255,0.05); color: #C7C7B8; }
-  .pl-corr.pl-corr-warn { background: color-mix(in srgb, var(--rust) 22%, transparent); color: #F0C9B4; }
+  .pl-corr { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-md); font-family: var(--sans); font-size: var(--text-sm); line-height: 1.5; background: var(--cream-mid); color: var(--text-mid); border: 0.5px solid var(--border); }
+  .pl-corr.pl-corr-warn { background: color-mix(in srgb, var(--rust) 14%, transparent); color: var(--rust); border-color: color-mix(in srgb, var(--rust) 35%, transparent); }
 
-  /* Bet links inside the dark slip: reuse live-lines' .ll- markup, recolor for ink bg.
-     (Black .ll-bet-button is invisible here — flip to gold like .pl-grade-btn.) */
-  .pl-slip .pl-book { margin-top: 16px; }
-  .pl-slip .ll-bet-button { background: var(--gold); color: var(--ink); }
-  .pl-slip .ll-bet-button:hover { background: var(--gold-light); }
-  .pl-slip .ll-other-books-header,
-  .pl-slip .ll-book-name { color: var(--cream); }
-  .pl-slip .ll-accordion-section-label { color: #8A8A7A; }
-  .pl-slip .ll-other-books-chevron { stroke: var(--cream); }
-  .pl-slip .ll-book-row { border-top-color: rgba(255,255,255,0.08); }
-  .pl-slip .ll-book-line { color: #B9B9AC; }
+  /* Bet links + other-books render inside the tan .pl-result panel now, so they
+     keep their default (light-card) styling — identical to the pre-built cards. */
+  .pl-slip .pl-book { margin-top: var(--space-3); }
 
   .pl-empty-slip { padding: 24px 0 8px; font-family: var(--sans); font-size: var(--text-sm); color: #8A8A7A; text-align: center; }
   .pl-page-pad { height: 84px; }
@@ -143,8 +135,6 @@
   .pl-prob-v { display: block; font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin-top: 4px; line-height: 1; }
   .pl-prob--ours .pl-prob-v { color: var(--gold); }
   .pl-preset-odds { text-align: center; font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin-top: var(--space-3); }
-  /* On the dark slip the Vegas value would be ink-on-ink; lift it to cream. */
-  .pl-slip .pl-prob-v { color: var(--cream); }
 
   /* ── Parlay: build-your-own instruction banner ── */
   .pl-build-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); background: var(--cream-mid); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin: var(--space-5) 0 var(--space-2); line-height: 1.5; }
