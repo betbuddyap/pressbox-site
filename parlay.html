@@ -229,6 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     slipOpen: false, grade: null, grading: false,
     mode: 'prebuilt',          // open on the pre-built gallery (fast: no model on the presets path)
     presets: null, presetPool: null, presetsLoading: false, presetsError: false,
+    buildFilters: { market: null, aplusOnly: false, gradedOnly: false },
   };
 
   const root = document.getElementById('pl-root');
@@ -432,13 +433,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (state.mode === 'custom') renderSlip();
   }
 
+  // Same pill row as Live Lines (reuses .ll-filters / .ll-filter-pill). "Graded"
+  // hides no-edge picks; market pills and Graded combine; A+ only is the narrow one.
+  function renderBuildFilters() {
+    const f = state.buildFilters;
+    const isActive = (m) => f.market === m && !f.aplusOnly;
+    return `
+      <div class="ll-filters" role="group" aria-label="Filter picks">
+        <span class="ll-filter-label">Pick Type</span>
+        <button class="ll-filter-pill" data-filter="all" aria-pressed="${!f.market && !f.aplusOnly && !f.gradedOnly ? 'true' : 'false'}">All</button>
+        <button class="ll-filter-pill" data-filter="spread" aria-pressed="${isActive('spread') ? 'true' : 'false'}">Spread</button>
+        <button class="ll-filter-pill" data-filter="total" aria-pressed="${isActive('total') ? 'true' : 'false'}">Total</button>
+        <button class="ll-filter-pill" data-filter="ml" aria-pressed="${isActive('ml') ? 'true' : 'false'}">ML</button>
+        <button class="ll-filter-pill" data-filter="graded" aria-pressed="${f.gradedOnly ? 'true' : 'false'}">Graded</button>
+        <button class="ll-filter-pill" data-filter="aplus" aria-pressed="${f.aplusOnly ? 'true' : 'false'}">A+ only</button>
+      </div>`;
+  }
+
+  function applyBuildFilters(picks) {
+    const f = state.buildFilters;
+    return picks.filter(p => {
+      if (f.aplusOnly && p.tier !== 'A+') return false;
+      if (f.gradedOnly && (!p.tier || p.tier === 'no_edge')) return false;
+      if (f.market && p.market !== f.market) return false;
+      return true;
+    });
+  }
+
   function renderBuildView() {
     const inWeek = state.picks.filter(p => state.week === null || p.week === state.week);
-    const days = groupPicks(inWeek);
+    const filtered = applyBuildFilters(inWeek);
+    const days = groupPicks(filtered);
+    const empty = inWeek.length
+      ? 'No picks match this filter.'
+      : 'No open picks for this week yet.';
     return `
       <div class="pl-build-hint"><strong>Tap any pick to add it as a leg.</strong> Add two or more, then tap the slip at the bottom to grade your parlay. Every leg is priced against the current best line.</div>
+      ${renderBuildFilters()}
       ${days.length ? days.map(renderDayBucket).join('') :
-        '<p style="padding:var(--space-6) 0;color:var(--text-mid);">No open picks for this week yet.</p>'}
+        `<p style="padding:var(--space-6) 0;color:var(--text-mid);">${empty}</p>`}
     `;
   }
 
@@ -752,6 +785,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       obHeader.setAttribute('aria-expanded', open ? 'false' : 'true');
       if (rows) rows.style.display = open ? 'none' : 'block';
       if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+      return;
+    }
+    const fpill = e.target.closest('.ll-filter-pill[data-filter]');
+    if (fpill) {
+      const f = fpill.dataset.filter;
+      const bf = state.buildFilters;
+      if (f === 'all') { bf.market = null; bf.aplusOnly = false; bf.gradedOnly = false; }
+      else if (f === 'graded') { bf.gradedOnly = !bf.gradedOnly; }
+      else if (f === 'aplus') { bf.aplusOnly = !bf.aplusOnly; if (bf.aplusOnly) bf.market = null; }
+      else { bf.market = (bf.market === f) ? null : f; bf.aplusOnly = false; }
+      render();
       return;
     }
     const modeBtn = e.target.closest('.pl-mode-btn');
