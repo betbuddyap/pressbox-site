@@ -103,6 +103,18 @@
   .pl-corr { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius-md); font-family: var(--sans); font-size: var(--text-sm); line-height: 1.5; background: rgba(255,255,255,0.05); color: #C7C7B8; }
   .pl-corr.pl-corr-warn { background: color-mix(in srgb, var(--rust) 22%, transparent); color: #F0C9B4; }
 
+  /* Bet links inside the dark slip: reuse live-lines' .ll- markup, recolor for ink bg.
+     (Black .ll-bet-button is invisible here — flip to gold like .pl-grade-btn.) */
+  .pl-slip .pl-book { margin-top: 16px; }
+  .pl-slip .ll-bet-button { background: var(--gold); color: var(--ink); }
+  .pl-slip .ll-bet-button:hover { background: var(--gold-light); }
+  .pl-slip .ll-other-books-header,
+  .pl-slip .ll-book-name { color: var(--cream); }
+  .pl-slip .ll-accordion-section-label { color: #8A8A7A; }
+  .pl-slip .ll-other-books-chevron { stroke: var(--cream); }
+  .pl-slip .ll-book-row { border-top-color: rgba(255,255,255,0.08); }
+  .pl-slip .ll-book-line { color: #B9B9AC; }
+
   .pl-empty-slip { padding: 24px 0 8px; font-family: var(--sans); font-size: var(--text-sm); color: #8A8A7A; text-align: center; }
   .pl-page-pad { height: 84px; }
   /* ── Parlay: mode toggle (uses .ll-filter-pill for the site's square selector) ── */
@@ -760,6 +772,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ${renderProbPair(t.our_prob, vegas)}
         <div class="pl-preset-odds">${t.american_odds != null ? fmtSigned(t.american_odds) : '\u2014'} \u00b7 $100 returns $${t.payout_per_100 != null ? Number(t.payout_per_100).toFixed(0) : '\u2014'}${legN != null ? ' \u00b7 ' + legN + ' legs' : ''}</div>
         ${corr.note ? `<div class="pl-corr ${corr.independence_valid === false ? 'pl-corr-warn' : ''}">${esc(corr.note)}</div>` : ''}
+        ${renderBestBook(g.best_book, g.book_breakdown)}
       </div>`;
   }
 
