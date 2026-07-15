@@ -143,6 +143,8 @@
   .pl-prob-v { display: block; font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); margin-top: 4px; line-height: 1; }
   .pl-prob--ours .pl-prob-v { color: var(--gold); }
   .pl-preset-odds { text-align: center; font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin-top: var(--space-3); }
+  /* On the dark slip the Vegas value would be ink-on-ink; lift it to cream. */
+  .pl-slip .pl-prob-v { color: var(--cream); }
 
   /* ── Parlay: build-your-own instruction banner ── */
   .pl-build-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); background: var(--cream-mid); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin: var(--space-5) 0 var(--space-2); line-height: 1.5; }
@@ -766,7 +768,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `
       <div class="pl-result">
         ${renderProbPair(t.our_prob, vegas)}
-        <div class="pl-preset-odds">${t.american_odds != null ? fmtSigned(t.american_odds) : '\u2014'} \u00b7 $100 returns $${t.payout_per_100 != null ? Number(t.payout_per_100).toFixed(0) : '\u2014'}${legN != null ? ' \u00b7 ' + legN + ' legs' : ''}</div>
         ${corr.note ? `<div class="pl-corr ${corr.independence_valid === false ? 'pl-corr-warn' : ''}">${esc(corr.note)}</div>` : ''}
         ${renderBestBook(g.best_book, g.book_breakdown)}
       </div>`;
