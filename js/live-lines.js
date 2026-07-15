@@ -47,6 +47,7 @@
       market:    null,            // 'spread' | 'total' | 'ml' | null
       tier:      null,            // 'A+' | 'A' | 'smart_money' | ... | null
       aplusOnly: false,           // shorthand pill: A+ across markets
+      gradedOnly: false,          // hide no-edge picks (show only graded/tiered)
     },
     lastFetchedAt: null,          // ISO timestamp of last successful fetch
     pollTimer:   null,
@@ -399,13 +400,15 @@
       <div class="ll-filters" role="group" aria-label="Filter picks">
         <span class="ll-filter-label">Pick Type</span>
         <button class="ll-filter-pill" data-filter="all"
-          aria-pressed="${!f.market && !f.aplusOnly ? 'true' : 'false'}">All</button>
+          aria-pressed="${!f.market && !f.aplusOnly && !f.gradedOnly ? 'true' : 'false'}">All</button>
         <button class="ll-filter-pill" data-filter="spread"
           aria-pressed="${isActive('spread') ? 'true' : 'false'}">Spread</button>
         <button class="ll-filter-pill" data-filter="total"
           aria-pressed="${isActive('total') ? 'true' : 'false'}">Total</button>
         <button class="ll-filter-pill" data-filter="ml"
           aria-pressed="${isActive('ml') ? 'true' : 'false'}">ML</button>
+        <button class="ll-filter-pill" data-filter="graded"
+          aria-pressed="${f.gradedOnly ? 'true' : 'false'}">Graded</button>
         <button class="ll-filter-pill" data-filter="aplus"
           aria-pressed="${aplusActive ? 'true' : 'false'}">A+ only</button>
       </div>
@@ -440,7 +443,7 @@
     const inWeek = state.picks.filter(p => state.week === null || p.week === state.week);
     const totalInWeek = inWeek.length;
     const filteredCount = filtered.length;
-    const anyActive = !!(state.filters.market || state.filters.aplusOnly);
+    const anyActive = !!(state.filters.market || state.filters.aplusOnly || state.filters.gradedOnly);
 
     const metaText = anyActive
       ? `${filteredCount} pick${filteredCount === 1 ? '' : 's'} · filtered from ${totalInWeek}`
@@ -480,6 +483,7 @@
       // Filter by selected week (week-tab bar)
       if (state.week !== null && p.week !== state.week) return false;
       if (f.aplusOnly && p.tier !== 'A+') return false;
+      if (f.gradedOnly && (!p.tier || p.tier === 'no_edge')) return false;
       if (f.market && p.market !== f.market) return false;
       if (f.tier && p.tier !== f.tier) return false;
       return true;
@@ -912,6 +916,9 @@
           state.filters.market = null;
           state.filters.tier = null;
           state.filters.aplusOnly = false;
+          state.filters.gradedOnly = false;
+        } else if (f === 'graded') {
+          state.filters.gradedOnly = !state.filters.gradedOnly;
         } else if (f === 'aplus') {
           state.filters.aplusOnly = !state.filters.aplusOnly;
           if (state.filters.aplusOnly) {
