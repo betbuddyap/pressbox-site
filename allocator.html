@@ -64,7 +64,7 @@
   .al-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-6); padding: var(--space-4) 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--space-4); }
   .al-summary-stat { display: flex; flex-direction: column; gap: 2px; }
   .al-summary-k { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); }
-  .al-summary-v { font-family: 'JetBrains Mono', monospace; font-size: var(--text-xl); font-weight: var(--weight-semi); color: var(--ink); }
+  .al-summary-v { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); line-height: 1; }
   .al-summary-v.al-hero { color: var(--gold); }
   .al-warn { background: color-mix(in srgb, var(--rust) 14%, transparent); border: 1px solid color-mix(in srgb, var(--rust) 35%, transparent); color: var(--rust); font-family: var(--sans); font-size: var(--text-sm); line-height: 1.5; padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: var(--space-4); }
 
@@ -72,7 +72,7 @@
   .al-card { overflow: hidden; }
   .al-head { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-4) var(--space-3); }
   .al-stake { margin-left: auto; flex: 0 0 auto; text-align: right; padding-left: var(--space-3); }
-  .al-stake-amt { font-family: 'JetBrains Mono', monospace; font-size: var(--text-xl); font-weight: var(--weight-semi); color: var(--ink); line-height: 1; }
+  .al-stake-amt { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); line-height: 1; }
   .al-stake-lbl { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-light); margin-top: 2px; }
   .al-metrics { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); padding: 0 var(--space-4) var(--space-4); }
   .al-metric { display: flex; flex-direction: column; gap: 2px; }
@@ -360,8 +360,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function summaryHTML(rows) {
     const totalStake  = rows.reduce((s, r) => s + r.stake, 0);
-    const totalEV     = rows.reduce((s, r) => s + r.stake * r.ev, 0);
     const allWinPay   = rows.reduce((s, r) => s + r.payout, 0);   // if every leg hits
+    // Stake-weighted average win probability — the number that actually moves with
+    // the weighting: high on Conservative, lower as you tilt toward payouts.
+    const avgWin = totalStake > 0
+      ? rows.reduce((s, r) => s + r.stake * r.p, 0) / totalStake
+      : 0;
     return `
       <div class="al-summary">
         <div class="al-summary-stat">
@@ -373,12 +377,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="al-summary-v">${rows.length}</span>
         </div>
         <div class="al-summary-stat">
-          <span class="al-summary-k">If every bet wins</span>
-          <span class="al-summary-v">$${fmtMoney(allWinPay)}</span>
+          <span class="al-summary-k">Avg win probability</span>
+          <span class="al-summary-v">${(avgWin * 100).toFixed(1)}%</span>
         </div>
         <div class="al-summary-stat">
-          <span class="al-summary-k">Model expected profit</span>
-          <span class="al-summary-v">${totalEV >= 0 ? '+' : '\u2212'}$${fmtMoney(Math.abs(totalEV))}</span>
+          <span class="al-summary-k">If every bet wins</span>
+          <span class="al-summary-v">$${fmtMoney(allWinPay)}</span>
         </div>
       </div>`;
   }
