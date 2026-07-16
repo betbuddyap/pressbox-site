@@ -47,7 +47,7 @@
   .al-sub { font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid); margin: 0; max-width: 62ch; line-height: 1.55; }
 
   /* Controls panel */
-  .al-controls { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-5); align-items: end; background: var(--cream-dark); border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-5); margin-bottom: var(--space-5); }
+  .al-controls { display: grid; grid-template-columns: auto 1fr; gap: var(--space-5); align-items: start; background: var(--cream-dark); border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-5); margin-bottom: var(--space-5); }
   @media (max-width: 720px) { .al-controls { grid-template-columns: 1fr; gap: var(--space-4); } }
   .al-field-label { display: block; font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); margin: 0 0 var(--space-2); }
   .al-money-wrap { position: relative; display: inline-flex; align-items: center; }
@@ -69,10 +69,19 @@
   .al-warn { background: color-mix(in srgb, var(--rust) 14%, transparent); border: 1px solid color-mix(in srgb, var(--rust) 35%, transparent); color: var(--rust); font-family: var(--sans); font-size: var(--text-sm); line-height: 1.5; padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: var(--space-4); }
 
   /* Bet rows reuse .ll-row; the stake column is the hero */
-  .al-row-stake { margin-left: auto; text-align: right; flex: 0 0 auto; padding-left: var(--space-3); }
-  .al-stake-amt { font-family: 'JetBrains Mono', monospace; font-size: var(--text-xl); font-weight: var(--weight-semi); color: var(--ink); line-height: 1.1; }
-  .al-stake-sub { font-family: var(--sans); font-size: var(--text-eyebrow); color: var(--text-mid); margin-top: 3px; letter-spacing: 0.02em; }
-  .al-row-bet { display: block; margin-top: var(--space-3); }
+  .al-card { overflow: hidden; }
+  .al-head { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-4) var(--space-3); }
+  .al-stake { margin-left: auto; flex: 0 0 auto; text-align: right; padding-left: var(--space-3); }
+  .al-stake-amt { font-family: 'JetBrains Mono', monospace; font-size: var(--text-xl); font-weight: var(--weight-semi); color: var(--ink); line-height: 1; }
+  .al-stake-lbl { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-light); margin-top: 2px; }
+  .al-metrics { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); padding: 0 var(--space-4) var(--space-4); }
+  .al-metric { display: flex; flex-direction: column; gap: 2px; }
+  .al-metric-k { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-light); }
+  .al-metric-v { font-family: 'JetBrains Mono', monospace; font-size: var(--text-sm); color: var(--ink); }
+  .al-metric-v.al-pos { color: var(--sage); }
+  .al-metric-v.al-neg { color: var(--rust); }
+  .al-metric-v.al-cap { color: var(--gold); }
+  .al-bet { display: block; }
   .al-empty { padding: var(--space-6) 0; font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid); }
   .al-page-pad { height: 48px; }
 </style>
@@ -143,18 +152,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyd2FsY3VvZHd4c3lucnBpcWpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0NzMyNzQsImV4cCI6MjA5MjA0OTI3NH0.HjHkM1Ir9LGutCfAEQsOWOjQ6I5-otzGoReLvrPs6iQ';
   const sb = (typeof supabase !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
 
-  // Kelly fraction presets
-  const FRACTIONS = [
-    { key: 'quarter', label: '\u00bc Kelly', value: 0.25 },
-    { key: 'half',    label: '\u00bd Kelly', value: 0.50 },
-    { key: 'full',    label: 'Full Kelly',   value: 1.00 },
+  // Objective presets — the tilt (β) decides WHAT gets the biggest slices.
+  // weight = win_prob * decimal_odds^beta
+  //   beta 0   -> weight = win prob            (favor most likely)
+  //   beta 0.5 -> weight = win_prob * sqrt(odds)
+  //   beta 1   -> weight = win_prob * odds     (favor expected payout)
+  const PRESETS = [
+    { key: 'conservative', label: 'Conservative', beta: 0.0,
+      blurb: 'Weights toward the highest win probability.' },
+    { key: 'moderate',     label: 'Moderate',     beta: 0.5,
+      blurb: 'Balances win probability and payout.' },
+    { key: 'aggressive',   label: 'Aggressive',   beta: 1.0,
+      blurb: 'Weights toward the highest expected payout.' },
   ];
 
   const state = {
     legs: [], weeks: [], week: null,
-    bankroll: 1000,
-    fractionKey: 'half',
-    capPct: 5,
+    amount: 1000,          // total the user wants to bet, split 100%
+    presetKey: 'moderate',
     filters: { market: null, aplusOnly: false },
     loading: true, error: false,
   };
@@ -172,9 +187,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const v = Math.round(Number(n) || 0);
     return v.toLocaleString('en-US');
   }
-  function fractionValue() {
-    const f = FRACTIONS.find(f => f.key === state.fractionKey);
-    return f ? f.value : 0.5;
+  function currentPreset() {
+    return PRESETS.find(p => p.key === state.presetKey) || PRESETS[1];
   }
 
   function renderBadge(tier) {
@@ -244,13 +258,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ── Kelly sizing ─────────────────────────────────────────────
-  // full Kelly fraction of bankroll for win prob p at decimal odds dec.
-  function fullKelly(p, dec) {
-    if (!(p > 0) || !(dec > 1)) return 0;
-    const b = dec - 1;
-    return (b * p - (1 - p)) / b;   // = (p*dec - 1) / (dec - 1)
-  }
-
   function matchesFilters(leg) {
     if (state.week != null && leg.week !== state.week) return false;
     if (state.filters.aplusOnly && leg.tier !== 'A+') return false;
@@ -259,22 +266,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function computeRows() {
-    const bankroll = Number(state.bankroll) || 0;
-    const frac = fractionValue();
-    const cap = (Number(state.capPct) || 0) / 100;
-    const rows = [];
+    const amount = Number(state.amount) || 0;
+    const beta = currentPreset().beta;
+
+    // Build candidates with a weight = win_prob * decimal_odds^beta.
+    const cand = [];
     for (const leg of state.legs) {
       if (!matchesFilters(leg)) continue;
       const p = leg.our_prob, dec = leg.decimal_odds;
-      const fk = fullKelly(p, dec);
-      if (!(fk > 0)) continue;                 // +EV picks only
-      let stakeFrac = frac * fk;
-      if (cap > 0) stakeFrac = Math.min(stakeFrac, cap);
-      if (!(stakeFrac > 0)) continue;
-      const stake = bankroll * stakeFrac;
-      const ev = (p * dec - 1);                // expected return per $1 staked
-      rows.push({ leg, p, dec, fk, stakeFrac, stake, ev });
+      if (!(p > 0) || !(dec > 1)) continue;
+      const weight = p * Math.pow(dec, beta);
+      if (!(weight > 0)) continue;
+      cand.push({ leg, p, dec, weight,
+                  edge: (leg.edge != null ? leg.edge : null),
+                  ev: (p * dec - 1) });
     }
+
+    const totalW = cand.reduce((s, c) => s + c.weight, 0);
+    const rows = cand.map(c => {
+      const share = totalW > 0 ? c.weight / totalW : 0;   // fraction of the pot
+      const stake = amount * share;
+      return { ...c, share, stake, payout: stake * c.dec };
+    });
+    // Biggest slices on top — this is where the preset's tilt shows.
     rows.sort((a, b) => b.stake - a.stake);
     return rows;
   }
@@ -284,42 +298,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `
       <div class="al-intro">
         <p class="al-eyebrow">— Bankroll Allocator</p>
-        <h1 class="al-headline">Size every bet. Not by gut.</h1>
+        <h1 class="al-headline">Your bet, divvied up.</h1>
         <p class="al-sub">
-          Enter one bankroll and every +edge pick on the board is sized by fractional
-          Kelly — bigger where the model's win probability most outruns the price, zero
-          where there's no edge. Half-Kelly by default, because full Kelly is right in
-          theory and brutal in practice.
+          Enter what you want to wager in total, pick how you want it weighted, and
+          every play on the board gets a slice. Conservative leans on the surest
+          picks, Aggressive chases the biggest payouts, Moderate splits the
+          difference — the whole amount always gets allocated.
         </p>
       </div>`;
   }
 
   function controlsHTML() {
-    const fracPills = FRACTIONS.map(f =>
-      `<button type="button" class="ll-filter-pill al-frac-pill${state.fractionKey === f.key ? ' active' : ''}"
-               data-frac="${f.key}" aria-pressed="${state.fractionKey === f.key ? 'true' : 'false'}">${f.label}</button>`
+    const presetPills = PRESETS.map(p =>
+      `<button type="button" class="ll-filter-pill al-preset-pill${state.presetKey === p.key ? ' active' : ''}"
+               data-preset="${p.key}" aria-pressed="${state.presetKey === p.key ? 'true' : 'false'}">${p.label}</button>`
     ).join('');
     return `
       <div class="al-controls">
         <div>
-          <label class="al-field-label" for="al-bankroll">Bankroll</label>
+          <label class="al-field-label" for="al-amount">Amount to bet</label>
           <div class="al-money-wrap">
             <span class="al-prefix">$</span>
-            <input class="al-input al-money" id="al-bankroll" type="text" inputmode="numeric"
-                   value="${esc(fmtMoney(state.bankroll))}" aria-label="Bankroll in dollars">
+            <input class="al-input al-money" id="al-amount" type="text" inputmode="numeric"
+                   value="${esc(fmtMoney(state.amount))}" aria-label="Total amount to bet, in dollars">
           </div>
         </div>
         <div>
-          <label class="al-field-label">Kelly fraction</label>
-          <div class="al-frac">${fracPills}</div>
-        </div>
-        <div>
-          <label class="al-field-label" for="al-cap">Max per bet</label>
-          <div class="al-cap-wrap">
-            <input class="al-input" id="al-cap" type="text" inputmode="numeric"
-                   value="${esc(String(state.capPct))}" aria-label="Maximum stake per bet as percent of bankroll">
-            <span class="al-suffix">%</span>
-          </div>
+          <label class="al-field-label">Weighting</label>
+          <div class="al-frac">${presetPills}</div>
+          <p class="al-hint">${esc(currentPreset().blurb)}</p>
         </div>
       </div>`;
   }
@@ -352,22 +359,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function summaryHTML(rows) {
-    const bankroll = Number(state.bankroll) || 0;
-    const totalStake = rows.reduce((s, r) => s + r.stake, 0);
-    const totalEV = rows.reduce((s, r) => s + r.stake * r.ev, 0);
-    const pct = bankroll > 0 ? (totalStake / bankroll * 100) : 0;
-    const over = pct > 100.5;
-    const warn = over ? `
-      <div class="al-warn">
-        These stakes total ${pct.toFixed(0)}% of your bankroll — more than you can place at once.
-        Kelly sizes each bet as if it's the only one, so treat this as sizing across the week as
-        bets settle, or lower the Kelly fraction / per-bet cap to fit it all today.
-      </div>` : '';
+    const totalStake  = rows.reduce((s, r) => s + r.stake, 0);
+    const totalEV     = rows.reduce((s, r) => s + r.stake * r.ev, 0);
+    const allWinPay   = rows.reduce((s, r) => s + r.payout, 0);   // if every leg hits
     return `
-      ${warn}
       <div class="al-summary">
         <div class="al-summary-stat">
-          <span class="al-summary-k">Total to stake</span>
+          <span class="al-summary-k">Total allocated</span>
           <span class="al-summary-v al-hero">$${fmtMoney(totalStake)}</span>
         </div>
         <div class="al-summary-stat">
@@ -375,8 +373,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="al-summary-v">${rows.length}</span>
         </div>
         <div class="al-summary-stat">
-          <span class="al-summary-k">Bankroll deployed</span>
-          <span class="al-summary-v">${pct.toFixed(1)}%</span>
+          <span class="al-summary-k">If every bet wins</span>
+          <span class="al-summary-v">$${fmtMoney(allWinPay)}</span>
         </div>
         <div class="al-summary-stat">
           <span class="al-summary-k">Model expected profit</span>
@@ -387,23 +385,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function rowHTML(r) {
     const leg = r.leg;
-    const price = leg.price_american != null ? fmtSigned(leg.price_american) : '';
+    const price = leg.price_american != null ? fmtSigned(leg.price_american) : '\u2014';
     const betBtn = (leg.book && leg.book.url)
-      ? `<a class="ll-bet-button al-row-bet" href="${esc(leg.book.url)}" target="_blank" rel="noopener noreferrer"
-            aria-label="Bet at ${esc(leg.book.name)} (opens in new tab)">Bet $${fmtMoney(r.stake)} at ${esc(leg.book.name)}${price ? ' ' + price : ''} \u2192</a>`
+      ? `<a class="ll-bet-button al-bet" href="${esc(leg.book.url)}" target="_blank" rel="noopener noreferrer"
+            aria-label="Bet at ${esc(leg.book.name)} (opens in new tab)">Bet $${fmtMoney(r.stake)} at ${esc(leg.book.name)}${leg.price_american != null ? ' ' + price : ''} \u2192</a>`
       : '';
     return `
-      <article class="ll-row">
-        <div class="ll-row-header" style="align-items:center;cursor:default;">
+      <article class="ll-row al-card">
+        <div class="al-head">
           ${renderBadge(leg.tier)}
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
             <div class="ll-row-pick">${pickText(leg)}</div>
           </div>
-          <div class="al-row-stake">
+          <div class="al-stake">
             <div class="al-stake-amt">$${fmtMoney(r.stake)}</div>
-            <div class="al-stake-sub">${(r.p * 100).toFixed(0)}% win \u00b7 ${price || '\u2014'} \u00b7 ${(r.stakeFrac * 100).toFixed(1)}% roll</div>
+            <div class="al-stake-lbl">${(r.share * 100).toFixed(1)}% of pot</div>
           </div>
+        </div>
+        <div class="al-metrics">
+          <div class="al-metric"><span class="al-metric-k">Win prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
+          <div class="al-metric"><span class="al-metric-k">Price</span><span class="al-metric-v">${price}</span></div>
+          <div class="al-metric"><span class="al-metric-k">Returns if it hits</span><span class="al-metric-v al-pos">$${fmtMoney(r.payout)}</span></div>
         </div>
         ${betBtn}
       </article>`;
@@ -411,9 +414,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function listHTML(rows) {
     if (!rows.length) {
-      const bankroll = Number(state.bankroll) || 0;
-      if (!(bankroll > 0)) return `<div class="al-empty">Enter a bankroll above to size the board.</div>`;
-      return `<div class="al-empty">No +edge bets match these filters right now. Try clearing a filter or switching weeks.</div>`;
+      const amount = Number(state.amount) || 0;
+      if (!(amount > 0)) return `<div class="al-empty">Enter an amount above to split across the board.</div>`;
+      return `<div class="al-empty">No bets match these filters right now. Try clearing a filter or switching weeks.</div>`;
     }
     return rows.map(rowHTML).join('');
   }
@@ -449,24 +452,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function bindInputs() {
-    const bank = document.getElementById('al-bankroll');
-    if (bank) {
-      bank.addEventListener('input', () => {
-        const digits = bank.value.replace(/[^0-9]/g, '');
-        state.bankroll = digits ? parseInt(digits, 10) : 0;
+    const amt = document.getElementById('al-amount');
+    if (amt) {
+      amt.addEventListener('input', () => {
+        const digits = amt.value.replace(/[^0-9]/g, '');
+        state.amount = digits ? parseInt(digits, 10) : 0;
         recompute();
       });
-      bank.addEventListener('blur', () => { bank.value = fmtMoney(state.bankroll); });
-    }
-    const cap = document.getElementById('al-cap');
-    if (cap) {
-      cap.addEventListener('input', () => {
-        const digits = cap.value.replace(/[^0-9]/g, '');
-        let v = digits ? parseInt(digits, 10) : 0;
-        if (v > 100) v = 100;
-        state.capPct = v;
-        recompute();
-      });
+      amt.addEventListener('blur', () => { amt.value = fmtMoney(state.amount); });
     }
   }
 
@@ -476,13 +469,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       <header class="ll-paywall-header">
         <div class="ll-paywall-eyebrow">— Bankroll Allocator</div>
         <h1 class="ll-paywall-headline">
-          <span class="ll-paywall-headline-1">Size every bet.</span>
-          <span class="ll-paywall-headline-2">Against your bankroll.</span>
+          <span class="ll-paywall-headline-1">Your bet,</span>
+          <span class="ll-paywall-headline-2">divvied up.</span>
         </h1>
         <p class="ll-paywall-body">
-          Enter one bankroll and every +edge pick is sized by fractional Kelly — the
-          math sharps use to bet more where the edge is bigger and nothing where it
-          isn't. Updates as the board re-grades against the current best line.
+          Enter what you want to wager, choose Conservative, Moderate, or Aggressive,
+          and every play on the board gets a slice — leaning safe, chasing payouts, or
+          splitting the difference. Updates as the board re-grades against the line.
         </p>
       </header>
 
@@ -531,11 +524,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Events (delegated; pills + week tabs) ────────────────────
   document.addEventListener('click', (e) => {
-    const frac = e.target.closest('.al-frac-pill[data-frac]');
-    if (frac) { state.fractionKey = frac.dataset.frac; render(); return; }
+    const preset = e.target.closest('.al-preset-pill[data-preset]');
+    if (preset) { state.presetKey = preset.dataset.preset; render(); return; }
 
     const fpill = e.target.closest('.ll-filter-pill[data-filter]');
-    if (fpill && !fpill.classList.contains('al-frac-pill')) {
+    if (fpill && !fpill.classList.contains('al-preset-pill')) {
       const key = fpill.dataset.filter;
       const f = state.filters;
       if (key === 'all') { f.market = null; f.aplusOnly = false; }
