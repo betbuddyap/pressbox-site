@@ -70,7 +70,9 @@
 
   /* Bet rows reuse .ll-row; the stake column is the hero */
   .al-card { overflow: hidden; }
-  .al-head { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-4) var(--space-3); }
+  .al-head { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-4) var(--space-3); width: 100%; background: transparent; border: none; text-align: left; font-family: inherit; cursor: pointer; }
+  .al-head:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+  .ll-accordion .ll-bet-button { margin-top: var(--space-3); }
   .al-stake { margin-left: auto; flex: 0 0 auto; text-align: right; padding-left: var(--space-3); }
   .al-stake-amt { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); line-height: 1; }
   .al-stake-lbl { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-light); margin-top: 2px; }
@@ -387,6 +389,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>`;
   }
 
+  function bookRowHTML(b) {
+    if (!b || !b.book) return '';
+    const url  = b.book.url || '#';
+    const name = esc(b.book.name || '?');
+    const line = esc(b.line || '');
+    const deltaClass =
+      b.delta === 'match' ? 'll-book-delta--match'
+      : (b.delta && String(b.delta).startsWith('+')) ? 'll-book-delta--better'
+      : 'll-book-delta--worse';
+    return `
+      <a class="ll-book-row" href="${esc(url)}" target="_blank" rel="noopener noreferrer"
+         aria-label="Bet at ${name} (opens in new tab)">
+        <span class="ll-book-name">${name}
+          <svg class="ll-book-name-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M6 4h6v6M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>
+          <span class="ll-book-line">${line}</span>
+          <span class="${deltaClass}"> (${esc(b.delta)})</span>
+        </span>
+      </a>`;
+  }
+
+  function otherBooksHTML(leg) {
+    const all = Array.isArray(leg.other_books) ? leg.other_books : [];
+    // Drop one instance of the book already shown on the bet button (the best).
+    const primary = leg.book && leg.book.name;
+    let hid = false;
+    const others = all.filter(b => {
+      if (!hid && b.book && b.book.name === primary) { hid = true; return false; }
+      return true;
+    });
+    if (!others.length) return '';
+    return `
+      <div class="ll-other-books">
+        <div class="ll-accordion-section-label" style="margin:0 0 var(--space-2);">Other books</div>
+        ${others.map(bookRowHTML).join('')}
+      </div>`;
+  }
+
   function rowHTML(r) {
     const leg = r.leg;
     const price = leg.price_american != null ? fmtSigned(leg.price_american) : '\u2014';
@@ -395,8 +438,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             aria-label="Bet at ${esc(leg.book.name)} (opens in new tab)">Bet $${fmtMoney(r.stake)} at ${esc(leg.book.name)}${leg.price_american != null ? ' ' + price : ''} \u2192</a>`
       : '';
     return `
-      <article class="ll-row al-card">
-        <div class="al-head">
+      <article class="ll-row al-card" aria-expanded="false">
+        <button type="button" class="al-head" data-action="toggle-card" aria-expanded="false">
           ${renderBadge(leg.tier)}
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
@@ -406,13 +449,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="al-stake-amt">$${fmtMoney(r.stake)}</div>
             <div class="al-stake-lbl">${(r.share * 100).toFixed(1)}% of pot</div>
           </div>
-        </div>
+          <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
         <div class="al-metrics">
           <div class="al-metric"><span class="al-metric-k">Win prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
           <div class="al-metric"><span class="al-metric-k">Price</span><span class="al-metric-v">${price}</span></div>
           <div class="al-metric"><span class="al-metric-k">Returns if it hits</span><span class="al-metric-v al-pos">$${fmtMoney(r.payout)}</span></div>
         </div>
-        ${betBtn}
+        <div class="ll-accordion">
+          ${otherBooksHTML(leg)}
+          ${betBtn}
+        </div>
       </article>`;
   }
 
@@ -528,6 +577,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Events (delegated; pills + week tabs) ────────────────────
   document.addEventListener('click', (e) => {
+    const head = e.target.closest('[data-action="toggle-card"]');
+    if (head) {
+      const row = head.closest('.ll-row');
+      const open = row.getAttribute('aria-expanded') === 'true';
+      row.setAttribute('aria-expanded', open ? 'false' : 'true');
+      head.setAttribute('aria-expanded', open ? 'false' : 'true');
+      return;
+    }
+
     const preset = e.target.closest('.al-preset-pill[data-preset]');
     if (preset) { state.presetKey = preset.dataset.preset; render(); return; }
 
