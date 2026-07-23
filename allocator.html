@@ -172,6 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Config (identical base to live-lines / parlay) ───────────
   const API_BASE  = 'https://betbuddy-backend.onrender.com';
   const BOARD_URL = `${API_BASE}/parlay/board`;
+  const PRESETS_URL = `${API_BASE}/parlay/presets`;
   const SEASON    = 2026;
 
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
@@ -277,41 +278,43 @@ document.addEventListener('DOMContentLoaded', async () => {
       const weeks = [...new Set(legs.map(l => l.week).filter(w => w != null))].sort((a, b) => a - b);
       state.weeks = weeks;
       if (state.week == null) state.week = (payload.week != null && weeks.includes(payload.week)) ? payload.week : (weeks[0] ?? null);
-      await fetchParlays();
+      // Show the straights immediately — don't make the page wait on parlays.
       state.loading = false;
       render();
+      // Parlays load in the background and fill in when ready.
+      fetchParlays().then(render).catch(() => {});
     } catch (e) {
       state.loading = false; state.error = true; render();
     }
   }
 
-  // Roll a parlay or two into the pool. Tickets come from /parlay/prebuilt,
-  // scoped to the selected week, so their combined win prob + combined odds feed
-  // the exact same weight = p * odds^beta the straight bets use.
+  // Roll a parlay or two into the pool. Primary source is ONE /parlay/presets
+  // call (it builds the leg pool once and returns the whole gallery), so this is
+  // a single round-trip, not one build per ticket. Combined win prob + combined
+  // odds feed the same weight = p * odds^beta the straight bets use.
 
-  // Signature of a ticket = its sorted leg ids. Two goals can resolve to the
-  // SAME legs on a thin slate, so we dedupe on this — never on the label.
+  // Signature of a ticket = its sorted leg ids, for de-duping tickets that
+  // resolve to the same legs on a thin slate.
   function _legSig(legs) {
     return (legs || []).map(l => l.leg_id).sort().join('|');
   }
 
-  function _normPrebuilt(pb, week, goal) {
-    const c = pb.combined || {};
-    const bb = pb.best_book || null;
-    const nameByGoal = { balance: 'Best', max_return: 'Longshot', max_win: 'Safest' };
+  function _normTicket(src, week, opts) {
+    const c = src.combined || {};
+    const bb = src.best_book || null;
     return {
       is_parlay:      true,
-      parlay_id:      `pb_${goal}_${pb.leg_count}`,
-      name:           nameByGoal[goal] || 'Parlay',
-      ptype:          goal,
-      subtitle:       '',
-      leg_count:      pb.leg_count,
+      parlay_id:      opts.id,
+      name:           opts.name || 'Parlay',
+      ptype:          opts.ptype,
+      subtitle:       opts.subtitle || '',
+      leg_count:      src.leg_count,
       week:           week,
       our_prob:       c.our_prob,
       decimal_odds:   c.decimal_odds,
       price_american: c.american_odds,
       edge:           (c.edge_vs_market != null ? c.edge_vs_market : null),
-      legs:           Array.isArray(pb.legs) ? pb.legs : [],
+      legs:           Array.isArray(src.legs) ? src.legs : [],
       book:           bb ? { name: bb.book, url: bb.url } : null,
     };
   }
@@ -326,33 +329,56 @@ document.addEventListener('DOMContentLoaded', async () => {
       const valid = x => x && x.our_prob != null && x.decimal_odds != null
                            && (x.legs || []).length >= 2;
 
-      // Ask prebuilt for a couple of DIFFERENT tickets for THIS week. 3-leg
-      // first (Best value + Longshot), then 2-leg for thin slates. On a short
-      // week a 3-leg request returns however many independent legs exist, so
-      // even a 2-game week still yields a ticket. Dedupe on the actual leg set.
-      const reqs = [
-        { legs: 3, goal: 'balance' },
-        { legs: 3, goal: 'max_return' },
-        { legs: 2, goal: 'max_return' },
-        { legs: 2, goal: 'balance' },
-      ];
-      const out = [], seen = new Set();
-      for (const rq of reqs) {
-        if (out.length >= 2) break;
+      const items = [], seen = new Set();
+
+      // Primary: one presets call → pick two DISTINCT tickets (different
+      // character when possible, always different leg sets).
+      try {
+        const res = await fetch(`${PRESETS_URL}?season=${SEASON}${wq}`, { credentials: 'omit', headers });
+        if (res.ok) {
+          const payload = await res.json();
+          const wk = payload.week != null ? payload.week : state.week;
+          const pref = ['best_3','longshot_3','safest_3','best_4','longshot_4','safest_4',
+                        'best_5','longshot_5','safest_5'];
+          const rank = id => { const i = pref.indexOf(id); return i === -1 ? 99 : i; };
+          const gallery = (payload.presets || []).slice().sort((a, b) => rank(a.id) - rank(b.id));
+          const types = new Set();
+          for (const pre of gallery) {                 // distinct type + legs
+            const it = _normTicket(pre, wk, { id: pre.id, name: pre.name, ptype: pre.type, subtitle: pre.subtitle });
+            const sig = _legSig(it.legs);
+            if (!valid(it) || seen.has(sig) || types.has(it.ptype)) continue;
+            seen.add(sig); types.add(it.ptype); items.push(it);
+            if (items.length >= 2) break;
+          }
+          if (items.length < 2) for (const pre of gallery) {   // fill any new leg set
+            const it = _normTicket(pre, wk, { id: pre.id, name: pre.name, ptype: pre.type, subtitle: pre.subtitle });
+            const sig = _legSig(it.legs);
+            if (!valid(it) || seen.has(sig)) continue;
+            seen.add(sig); items.push(it);
+            if (items.length >= 2) break;
+          }
+        }
+      } catch (_) { /* fall through to fallback */ }
+
+      // Fallback (thin week only): one 2-leg prebuilt so the week still gets a
+      // swing when presets couldn't assemble a full ticket.
+      if (items.length < 2) {
         try {
-          const r = await fetch(
-            `${API_BASE}/parlay/prebuilt?season=${SEASON}&legs=${rq.legs}&bet_type=all&goal=${rq.goal}${wq}`,
-            { credentials: 'omit', headers });
-          if (!r.ok) continue;
-          const pb = await r.json();
-          if (!pb || !Array.isArray(pb.legs)) continue;
-          const it = _normPrebuilt(pb, pb.week != null ? pb.week : state.week, rq.goal);
-          const sig = _legSig(it.legs);
-          if (!valid(it) || seen.has(sig)) continue;
-          seen.add(sig); out.push(it);
-        } catch (_) { /* skip this request */ }
+          const r2 = await fetch(`${API_BASE}/parlay/prebuilt?season=${SEASON}&legs=2&bet_type=all&goal=max_return${wq}`,
+                                 { credentials: 'omit', headers });
+          if (r2.ok) {
+            const pb = await r2.json();
+            if (pb && Array.isArray(pb.legs)) {
+              const it = _normTicket(pb, pb.week != null ? pb.week : state.week,
+                                     { id: 'pb_max_return', name: 'Longshot', ptype: 'max_return' });
+              const sig = _legSig(it.legs);
+              if (valid(it) && !seen.has(sig)) { seen.add(sig); items.push(it); }
+            }
+          }
+        } catch (_) { /* ignore */ }
       }
-      state.parlays = out.slice(0, 2);
+
+      state.parlays = items.slice(0, 2);
     } catch (e) {
       state.parlays = [];
     }
@@ -789,10 +815,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const parToggle = e.target.closest('[data-action="toggle-parlays"]');
     if (parToggle) {
       state.includeParlays = !state.includeParlays;
+      render();   // reflect the toggle at once
       if (state.includeParlays && !state.parlays.length) {
-        fetchParlays().then(render);
-      } else {
-        render();
+        fetchParlays().then(render).catch(() => {});
       }
       return;
     }
@@ -814,8 +839,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const wtab = e.target.closest('.ll-week-tab[data-week]');
     if (wtab) {
       state.week = Number(wtab.dataset.week);
-      // Parlays are single-slate; refresh them for the newly selected week.
-      fetchParlays().then(render);
+      state.parlays = [];   // clear last week's tickets so they don't linger
+      render();             // new week's straights show immediately
+      // Parlays are single-slate; refresh them for the new week in the background.
+      fetchParlays().then(render).catch(() => {});
       return;
     }
   });
