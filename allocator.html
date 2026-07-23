@@ -73,10 +73,10 @@
   .ll-accordion .ll-bet-button { margin-top: var(--space-3); }
   .al-stake { margin-left: auto; flex: 0 0 auto; text-align: right; padding-left: var(--space-3); }
   .al-stake-amt { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); line-height: 1; }
-  .al-stake-lbl { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-light); margin-top: 2px; }
+  .al-stake-lbl { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); margin-top: 2px; }
   .al-metrics { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); padding: 0 var(--space-4) var(--space-4); }
   .al-metric { display: flex; flex-direction: column; gap: 2px; }
-  .al-metric-k { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-light); }
+  .al-metric-k { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); }
   .al-metric-v { font-family: var(--sans); font-weight: var(--weight-semi); font-size: var(--text-sm); color: var(--ink); }
   .al-metric-v.al-pos { color: var(--sage); }
   .al-metric-v.al-neg { color: var(--rust); }
@@ -299,24 +299,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // Pick two parlays of DIFFERENT character (e.g. Best + Longshot), preferring
-  // the 3-leg versions, so the mix spans a safe-ish ticket and a swing.
+  // Signature of a ticket = its sorted leg ids. Two "different" presets can
+  // resolve to the SAME legs on a thin slate (only one 3-leg ticket exists),
+  // so we dedupe on this, never on the preset label.
+  function _legSig(legs) {
+    return (legs || []).map(l => l.leg_id).sort().join('|');
+  }
+
+  // Pick up to two parlays with DIFFERENT leg sets, preferring the 3-leg
+  // versions and different character (Best vs Longshot) when the board is deep
+  // enough to make them genuinely distinct tickets.
   function _pickTwoParlays(presets) {
     if (!Array.isArray(presets) || !presets.length) return [];
     const pref = ['best_3','longshot_3','safest_3','best_4','longshot_4','safest_4',
                   'best_5','longshot_5','safest_5'];
     const rank = id => { const i = pref.indexOf(id); return i === -1 ? 99 : i; };
     const sorted = [...presets].sort((a, b) => rank(a.id) - rank(b.id));
-    const out = [], types = new Set();
-    for (const p of sorted) {                 // one per type first, for variety
-      if (types.has(p.type)) continue;
-      out.push(p); types.add(p.type);
+    const out = [], seenSig = new Set(), seenType = new Set();
+    for (const p of sorted) {                 // distinct type AND distinct legs
+      const sig = _legSig(p.legs);
+      if (seenSig.has(sig) || seenType.has(p.type)) continue;
+      out.push(p); seenSig.add(sig); seenType.add(p.type);
       if (out.length >= 2) break;
     }
-    if (out.length < 2) for (const p of sorted) {   // fill if <2 distinct types
-      if (!out.includes(p)) { out.push(p); if (out.length >= 2) break; }
+    if (out.length < 2) for (const p of sorted) {   // fill with any new leg set
+      const sig = _legSig(p.legs);
+      if (seenSig.has(sig)) continue;
+      out.push(p); seenSig.add(sig);
+      if (out.length >= 2) break;
     }
     return out.slice(0, 2);
+  }
+
+  function _normPrebuilt(pb, week, goal) {
+    const c = pb.combined || {};
+    const bb = pb.best_book || null;   // prebuilt defers best-book; may be null
+    return {
+      is_parlay:     true,
+      parlay_id:     `pb_${goal}_${pb.leg_count}`,
+      name:          goal === 'max_return' ? 'Longshot' : 'Value',
+      ptype:         goal,
+      subtitle:      '',
+      leg_count:     pb.leg_count,
+      week:          week,
+      our_prob:      c.our_prob,
+      decimal_odds:  c.decimal_odds,
+      price_american: c.american_odds,
+      edge:          (c.edge_vs_market != null ? c.edge_vs_market : null),
+      legs:          Array.isArray(pb.legs) ? pb.legs : [],
+      book:          bb ? { name: bb.book, url: bb.url } : null,
+    };
   }
 
   async function fetchParlays() {
@@ -326,13 +358,39 @@ document.addEventListener('DOMContentLoaded', async () => {
       const token = await getAccessToken();
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const wq = state.week != null ? `&week=${state.week}` : '';
+      const valid = x => x && x.our_prob != null && x.decimal_odds != null;
+
+      // 1) 3+ leg gallery from presets.
+      let items = [], wk = state.week;
       const res = await fetch(`${PRESETS_URL}?season=${SEASON}${wq}`, { credentials: 'omit', headers });
-      if (!res.ok) { state.parlays = []; return; }
-      const payload = await res.json();
-      const wk = payload.week != null ? payload.week : state.week;
-      state.parlays = _pickTwoParlays(payload.presets || [])
-        .map(p => _normParlay(p, wk))
-        .filter(x => x.our_prob != null && x.decimal_odds != null);
+      if (res.ok) {
+        const payload = await res.json();
+        wk = payload.week != null ? payload.week : state.week;
+        items = _pickTwoParlays(payload.presets || [])
+          .map(p => _normParlay(p, wk)).filter(valid);
+      }
+
+      // 2) Fallback: fill up to two DISTINCT tickets with 2-leg parlays so thin
+      //    slates (and early weeks) still get a swing to allocate to.
+      if (items.length < 2) {
+        const seen = new Set(items.map(it => _legSig(it.legs)));
+        for (const goal of ['max_return', 'balance']) {
+          if (items.length >= 2) break;
+          try {
+            const r2 = await fetch(`${API_BASE}/parlay/prebuilt?season=${SEASON}&legs=2&goal=${goal}${wq}`,
+                                   { credentials: 'omit', headers });
+            if (!r2.ok) continue;
+            const pb = await r2.json();
+            if (!pb || !Array.isArray(pb.legs) || pb.legs.length < 2) continue;
+            const it = _normPrebuilt(pb, pb.week != null ? pb.week : wk, goal);
+            const sig = _legSig(it.legs);
+            if (seen.has(sig) || !valid(it)) continue;
+            seen.add(sig); items.push(it);
+          } catch (_) { /* ignore one goal */ }
+        }
+      }
+
+      state.parlays = items.slice(0, 2);
     } catch (e) {
       state.parlays = [];
     }
