@@ -162,7 +162,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Config (identical base to live-lines / parlay) ───────────
   const API_BASE  = 'https://betbuddy-backend.onrender.com';
   const BOARD_URL = `${API_BASE}/parlay/board`;
-  const PRESETS_URL = `${API_BASE}/parlay/presets`;
   const SEASON    = 2026;
 
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
@@ -276,78 +275,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Roll a parlay or two into the pool. Pre-built tickets from /parlay/presets
-  // (single-slate by design) become allocatable items: combined win prob + combined
-  // odds feed the exact same weight = p * odds^beta the straight bets use.
-  function _normParlay(pre, week) {
-    const c = pre.combined || {};
-    const bb = pre.best_book || null;
-    return {
-      is_parlay:     true,
-      parlay_id:     pre.id,
-      name:          pre.name,
-      ptype:         pre.type,
-      subtitle:      pre.subtitle,
-      leg_count:     pre.leg_count,
-      week:          week,
-      our_prob:      c.our_prob,
-      decimal_odds:  c.decimal_odds,
-      price_american: c.american_odds,
-      edge:          (c.edge_vs_market != null ? c.edge_vs_market : null),
-      legs:          Array.isArray(pre.legs) ? pre.legs : [],
-      book:          bb ? { name: bb.book, url: bb.url } : null,
-    };
-  }
+  // Roll a parlay or two into the pool. Tickets come from /parlay/prebuilt,
+  // scoped to the selected week, so their combined win prob + combined odds feed
+  // the exact same weight = p * odds^beta the straight bets use.
 
-  // Signature of a ticket = its sorted leg ids. Two "different" presets can
-  // resolve to the SAME legs on a thin slate (only one 3-leg ticket exists),
-  // so we dedupe on this, never on the preset label.
+  // Signature of a ticket = its sorted leg ids. Two goals can resolve to the
+  // SAME legs on a thin slate, so we dedupe on this — never on the label.
   function _legSig(legs) {
     return (legs || []).map(l => l.leg_id).sort().join('|');
   }
 
-  // Pick up to two parlays with DIFFERENT leg sets, preferring the 3-leg
-  // versions and different character (Best vs Longshot) when the board is deep
-  // enough to make them genuinely distinct tickets.
-  function _pickTwoParlays(presets) {
-    if (!Array.isArray(presets) || !presets.length) return [];
-    const pref = ['best_3','longshot_3','safest_3','best_4','longshot_4','safest_4',
-                  'best_5','longshot_5','safest_5'];
-    const rank = id => { const i = pref.indexOf(id); return i === -1 ? 99 : i; };
-    const sorted = [...presets].sort((a, b) => rank(a.id) - rank(b.id));
-    const out = [], seenSig = new Set(), seenType = new Set();
-    for (const p of sorted) {                 // distinct type AND distinct legs
-      const sig = _legSig(p.legs);
-      if (seenSig.has(sig) || seenType.has(p.type)) continue;
-      out.push(p); seenSig.add(sig); seenType.add(p.type);
-      if (out.length >= 2) break;
-    }
-    if (out.length < 2) for (const p of sorted) {   // fill with any new leg set
-      const sig = _legSig(p.legs);
-      if (seenSig.has(sig)) continue;
-      out.push(p); seenSig.add(sig);
-      if (out.length >= 2) break;
-    }
-    return out.slice(0, 2);
-  }
-
   function _normPrebuilt(pb, week, goal) {
     const c = pb.combined || {};
-    const bb = pb.best_book || null;   // prebuilt defers best-book; may be null
+    const bb = pb.best_book || null;
+    const nameByGoal = { balance: 'Best', max_return: 'Longshot', max_win: 'Safest' };
     return {
-      is_parlay:     true,
-      parlay_id:     `pb_${goal}_${pb.leg_count}`,
-      name:          goal === 'max_return' ? 'Longshot' : 'Value',
-      ptype:         goal,
-      subtitle:      '',
-      leg_count:     pb.leg_count,
-      week:          week,
-      our_prob:      c.our_prob,
-      decimal_odds:  c.decimal_odds,
+      is_parlay:      true,
+      parlay_id:      `pb_${goal}_${pb.leg_count}`,
+      name:           nameByGoal[goal] || 'Parlay',
+      ptype:          goal,
+      subtitle:       '',
+      leg_count:      pb.leg_count,
+      week:           week,
+      our_prob:       c.our_prob,
+      decimal_odds:   c.decimal_odds,
       price_american: c.american_odds,
-      edge:          (c.edge_vs_market != null ? c.edge_vs_market : null),
-      legs:          Array.isArray(pb.legs) ? pb.legs : [],
-      book:          bb ? { name: bb.book, url: bb.url } : null,
+      edge:           (c.edge_vs_market != null ? c.edge_vs_market : null),
+      legs:           Array.isArray(pb.legs) ? pb.legs : [],
+      book:           bb ? { name: bb.book, url: bb.url } : null,
     };
   }
 
@@ -358,39 +313,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       const token = await getAccessToken();
       if (token) headers['Authorization'] = `Bearer ${token}`;
       const wq = state.week != null ? `&week=${state.week}` : '';
-      const valid = x => x && x.our_prob != null && x.decimal_odds != null;
+      const valid = x => x && x.our_prob != null && x.decimal_odds != null
+                           && (x.legs || []).length >= 2;
 
-      // 1) 3+ leg gallery from presets.
-      let items = [], wk = state.week;
-      const res = await fetch(`${PRESETS_URL}?season=${SEASON}${wq}`, { credentials: 'omit', headers });
-      if (res.ok) {
-        const payload = await res.json();
-        wk = payload.week != null ? payload.week : state.week;
-        items = _pickTwoParlays(payload.presets || [])
-          .map(p => _normParlay(p, wk)).filter(valid);
+      // Ask prebuilt for a couple of DIFFERENT tickets for THIS week. 3-leg
+      // first (Best value + Longshot), then 2-leg for thin slates. On a short
+      // week a 3-leg request returns however many independent legs exist, so
+      // even a 2-game week still yields a ticket. Dedupe on the actual leg set.
+      const reqs = [
+        { legs: 3, goal: 'balance' },
+        { legs: 3, goal: 'max_return' },
+        { legs: 2, goal: 'max_return' },
+        { legs: 2, goal: 'balance' },
+      ];
+      const out = [], seen = new Set();
+      for (const rq of reqs) {
+        if (out.length >= 2) break;
+        try {
+          const r = await fetch(
+            `${API_BASE}/parlay/prebuilt?season=${SEASON}&legs=${rq.legs}&bet_type=all&goal=${rq.goal}${wq}`,
+            { credentials: 'omit', headers });
+          if (!r.ok) continue;
+          const pb = await r.json();
+          if (!pb || !Array.isArray(pb.legs)) continue;
+          const it = _normPrebuilt(pb, pb.week != null ? pb.week : state.week, rq.goal);
+          const sig = _legSig(it.legs);
+          if (!valid(it) || seen.has(sig)) continue;
+          seen.add(sig); out.push(it);
+        } catch (_) { /* skip this request */ }
       }
-
-      // 2) Fallback: fill up to two DISTINCT tickets with 2-leg parlays so thin
-      //    slates (and early weeks) still get a swing to allocate to.
-      if (items.length < 2) {
-        const seen = new Set(items.map(it => _legSig(it.legs)));
-        for (const goal of ['max_return', 'balance']) {
-          if (items.length >= 2) break;
-          try {
-            const r2 = await fetch(`${API_BASE}/parlay/prebuilt?season=${SEASON}&legs=2&goal=${goal}${wq}`,
-                                   { credentials: 'omit', headers });
-            if (!r2.ok) continue;
-            const pb = await r2.json();
-            if (!pb || !Array.isArray(pb.legs) || pb.legs.length < 2) continue;
-            const it = _normPrebuilt(pb, pb.week != null ? pb.week : wk, goal);
-            const sig = _legSig(it.legs);
-            if (seen.has(sig) || !valid(it)) continue;
-            seen.add(sig); items.push(it);
-          } catch (_) { /* ignore one goal */ }
-        }
-      }
-
-      state.parlays = items.slice(0, 2);
+      state.parlays = out.slice(0, 2);
     } catch (e) {
       state.parlays = [];
     }
