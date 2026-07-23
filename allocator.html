@@ -47,14 +47,15 @@
   .al-sub { font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid); margin: 0; max-width: 62ch; line-height: 1.55; }
 
   /* Controls panel */
-  .al-controls { display: grid; grid-template-columns: auto 1fr; gap: var(--space-5); align-items: start; background: var(--cream-dark); border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-5); margin-bottom: var(--space-5); }
-  @media (max-width: 720px) { .al-controls { grid-template-columns: 1fr; gap: var(--space-4); } }
+  .al-controls { display: grid; grid-template-columns: 240px 1fr; gap: var(--space-6); align-items: start; background: var(--cream-dark); border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-5); margin-bottom: var(--space-5); }
+  @media (max-width: 720px) { .al-controls { grid-template-columns: 1fr; gap: var(--space-5); } }
+  .al-controls-left { display: flex; flex-direction: column; }
   .al-field-label { display: block; font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); margin: 0 0 var(--space-2); }
-  .al-money-wrap { position: relative; display: inline-flex; align-items: center; }
-  .al-money-wrap .al-prefix { position: absolute; left: 14px; font-family: var(--sans); font-weight: var(--weight-semi); font-size: var(--text-lg); color: var(--text-mid); pointer-events: none; }
-  .al-input { font-family: var(--sans); font-weight: var(--weight-semi); font-size: var(--text-lg); color: var(--ink); background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
+  .al-money-wrap { position: relative; display: flex; align-items: center; width: 100%; }
+  .al-money-wrap .al-prefix { position: absolute; left: 13px; font-family: var(--sans); font-weight: var(--weight-regular); font-size: var(--text-base); color: var(--text-mid); pointer-events: none; }
+  .al-input { font-family: var(--sans); font-weight: var(--weight-regular); font-size: var(--text-base); color: var(--ink); background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
   .al-input:focus { outline: none; border-color: var(--gold); }
-  .al-input.al-money { padding-left: 30px; }
+  .al-input.al-money { padding-left: 26px; }
   .al-frac { display: flex; gap: var(--space-2); }
   .al-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: var(--space-2) 0 0; }
 
@@ -65,6 +66,15 @@
   .al-summary-v { font-family: var(--serif); font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); line-height: 1; }
   .al-summary-v.al-hero { color: var(--gold); }
   .al-warn { background: color-mix(in srgb, var(--rust) 14%, transparent); border: 1px solid color-mix(in srgb, var(--rust) 35%, transparent); color: var(--rust); font-family: var(--sans); font-size: var(--text-sm); line-height: 1.5; padding: 12px 14px; border-radius: var(--radius-md); margin-bottom: var(--space-4); }
+
+  /* Book allocator — how much to have at each sportsbook */
+  .al-books { background: var(--cream-dark); border: 0.5px solid var(--border); border-radius: 12px; padding: var(--space-4) var(--space-5); margin-bottom: var(--space-5); }
+  .al-books-title { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); margin-bottom: var(--space-2); }
+  .al-books-row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 0.5px solid var(--cream-mid); }
+  .al-books-row:last-child { border-bottom: none; }
+  .al-books-name { font-family: var(--sans); font-size: var(--text-base); font-weight: var(--weight-semi); color: var(--ink); text-decoration: none; }
+  a.al-books-name:hover { color: var(--gold); text-decoration: underline; }
+  .al-books-amt { font-family: var(--serif); font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--ink); }
 
   /* Bet rows reuse .ll-row; the stake column is the hero */
   .al-card { overflow: hidden; }
@@ -83,7 +93,7 @@
   .al-bet { display: block; }
 
   /* Include-parlays toggle */
-  .al-toggle { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-3); background: none; border: none; padding: 0; cursor: pointer; font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi); color: var(--text-mid); }
+  .al-toggle { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-4); background: none; border: none; padding: 0; cursor: pointer; font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi); color: var(--text-mid); }
   .al-toggle-box { width: 34px; height: 20px; border-radius: 999px; background: var(--cream-mid); border: 1px solid var(--border); position: relative; transition: background 0.15s, border-color 0.15s; flex: 0 0 auto; }
   .al-toggle-box::after { content: ''; position: absolute; top: 1px; left: 1px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: transform 0.15s; }
   .al-toggle.active { color: var(--ink); }
@@ -417,24 +427,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     ).join('');
     return `
       <div class="al-controls">
-        <div>
+        <div class="al-controls-left">
           <label class="al-field-label" for="al-amount">Amount to bet</label>
           <div class="al-money-wrap">
             <span class="al-prefix">$</span>
             <input class="al-input al-money" id="al-amount" type="text" inputmode="numeric"
                    value="${esc(fmtMoney(state.amount))}" aria-label="Total amount to bet, in dollars">
           </div>
-        </div>
-        <div>
-          <label class="al-field-label">Weighting</label>
-          <div class="al-frac">${presetPills}</div>
-          <p class="al-hint">${esc(currentPreset().blurb)}</p>
           <button type="button" class="al-toggle${state.includeParlays ? ' active' : ''}"
                   data-action="toggle-parlays" role="switch"
                   aria-checked="${state.includeParlays ? 'true' : 'false'}">
             <span class="al-toggle-box" aria-hidden="true"></span>
             Roll in a parlay or two
           </button>
+        </div>
+        <div class="al-controls-right">
+          <label class="al-field-label">Weighting</label>
+          <div class="al-frac">${presetPills}</div>
+          <p class="al-hint">${esc(currentPreset().blurb)}</p>
         </div>
       </div>`;
   }
@@ -492,6 +502,33 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="al-summary-k">If every bet wins</span>
           <span class="al-summary-v">$${fmtMoney(allWinPay)}</span>
         </div>
+      </div>`;
+  }
+
+  // Book allocator: sum every bet's stake by the book its "Bet at X" button
+  // points to, so the user knows how much to have at each sportsbook. A bet with
+  // no listed book is grouped under a clear catch-all.
+  function bookTotalsHTML(rows) {
+    if (!rows.length) return '';
+    const totals = new Map(), urls = new Map();
+    for (const r of rows) {
+      const b = r.item.book;
+      const name = (b && b.name) ? b.name : 'No book listed';
+      totals.set(name, (totals.get(name) || 0) + r.stake);
+      if (b && b.url && !urls.has(name)) urls.set(name, b.url);
+    }
+    const arr = [...totals.entries()].sort((a, b) => b[1] - a[1]);
+    const rowsHTML = arr.map(([name, amt]) => {
+      const url = urls.get(name);
+      const nameHTML = url
+        ? `<a class="al-books-name" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(name)}</a>`
+        : `<span class="al-books-name">${esc(name)}</span>`;
+      return `<div class="al-books-row">${nameHTML}<span class="al-books-amt">$${fmtMoney(amt)}</span></div>`;
+    }).join('');
+    return `
+      <div class="al-books">
+        <div class="al-books-title">What to have at each book</div>
+        ${rowsHTML}
       </div>`;
   }
 
@@ -651,16 +688,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       ${weekTabsHTML()}
       ${filtersHTML()}
       <div id="al-summary">${summaryHTML(rows)}</div>
+      <div id="al-books-wrap">${bookTotalsHTML(rows)}</div>
       <div id="al-results">${listHTML(rows)}</div>`;
     bindInputs();
   }
 
-  // Recompute only the summary + list (used on text input so focus is kept).
+  // Recompute only the summary + book totals + list (on text input, keeps focus).
   function recompute() {
     const rows = computeRows();
     const s = document.getElementById('al-summary');
+    const bw = document.getElementById('al-books-wrap');
     const l = document.getElementById('al-results');
     if (s) s.innerHTML = summaryHTML(rows);
+    if (bw) bw.innerHTML = bookTotalsHTML(rows);
     if (l) l.innerHTML = listHTML(rows);
   }
 
