@@ -9,7 +9,7 @@
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- Tokens FIRST, components AFTER — same as live-lines/parlay so cards match exactly -->
 <link rel="stylesheet" href="/css/tokens.css">
@@ -51,12 +51,10 @@
   @media (max-width: 720px) { .al-controls { grid-template-columns: 1fr; gap: var(--space-4); } }
   .al-field-label { display: block; font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); margin: 0 0 var(--space-2); }
   .al-money-wrap { position: relative; display: inline-flex; align-items: center; }
-  .al-money-wrap .al-prefix { position: absolute; left: 14px; font-family: 'JetBrains Mono', monospace; font-size: var(--text-lg); color: var(--text-mid); pointer-events: none; }
-  .al-input { font-family: 'JetBrains Mono', monospace; font-size: var(--text-lg); color: var(--ink); background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
+  .al-money-wrap .al-prefix { position: absolute; left: 14px; font-family: var(--sans); font-weight: var(--weight-semi); font-size: var(--text-lg); color: var(--text-mid); pointer-events: none; }
+  .al-input { font-family: var(--sans); font-weight: var(--weight-semi); font-size: var(--text-lg); color: var(--ink); background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
   .al-input:focus { outline: none; border-color: var(--gold); }
   .al-input.al-money { padding-left: 30px; }
-  .al-cap-wrap { position: relative; display: inline-flex; align-items: center; max-width: 130px; }
-  .al-cap-wrap .al-suffix { position: absolute; right: 14px; font-family: 'JetBrains Mono', monospace; font-size: var(--text-lg); color: var(--text-mid); pointer-events: none; }
   .al-frac { display: flex; gap: var(--space-2); }
   .al-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: var(--space-2) 0 0; }
 
@@ -79,10 +77,9 @@
   .al-metrics { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-5); padding: 0 var(--space-4) var(--space-4); }
   .al-metric { display: flex; flex-direction: column; gap: 2px; }
   .al-metric-k { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-light); }
-  .al-metric-v { font-family: 'JetBrains Mono', monospace; font-size: var(--text-sm); color: var(--ink); }
+  .al-metric-v { font-family: var(--sans); font-weight: var(--weight-semi); font-size: var(--text-sm); color: var(--ink); }
   .al-metric-v.al-pos { color: var(--sage); }
   .al-metric-v.al-neg { color: var(--rust); }
-  .al-metric-v.al-cap { color: var(--gold); }
   .al-bet { display: block; }
   .al-empty { padding: var(--space-6) 0; font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid); }
   .al-page-pad { height: 48px; }
