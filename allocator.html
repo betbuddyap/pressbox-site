@@ -81,6 +81,23 @@
   .al-metric-v.al-pos { color: var(--sage); }
   .al-metric-v.al-neg { color: var(--rust); }
   .al-bet { display: block; }
+
+  /* Include-parlays toggle */
+  .al-toggle { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-3); background: none; border: none; padding: 0; cursor: pointer; font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi); color: var(--text-mid); }
+  .al-toggle-box { width: 34px; height: 20px; border-radius: 999px; background: var(--cream-mid); border: 1px solid var(--border); position: relative; transition: background 0.15s, border-color 0.15s; flex: 0 0 auto; }
+  .al-toggle-box::after { content: ''; position: absolute; top: 1px; left: 1px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: transform 0.15s; }
+  .al-toggle.active { color: var(--ink); }
+  .al-toggle.active .al-toggle-box { background: var(--gold); border-color: var(--gold); }
+  .al-toggle.active .al-toggle-box::after { transform: translateX(14px); }
+  .al-toggle:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+  /* Parlay cards */
+  .al-badge-parlay { background: var(--gold); color: var(--ink); }
+  .al-card-parlay { border-left: 3px solid var(--gold); }
+  .al-pl-leg { padding: var(--space-2) 0; border-bottom: 0.5px solid var(--cream-mid); }
+  .al-pl-leg:last-of-type { border-bottom: none; }
+  .al-pl-leg-match { font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi); color: var(--ink); }
+  .al-pl-leg-pick { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin-top: 1px; }
   .al-empty { padding: var(--space-6) 0; font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid); }
   .al-page-pad { height: 48px; }
 </style>
@@ -145,6 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Config (identical base to live-lines / parlay) ───────────
   const API_BASE  = 'https://betbuddy-backend.onrender.com';
   const BOARD_URL = `${API_BASE}/parlay/board`;
+  const PRESETS_URL = `${API_BASE}/parlay/presets`;
   const SEASON    = 2026;
 
   const SUPABASE_URL  = 'https://brwalcuodwxsynrpiqjc.supabase.co';
@@ -166,9 +184,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   ];
 
   const state = {
-    legs: [], weeks: [], week: null,
+    legs: [], parlays: [], weeks: [], week: null,
     amount: 1000,          // total the user wants to bet, split 100%
     presetKey: 'moderate',
+    includeParlays: true,  // roll a parlay or two into the mix
     filters: { market: null, aplusOnly: false },
     loading: true, error: false,
   };
@@ -249,10 +268,73 @@ document.addEventListener('DOMContentLoaded', async () => {
       const weeks = [...new Set(legs.map(l => l.week).filter(w => w != null))].sort((a, b) => a - b);
       state.weeks = weeks;
       if (state.week == null) state.week = (payload.week != null && weeks.includes(payload.week)) ? payload.week : (weeks[0] ?? null);
+      await fetchParlays();
       state.loading = false;
       render();
     } catch (e) {
       state.loading = false; state.error = true; render();
+    }
+  }
+
+  // Roll a parlay or two into the pool. Pre-built tickets from /parlay/presets
+  // (single-slate by design) become allocatable items: combined win prob + combined
+  // odds feed the exact same weight = p * odds^beta the straight bets use.
+  function _normParlay(pre, week) {
+    const c = pre.combined || {};
+    const bb = pre.best_book || null;
+    return {
+      is_parlay:     true,
+      parlay_id:     pre.id,
+      name:          pre.name,
+      ptype:         pre.type,
+      subtitle:      pre.subtitle,
+      leg_count:     pre.leg_count,
+      week:          week,
+      our_prob:      c.our_prob,
+      decimal_odds:  c.decimal_odds,
+      price_american: c.american_odds,
+      edge:          (c.edge_vs_market != null ? c.edge_vs_market : null),
+      legs:          Array.isArray(pre.legs) ? pre.legs : [],
+      book:          bb ? { name: bb.book, url: bb.url } : null,
+    };
+  }
+
+  // Pick two parlays of DIFFERENT character (e.g. Best + Longshot), preferring
+  // the 3-leg versions, so the mix spans a safe-ish ticket and a swing.
+  function _pickTwoParlays(presets) {
+    if (!Array.isArray(presets) || !presets.length) return [];
+    const pref = ['best_3','longshot_3','safest_3','best_4','longshot_4','safest_4',
+                  'best_5','longshot_5','safest_5'];
+    const rank = id => { const i = pref.indexOf(id); return i === -1 ? 99 : i; };
+    const sorted = [...presets].sort((a, b) => rank(a.id) - rank(b.id));
+    const out = [], types = new Set();
+    for (const p of sorted) {                 // one per type first, for variety
+      if (types.has(p.type)) continue;
+      out.push(p); types.add(p.type);
+      if (out.length >= 2) break;
+    }
+    if (out.length < 2) for (const p of sorted) {   // fill if <2 distinct types
+      if (!out.includes(p)) { out.push(p); if (out.length >= 2) break; }
+    }
+    return out.slice(0, 2);
+  }
+
+  async function fetchParlays() {
+    if (!state.includeParlays) { state.parlays = []; return; }
+    try {
+      const headers = {};
+      const token = await getAccessToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const wq = state.week != null ? `&week=${state.week}` : '';
+      const res = await fetch(`${PRESETS_URL}?season=${SEASON}${wq}`, { credentials: 'omit', headers });
+      if (!res.ok) { state.parlays = []; return; }
+      const payload = await res.json();
+      const wk = payload.week != null ? payload.week : state.week;
+      state.parlays = _pickTwoParlays(payload.presets || [])
+        .map(p => _normParlay(p, wk))
+        .filter(x => x.our_prob != null && x.decimal_odds != null);
+    } catch (e) {
+      state.parlays = [];
     }
   }
 
@@ -274,11 +356,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!matchesFilters(leg)) continue;
       const p = leg.our_prob, dec = leg.decimal_odds;
       if (!(p > 0) || !(dec > 1)) continue;
-      const weight = p * Math.pow(dec, beta);
-      if (!(weight > 0)) continue;
-      cand.push({ leg, p, dec, weight,
-                  edge: (leg.edge != null ? leg.edge : null),
-                  ev: (p * dec - 1) });
+      cand.push({ item: leg, is_parlay: false, p, dec,
+                  weight: p * Math.pow(dec, beta),
+                  edge: (leg.edge != null ? leg.edge : null), ev: (p * dec - 1) });
+    }
+
+    // Parlays: single-slate, and they span markets/tiers — so only in the mix
+    // when no single-market or A+ filter is narrowing the board.
+    if (state.includeParlays && !state.filters.market && !state.filters.aplusOnly) {
+      for (const pl of state.parlays) {
+        if (state.week != null && pl.week !== state.week) continue;
+        const p = pl.our_prob, dec = pl.decimal_odds;
+        if (!(p > 0) || !(dec > 1)) continue;
+        cand.push({ item: pl, is_parlay: true, p, dec,
+                    weight: p * Math.pow(dec, beta),
+                    edge: (pl.edge != null ? pl.edge : null), ev: (p * dec - 1) });
+      }
     }
 
     const totalW = cand.reduce((s, c) => s + c.weight, 0);
@@ -326,6 +419,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           <label class="al-field-label">Weighting</label>
           <div class="al-frac">${presetPills}</div>
           <p class="al-hint">${esc(currentPreset().blurb)}</p>
+          <button type="button" class="al-toggle${state.includeParlays ? ' active' : ''}"
+                  data-action="toggle-parlays" role="switch"
+                  aria-checked="${state.includeParlays ? 'true' : 'false'}">
+            <span class="al-toggle-box" aria-hidden="true"></span>
+            Roll in a parlay or two
+          </button>
         </div>
       </div>`;
   }
@@ -427,8 +526,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>`;
   }
 
-  function rowHTML(r) {
-    const leg = r.leg;
+  function parlayBadge(item) {
+    const n = item.leg_count || (item.legs ? item.legs.length : '');
+    return `<span class="ll-badge al-badge-parlay" aria-label="${esc(item.name || 'Parlay')} parlay, ${n} legs">${n}\u00d7</span>`;
+  }
+
+  function parlayLegHTML(leg) {
+    return `
+      <div class="al-pl-leg">
+        <div class="al-pl-leg-match">${esc(leg.matchup || '\u2014')}</div>
+        <div class="al-pl-leg-pick">${pickText(leg)}</div>
+      </div>`;
+  }
+
+  function straightRowHTML(r) {
+    const leg = r.item;
     const price = leg.price_american != null ? fmtSigned(leg.price_american) : '\u2014';
     const betBtn = (leg.book && leg.book.url)
       ? `<a class="ll-bet-button al-bet" href="${esc(leg.book.url)}" target="_blank" rel="noopener noreferrer"
@@ -460,6 +572,47 @@ document.addEventListener('DOMContentLoaded', async () => {
           ${betBtn}
         </div>
       </article>`;
+  }
+
+  function parlayRowHTML(r) {
+    const pl = r.item;
+    const price = pl.price_american != null ? fmtSigned(pl.price_american) : '\u2014';
+    const betBtn = (pl.book && pl.book.url)
+      ? `<a class="ll-bet-button al-bet" href="${esc(pl.book.url)}" target="_blank" rel="noopener noreferrer"
+            aria-label="Bet at ${esc(pl.book.name)} (opens in new tab)">Bet $${fmtMoney(r.stake)} at ${esc(pl.book.name)}${pl.price_american != null ? ' ' + price : ''} \u2192</a>`
+      : '';
+    const legsHTML = (pl.legs || []).map(parlayLegHTML).join('');
+    return `
+      <article class="ll-row al-card al-card-parlay" aria-expanded="false">
+        <button type="button" class="al-head" data-action="toggle-card" aria-expanded="false">
+          ${parlayBadge(pl)}
+          <div class="ll-row-content">
+            <div class="ll-row-matchup">${esc(pl.name || 'Parlay')} parlay</div>
+            <div class="ll-row-pick">${pl.leg_count || (pl.legs || []).length} legs \u00b7 <span class="ll-row-pick-num">${price}</span></div>
+          </div>
+          <div class="al-stake">
+            <div class="al-stake-amt">$${fmtMoney(r.stake)}</div>
+            <div class="al-stake-lbl">${(r.share * 100).toFixed(1)}% of pot</div>
+          </div>
+          <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="al-metrics">
+          <div class="al-metric"><span class="al-metric-k">Hit prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
+          <div class="al-metric"><span class="al-metric-k">Odds</span><span class="al-metric-v">${price}</span></div>
+          <div class="al-metric"><span class="al-metric-k">Returns if it hits</span><span class="al-metric-v al-pos">$${fmtMoney(r.payout)}</span></div>
+        </div>
+        <div class="ll-accordion">
+          <div class="ll-accordion-section-label" style="margin:0 0 var(--space-2);">The ${pl.leg_count || (pl.legs || []).length} legs</div>
+          ${legsHTML}
+          ${betBtn}
+        </div>
+      </article>`;
+  }
+
+  function rowHTML(r) {
+    return r.is_parlay ? parlayRowHTML(r) : straightRowHTML(r);
   }
 
   function listHTML(rows) {
@@ -583,6 +736,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    const parToggle = e.target.closest('[data-action="toggle-parlays"]');
+    if (parToggle) {
+      state.includeParlays = !state.includeParlays;
+      if (state.includeParlays && !state.parlays.length) {
+        fetchParlays().then(render);
+      } else {
+        render();
+      }
+      return;
+    }
+
     const preset = e.target.closest('.al-preset-pill[data-preset]');
     if (preset) { state.presetKey = preset.dataset.preset; render(); return; }
 
@@ -598,7 +762,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const wtab = e.target.closest('.ll-week-tab[data-week]');
-    if (wtab) { state.week = Number(wtab.dataset.week); render(); return; }
+    if (wtab) {
+      state.week = Number(wtab.dataset.week);
+      // Parlays are single-slate; refresh them for the newly selected week.
+      fetchParlays().then(render);
+      return;
+    }
   });
 
   // ── Init ─────────────────────────────────────────────────────
