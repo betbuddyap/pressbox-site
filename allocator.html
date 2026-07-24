@@ -706,10 +706,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     return rows.map(rowHTML).join('');
   }
 
+  // ── Loading skeleton (matches parlay's .ll-skeleton shimmer) ──
+  function skelCardHTML() {
+    const metric = (kw, vw) =>
+      `<div class="al-metric"><span class="ll-skeleton" style="width:${kw}px;height:9px;margin-bottom:4px;"></span><span class="ll-skeleton" style="width:${vw}px;height:13px;"></span></div>`;
+    return `
+      <article class="ll-row al-card" aria-hidden="true">
+        <div class="al-head" style="cursor:default;">
+          <span class="ll-skeleton ll-skeleton--badge"></span>
+          <div class="ll-row-content" style="flex:1 1 auto;">
+            <div class="ll-skeleton ll-skeleton--line-a"></div>
+            <div class="ll-skeleton ll-skeleton--line-b"></div>
+          </div>
+          <div class="al-metrics">
+            ${metric(46, 38)}${metric(34, 30)}${metric(62, 44)}
+          </div>
+          <div class="al-stake">
+            <span class="ll-skeleton" style="width:58px;height:18px;"></span>
+          </div>
+        </div>
+      </article>`;
+  }
+  function loadingHTML() {
+    const stat = (kw, vw) =>
+      `<div class="al-summary-stat"><span class="ll-skeleton" style="width:${kw}px;height:9px;"></span><span class="ll-skeleton" style="width:${vw}px;height:20px;"></span></div>`;
+    return `
+      ${introHTML()}
+      <div class="al-summary" aria-hidden="true">
+        ${stat(72, 64)}${stat(28, 26)}${stat(96, 44)}${stat(70, 58)}
+      </div>
+      <div id="al-results">
+        ${skelCardHTML()}${skelCardHTML()}${skelCardHTML()}${skelCardHTML()}
+      </div>`;
+  }
+
   // ── Top-level render ─────────────────────────────────────────
   function render() {
     if (state.loading) {
-      root.innerHTML = `${introHTML()}<div class="al-empty">Loading the board…</div>`;
+      root.innerHTML = loadingHTML();
       return;
     }
     if (state.error) {
