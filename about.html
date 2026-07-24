@@ -36,25 +36,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Design tokens (single source of truth) -->
+<link rel="stylesheet" href="/css/tokens.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background-color: #F8F5EE; min-height: 100vh; }
-  :root {
-    --cream:      #F8F5EE;
-    --cream-dark: #EFE9DC;
-    --cream-mid:  #E8E1D3;
-    --border:     #DDD6C8;
-    --text:       #1A1705;
-    --text-mid:   #6B6455;
-    --text-light: #A39A88;
-    --gold:       #B8922A;
-    --gold-light: #D4A83A;
-    --gold-pale:  #F5EDD0;
-    --ink:        #0F0E0A;
-    --serif:      'Libre Baskerville', Georgia, serif;
-    --sans:       'Source Sans 3', system-ui, sans-serif;
-    --max:        1200px;
-  }
   body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
 
   /* ── TICKER ── */
