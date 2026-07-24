@@ -468,5 +468,9 @@ init().catch(e => {
   document.getElementById('loadingState').innerHTML = '<div class="loading-text" style="color:#B87878;">Failed to load teams. Please refresh.</div>';
 });
 </script>
+
+<!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/site-chrome.js" defer></script>
 </body>
 </html>
