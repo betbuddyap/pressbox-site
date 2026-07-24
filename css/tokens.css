@@ -127,6 +127,17 @@
   --transition-base:    200ms ease;
   --transition-slow:    300ms ease;
 
+
+  /* ============================================================
+   * COMPAT ALIASES — reconcile names pages already use so every
+   * page can drop its inline :root and rely on this file alone.
+   * ============================================================ */
+
+  --text:   #1A1705;            /* legacy primary-text name (warmer than --ink) */
+  --error:  #B83A2A;            /* form/auth error text */
+  --max:    var(--max-width);   /* legacy name for container width */
+  --space-7: 28px;              /* fills the 24->32 gap (results.css uses it) */
+
 }
 
 
