@@ -810,7 +810,7 @@
           line gets a tier — A+ down to No Edge — and a best book if there's edge to bet.
           As the market moves, we re-grade every 30 minutes. <strong>The "Now" tier is
           what matters for what you're about to bet.</strong> A full board every week,
-          across seven tiers.
+          across six tiers.
         </p>
       </header>
 
@@ -884,7 +884,7 @@
       <div class="ll-paywall-after">
         <div class="ll-paywall-after-eyebrow">What's behind the gate</div>
         <p class="ll-paywall-after-body">
-          Every FBS game with an open line, graded across all seven tiers and
+          Every FBS game with an open line, graded across all six tiers and
           re-graded every 30 minutes against the current best market line.
         </p>
       </div>
