@@ -54,7 +54,7 @@
     font-family: var(--sans);
     font-size: 9px;
     font-weight: 600;
-    letter-spacing: 3px;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--gold);
     display: flex;
@@ -224,7 +224,7 @@
   /* Step walkthrough — adds a day/step eyebrow above the existing how-step */
   .how-step-eyebrow {
     font-family: var(--sans); font-size: 9px; font-weight: 600;
-    letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold);
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold);
     margin-bottom: 8px;
   }
   .steps-single { max-width: 760px; }
@@ -282,7 +282,7 @@
   .breakdown { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
   .dp-stage { max-width: 600px; margin: 44px auto 0; background: #FFFFFF; border: 0.5px solid var(--border); border-radius: 4px; padding: 16px 28px 20px; box-shadow: 0 12px 44px rgba(0,0,0,0.07); }
   .dp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--cream-mid); }
-  .dp-label { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ink); }
+  .dp-label { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); }
   .dp-vegas-head { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); }
   .dp-vegas-head strong { color: var(--ink); font-weight: 700; }
   .dp-plot { position: relative; padding: 0 12px; }
@@ -454,20 +454,20 @@
 <section class="how">
   <div class="container">
     <div class="section-eyebrow">How It Works</div>
-    <h2 class="section-title">From data to published tier — <em>your week with PressBox.</em></h2>
+    <h2 class="section-title">From data to published tier — <em>start to settled.</em></h2>
     <div class="how-steps steps-single" style="margin-top:48px;">
       <div class="how-step">
         <div class="how-step-num">01</div>
         <div>
-          <div class="how-step-eyebrow">Monday</div>
-          <div class="how-step-title">Grades drop for every open bet</div>
+          <div class="how-step-eyebrow">Release</div>
+          <div class="how-step-title">Grades publish as bets clear</div>
           <div class="how-step-desc">The five models each read the matchup. We compare every read to the market on every line — spread, total, and moneyline — and grade each gap on its own. When a read meets a proven set of criteria, that bet fires and earns its tier. Every bet on the board gets published, tier and all.</div>
         </div>
       </div>
       <div class="how-step">
         <div class="how-step-num">02</div>
         <div>
-          <div class="how-step-eyebrow">Tuesday through Saturday</div>
+          <div class="how-step-eyebrow">Live</div>
           <div class="how-step-title">Grades update every 30 minutes</div>
           <div class="how-step-desc">As books post lines, lines move, and best-book offers shift, we re-grade. Every change is journaled — you see the original release, the current state, and everything in between.</div>
         </div>
@@ -475,7 +475,7 @@
       <div class="how-step">
         <div class="how-step-num">03</div>
         <div>
-          <div class="how-step-eyebrow">Saturday</div>
+          <div class="how-step-eyebrow">Bet</div>
           <div class="how-step-title">You bet</div>
           <div class="how-step-desc">Pull up the Board. Sort by tier. Cross-reference with your bankroll and your read on the games. We name the best book on every pick.</div>
         </div>
@@ -483,7 +483,7 @@
       <div class="how-step">
         <div class="how-step-num">04</div>
         <div>
-          <div class="how-step-eyebrow">Sunday</div>
+          <div class="how-step-eyebrow">Settle</div>
           <div class="how-step-title">Results graded, the journal updates</div>
           <div class="how-step-desc">Wins, losses, pushes, voids — every pick lands on the public Results page. Nothing hidden, no curation, no after-the-fact reframing.</div>
         </div>
@@ -492,7 +492,7 @@
   </div>
 </section>
 
-<!-- 4 · WHAT YOU GET (three surfaces, shortened) -->
+<!-- 4 · WHAT YOU GET (four actionable surfaces) -->
 <section id="what-you-get" style="border-top:1px solid var(--border);background:var(--cream);">
   <div class="container" style="padding-top:80px;padding-bottom:80px;">
     <div class="section-eyebrow">What You Get</div>
@@ -509,13 +509,13 @@
     </div>
 
     <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
-      <div class="section-eyebrow" style="color:var(--gold);">03 — The History</div>
-      <p class="section-sub" style="margin-top:12px;">Every release-to-current journey on every pick. Tier upgrades, downgrades, line moves, best-book swaps — everything we did to a pick lives on the pick. You can audit any call back to its first publish.</p>
+      <div class="section-eyebrow" style="color:var(--gold);">03 — Parlay</div>
+      <p class="section-sub" style="margin-top:12px;">Build a parlay straight from live picks. Pull any legs off the board and every one is priced against the current best market line, so you see the true combined edge before you bet it. The "stack the edges" view.</p>
     </div>
 
     <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
-      <div class="section-eyebrow" style="color:var(--gold);">04 — The Breakdown <span style="color:var(--text-light);font-weight:500;">(Game Pages)</span></div>
-      <p class="section-sub" style="margin-top:12px;">Each model's read on a dot plot against the market line, the firing model highlighted when a bet is live, and the editorial write-up per game. Click any pick to go deep.</p>
+      <div class="section-eyebrow" style="color:var(--gold);">04 — Allocator</div>
+      <p class="section-sub" style="margin-top:12px;">Tell it how much you're putting in play and it splits the whole stack across the board for you — heavier on the picks with the biggest edge, lighter on the thin ones, so your money follows your best bets. Dial it Conservative, Moderate, or Aggressive; every dollar gets a home. The "how much on each" view.</p>
     </div>
   </div>
 </section>
