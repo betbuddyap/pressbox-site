@@ -228,8 +228,9 @@
 }
 
 /* Tier color mappings — used by ribbon + pick badges */
-.tier-ap   { --tier-bg: var(--gold);             --tier-fg: var(--ink); }
-.tier-a    { --tier-bg: #C0C5CC;                 --tier-fg: var(--ink); }
+.tier-a    { --tier-bg: var(--gold);             --tier-fg: var(--ink); }
+.tier-b    { --tier-bg: var(--silver);           --tier-fg: var(--ink); }
+.tier-c    { --tier-bg: var(--bronze);           --tier-fg: var(--cream); }
 .tier-sm   { --tier-bg: var(--sage);             --tier-fg: #fff; }
 .tier-gl   { --tier-bg: var(--gold-pale);        --tier-fg: var(--ink); }
 .tier-ls   { --tier-bg: var(--rust);             --tier-fg: #fff; }

@@ -28,16 +28,18 @@
 
   // Display labels and tier-class mapping (matches the brief)
   const TIER_CLASS = {
-    'A+':           'tier-ap',
-    'A':            'tier-a',
+    'A':            'tier-a',   // gold
+    'B':            'tier-b',   // silver
+    'C':            'tier-c',   // bronze
     'smart_money':  'tier-sm',
     'goldilocks':   'tier-gl',
     'lottery':      'tier-ls',
     'no_edge':      'tier-no-edge',
   };
   const TIER_DISPLAY = {
-    'A+':           'A+',
     'A':            'A',
+    'B':            'B',
+    'C':            'C',
     'smart_money':  'Smart Money',
     'goldilocks':   'Goldilocks',
     'lottery':      'Lottery',
@@ -1066,8 +1068,9 @@
   // Tier badge mapping — copied verbatim from live-lines.js so the
   // markup matches exactly. CSS classes come from live-lines.css.
   const LL_BADGE_MAP = {
-    'A+':          { label: 'A+', aria: 'A plus tier',      key: 'aplus' },
-    'A':           { label: 'A',  aria: 'A tier',           key: 'a' },
+    'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
+    'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
+    'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },
     'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
     'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
     'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },

@@ -346,14 +346,19 @@
   border-radius: var(--radius-sm);
 }
 
-.ll-badge--aplus {
+.ll-badge--A {
   background: var(--gold);
   color: var(--cream);
 }
 
-.ll-badge--a {
+.ll-badge--B {
   background: var(--silver);
   color: var(--ink);
+}
+
+.ll-badge--C {
+  background: var(--bronze);
+  color: var(--cream);
 }
 
 .ll-badge--smart_money {

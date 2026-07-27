@@ -24,8 +24,9 @@
     ],
     tier: [
       { value: 'all',         label: 'All tiers'   },
-      { value: 'A+',          label: 'A+'          },
-      { value: 'A',           label: 'A'           },
+      { value: 'A',           label: 'A (Gold)'    },
+      { value: 'B',           label: 'B (Silver)'  },
+      { value: 'C',           label: 'C (Bronze)'  },
       { value: 'smart_money', label: 'Smart Money' },
       { value: 'goldilocks',  label: 'Goldilocks'  },
       { value: 'lottery',     label: 'Lottery'     },
@@ -47,7 +48,7 @@
   // ── State ──────────────────────────────────────────────────────────
   const state = {
     season: 'all',
-    tier:   'all',
+    tier:   'A',      // default view = A (gold); toggles reveal B/C/ml/all
     market: 'all',
     aggregate: null,
     breakdown: null,
@@ -90,15 +91,15 @@
 
   // Tier slug → CSS class key for .ll-badge--{key} (shared with Live Lines)
   function tierBadgeKey(slug) {
-    if (slug === 'A+') return 'aplus';
-    if (slug === 'A')  return 'a';
+    if (slug === 'A' || slug === 'B' || slug === 'C') return slug; // gold/silver/bronze
     return slug; // smart_money / goldilocks / lottery already match
   }
 
   // Short label inside the badge box
   function tierBadgeShortLabel(slug) {
-    if (slug === 'A+')          return 'A+';
     if (slug === 'A')           return 'A';
+    if (slug === 'B')           return 'B';
+    if (slug === 'C')           return 'C';
     if (slug === 'smart_money') return 'SM';
     if (slug === 'goldilocks')  return 'GL';
     if (slug === 'lottery')     return 'LT';

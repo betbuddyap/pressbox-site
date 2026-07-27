@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   function weekLabel(w) { return w === 0 ? 'Week 0' : `Week ${w}`; }
 
-  const TIER_SORT = { 'A+': 7, 'smart_money': 6, 'A': 5, 'goldilocks': 4, 'lottery': 3, 'no_edge': 0 };
+  const TIER_SORT = { 'A': 6, 'smart_money': 5, 'B': 4, 'goldilocks': 3, 'C': 2, 'lottery': 1, 'no_edge': 0 };
 
   function parseKickoff(iso) {
     if (!iso) return null;
@@ -256,8 +256,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function renderBadge(tier) {
     const map = {
-      'A+':          { label: 'A+', aria: 'A plus tier',      key: 'aplus' },
-      'A':           { label: 'A',  aria: 'A tier',           key: 'a' },
+      'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
+      'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
+      'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },
       'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
       'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
       'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
@@ -446,14 +447,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         <button class="ll-filter-pill" data-filter="total" aria-pressed="${isActive('total') ? 'true' : 'false'}">Total</button>
         <button class="ll-filter-pill" data-filter="ml" aria-pressed="${isActive('ml') ? 'true' : 'false'}">ML</button>
         <button class="ll-filter-pill" data-filter="graded" aria-pressed="${f.gradedOnly ? 'true' : 'false'}">Graded</button>
-        <button class="ll-filter-pill" data-filter="aplus" aria-pressed="${f.aplusOnly ? 'true' : 'false'}">A+ only</button>
+        <button class="ll-filter-pill" data-filter="aplus" aria-pressed="${f.aplusOnly ? 'true' : 'false'}">A only</button>
       </div>`;
   }
 
   function applyBuildFilters(picks) {
     const f = state.buildFilters;
     return picks.filter(p => {
-      if (f.aplusOnly && p.tier !== 'A+') return false;
+      if (f.aplusOnly && p.tier !== 'A') return false;
       if (f.gradedOnly && (!p.tier || p.tier === 'no_edge')) return false;
       if (f.market && p.market !== f.market) return false;
       return true;
@@ -652,14 +653,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       <div class="ll-paywall-blur">
         <article class="ll-row"><div class="ll-row-header">
-          <span class="ll-badge ll-badge--aplus">A+</span>
+          <span class="ll-badge ll-badge--A">A</span>
           <div class="ll-row-content">
             <div class="ll-row-matchup">Sample Matchup A</div>
             <div class="ll-row-pick">Team +7 · FanDuel</div>
           </div>
         </div></article>
         <article class="ll-row"><div class="ll-row-header">
-          <span class="ll-badge ll-badge--a">A</span>
+          <span class="ll-badge ll-badge--B">B</span>
           <div class="ll-row-content">
             <div class="ll-row-matchup">Sample Matchup B</div>
             <div class="ll-row-pick">Team -3.5 · DraftKings</div>

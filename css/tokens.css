@@ -35,8 +35,10 @@
   --gold-light:   #D4A83A;   /* hover, highlights */
   --gold-pale:    #F5EDD0;   /* gold bg fills */
 
-  /* — Silver (A-tier badge fill) — */
-  --silver:       #C0C5CC;
+  /* — Tier medal fills (A/B/C badges) — */
+  --gold-medal:   var(--gold);   /* A tier — gold (reuse brand gold) */
+  --silver:       #C0C5CC;       /* B tier — silver */
+  --bronze:       #A9673A;       /* C tier — bronze */
 
   /* — Sage scale (DATA VIZ ONLY — wins, positive outcomes) — */
   --sage:         #4A7A4A;

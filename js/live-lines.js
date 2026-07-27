@@ -182,18 +182,20 @@
 
   // ── Utility: tier sort rank (for ordering within time bucket) ─
   const TIER_SORT = {
-    'A+':          7,
+    'A':           7,   // gold
     'smart_money': 6,
-    'A':           5,
-    'goldilocks':  4,
-    'lottery':     3,
+    'B':           5,   // silver
+    'C':           4,   // bronze
+    'goldilocks':  3,
+    'lottery':     2,
     'no_edge':     0,
   };
 
   // ── Utility: tier display name (raw slug → customer-facing label) ─
   const TIER_DISPLAY = {
-    'A+':          'A+',
     'A':           'A',
+    'B':           'B',
+    'C':           'C',
     'smart_money': 'Smart Money',
     'goldilocks':  'Goldilocks',
     'lottery':     'Lottery',
@@ -410,7 +412,7 @@
         <button class="ll-filter-pill" data-filter="graded"
           aria-pressed="${f.gradedOnly ? 'true' : 'false'}">Graded</button>
         <button class="ll-filter-pill" data-filter="aplus"
-          aria-pressed="${aplusActive ? 'true' : 'false'}">A+ only</button>
+          aria-pressed="${aplusActive ? 'true' : 'false'}">A only</button>
       </div>
     `;
   }
@@ -482,7 +484,7 @@
     return picks.filter(p => {
       // Filter by selected week (week-tab bar)
       if (state.week !== null && p.week !== state.week) return false;
-      if (f.aplusOnly && p.tier !== 'A+') return false;
+      if (f.aplusOnly && p.tier !== 'A') return false;
       if (f.gradedOnly && (!p.tier || p.tier === 'no_edge')) return false;
       if (f.market && p.market !== f.market) return false;
       if (f.tier && p.tier !== f.tier) return false;
@@ -582,8 +584,9 @@
     // Map tier value to (label, ariaLabel, cssKey). CSS class names are
     // case-sensitive, so we use a sanitized key that matches the CSS.
     const map = {
-      'A+':          { label: 'A+', aria: 'A plus tier',      key: 'aplus' },
-      'A':           { label: 'A',  aria: 'A tier',           key: 'a' },
+      'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
+      'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
+      'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },
       'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
       'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
       'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
@@ -820,20 +823,20 @@
         <button class="ll-filter-pill" aria-pressed="false">Spread</button>
         <button class="ll-filter-pill" aria-pressed="false">Total</button>
         <button class="ll-filter-pill" aria-pressed="false">ML</button>
-        <button class="ll-filter-pill" aria-pressed="false">A+ only</button>
+        <button class="ll-filter-pill" aria-pressed="false">A only</button>
       </div>
 
       <div class="ll-paywall-blur">
         ${rowsHtml || `
           <article class="ll-row"><div class="ll-row-header">
-            <span class="ll-badge ll-badge--aplus">A+</span>
+            <span class="ll-badge ll-badge--A">A</span>
             <div class="ll-row-content">
               <div class="ll-row-matchup">Sample Matchup A</div>
               <div class="ll-row-pick">Team +7 · FanDuel</div>
             </div>
           </div></article>
           <article class="ll-row"><div class="ll-row-header">
-            <span class="ll-badge ll-badge--a">A</span>
+            <span class="ll-badge ll-badge--B">B</span>
             <div class="ll-row-content">
               <div class="ll-row-matchup">Sample Matchup B</div>
               <div class="ll-row-pick">Team -3.5 · DraftKings</div>

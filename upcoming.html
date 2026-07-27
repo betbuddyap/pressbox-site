@@ -175,10 +175,12 @@
   .gc-ribbon::after {
     content: ''; position: absolute; left: 100%; top: 0; bottom: 0; width: 8px;
   }
-  .gc-ribbon.tier-ap { background: var(--gold); color: var(--ink); }
-  .gc-ribbon.tier-ap::after { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
-  .gc-ribbon.tier-a  { background: var(--gold-light); color: var(--ink); }
-  .gc-ribbon.tier-a::after  { background: linear-gradient(135deg, var(--gold-light) 50%, transparent 50%); }
+  .gc-ribbon.tier-a  { background: var(--gold); color: var(--ink); }
+  .gc-ribbon.tier-a::after  { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
+  .gc-ribbon.tier-b  { background: var(--silver); color: var(--ink); }
+  .gc-ribbon.tier-b::after  { background: linear-gradient(135deg, var(--silver) 50%, transparent 50%); }
+  .gc-ribbon.tier-c  { background: var(--bronze); color: var(--cream); }
+  .gc-ribbon.tier-c::after  { background: linear-gradient(135deg, var(--bronze) 50%, transparent 50%); }
   .gc-ribbon.tier-sm { background: var(--sage); color: #fff; }
   .gc-ribbon.tier-sm::after { background: linear-gradient(135deg, var(--sage) 50%, transparent 50%); }
   .gc-ribbon.tier-ls { background: var(--rust); color: #fff; }
@@ -320,7 +322,9 @@
     border-radius: 2px;
     flex-shrink: 0;
   }
-  .parlay-leg-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .parlay-leg-tier.tier-a { background: var(--gold);   color: var(--ink); }
+  .parlay-leg-tier.tier-b { background: var(--silver); color: var(--ink); }
+  .parlay-leg-tier.tier-c { background: var(--bronze); color: var(--cream); }
   .parlay-leg-tier.tier-a  { background: var(--gold-light); color: var(--ink); }
   .parlay-leg-tier.tier-sm { background: var(--sage); color: #fff; }
   .parlay-leg-tier.tier-ls { background: var(--rust); color: #fff; }
@@ -379,7 +383,9 @@
   .gc.compact .gc-ribbon::after { width: 6px; }
   .gc.compact .gc-tag-compact { display: flex; justify-content: flex-end; align-items: center; }
   .gc.compact .gc-pill-tier { font-family: var(--sans); font-size: 8px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; }
-  .gc.compact .gc-pill-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .gc.compact .gc-pill-tier.tier-a { background: var(--gold);   color: var(--ink); }
+  .gc.compact .gc-pill-tier.tier-b { background: var(--silver); color: var(--ink); }
+  .gc.compact .gc-pill-tier.tier-c { background: var(--bronze); color: var(--cream); }
   .gc.compact .gc-pill-tier.tier-a  { background: var(--gold-light); color: var(--ink); }
   .gc.compact .gc-pill-tier.tier-sm { background: var(--sage); color: #fff; }
   .gc.compact .gc-pill-tier.tier-ls { background: var(--rust); color: #fff; }
@@ -715,7 +721,9 @@
     box-sizing: border-box;
   }
   /* A+ = filled gold (top conviction). A = filled silver (strong edge). */
-  .gc.slate .gc-pick-tier.tier-ap, .gc.gotw-card .gc-pick-tier.tier-ap { background: var(--gold); color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-a, .gc.gotw-card .gc-pick-tier.tier-a { background: var(--gold);   color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-b, .gc.gotw-card .gc-pick-tier.tier-b { background: var(--silver); color: var(--ink); }
+  .gc.slate .gc-pick-tier.tier-c, .gc.gotw-card .gc-pick-tier.tier-c { background: var(--bronze); color: var(--cream); }
   .gc.slate .gc-pick-tier.tier-a, .gc.gotw-card .gc-pick-tier.tier-a { background: #C0C5CC; color: var(--ink); }
   .gc.slate .gc-pick-tier.tier-sm, .gc.gotw-card .gc-pick-tier.tier-sm { background: var(--sage); color: #fff; }
   .gc.slate .gc-pick-tier.tier-ls, .gc.gotw-card .gc-pick-tier.tier-ls { background: var(--rust); color: #fff; }
@@ -750,7 +758,9 @@
   .legend { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 14px 20px; background: var(--cream-dark); border-radius: 4px; margin-bottom: 24px; font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
   .legend-item { display: flex; align-items: center; gap: 8px; }
   .legend-tag { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; min-width: 28px; padding: 3px 6px; border: 1px solid var(--ink); border-radius: 3px; box-sizing: border-box; text-align: center; display: inline-block; }
-  .legend-tag.tier-ap { background: var(--gold); color: var(--ink); }
+  .legend-tag.tier-a { background: var(--gold);   color: var(--ink); }
+  .legend-tag.tier-b { background: var(--silver); color: var(--ink); }
+  .legend-tag.tier-c { background: var(--bronze); color: var(--cream); }
   .legend-tag.tier-a  { background: #C0C5CC; color: var(--ink); }
   .legend-tag.tier-sm { background: var(--sage); color: #fff; }
   .legend-tag.tier-ls { background: var(--rust); color: #fff; }
@@ -939,8 +949,9 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <!-- LEGEND -->
     <div class="section">
       <div class="legend">
-        <div class="legend-item"><span class="legend-tag tier-ap">A+</span> <span class="legend-desc">Top conviction</span></div>
-        <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Strong edge</span></div>
+        <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Gold · top conviction</span></div>
+        <div class="legend-item"><span class="legend-tag tier-b">B</span> <span class="legend-desc">Silver · strong edge</span></div>
+        <div class="legend-item"><span class="legend-tag tier-c">C</span> <span class="legend-desc">Bronze · solid edge</span></div>
         <div class="legend-item"><span class="legend-tag tier-sm">SM</span> <span class="legend-desc">ML value</span></div>
         <div class="legend-item"><span class="legend-tag tier-gl">GL</span> <span class="legend-desc">Goldilocks · just-right ML</span></div>
         <div class="legend-item"><span class="legend-tag tier-ls">LT</span> <span class="legend-desc">Long-shot ML</span></div>
@@ -1161,9 +1172,9 @@ const CONF_SHORT = {
   'FBS Independents': 'IND'
 };
 
-const TIER_LABEL = { ap: 'A+', a: 'A', sm: 'Smart $', ls: 'Lottery' };
-const TIER_LABEL_SHORT = { ap: 'A+', a: 'A', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE' };
-const TIER_KEY = { 'A+': 'ap', 'A': 'a', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'lottery_shot': 'ls', 'no_edge': 'ne' };
+const TIER_LABEL = { a: 'A', b: 'B', c: 'C', sm: 'Smart $', gl: 'Goldilocks', ls: 'Lottery' };
+const TIER_LABEL_SHORT = { a: 'A', b: 'B', c: 'C', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE' };
+const TIER_KEY = { 'A': 'a', 'B': 'b', 'C': 'c', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'no_edge': 'ne' };
 // Hero (Game of the Week) pick badge — identical markup/look to the slate cards.
 function gotwSlot(label, slotData) {
   const tierFull = slotData && slotData.tier_full;
