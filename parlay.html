@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Same pill row as Live Lines (reuses .ll-filters / .ll-filter-pill). "Graded"
-  // hides no-edge picks; market pills and Graded combine; A+ only is the narrow one.
+  // hides no-edge picks; market pills and Graded combine; A only is the narrow one.
   function renderBuildFilters() {
     const f = state.buildFilters;
     const isActive = (m) => f.market === m && !f.aplusOnly;

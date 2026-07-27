@@ -248,7 +248,7 @@
   .gc-pickbar.waiting { background: rgba(107,100,85,0.7); justify-content: center; }
   .gc-pickbar.waiting .gc-pickbar-val { font-family: var(--sans); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; font-size: 11px; color: rgba(248,245,238,0.85); flex: none; }
 
-  /* ── HERO DENSITY (A+/A, Smart, Lottery cards) ── */
+  /* ── HERO DENSITY (A/B/C, Smart, Lottery cards) ── */
   .gc.hero { min-height: 240px; }
   .gc.hero .gc-content { padding: 24px 28px 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 240px; gap: 16px; position: relative; z-index: 3; }
   .gc.hero .gc-ribbon { font-size: 10px; }
@@ -720,7 +720,7 @@
     text-align: center;
     box-sizing: border-box;
   }
-  /* A+ = filled gold (top conviction). A = filled silver (strong edge). */
+  /* A = filled gold (top conviction). B = filled silver (strong edge). C = bronze. */
   .gc.slate .gc-pick-tier.tier-a, .gc.gotw-card .gc-pick-tier.tier-a { background: var(--gold);   color: var(--ink); }
   .gc.slate .gc-pick-tier.tier-b, .gc.gotw-card .gc-pick-tier.tier-b { background: var(--silver); color: var(--ink); }
   .gc.slate .gc-pick-tier.tier-c, .gc.gotw-card .gc-pick-tier.tier-c { background: var(--bronze); color: var(--cream); }
@@ -862,20 +862,6 @@
 </style>
 </head>
 <body>
-
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-track">
-    A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b> · Point-in-time backtest<span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
-    2026 picks drop in time for <b>Week 0</b><span>·</span>
-    A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b> · Point-in-time backtest<span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
-    2026 picks drop in time for <b>Week 0</b><span>·</span>
-  </div>
-</div>
 
 <!-- NAV -->
 <nav>

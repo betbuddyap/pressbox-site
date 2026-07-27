@@ -98,17 +98,6 @@
   .phase-signal { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text-mid); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
   .phase-signal span { color: var(--gold); }
 
-  /* Tier table */
-  .tier-table { width: 100%; border-collapse: collapse; margin-top: 28px; }
-  .tier-table th { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); text-align: left; padding: 10px 16px; background: var(--cream-dark); border-bottom: 1px solid var(--border); }
-  .tier-table td { font-family: var(--sans); font-size: 13px; color: var(--text-mid); padding: 14px 16px; border-bottom: 1px solid var(--border); line-height: 1.5; vertical-align: top; }
-  .tier-table tr:last-child td { border-bottom: none; }
-  .tier-badge { font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 2px; letter-spacing: 0.5px; display: inline-block; }
-  .tier-ap { background: var(--gold-pale); color: var(--gold); }
-  .tier-a  { background: var(--cream-mid); color: var(--text-mid); }
-  .tier-b  { background: var(--cream-mid); color: var(--text-light); }
-  .tier-td-name { font-weight: 600; color: var(--text); }
-
   /* Callout box */
   .callout { background: var(--ink); border-radius: 4px; padding: 32px 36px; margin-top: 28px; }
   .callout-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--gold-light); margin-bottom: 12px; }
@@ -301,14 +290,17 @@
   .tier-card { background:#fff; border:0.5px solid var(--border); border-radius:8px; padding:18px; }
   .tier-card-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
   .tier-chip { font-family:var(--sans); font-size:12px; font-weight:700; padding:5px 10px; border-radius:4px; letter-spacing:.3px; border:1px solid transparent; white-space:nowrap; }
-  .tier-chip-aplus { background:var(--gold); color:var(--cream); border-color:var(--ink); }
-  .tier-chip-a { background:var(--silver); color:var(--ink); border-color:var(--ink); }
+  .tier-chip-a { background:var(--gold); color:var(--cream); border-color:var(--ink); }
+  .tier-chip-b { background:var(--silver); color:var(--ink); border-color:var(--ink); }
+  .tier-chip-c { background:var(--bronze); color:var(--cream); border-color:var(--ink); }
   .tier-chip-noedge { background:transparent; color:var(--text-light); border-color:var(--border); }
   .tier-chip-sm { background:var(--sage); color:var(--cream); border-color:var(--ink); }
   .tier-chip-gl { background:var(--sage-mid); color:var(--ink); border-color:var(--ink); }
   .tier-chip-lt { background:var(--rust); color:var(--cream); border-color:var(--ink); }
   .tier-card-name { font-family:var(--sans); font-size:14px; font-weight:700; color:var(--ink); }
   .tier-card-desc { font-family:var(--sans); font-size:13px; font-weight:300; color:var(--text-mid); line-height:1.55; }
+  .tier-note { font-family:var(--sans); font-size:13px; font-weight:300; color:var(--text-mid); line-height:1.6; margin:14px 0 0; }
+  .tier-note .tier-chip { margin-right:8px; vertical-align:middle; }
   @media (max-width:760px){ .tier-grid { grid-template-columns:1fr; } }
 
   .where { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:28px; }
@@ -365,13 +357,13 @@
 <!-- TICKER -->
 <div class="ticker">
   <div class="ticker-track">
-    A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b><span>·</span>
+    Our highest tier: <b>122-58</b> · <b>67.8%</b> across two seasons<span>·</span>
+    <b>Gold, silver &amp; bronze</b> — three graded tiers<span>·</span>
     <b>Every FBS-vs-FBS game</b> graded<span>·</span>
     <b>0.8 percentage points</b> year-over-year stability<span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
-    A+ Board <b>260-120</b> · <b>68.4%</b> across two seasons<span>·</span>
-    <b>+30.6% ROI</b><span>·</span>
+    Our highest tier: <b>122-58</b> · <b>67.8%</b> across two seasons<span>·</span>
+    <b>Gold, silver &amp; bronze</b> — three graded tiers<span>·</span>
     <b>Every FBS-vs-FBS game</b> graded<span>·</span>
     <b>0.8 percentage points</b> year-over-year stability<span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
@@ -462,7 +454,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
     <div class="llm">
       <div class="llm-head">
-        <div class="llm-badge">A+</div>
+        <div class="llm-badge">A</div>
         <div class="llm-content">
           <div class="llm-matchup">Oklahoma @ Michigan</div>
           <div class="llm-pick"><b>Oklahoma +3</b> · DraftKings + 2 others</div>
@@ -474,7 +466,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="llm-acc-label">History</div>
         <div class="llm-history">
           <div class="llm-event">
-            <div class="llm-event-title"><strong>Released A+</strong> · Oklahoma +2.5 at Bovada</div>
+            <div class="llm-event-title"><strong>Released A</strong> · Oklahoma +2.5 at Bovada</div>
             <div class="llm-event-time">Wed, Sep 9 · 6:12 PM</div>
           </div>
           <div class="llm-event">
@@ -482,7 +474,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
             <div class="llm-event-time">Fri, Sep 11 · 9:40 AM</div>
           </div>
           <div class="llm-event">
-            <div class="llm-event-title"><strong>Current</strong> · A+ holding · Oklahoma +3 at DraftKings</div>
+            <div class="llm-event-title"><strong>Current</strong> · A holding · Oklahoma +3 at DraftKings</div>
             <div class="llm-event-time">Now</div>
           </div>
         </div>
@@ -493,7 +485,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     </div>
 
     <div class="anno">
-      <div class="anno-item"><b>The grade.</b> The tier — A+ here. It tells you our conviction at a glance.</div>
+      <div class="anno-item"><b>The grade.</b> The tier — A here, our highest. It tells you our conviction at a glance.</div>
       <div class="anno-item"><b>The pick &amp; best book.</b> The exact side and number, and where the line is best right now.</div>
       <div class="anno-item"><b>The journal.</b> Open the row: release, every line move, and the current state — all on the record.</div>
       <div class="anno-item"><b>Bet it / break it down.</b> Jump to the book, or open the full game page for the deep view.</div>
@@ -505,38 +497,39 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="section-num">03 — The grades</div>
     <h2 class="section-title">What each grade <em>means.</em></h2>
     <div class="section-body">
-      <p>Spreads and totals share one scale. Moneylines get their own three, because a longshot and a near-pickem are completely different bets. Every grade is a published verdict — including the ones that say "pass."</p>
+      <p>Spreads and totals share one scale — read it as <em>how often we're right</em>, gold down to bronze. Moneylines get their own three, read as <em>how they pay</em>: a longshot that hits once in three tries can still be the most profitable bet on the board. Every grade is a published verdict — including the ones that say "pass."</p>
     </div>
 
     <div class="tier-group-label">Spread &amp; Total</div>
     <div class="tier-grid">
       <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-aplus">A+</span><span class="tier-card-name">Highest conviction</span></div>
-        <div class="tier-card-desc">The cleanest setups we publish — a strong edge on a manageable number, with the model read and SP+ pulling the same way. Our most repeatable bet.</div>
+        <div class="tier-card-head"><span class="tier-chip tier-chip-a">A</span><span class="tier-card-name">Gold — highest conviction</span></div>
+        <div class="tier-card-desc">Our tightest, most-repeatable setups — a strong edge with the model read and the market pulling the same way. <strong>67.8%</strong> against the spread and total across two seasons (122&#8209;58), our steadiest year to year — a 0.8&#8209;point gap between 2024 and 2025 — at roughly seven picks a week. <strong>+29.4% ROI.</strong></div>
       </div>
       <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-a">A</span><span class="tier-card-name">Strong edge</span></div>
-        <div class="tier-card-desc">A clear edge, just below A+ — strong model confirmation in profitable territory across the locked backtest, at lower volume.</div>
+        <div class="tier-card-head"><span class="tier-chip tier-chip-b">B</span><span class="tier-card-name">Silver — strong edge</span></div>
+        <div class="tier-card-desc">A clear, proven edge at higher volume — the bulk of the confident board. <strong>62.7%</strong> across two seasons (484&#8209;288), around thirty picks a week. <strong>+19.7% ROI.</strong></div>
       </div>
       <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-noedge">No Edge</span><span class="tier-card-name">We'll pass</span></div>
-        <div class="tier-card-desc">We ran the game and didn't find an edge worth betting — or the market moved past the one we had. We publish it anyway, right on the board.</div>
+        <div class="tier-card-head"><span class="tier-chip tier-chip-c">C</span><span class="tier-card-name">Bronze — playable edge</span></div>
+        <div class="tier-card-desc">A real but slimmer edge, and the widest net we cast. <strong>58.1%</strong> across two seasons (428&#8209;309), about twenty-eight picks a week — a lower hit rate than gold or silver, still ahead over time. <strong>+11.2% ROI.</strong></div>
       </div>
     </div>
+    <p class="tier-note"><span class="tier-chip tier-chip-noedge">No Edge</span> Everything else grades <strong>No Edge</strong> — we ran the game and didn't find a bet worth making, or the market moved past the one we had. We publish that verdict too, right on the board.</p>
 
     <div class="tier-group-label">Moneyline</div>
     <div class="tier-grid">
       <div class="tier-card">
         <div class="tier-card-head"><span class="tier-chip tier-chip-sm">💰 Smart Money</span></div>
-        <div class="tier-card-desc">Moneyline value at reasonable prices — near-pickem to modest favorites. The highest hit rate of the three ML grades.</div>
+        <div class="tier-card-desc">Moneyline value at fair prices — near-pickem to modest favorites. The one ML grade that wins outright <em>and</em> pays: <strong>64.5%</strong> (118&#8209;65), <strong>+31.4% ROI.</strong></div>
       </div>
       <div class="tier-card">
         <div class="tier-card-head"><span class="tier-chip tier-chip-gl">🐻 Goldilocks</span></div>
-        <div class="tier-card-desc">The middle-ground underdog — not chalk, not a longshot. Moderate dogs where the price and the read line up. Hits a little under half the time.</div>
+        <div class="tier-card-desc">The middle-ground underdog — not chalk, not a longshot. Moderate dogs where the price and the read line up. Wins under half the time (<strong>45.6%</strong>, 57&#8209;68), but the plus money makes it pay: <strong>+27.1% ROI.</strong></div>
       </div>
       <div class="tier-card">
         <div class="tier-card-head"><span class="tier-chip tier-chip-lt">🎟 Lottery</span></div>
-        <div class="tier-card-desc">Heavy underdogs and longshots. Hits less than a third of the time — but the payouts are big enough that the math works in your favor.</div>
+        <div class="tier-card-desc">Heavy underdogs and longshots. Hits less than a third of the time (<strong>28.9%</strong>, 24&#8209;59) — by design. A handful of big payouts carries it: <strong>+67.5% ROI.</strong></div>
       </div>
     </div>
   </div>

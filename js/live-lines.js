@@ -45,8 +45,8 @@
     picks:       [],              // ALL open picks (across all weeks)
     filters: {
       market:    null,            // 'spread' | 'total' | 'ml' | null
-      tier:      null,            // 'A+' | 'A' | 'smart_money' | ... | null
-      aplusOnly: false,           // shorthand pill: A+ across markets
+      tier:      null,            // 'A' | 'B' | 'C' | 'smart_money' | ... | null
+      aplusOnly: false,           // shorthand pill: A (top tier) across markets
       gradedOnly: false,          // hide no-edge picks (show only graded/tiered)
     },
     lastFetchedAt: null,          // ISO timestamp of last successful fetch
@@ -810,7 +810,7 @@
         </h1>
         <p class="ll-paywall-body">
           The grade you see now is the bet you'd make now. Every FBS game with an open
-          line gets a tier — A+ down to No Edge — and a best book if there's edge to bet.
+          line gets a tier — A down to No Edge — and a best book if there's edge to bet.
           As the market moves, we re-grade every 30 minutes. <strong>The "Now" tier is
           what matters for what you're about to bet.</strong> A full board every week,
           across six tiers.
