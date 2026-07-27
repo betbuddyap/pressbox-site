@@ -372,7 +372,7 @@
 }
 
 .ll-badge--lottery {
-  background: var(--rust);
+  background: var(--lottery);
   color: var(--cream);
 }
 

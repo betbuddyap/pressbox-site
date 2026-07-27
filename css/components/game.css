@@ -233,7 +233,7 @@
 .tier-c    { --tier-bg: var(--bronze);           --tier-fg: var(--cream); }
 .tier-sm   { --tier-bg: var(--sage);             --tier-fg: #fff; }
 .tier-gl   { --tier-bg: var(--gold-pale);        --tier-fg: var(--ink); }
-.tier-ls   { --tier-bg: var(--rust);             --tier-fg: #fff; }
+.tier-ls   { --tier-bg: var(--lottery);          --tier-fg: #fff; }
 .tier-no-edge { --tier-bg: rgba(160,154,138,0.35); --tier-fg: var(--cream); }
 
 /* Team names + sub */
