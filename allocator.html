@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     amount: 1000,          // total the user wants to bet, split 100%
     presetKey: 'moderate',
     includeParlays: true,  // roll a parlay or two into the mix
-    filters: { market: null, aplusOnly: false },
+    filters: { tiers: [] },   // empty = all picks; otherwise a multi-select of A/B/C
     loading: true, error: false,
   };
 
@@ -396,8 +396,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Kelly sizing ─────────────────────────────────────────────
   function matchesFilters(leg) {
     if (state.week != null && leg.week !== state.week) return false;
-    if (state.filters.aplusOnly && leg.tier !== 'A') return false;
-    if (state.filters.market && leg.market !== state.filters.market) return false;
+    const tiers = state.filters.tiers;
+    if (tiers.length && !tiers.includes(leg.tier)) return false;
     return true;
   }
 
@@ -417,8 +417,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Parlays: single-slate, and they span markets/tiers — so only in the mix
-    // when no single-market or A+ filter is narrowing the board.
-    if (state.includeParlays && !state.filters.market && !state.filters.aplusOnly) {
+    // when no tier filter is narrowing the board (i.e. "All picks").
+    if (state.includeParlays && !state.filters.tiers.length) {
       for (const pl of state.parlays) {
         if (state.week != null && pl.week !== state.week) continue;
         const p = pl.our_prob, dec = pl.decimal_odds;
@@ -496,18 +496,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function filtersHTML() {
-    const f = state.filters;
+    const sel = state.filters.tiers;
     const pill = (key, label, active) =>
       `<button type="button" class="ll-filter-pill${active ? ' active' : ''}" data-filter="${key}"
                aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
-    const anyMarket = !!f.market || f.aplusOnly;
+    // Tier selector: multi-select. "All picks" clears it; A/B/C stack together.
     return `
       <div class="ll-filters" style="margin-bottom:var(--space-4);">
-        ${pill('all', 'All', !anyMarket)}
-        ${pill('spread', 'Spread', f.market === 'spread')}
-        ${pill('total', 'Total', f.market === 'total')}
-        ${pill('ml', 'Moneyline', f.market === 'ml')}
-        ${pill('aplus', 'A only', f.aplusOnly)}
+        <span class="ll-filter-label">Include</span>
+        ${pill('all', 'All picks', sel.length === 0)}
+        ${pill('A', 'A', sel.includes('A'))}
+        ${pill('B', 'B', sel.includes('B'))}
+        ${pill('C', 'C', sel.includes('C'))}
       </div>`;
   }
 
@@ -872,9 +872,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (fpill && !fpill.classList.contains('al-preset-pill')) {
       const key = fpill.dataset.filter;
       const f = state.filters;
-      if (key === 'all') { f.market = null; f.aplusOnly = false; }
-      else if (key === 'aplus') { f.aplusOnly = !f.aplusOnly; if (f.aplusOnly) f.market = null; }
-      else { f.market = (f.market === key) ? null : key; }
+      if (key === 'all') { f.tiers = []; }
+      else {
+        const i = f.tiers.indexOf(key);
+        if (i >= 0) f.tiers.splice(i, 1); else f.tiers.push(key);
+      }
       render();
       return;
     }
