@@ -333,6 +333,30 @@
     }
   }
 
+  // Map market -> firing model DISPLAY name, from picks data. A null
+  // firing_model means no cell fired for that market (no highlight, no override).
+  function firingModelByMarket(data) {
+    const out = {};
+    (data.picks || []).forEach(pick => {
+      if (pick.firing_model) {
+        const dn = MODEL_KEY_TO_NAME[pick.firing_model];
+        if (dn) out[pick.market] = dn;
+      }
+    });
+    return out;
+  }
+
+  // The value to drive a projection axis: the firing model's read when a cell
+  // fired for that market, otherwise the aggregate blend. Spread and total are
+  // resolved independently so the projected score never contradicts the pick.
+  function projAxisValue(section, key, firingName, blendVal) {
+    if (firingName && section) {
+      const m = (section.models || []).find(mm => mm.name === firingName && mm[key] != null);
+      if (m) return m[key];
+    }
+    return blendVal;
+  }
+
   function renderProjectedScore(data) {
     const p = data.projections;
     if (!p) {
@@ -348,13 +372,20 @@
       els.projected.style.display = 'none';
       return;
     }
+    // When a cell fired, the projected score follows the firing model for that
+    // market (spread and total independently) so it supports the pick; each
+    // axis falls back to the blend when nothing fired.
+    const firing = firingModelByMarket(data);
+    const effAnchorSpread = projAxisValue(p.spread, 'anchor_spread', firing.spread, blendAnchorSpread);
+    const effTotal        = projAxisValue(p.total,  'total',        firing.total,  blendTotal);
+
     // Convert anchor spread back to home margin:
     //   if anchor is home: home_margin = -anchor_spread
     //   if anchor is away: home_margin = anchor_spread
-    const homeMargin = anchorIsHome ? -blendAnchorSpread : blendAnchorSpread;
+    const homeMargin = anchorIsHome ? -effAnchorSpread : effAnchorSpread;
 
-    const homePts = (blendTotal + homeMargin) / 2;
-    const awayPts = (blendTotal - homeMargin) / 2;
+    const homePts = (effTotal + homeMargin) / 2;
+    const awayPts = (effTotal - homeMargin) / 2;
 
     els.projAway.textContent = Math.round(awayPts);
     els.projHome.textContent = Math.round(homePts);
@@ -578,17 +609,9 @@
     els.readStack.innerHTML = '';
     if (!p) return;
 
-    // Build a {market → firing_model_display_name} map from picks data.
-    // For each market with a real cell-fire, find the picks-engine model
-    // and translate to its display name. No_edge picks have null
-    // firing_model and don't trigger the highlight treatment.
-    const firingByMarket = {};
-    (data.picks || []).forEach(pick => {
-      if (pick.firing_model) {
-        const displayName = MODEL_KEY_TO_NAME[pick.firing_model];
-        if (displayName) firingByMarket[pick.market] = displayName;
-      }
-    });
+    // Market → firing_model display name (shared with the projected-score
+    // header so the highlighted read and the projection stay in lockstep).
+    const firingByMarket = firingModelByMarket(data);
 
     const anchor = p.anchor || {};
     if (p.spread)    els.readStack.appendChild(buildDotPlot('Spread', p.spread, 'anchor_spread', anchor, firingByMarket.spread));
