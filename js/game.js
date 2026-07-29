@@ -674,23 +674,30 @@
     // BUT capped at Vegas ± 18 so one extreme model (e.g. Pace+ at -24
     // on a -1 game) doesn't stretch the entire chart. Out-of-range
     // dots will sit at the axis edge; the chart stays readable.
-    // The historical band does NOT participate in axis bounds.
     const histRange = section.historical_range || null;
     const histLow   = histRange?.low ?? null;
     const histHigh  = histRange?.high ?? null;
-    const allVals = [vegasPos, blendPos, ...points.map(p => p.value)].filter(v => v != null);
-    const minVal = Math.min(...allVals);
-    const maxVal = Math.max(...allVals);
-    const AXIS_INNER = 13;   // default padding around Vegas
-    const AXIS_OUTER_CAP = 18; // max distance Vegas can stretch in either direction
-    let axisMin, axisMax;
-    if (vegasPos != null) {
-      axisMin = Math.max(vegasPos - AXIS_OUTER_CAP, Math.min(minVal, vegasPos - AXIS_INNER));
-      axisMax = Math.min(vegasPos + AXIS_OUTER_CAP, Math.max(maxVal, vegasPos + AXIS_INNER));
-    } else {
-      axisMin = minVal - 4;
-      axisMax = maxVal + 4;
+    // Frame the axis to FIT everything — model dots, Vegas, the blend, and the
+    // outcome bubble — centered on the model cluster, so no read sits stranded
+    // in empty space. A single wild model can't squash the rest: if the full
+    // span exceeds MAX_SPAN, clamp to a window centered on the median model and
+    // the outlier sits at the chart edge. (Most games fit inside MAX_SPAN.)
+    const modelVals = points.map(p => p.value);
+    const fitVals = [vegasPos, blendPos, histLow, histHigh, ...modelVals].filter(v => v != null);
+    let loVal = Math.min(...fitVals);
+    let hiVal = Math.max(...fitVals);
+    const MAX_SPAN = 40;
+    const sortedModels = modelVals.slice().sort((a, b) => a - b);
+    const clusterCenter = sortedModels.length
+      ? sortedModels[Math.floor(sortedModels.length / 2)]
+      : (vegasPos != null ? vegasPos : (loVal + hiVal) / 2);
+    if (hiVal - loVal > MAX_SPAN) {
+      loVal = clusterCenter - MAX_SPAN / 2;
+      hiVal = clusterCenter + MAX_SPAN / 2;
     }
+    const pad = Math.max(3, (hiVal - loVal) * 0.14);
+    let axisMin = loVal - pad;
+    let axisMax = hiVal + pad;
     // Spread chart: always include 0 in the axis so the zero anchor is visible
     if (key === 'anchor_spread') {
       axisMin = Math.min(axisMin, -2);
