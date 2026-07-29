@@ -193,8 +193,24 @@
   }
 
   function wire() {
+    // Burger toggles the mobile menu. Attach ONCE: navEl (and its burger)
+    // persists across refreshAuth() — only mobileEl's innerHTML is rebuilt —
+    // so re-adding this listener stacks duplicates, and the extra toggle
+    // cancels the open. That parity flip (1 listener opens, 2 = no-op, and
+    // auth/token events keep flipping it) was the "hamburger sometimes works,
+    // sometimes doesn't" bug.
     var burger = navEl && navEl.querySelector('.hamburger');
-    if (burger) burger.addEventListener('click', function () { mobileEl.classList.toggle('open'); });
+    if (burger && !burger._pbWired) {
+      burger.addEventListener('click', function () { mobileEl.classList.toggle('open'); });
+      burger._pbWired = true;
+    }
+    wireMobileMenu();
+  }
+
+  // Close button + nav links close the menu. mobileEl.innerHTML is rebuilt on
+  // every refreshAuth(), so these are re-bound each time — always onto fresh
+  // elements, so this never stacks duplicate listeners.
+  function wireMobileMenu() {
     var close = mobileEl && mobileEl.querySelector('.close-btn');
     if (close) close.addEventListener('click', function () { mobileEl.classList.remove('open'); });
     if (mobileEl) {
@@ -214,7 +230,7 @@
     if (mobileEl) {
       // rebuild mobile menu contents (keeps close btn + nav links, swaps auth)
       mobileEl.innerHTML = mobileHTML(signedIn);
-      wire();
+      wireMobileMenu();  // burger is already wired once in install(); don't re-add
     }
   }
 
