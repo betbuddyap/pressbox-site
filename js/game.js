@@ -251,11 +251,6 @@
     if (g.neutral_site) {
       metaParts.push(`<div class="ctx-meta-item">Neutral Site</div>`);
     }
-    // Disclaimer: this game's model inputs are released ahead of full
-    // 2026 data being loaded. Shown until the data backs them.
-    if (data.pending_data) {
-      metaParts.push(`<div class="ctx-meta-item" style="color:#c9a227;font-style:italic;">Pending 2026 data</div>`);
-    }
     els.meta.innerHTML = metaParts.join('<span class="ctx-meta-dot"></span>');
   }
 
@@ -788,13 +783,26 @@
       // narrows the lobe visually. Pure visualization tweak; backend
       // density data unchanged.
       const POWER = 2.0;
-      for (const [x, y] of densityCurve) {
+      // Edge taper: ease the lobe height to 0 at its two ends so it comes to a
+      // smooth point instead of cutting off flat at a non-zero height (the
+      // "flat spots"). Tukey-style window — flat (=1) across the middle, cosine
+      // ease-to-zero over the outer TAPER fraction of each side. Pure visual;
+      // the backend density data is unchanged.
+      const TAPER = 0.35;
+      const NPTS = densityCurve.length;
+      const edgeWindow = (p) => {
+        if (p <= TAPER)     return 0.5 * (1 - Math.cos(Math.PI * p / TAPER));
+        if (p >= 1 - TAPER) return 0.5 * (1 - Math.cos(Math.PI * (1 - p) / TAPER));
+        return 1;
+      };
+      densityCurve.forEach(([x, y], i) => {
         const xv = clamp(((x - axisMin) / range) * VBW, 0, VBW);
-        const ySharp = Math.pow(clamp(y, 0, 1), POWER);
+        const p  = NPTS > 1 ? i / (NPTS - 1) : 0.5;
+        const ySharp = Math.pow(clamp(y, 0, 1), POWER) * edgeWindow(p);
         const yPx = ySharp * PEAK_PX;
         topPts.push([xv, CENTER_Y - yPx]);
         botPts.push([xv, CENTER_Y + yPx]);
-      }
+      });
       // Polygon path: top L→R, then bottom R→L
       const pathPts = [
         ...topPts,
