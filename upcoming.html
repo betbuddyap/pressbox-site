@@ -726,6 +726,15 @@
   .gc.slate .gc-pick-tier.tier-ls, .gc.gotw-card .gc-pick-tier.tier-ls { background: var(--lottery); color: #fff; }
   .gc.slate .gc-pick-tier.tier-gl, .gc.gotw-card .gc-pick-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
   .gc.slate .gc-pick-tier.tier-ne, .gc.gotw-card .gc-pick-tier.tier-ne { background: transparent; color: rgba(248,245,238,0.6); border-color: rgba(248,245,238,0.35); }
+  /* A+ = corroborated top tier: ink fill, gold lettering (inverse of A). */
+  .gc.slate .gc-pick-tier.tier-aplus, .gc.gotw-card .gc-pick-tier.tier-aplus { background: var(--ink); color: var(--gold-light); }
+  .gc-ribbon.tier-aplus { background: var(--ink); color: var(--gold-light); }
+  .gc-ribbon.tier-aplus::after { background: linear-gradient(135deg, var(--ink) 50%, transparent 50%); }
+  .gc-pill-tier.tier-aplus, .parlay-leg-tier.tier-aplus { background: var(--ink); color: var(--gold-light); }
+  /* fade = red ring on the tier badge, any tier (separate channel from fill). */
+  .gc-pick-tier.is-fade-gc, .gc-ribbon.is-fade-gc, .gc-pill-tier.is-fade-gc, .parlay-leg-tier.is-fade-gc {
+    outline: 2px solid var(--fade-red); outline-offset: 1px;
+  }
 
   @media (max-width: 720px) {
     .gc.slate { min-height: 168px; }
@@ -1154,15 +1163,16 @@ const CONF_SHORT = {
   'FBS Independents': 'IND'
 };
 
-const TIER_LABEL = { a: 'A', b: 'B', c: 'C', sm: 'Smart $', gl: 'Goldilocks', ls: 'Lottery' };
-const TIER_LABEL_SHORT = { a: 'A', b: 'B', c: 'C', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE' };
-const TIER_KEY = { 'A': 'a', 'B': 'b', 'C': 'c', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'no_edge': 'ne' };
+const TIER_LABEL = { aplus: 'A+', a: 'A', b: 'B', c: 'C', sm: 'Smart $', gl: 'Goldilocks', ls: 'Lottery' };
+const TIER_LABEL_SHORT = { aplus: 'A+', a: 'A', b: 'B', c: 'C', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE' };
+const TIER_KEY = { 'A+': 'aplus', 'A': 'a', 'B': 'b', 'C': 'c', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'no_edge': 'ne' };
 // Hero (Game of the Week) pick badge — identical markup/look to the slate cards.
 function gotwSlot(label, slotData) {
   const tierFull = slotData && slotData.tier_full;
   const tierKey = TIER_KEY[tierFull];
   if (tierKey) {
-    return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span><span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span></div>`;
+    const fadeCls = slotData && slotData.fade ? ' is-fade-gc' : '';
+    return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span><span class="gc-pick-tier tier-${tierKey}${fadeCls}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span></div>`;
   }
   return `<div class="gc-pick-slot empty"><span class="gc-pick-label">${label}</span></div>`;
 }
@@ -1588,10 +1598,11 @@ function renderSlateCard(g) {
     }
 
     if (tierKey) {
+      const fadeCls = slotData && slotData.fade ? ' is-fade-gc' : '';
       return `
         <div class="gc-pick-slot has-tier">
           <span class="gc-pick-label">${label}</span>
-          <span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span>
+          <span class="gc-pick-tier tier-${tierKey}${fadeCls}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span>
         </div>
       `;
     }
