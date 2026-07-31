@@ -182,6 +182,7 @@
 
   // ── Utility: tier sort rank (for ordering within time bucket) ─
   const TIER_SORT = {
+    'A+':          8,   // corroborated top tier
     'A':           7,   // gold
     'smart_money': 6,
     'B':           5,   // silver
@@ -193,6 +194,7 @@
 
   // ── Utility: tier display name (raw slug → customer-facing label) ─
   const TIER_DISPLAY = {
+    'A+':          'A+',
     'A':           'A',
     'B':           'B',
     'C':           'C',
@@ -584,6 +586,7 @@
     // Map tier value to (label, ariaLabel, cssKey). CSS class names are
     // case-sensitive, so we use a sanitized key that matches the CSS.
     const map = {
+      'A+':          { label: 'A+', aria: 'A+ tier — corroborated top pick', key: 'aplus' },
       'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
       'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
       'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },

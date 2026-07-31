@@ -40,6 +40,7 @@
   --silver:       #C0C5CC;       /* B tier — silver */
   --bronze:       #A9673A;       /* C tier — bronze */
   --lottery:      #7A2E3E;       /* Lottery ML tier — wine (distinct from bronze & rust) */
+  --fade-red:     #E24B4A;       /* fade ring — bet the opposite side (distinct from wine & rust) */
 
   /* — Sage scale (DATA VIZ ONLY — wins, positive outcomes) — */
   --sage:         #4A7A4A;

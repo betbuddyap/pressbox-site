@@ -28,6 +28,7 @@
 
   // Display labels and tier-class mapping (matches the brief)
   const TIER_CLASS = {
+    'A+':           'tier-aplus', // corroborated — ink bg, gold text
     'A':            'tier-a',   // gold
     'B':            'tier-b',   // silver
     'C':            'tier-c',   // bronze
@@ -37,6 +38,7 @@
     'no_edge':      'tier-no-edge',
   };
   const TIER_DISPLAY = {
+    'A+':           'A+',
     'A':            'A',
     'B':            'B',
     'C':            'C',
@@ -1108,6 +1110,7 @@
   // Tier badge mapping — copied verbatim from live-lines.js so the
   // markup matches exactly. CSS classes come from live-lines.css.
   const LL_BADGE_MAP = {
+    'A+':          { label: 'A+', aria: 'A+ tier — corroborated top pick', key: 'aplus' },
     'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
     'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
     'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },

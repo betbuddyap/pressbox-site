@@ -91,12 +91,14 @@
 
   // Tier slug → CSS class key for .ll-badge--{key} (shared with Live Lines)
   function tierBadgeKey(slug) {
+    if (slug === 'A+')          return 'aplus'; // "+" isn't valid in a class name
     if (slug === 'A' || slug === 'B' || slug === 'C') return slug; // gold/silver/bronze
     return slug; // smart_money / goldilocks / lottery already match
   }
 
   // Short label inside the badge box
   function tierBadgeShortLabel(slug) {
+    if (slug === 'A+')          return 'A+';
     if (slug === 'A')           return 'A';
     if (slug === 'B')           return 'B';
     if (slug === 'C')           return 'C';

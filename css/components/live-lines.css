@@ -382,19 +382,25 @@
   border-color: var(--border);
 }
 
-/* Fade cells bet the OPPOSITE of the model/consensus read. The badge inverts
- * (hollow): the tier color moves to the border + text so a Fade-A reads clearly
- * apart from a solid A, while keeping the A/B/C confidence identity. */
-.ll-badge.is-fade {
-  background: transparent;
-  border-width: 1.5px;
+/* A+ — corroborated top tier (3+ cells agree). Inverse-of-A: ink fill, gold
+ * lettering. The fill channel carries tier; fade is a separate red ring, so
+ * an A+ and a faded A never collide. */
+.ll-badge--aplus {
+  background: var(--ink);
+  color: var(--gold-light);
+  border-color: var(--gold);
 }
-.ll-badge--A.is-fade { color: var(--gold);   border-color: var(--gold); }
-.ll-badge--B.is-fade { color: var(--ink);    border-color: var(--silver); }
-.ll-badge--C.is-fade { color: var(--bronze); border-color: var(--bronze); }
 
-/* Small "FADE" tag shown next to the pick line so the contrarian side is
- * spelled out, not just implied by the inverted color. */
+/* Fade = bet the OPPOSITE of the model/consensus read. Marked by a red ring
+ * around the badge REGARDLESS of tier (a separate channel from the fill), so it
+ * composes with A/B/C/A+ alike. outline-offset gives the gap without needing
+ * the page-bg color. */
+.ll-badge.is-fade {
+  outline: 2px solid var(--fade-red);
+  outline-offset: 1.5px;
+}
+
+/* Small "Fade" tag next to the pick line — spells out the contrarian side. */
 .fade-tag {
   display: inline-block;
   font-size: 9px;
@@ -404,9 +410,9 @@
   text-transform: uppercase;
   padding: 0 4px;
   margin-left: 6px;
-  border: 1px solid currentColor;
+  border: 1px solid var(--fade-red);
   border-radius: var(--radius-sm);
-  color: var(--text-mid);
+  color: var(--fade-red);
   vertical-align: middle;
 }
 
