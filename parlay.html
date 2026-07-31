@@ -254,8 +254,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return { dayLabel, timeLabel, dateKey, timeKey: timeLabel };
   }
 
-  function renderBadge(tier) {
+  function renderBadge(tier, fade) {
     const map = {
+      'A+':          { label: 'A+', aria: 'A+ tier — corroborated top pick', key: 'aplus' },
       'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
       'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
       'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },
@@ -265,7 +266,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       'no_edge':     { label: 'NE', aria: 'No edge', key: 'no_edge' },
     };
     const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
+    const fadeCls = fade ? ' is-fade' : '';
+    const aria = fade ? `${m.aria} — fade (bet the opposite side)` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}${fadeCls}" aria-label="${aria}">${m.label}</span>`;
   }
 
   function pickLineText(p) {
@@ -373,9 +376,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `
       <article class="ll-row ${isNoEdge ? 'll-row--no-edge' : ''} ${isSel ? 'pl-selected' : ''}" data-pick-id="${esc(p.pick_id)}">
         <button class="ll-row-header" data-action="select" aria-pressed="${isSel ? 'true' : 'false'}">
-          ${renderBadge(p.tier)}
+          ${renderBadge(p.tier, p.fade)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
+            <div class="ll-row-matchup">${esc(p.matchup || '—')}${p.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
             <div class="ll-row-pick">${pickLineText(p)}</div>
           </div>
           <span class="pl-check" aria-hidden="true">
@@ -541,9 +544,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const legs = (pre.legs || []).map(leg => `
       <article class="ll-row">
         <div class="ll-row-header" style="cursor:default;">
-          ${renderBadge(leg.tier)}
+          ${renderBadge(leg.tier, leg.fade)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
+            <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}${leg.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
             <div class="ll-row-pick">${pickLineText(leg)}</div>
           </div>
         </div>
