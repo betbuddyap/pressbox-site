@@ -227,8 +227,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return PRESETS.find(p => p.key === state.presetKey) || PRESETS[1];
   }
 
-  function renderBadge(tier) {
+  function renderBadge(tier, fade) {
     const map = {
+      'A+':          { label: 'A+', aria: 'A+ tier — corroborated top pick', key: 'aplus' },
       'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
       'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
       'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },
@@ -238,7 +239,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       'no_edge':     { label: 'NE', aria: 'No edge',          key: 'no_edge' },
     };
     const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
+    const fadeCls = fade ? ' is-fade' : '';
+    const aria = fade ? `${m.aria} — fade (bet the opposite side)` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}${fadeCls}" aria-label="${aria}">${m.label}</span>`;
   }
 
   function pickText(leg) {
@@ -505,6 +508,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="ll-filters" style="margin-bottom:var(--space-4);">
         <span class="ll-filter-label">Include</span>
         ${pill('all', 'All picks', sel.length === 0)}
+        ${pill('A+', 'A+', sel.includes('A+'))}
         ${pill('A', 'A', sel.includes('A'))}
         ${pill('B', 'B', sel.includes('B'))}
         ${pill('C', 'C', sel.includes('C'))}
@@ -631,9 +635,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `
       <article class="ll-row al-card" aria-expanded="false">
         <button type="button" class="al-head" data-action="toggle-card" aria-expanded="false">
-          ${renderBadge(leg.tier)}
+          ${renderBadge(leg.tier, leg.fade)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
+            <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}${leg.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
             <div class="ll-row-pick">${pickText(leg)}</div>
           </div>
           <div class="al-metrics">
