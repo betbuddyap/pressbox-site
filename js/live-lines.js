@@ -553,7 +553,7 @@
   function renderPickRow(p) {
     const isNoEdge = p.tier === 'no_edge';
     const isExpanded = state.expandedPickId === p.pick_id;
-    const badge = renderBadge(p.tier);
+    const badge = renderBadge(p.tier, p.fade);
     const pickLine = renderPickLine(p);
 
     return `
@@ -565,7 +565,7 @@
                 aria-expanded="${isExpanded ? 'true' : 'false'}">
           ${badge}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
+            <div class="ll-row-matchup">${esc(p.matchup || '—')}${p.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
             <div class="ll-row-pick">${pickLine}</div>
             ${p.pending_data ? '<div class="ll-row-pending" style="color:#c9a227;font-style:italic;font-size:0.78em;margin-top:2px;">Pending 2026 data</div>' : ''}
           </div>
@@ -580,7 +580,7 @@
     `;
   }
 
-  function renderBadge(tier) {
+  function renderBadge(tier, fade) {
     // Map tier value to (label, ariaLabel, cssKey). CSS class names are
     // case-sensitive, so we use a sanitized key that matches the CSS.
     const map = {
@@ -593,7 +593,9 @@
       'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
     };
     const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
+    const fadeCls = fade ? ' is-fade' : '';
+    const aria = fade ? `${m.aria} — fade (bet the opposite side)` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}${fadeCls}" aria-label="${aria}">${m.label}</span>`;
   }
 
   function renderPickLine(p) {
@@ -792,9 +794,9 @@
     const rowsHtml = samplePicks.map(p => `
       <article class="ll-row">
         <div class="ll-row-header">
-          ${renderBadge(p.tier)}
+          ${renderBadge(p.tier, p.fade)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
+            <div class="ll-row-matchup">${esc(p.matchup || '—')}${p.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
             <div class="ll-row-pick">${renderPickLine(p)}</div>
           </div>
         </div>

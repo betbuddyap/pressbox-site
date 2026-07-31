@@ -190,8 +190,10 @@
     const ribbonPick = (data.picks || []).find(p => p.tier && p.tier !== 'no_edge');
     if (ribbonPick) {
       const tierClass = TIER_CLASS[ribbonPick.tier] || 'tier-no-edge';
+      const fadeCls = ribbonPick.fade ? ' is-fade' : '';
+      const ribbonLabel = escape(ribbonPick.tier_display || ribbonPick.tier) + (ribbonPick.fade ? ' Fade' : '');
       els.ribbon.outerHTML =
-        `<div class="ctx-ribbon ${tierClass}" id="ctxRibbon">${escape(ribbonPick.tier_display || ribbonPick.tier)}</div>`;
+        `<div class="ctx-ribbon ${tierClass}${fadeCls}" id="ctxRibbon">${ribbonLabel}</div>`;
     } else {
       els.ribbon.outerHTML = `<div id="ctxRibbon"></div>`;
     }
@@ -1115,9 +1117,11 @@
     'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
   };
 
-  function llBadge(tier) {
+  function llBadge(tier, fade) {
     const m = LL_BADGE_MAP[tier] || { label: escape(tier), aria: escape(tier), key: 'no_edge' };
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${m.aria}">${m.label}</span>`;
+    const fadeCls = fade ? ' is-fade' : '';
+    const aria = fade ? `${m.aria} — fade (bet the opposite side)` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}${fadeCls}" aria-label="${aria}">${m.label}</span>`;
   }
 
   function llTierLabel(tier) {
@@ -1203,9 +1207,9 @@
         <button class="ll-row-header" data-action="toggle"
                 aria-controls="ll-acc-${escape(String(p.pick_id || 'ne-' + p.market))}"
                 aria-expanded="false">
-          ${llBadge(p.tier)}
+          ${llBadge(p.tier, p.fade)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${matchupLabel}</div>
+            <div class="ll-row-matchup">${matchupLabel}${p.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
             <div class="ll-row-pick">${llPickLine(p)}</div>
           </div>
           <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
