@@ -731,10 +731,21 @@
   .gc-ribbon.tier-aplus { background: var(--ink); color: var(--gold-light); }
   .gc-ribbon.tier-aplus::after { background: linear-gradient(135deg, var(--ink) 50%, transparent 50%); }
   .gc-pill-tier.tier-aplus, .parlay-leg-tier.tier-aplus { background: var(--ink); color: var(--gold-light); }
-  /* fade = red ring on the tier badge, any tier (separate channel from fill). */
-  .gc-pick-tier.is-fade-gc, .gc-ribbon.is-fade-gc, .gc-pill-tier.is-fade-gc, .parlay-leg-tier.is-fade-gc {
-    outline: 2px solid var(--fade-red); outline-offset: 1px;
+  /* Bolt = streak-alignment marker (fade ring retired w/ the ladder cutover).
+   * Compact 16px chip for the pill-sized gc badges; chip wears the tier color,
+   * bolt wears that tier's text color, ink keyline (gold on A+). */
+  .gc-pick-tier { position: relative; }
+  .gc-bolt {
+    position: absolute; top: -7px; right: -7px; width: 16px; height: 16px;
+    border-radius: 50%; border: 1px solid var(--ink);
+    outline: 2px solid var(--cream);
+    display: flex; align-items: center; justify-content: center;
   }
+  .gc-bolt svg { width: 11px; height: 11px; display: block; }
+  .gc-bolt--a     { background: var(--gold);   color: var(--cream); }
+  .gc-bolt--b     { background: var(--silver); color: var(--ink); }
+  .gc-bolt--c     { background: var(--bronze); color: var(--cream); }
+  .gc-bolt--aplus { background: var(--ink);    color: var(--gold-light); border-color: var(--gold); }
 
   @media (max-width: 720px) {
     .gc.slate { min-height: 168px; }
@@ -1165,14 +1176,18 @@ const CONF_SHORT = {
 
 const TIER_LABEL = { aplus: 'A+', a: 'A', b: 'B', c: 'C', sm: 'Smart $', gl: 'Goldilocks', ls: 'Lottery' };
 const TIER_LABEL_SHORT = { aplus: 'A+', a: 'A', b: 'B', c: 'C', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE' };
-const TIER_KEY = { 'A+': 'aplus', 'A': 'a', 'B': 'b', 'C': 'c', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'no_edge': 'ne' };
+const TIER_KEY = { 'A+': 'aplus', 'A': 'a', 'B': 'b', 'C': 'c', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'ml_pickem': 'aplus', 'no_edge': 'ne' };
+const BOLT_KEYS = { aplus: 1, a: 1, b: 1, c: 1 };
+function gcBolt(slotData, tierKey) {
+  if (!(slotData && slotData.bolt && BOLT_KEYS[tierKey])) return '';
+  return `<span class="gc-bolt gc-bolt--${tierKey}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`;
+}
 // Hero (Game of the Week) pick badge — identical markup/look to the slate cards.
 function gotwSlot(label, slotData) {
   const tierFull = slotData && slotData.tier_full;
   const tierKey = TIER_KEY[tierFull];
   if (tierKey) {
-    const fadeCls = slotData && slotData.fade ? ' is-fade-gc' : '';
-    return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span><span class="gc-pick-tier tier-${tierKey}${fadeCls}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span></div>`;
+    return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span><span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${gcBolt(slotData, tierKey)}</span></div>`;
   }
   return `<div class="gc-pick-slot empty"><span class="gc-pick-label">${label}</span></div>`;
 }
@@ -1598,11 +1613,10 @@ function renderSlateCard(g) {
     }
 
     if (tierKey) {
-      const fadeCls = slotData && slotData.fade ? ' is-fade-gc' : '';
       return `
         <div class="gc-pick-slot has-tier">
           <span class="gc-pick-label">${label}</span>
-          <span class="gc-pick-tier tier-${tierKey}${fadeCls}">${TIER_LABEL_SHORT[tierKey] || tierKey}</span>
+          <span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${gcBolt(slotData, tierKey)}</span>
         </div>
       `;
     }

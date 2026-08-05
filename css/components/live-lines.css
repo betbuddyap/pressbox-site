@@ -391,30 +391,34 @@
   border-color: var(--gold);
 }
 
-/* Fade = bet the OPPOSITE of the model/consensus read. Marked by a red ring
- * around the badge REGARDLESS of tier (a separate channel from the fill), so it
- * composes with A/B/C/A+ alike. outline-offset gives the gap without needing
- * the page-bg color. */
-.ll-badge.is-fade {
-  outline: 2px solid var(--fade-red);
-  outline-offset: 1.5px;
+/* Bolt = the streak-alignment marker (Layer 5). Corner chip on the badge:
+ * chip bg = the tier's badge color, bolt glyph = that badge's TEXT color,
+ * ink keyline (gold on A+), cream outline to separate from any fill.
+ * (The fade red ring is retired — under the ladder, fade lives in the
+ * VOTERS, explained on the game page, never a per-pick badge.) */
+.ll-badge {
+  position: relative;
 }
+.ll-bolt {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  border: 1px solid var(--ink);
+  outline: 2px solid var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ll-bolt svg { width: 13px; height: 13px; display: block; }
+.ll-bolt--A     { background: var(--gold);   color: var(--cream); }
+.ll-bolt--B     { background: var(--silver); color: var(--ink); }
+.ll-bolt--C     { background: var(--bronze); color: var(--cream); }
+.ll-bolt--aplus { background: var(--ink);    color: var(--gold-light); border-color: var(--gold); }
 
-/* Small "Fade" tag next to the pick line — spells out the contrarian side. */
-.fade-tag {
-  display: inline-block;
-  font-size: 9px;
-  line-height: 1.4;
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0 4px;
-  margin-left: 6px;
-  border: 1px solid var(--fade-red);
-  border-radius: var(--radius-sm);
-  color: var(--fade-red);
-  vertical-align: middle;
-}
+/* (fade-tag retired with the red ring — 2026 ladder cutover) */
 
 
 /* ============================================================

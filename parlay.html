@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return { dayLabel, timeLabel, dateKey, timeKey: timeLabel };
   }
 
-  function renderBadge(tier, fade) {
+  function renderBadge(tier, bolt) {
     const map = {
       'A+':          { label: 'A+', aria: 'A+ tier — corroborated top pick', key: 'aplus' },
       'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
@@ -263,12 +263,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
       'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
       'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
+      'ml_pickem':   { label: 'ML', aria: 'A+ moneyline expression', key: 'aplus' },
       'no_edge':     { label: 'NE', aria: 'No edge', key: 'no_edge' },
     };
     const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
-    const fadeCls = fade ? ' is-fade' : '';
-    const aria = fade ? `${m.aria} — fade (bet the opposite side)` : m.aria;
-    return `<span class="ll-badge ll-badge--${m.key}${fadeCls}" aria-label="${aria}">${m.label}</span>`;
+    const boltKey = ({ aplus: 'aplus', A: 'A', B: 'B', C: 'C' })[m.key];
+    const boltHtml = (bolt && boltKey)
+      ? `<span class="ll-bolt ll-bolt--${boltKey}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
+      : '';
+    const aria = bolt ? `${m.aria} — streak-aligned` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}</span>`;
   }
 
   function pickLineText(p) {
@@ -376,9 +380,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `
       <article class="ll-row ${isNoEdge ? 'll-row--no-edge' : ''} ${isSel ? 'pl-selected' : ''}" data-pick-id="${esc(p.pick_id)}">
         <button class="ll-row-header" data-action="select" aria-pressed="${isSel ? 'true' : 'false'}">
-          ${renderBadge(p.tier, p.fade)}
+          ${renderBadge(p.tier, p.bolt)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(p.matchup || '—')}${p.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
+            <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
             <div class="ll-row-pick">${pickLineText(p)}</div>
           </div>
           <span class="pl-check" aria-hidden="true">
@@ -544,9 +548,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const legs = (pre.legs || []).map(leg => `
       <article class="ll-row">
         <div class="ll-row-header" style="cursor:default;">
-          ${renderBadge(leg.tier, leg.fade)}
+          ${renderBadge(leg.tier, leg.bolt)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}${leg.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
+            <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
             <div class="ll-row-pick">${pickLineText(leg)}</div>
           </div>
         </div>

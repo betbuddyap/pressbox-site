@@ -93,6 +93,7 @@
   function tierBadgeKey(slug) {
     if (slug === 'A+')          return 'aplus'; // "+" isn't valid in a class name
     if (slug === 'A' || slug === 'B' || slug === 'C') return slug; // gold/silver/bronze
+    if (slug === 'ml_pickem')   return 'aplus'; // A+ ML expression rides the A+ look
     return slug; // smart_money / goldilocks / lottery already match
   }
 
@@ -105,6 +106,7 @@
     if (slug === 'smart_money') return 'SM';
     if (slug === 'goldilocks')  return 'GL';
     if (slug === 'lottery')     return 'LT';
+    if (slug === 'ml_pickem')   return 'ML';
     return slug;
   }
 

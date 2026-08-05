@@ -555,7 +555,7 @@
   function renderPickRow(p) {
     const isNoEdge = p.tier === 'no_edge';
     const isExpanded = state.expandedPickId === p.pick_id;
-    const badge = renderBadge(p.tier, p.fade);
+    const badge = renderBadge(p.tier, p.bolt);
     const pickLine = renderPickLine(p);
 
     return `
@@ -567,7 +567,7 @@
                 aria-expanded="${isExpanded ? 'true' : 'false'}">
           ${badge}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(p.matchup || '—')}${p.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
+            <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
             <div class="ll-row-pick">${pickLine}</div>
             ${p.pending_data ? '<div class="ll-row-pending" style="color:#c9a227;font-style:italic;font-size:0.78em;margin-top:2px;">Pending 2026 data</div>' : ''}
           </div>
@@ -582,7 +582,7 @@
     `;
   }
 
-  function renderBadge(tier, fade) {
+  function renderBadge(tier, bolt) {
     // Map tier value to (label, ariaLabel, cssKey). CSS class names are
     // case-sensitive, so we use a sanitized key that matches the CSS.
     const map = {
@@ -593,12 +593,18 @@
       'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
       'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
       'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
+      'ml_pickem':   { label: 'ML', aria: 'A+ moneyline expression — near-pickem price', key: 'aplus' },
       'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
     };
     const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
-    const fadeCls = fade ? ' is-fade' : '';
-    const aria = fade ? `${m.aria} — fade (bet the opposite side)` : m.aria;
-    return `<span class="ll-badge ll-badge--${m.key}${fadeCls}" aria-label="${aria}">${m.label}</span>`;
+    // Bolt = streak-alignment marker (corner chip; chip wears the tier color).
+    const boltKey = ({ aplus: 'aplus', A: 'A', B: 'B', C: 'C' })[m.key];
+    const boltHtml = (bolt && boltKey)
+      ? `<span class="ll-bolt ll-bolt--${boltKey}" aria-hidden="true">` +
+        `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
+      : '';
+    const aria = bolt ? `${m.aria} — streak-aligned` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}</span>`;
   }
 
   function renderPickLine(p) {
@@ -797,9 +803,9 @@
     const rowsHtml = samplePicks.map(p => `
       <article class="ll-row">
         <div class="ll-row-header">
-          ${renderBadge(p.tier, p.fade)}
+          ${renderBadge(p.tier, p.bolt)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${esc(p.matchup || '—')}${p.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
+            <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
             <div class="ll-row-pick">${renderPickLine(p)}</div>
           </div>
         </div>

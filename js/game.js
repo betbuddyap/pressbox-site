@@ -35,6 +35,7 @@
     'smart_money':  'tier-sm',
     'goldilocks':   'tier-gl',
     'lottery':      'tier-ls',
+    'ml_pickem':    'tier-aplus', // A+ ML expression rides the A+ treatment
     'no_edge':      'tier-no-edge',
   };
   const TIER_DISPLAY = {
@@ -45,6 +46,7 @@
     'smart_money':  'Smart Money',
     'goldilocks':   'Goldilocks',
     'lottery':      'Lottery',
+    'ml_pickem':    'A+ Moneyline',
     'no_edge':      'No Edge',
   };
   const MARKET_DISPLAY = {
@@ -192,10 +194,12 @@
     const ribbonPick = (data.picks || []).find(p => p.tier && p.tier !== 'no_edge');
     if (ribbonPick) {
       const tierClass = TIER_CLASS[ribbonPick.tier] || 'tier-no-edge';
-      const fadeCls = ribbonPick.fade ? ' is-fade' : '';
-      const ribbonLabel = escape(ribbonPick.tier_display || ribbonPick.tier) + (ribbonPick.fade ? ' Fade' : '');
+      const boltSvg = ribbonPick.bolt
+        ? ' <svg class="ctx-ribbon-bolt" viewBox="0 0 24 24" fill="currentColor" aria-label="streak-aligned"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg>'
+        : '';
+      const ribbonLabel = escape(ribbonPick.tier_display || ribbonPick.tier) + boltSvg;
       els.ribbon.outerHTML =
-        `<div class="ctx-ribbon ${tierClass}${fadeCls}" id="ctxRibbon">${ribbonLabel}</div>`;
+        `<div class="ctx-ribbon ${tierClass}" id="ctxRibbon">${ribbonLabel}</div>`;
     } else {
       els.ribbon.outerHTML = `<div id="ctxRibbon"></div>`;
     }
@@ -1117,14 +1121,19 @@
     'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
     'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
     'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
+    'ml_pickem':   { label: 'ML', aria: 'A+ moneyline expression — near-pickem price', key: 'aplus' },
     'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
   };
 
-  function llBadge(tier, fade) {
+  function llBadge(tier, bolt) {
     const m = LL_BADGE_MAP[tier] || { label: escape(tier), aria: escape(tier), key: 'no_edge' };
-    const fadeCls = fade ? ' is-fade' : '';
-    const aria = fade ? `${m.aria} — fade (bet the opposite side)` : m.aria;
-    return `<span class="ll-badge ll-badge--${m.key}${fadeCls}" aria-label="${aria}">${m.label}</span>`;
+    const boltKey = ({ aplus: 'aplus', A: 'A', B: 'B', C: 'C' })[m.key];
+    const boltHtml = (bolt && boltKey)
+      ? `<span class="ll-bolt ll-bolt--${boltKey}" aria-hidden="true">` +
+        `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
+      : '';
+    const aria = bolt ? `${m.aria} — streak-aligned` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}</span>`;
   }
 
   function llTierLabel(tier) {
@@ -1210,9 +1219,9 @@
         <button class="ll-row-header" data-action="toggle"
                 aria-controls="ll-acc-${escape(String(p.pick_id || 'ne-' + p.market))}"
                 aria-expanded="false">
-          ${llBadge(p.tier, p.fade)}
+          ${llBadge(p.tier, p.bolt)}
           <div class="ll-row-content">
-            <div class="ll-row-matchup">${matchupLabel}${p.fade ? '<span class="fade-tag">Fade</span>' : ''}</div>
+            <div class="ll-row-matchup">${matchupLabel}</div>
             <div class="ll-row-pick">${llPickLine(p)}</div>
           </div>
           <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
