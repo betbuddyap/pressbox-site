@@ -679,9 +679,12 @@
     const anchorIsHome = !!(anchor || {}).is_home;
     const anchorName = anchorIsHome ? home : away;
     const otherName  = anchorIsHome ? away : home;
+    // Labels carry the HOME team's win% — the axis is hero-oriented (home
+    // owns the right side), so bigger % sits further right, matching the dots.
     const probByName = {};
     (ml.models || []).forEach(m => {
-      if (m.anchor_prob != null) probByName[m.name] = `${Math.round(m.anchor_prob * 100)}%`;
+      const hp = anchorIsHome ? m.anchor_prob : m.other_prob;
+      if (hp != null) probByName[m.name] = `${Math.round(hp * 100)}%`;
     });
     const vg = ml.vegas_anchor_implied;
     const vegasHead = (vg != null)
@@ -704,9 +707,10 @@
       pressbox_display: null,
       vegas_display:    null,
     };
-    return buildDotPlot(`Moneyline — who wins`, section, 'anchor_spread',
+    return buildDotPlot(`Moneyline — chance ${home} wins`, section, 'anchor_spread',
                         anchor, null, mlPick,
-                        { ml: { vegasHead, probByName, note, ends: [anchorName, otherName] } });
+                        { ml: { vegasHead, probByName, note,
+                                ends: [`${away} wins`, `${home} wins`] } });
   }
 
   function buildTally(p) {
@@ -738,6 +742,8 @@
   function renderBeats(data) {
     const proj = data.projections || {};
     const anchor = proj.anchor || {};
+    const awayN = data.game?.away?.name || 'Away';
+    const homeN = data.game?.home?.name || 'Home';
     const byMkt = {};
     (data.picks || []).forEach(p => { byMkt[p.market] = p; });
 
@@ -750,13 +756,13 @@
     if (els.beat2Stack) {
       els.beat2Stack.innerHTML = '';
       if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread));
-      if (proj.spread)  els.beat2Stack.appendChild(buildDotPlot('Spread', proj.spread, 'anchor_spread', anchor, null, byMkt.spread));
+      if (proj.spread)  els.beat2Stack.appendChild(buildDotPlot('Spread', proj.spread, 'anchor_spread', anchor, null, byMkt.spread, { ends: [awayN, homeN] }));
       if (byMkt.spread) { const t = buildTally(byMkt.spread); if (t) els.beat2Stack.appendChild(t); }
     }
     if (els.beat3Stack) {
       els.beat3Stack.innerHTML = '';
       if (byMkt.total) els.beat3Stack.appendChild(buildPickArticle(byMkt.total));
-      if (proj.total)  els.beat3Stack.appendChild(buildDotPlot('Total', proj.total, 'total', anchor, null, byMkt.total));
+      if (proj.total)  els.beat3Stack.appendChild(buildDotPlot('Total', proj.total, 'total', anchor, null, byMkt.total, { ends: ['Under', 'Over'] }));
       if (byMkt.total) { const t = buildTally(byMkt.total); if (t) els.beat3Stack.appendChild(t); }
     }
   }
@@ -850,14 +856,23 @@
     // only asks who wins, and in margin space the win/lose boundary is 0.
     // Dots stay at each model's projected margin; labels show win probability.
     const ml = (opts && opts.ml) || null;
+    // HERO ORIENTATION (site rule): the page's left side belongs to the away
+    // team, the right to the home team — every chart follows the hero. The
+    // backend serves spreads in ANCHOR frame (anchor = the favorite), so when
+    // the anchor is the HOME team the whole axis mirrors (x -> -x) into
+    // home-margin space: right of zero = home wins/covers by more.
+    const heroFlip = key === 'anchor_spread' && !!(anchor && anchor.is_home);
+    const hv   = v => (v == null ? null : (heroFlip ? -v : v));
+    const fmtM = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10);
     const vegasPos     = ml ? 0
-                        : key === 'anchor_spread' ? section.vegas_anchor_spread : section.vegas_line;
+                        : key === 'anchor_spread' ? hv(section.vegas_anchor_spread) : section.vegas_line;
     // When a graded pick exists, suppress the aggregate blend dot — the pick
     // came from the ladder's votes, not the blend; the gold zone marks the
     // side instead, so the chart and verdict tell one story.
     const hasPick      = !!(pick && pick.tier && pick.tier !== 'no_edge');
-    const blendPos     = (firingModel || hasPick || ml) ? null : section.pressbox_blend;
-    const blendDisplay = section.pressbox_display;
+    const blendRaw     = (firingModel || hasPick || ml) ? null : section.pressbox_blend;
+    const blendPos     = key === 'anchor_spread' ? hv(blendRaw) : blendRaw;
+    const blendDisplay = (heroFlip && blendPos != null) ? fmtM(blendPos) : section.pressbox_display;
     const vegasDisplay = section.vegas_display;
 
     // Optional Vegas price tag. e.g. "Vegas: TCU -2.5 (-110)"
@@ -873,10 +888,12 @@
     const points = [];
     (section.models || []).forEach(m => {
       if (m[key] == null) return;
+      const v = key === 'anchor_spread' ? hv(m[key]) : m[key];
       points.push({
         name:    m.name,
-        value:   m[key],
+        value:   v,
         display: ml ? (ml.probByName[m.name] || m.display || String(m[key]))
+                    : heroFlip ? fmtM(v)
                     : (m.display || String(m[key])),
         kind:    'model',
       });
@@ -899,8 +916,12 @@
     // dots will sit at the axis edge; the chart stays readable.
     const histRange = section.historical_range || null;
     const pickSideRaw = hasPick ? (pick.history?.current?.side_raw || null) : null;
-    const histLow   = histRange?.low ?? null;
-    const histHigh  = histRange?.high ?? null;
+    let histLow   = histRange?.low ?? null;
+    let histHigh  = histRange?.high ?? null;
+    if (heroFlip && histLow != null && histHigh != null) {
+      const a = -histLow, b = -histHigh;
+      histLow = Math.min(a, b); histHigh = Math.max(a, b);
+    }
     // Frame the axis to FIT everything — model dots, Vegas, the blend, and the
     // outcome bubble — centered on the model cluster, so no read sits stranded
     // in empty space. A single wild model can't squash the rest: if the full
@@ -985,10 +1006,10 @@
     let pickZone = null;
     if (hasPick && vegasPos != null && pickSideRaw) {
       if (key === 'anchor_spread' && (pickSideRaw === 'home' || pickSideRaw === 'away')) {
-        const anchorSide = anchor.is_home ? 'home' : 'away';
-        pickZone = (pickSideRaw === anchorSide)
-          ? { z0: 0, z1: xPct(vegasPos), goldLeft: true }
-          : { z0: xPct(vegasPos), z1: 100, goldLeft: false };
+        // Hero frame: right of the line = home covers/wins, left = away.
+        pickZone = (pickSideRaw === 'home')
+          ? { z0: xPct(vegasPos), z1: 100, goldLeft: false }
+          : { z0: 0, z1: xPct(vegasPos), goldLeft: true };
       } else if (key === 'total' && (pickSideRaw === 'over' || pickSideRaw === 'under')) {
         pickZone = (pickSideRaw === 'over')
           ? { z0: xPct(vegasPos), z1: 100, goldLeft: false }
@@ -1025,7 +1046,10 @@
     // The curve carries SHAPE (where outcomes pool); the y-values are
     // normalized to peak=1 by the backend so every game's curve renders
     // to the same pixel height. Drawn FIRST so it sits behind everything.
-    const densityCurve = histRange?.density_curve || [];
+    let densityCurve = histRange?.density_curve || [];
+    if (heroFlip && densityCurve.length) {
+      densityCurve = densityCurve.map(([x, y]) => [-x, y]).sort((p, q) => p[0] - q[0]);
+    }
     if (densityCurve.length >= 3) {
       // Build the mirrored polygon: top edge left-to-right, then bottom
       // edge right-to-left, all expressed in viewBox units (0-1000 x,
@@ -1246,12 +1270,15 @@
       laneNodes[lane].appendChild(lbl);
     });
 
-    // ML mode furniture: directional ends above the plot, history note below.
-    if (ml && ml.ends) {
+    // Side-ownership furniture: directional ends above the plot (hero rule —
+    // away owns the left, home the right; total uses Under/Over), and the
+    // ML history note below.
+    const endsPair = ml ? ml.ends : (opts && opts.ends);
+    if (endsPair) {
       const ends = document.createElement('div');
       ends.className = 'mlstrip-ends';
-      ends.innerHTML = `<span>← ${escape(ml.ends[0])} wins</span>` +
-                       `<span>${escape(ml.ends[1])} wins →</span>`;
+      ends.innerHTML = `<span>← ${escape(endsPair[0])}</span>` +
+                       `<span>${escape(endsPair[1])} →</span>`;
       card.insertBefore(ends, card.querySelector('.strip-plot'));
     }
     if (ml && ml.note) {
