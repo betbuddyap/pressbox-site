@@ -654,7 +654,13 @@
         `<div class="dna-bar"><i style="left:${(50 + off).toFixed(1)}%;width:4%"></i></div>` +
         `<div class="dna-v"><b>${escape(d.pace.label)}</b> · ~${d.pace.plays} plays/team</div></div>`);
     }
-    el.innerHTML = items.join('');
+    // Header anchors the bar directions: away team owns the left half,
+    // home team the right — a bar leaning left = edge to the away side.
+    el.innerHTML =
+      `<div class="dna-head"><span>← ${escape(away)}</span>` +
+      `<span class="dna-head-mid">Matchup DNA</span>` +
+      `<span>${escape(home)} →</span></div>` +
+      `<div class="dna-items">${items.join('')}</div>`;
     el.style.display = '';
   }
 
@@ -880,6 +886,7 @@
     // on a -1 game) doesn't stretch the entire chart. Out-of-range
     // dots will sit at the axis edge; the chart stays readable.
     const histRange = section.historical_range || null;
+    const pickSideRaw = hasPick ? (pick.history?.current?.side_raw || null) : null;
     const histLow   = histRange?.low ?? null;
     const histHigh  = histRange?.high ?? null;
     // Frame the axis to FIT everything — model dots, Vegas, the blend, and the
@@ -957,28 +964,32 @@
     const below   = card.querySelector('.strip-labels-below');
     const ticksEl = card.querySelector('.strip-ticks');
 
-    // Picked-side zone — the stretch of the axis where the pick cashes.
+    // Picked-side geometry — which stretch of the axis cashes the pick.
     // Anchor-frame spreads: values MORE NEGATIVE than the line favor the
     // anchor side; totals: over cashes above the line, under below.
-    if (hasPick && vegasPos != null) {
-      const sideRaw = pick.history?.current?.side_raw || null;
-      let z0 = null, z1 = null;
-      if (key === 'anchor_spread' && (sideRaw === 'home' || sideRaw === 'away')) {
+    // Rendered as a GRADIENT on the historical curve (gold side = we cash,
+    // blue side = we don't); the flat gold zone is only the no-curve fallback.
+    let pickZone = null;
+    if (hasPick && vegasPos != null && pickSideRaw) {
+      if (key === 'anchor_spread' && (pickSideRaw === 'home' || pickSideRaw === 'away')) {
         const anchorSide = anchor.is_home ? 'home' : 'away';
-        if (sideRaw === anchorSide) { z0 = 0; z1 = xPct(vegasPos); }
-        else                        { z0 = xPct(vegasPos); z1 = 100; }
-      } else if (key === 'total' && (sideRaw === 'over' || sideRaw === 'under')) {
-        if (sideRaw === 'over') { z0 = xPct(vegasPos); z1 = 100; }
-        else                    { z0 = 0; z1 = xPct(vegasPos); }
+        pickZone = (pickSideRaw === anchorSide)
+          ? { z0: 0, z1: xPct(vegasPos), goldLeft: true }
+          : { z0: xPct(vegasPos), z1: 100, goldLeft: false };
+      } else if (key === 'total' && (pickSideRaw === 'over' || pickSideRaw === 'under')) {
+        pickZone = (pickSideRaw === 'over')
+          ? { z0: xPct(vegasPos), z1: 100, goldLeft: false }
+          : { z0: 0, z1: xPct(vegasPos), goldLeft: true };
       }
-      if (z0 != null && z1 - z0 > 0) {
-        const zone = document.createElement('div');
-        zone.className = 'strip-zone';
-        zone.style.left = z0 + '%';
-        zone.style.width = (z1 - z0) + '%';
-        zone.title = 'Where our pick cashes';
-        axisEl.insertBefore(zone, axisEl.firstChild);
-      }
+    }
+    if (pickZone && pickZone.z1 - pickZone.z0 > 0
+        && !((histRange?.density_curve || []).length >= 3)) {
+      const zone = document.createElement('div');
+      zone.className = 'strip-zone';
+      zone.style.left = pickZone.z0 + '%';
+      zone.style.width = (pickZone.z1 - pickZone.z0) + '%';
+      zone.title = 'Where our pick cashes';
+      axisEl.insertBefore(zone, axisEl.firstChild);
     }
 
     // Axis tick labels
@@ -1053,6 +1064,29 @@
       svg.setAttribute('preserveAspectRatio', 'none');
       const path = document.createElementNS(svgNS, 'path');
       path.setAttribute('d', d);
+      // Pick-aware two-tone: the curve keeps its shape, but the side of the
+      // Vegas line where OUR PICK CASHES turns gold; the rest stays blue.
+      // Hard gradient stop at the line — no mud, one element, real meaning.
+      if (pickZone && vegasPos != null) {
+        const gid = 'histgrad-' + key + '-' + Math.round(xPct(vegasPos) * 10);
+        const frac = Math.max(0, Math.min(1, xPct(vegasPos) / 100));
+        const GOLD = 'rgba(184,146,42,0.30)', BLUE = 'rgba(76,124,168,0.18)';
+        const L = pickZone.goldLeft ? GOLD : BLUE;
+        const R = pickZone.goldLeft ? BLUE : GOLD;
+        const defs = document.createElementNS(svgNS, 'defs');
+        const grad = document.createElementNS(svgNS, 'linearGradient');
+        grad.setAttribute('id', gid);
+        [[0, L], [frac, L], [frac, R], [1, R]].forEach(([off, col]) => {
+          const st = document.createElementNS(svgNS, 'stop');
+          st.setAttribute('offset', off);
+          st.setAttribute('stop-color', col);
+          grad.appendChild(st);
+        });
+        defs.appendChild(grad);
+        svg.appendChild(defs);
+        path.style.fill = `url(#${gid})`;
+        path.style.stroke = 'rgba(107,100,85,0.35)';
+      }
       svg.appendChild(path);
       const tip = histRange?.sample_size
         ? `Historical outcome density for games at this Vegas line (n=${histRange.sample_size})`

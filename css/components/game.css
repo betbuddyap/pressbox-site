@@ -1699,14 +1699,29 @@ footer {
 
 /* Matchup DNA (beat 0) */
 .dna-strip {
-  display: flex;
-  gap: var(--space-4);
   background: #FFFFFF;
   border: 0.5px solid var(--border);
   border-radius: 12px;
   padding: var(--space-3) var(--space-4);
   margin: var(--space-4) 0;
 }
+.dna-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+  margin-bottom: var(--space-3);
+}
+.dna-head-mid {
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.dna-items { display: flex; gap: var(--space-4); }
 .dna-item { flex: 1; min-width: 0; }
 .dna-k {
   font-size: 10px;
@@ -1729,7 +1744,7 @@ footer {
 }
 .dna-v { font-size: 11.5px; color: var(--text-mid); }
 .dna-v b { color: var(--ink); }
-@media (max-width: 720px) { .dna-strip { flex-wrap: wrap; } .dna-item { flex: 1 1 42%; } }
+@media (max-width: 720px) { .dna-items { flex-wrap: wrap; } .dna-item { flex: 1 1 42%; } }
 
 /* ML dot strip (beat 1) — same visual atoms as the spread/total charts:
  * 2px border rail, 10px text-mid dots w/ white ring, 1.5px ink Vegas line. */
@@ -1740,7 +1755,7 @@ footer {
   color: var(--text-light); font-weight: var(--weight-bold);
   margin: var(--space-3) 0 0;
 }
-.mlstrip-axis { position: relative; height: 84px; margin: 0 6px; }
+.mlstrip-axis { position: relative; height: 84px; margin: 0 12px; }
 .mlstrip-rail { position: absolute; left: 0; right: 0; top: 54px; height: 2px; background: var(--border); border-radius: 1px; }
 .mlstrip-tick { position: absolute; top: 26px; width: 1.5px; height: 56px; background: var(--ink); transform: translateX(-50%); z-index: 3; }
 .mlstrip-ticklab { position: absolute; top: 8px; font-family: var(--sans); font-size: 11px; color: var(--ink); font-weight: 700; letter-spacing: 0.3px; transform: translateX(-50%); white-space: nowrap; }
