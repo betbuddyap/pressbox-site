@@ -110,12 +110,12 @@
     projHomeLbl: $('ctxProjHomeLbl'),
     meta:      $('ctxMeta'),
 
-    // Sections
-    storylineLede:  $('storylineLede'),
-    storylineText:  $('storylineText'),
-    storylineMeta:  $('storylineMeta'),
-    readStack:      $('readStack'),
-    pickStack:      $('pickStack'),
+    // Sections (4-beat layout)
+    dnaStrip:       $('dnaStrip'),
+    beat1Stack:     $('beat1Stack'),
+    beat2Stack:     $('beat2Stack'),
+    beat3Stack:     $('beat3Stack'),
+    receiptStack:   $('receiptStack'),
     numbersStack:   $('numbersStack'),
     seriesSection:  $('seriesSection'),
     seriesSummary:  $('seriesSummary'),
@@ -620,6 +620,192 @@
     if (p.spread)    els.readStack.appendChild(buildDotPlot('Spread', p.spread, 'anchor_spread', anchor, firingByMarket.spread));
     if (p.total)     els.readStack.appendChild(buildDotPlot('Total',  p.total,  'total', anchor, firingByMarket.total));
     if (p.moneyline) els.readStack.appendChild(buildMLRows(data, p.moneyline, anchor, firingByMarket.moneyline));
+  }
+
+  /* ───────────────────────────────────────────────────────────
+   * 4-BEAT LAYOUT — Matchup DNA, beats 1-3, The Receipt
+   * ─────────────────────────────────────────────────────────── */
+
+  function renderDNA(data) {
+    const el = els.dnaStrip;
+    if (!el) return;
+    const d = data.dna;
+    if (!d || !Object.keys(d).length) { el.style.display = 'none'; return; }
+    const away = data.game?.away?.name || 'Away';
+    const home = data.game?.home?.name || 'Home';
+    const sideName = s => (s === 'home' ? home : away);
+    const item = (k, m) => {
+      const mag = Math.max(4, Math.min(46, Math.abs(m.sigma) * 24));
+      const left = m.side === 'home' ? 50 : 50 - mag;
+      const v = m.label === 'even'
+        ? '<b>even</b>'
+        : `<b>${escape(sideName(m.side))}</b> · ${escape(m.label)}`;
+      return `<div class="dna-item"><div class="dna-k">${k}</div>` +
+             `<div class="dna-bar"><i style="left:${left}%;width:${mag}%"></i></div>` +
+             `<div class="dna-v">${v}</div></div>`;
+    };
+    const items = [];
+    if (d.talent)        items.push(item('Talent', d.talent));
+    if (d.trench)        items.push(item('Trenches', d.trench));
+    if (d.explosiveness) items.push(item('Explosiveness', d.explosiveness));
+    if (d.pace) {
+      const off = Math.max(-46, Math.min(46, d.pace.sigma * 24));
+      items.push(`<div class="dna-item"><div class="dna-k">Pace</div>` +
+        `<div class="dna-bar"><i style="left:${(50 + off).toFixed(1)}%;width:4%"></i></div>` +
+        `<div class="dna-v"><b>${escape(d.pace.label)}</b> · ~${d.pace.plays} plays/team</div></div>`);
+    }
+    el.innerHTML = items.join('');
+    el.style.display = '';
+  }
+
+  function buildMLStrip(data, ml) {
+    const card = document.createElement('div');
+    card.className = 'game-card mlstrip-card';
+    const away = data.game?.away?.name || 'Away';
+    const home = data.game?.home?.name || 'Home';
+    const anchorIsHome = !!((data.projections || {}).anchor || {}).is_home;
+    const homeProb = m => (anchorIsHome ? m.anchor_prob : m.other_prob);
+    let html = `<div class="mlstrip-ends"><span>${escape(away).toUpperCase()} WINS</span>` +
+               `<span>${escape(home).toUpperCase()} WINS</span></div>` +
+               `<div class="mlstrip-axis"><div class="mlstrip-rail"></div>`;
+    const vg = anchorIsHome ? ml.vegas_anchor_implied : ml.vegas_other_implied;
+    if (vg != null) {
+      const x = (vg * 100).toFixed(1);
+      html += `<div class="mlstrip-tick" style="left:${x}%"></div>` +
+              `<div class="mlstrip-ticklab" style="left:${x}%">VEGAS ${(vg * 100).toFixed(0)}%</div>`;
+    }
+    (ml.models || []).forEach((m, i) => {
+      const hp = homeProb(m);
+      if (hp == null) return;
+      const x = (hp * 100).toFixed(1);
+      html += `<div class="mlstrip-dot" style="left:${x}%"></div>` +
+              `<div class="mlstrip-lab${i % 2 ? ' lo' : ''}" style="left:${x}%">` +
+              `${escape(m.name)}<b>${(hp * 100).toFixed(0)}%</b></div>`;
+    });
+    html += '</div>';
+    card.innerHTML = html;
+    return card;
+  }
+
+  function buildTally(p) {
+    const det = p.voter_details || [];
+    if (!det.length) return null;
+    const net = p.net_votes != null ? p.net_votes : det.length;
+    const against = Math.max(0, det.length - net);
+    const wrap = document.createElement('div');
+    wrap.className = 'game-card tally-card';
+    const chips = det.map(v => {
+      const tip = v.family === 'counter'
+        ? ' title="Counter-signal: one of our own reads leans the other way — in a spot where it has been reliably wrong, so its lean counts FOR this side."'
+        : '';
+      return `<span class="vchip vchip--${escape(v.family)}"${tip}>` +
+             `<span class="vsq"></span>${escape(v.label)}</span>`;
+    }).join('');
+    wrap.innerHTML =
+      `<div class="tally-grid">` +
+      `<div class="vchips">${chips}</div>` +
+      `<div class="tally-net"><div class="n">${det.length}–${against}</div>` +
+      `<div class="k">net ${net} · ${escape(p.tier_display || p.tier || '')}</div></div>` +
+      `<div class="vchips vchips--right"><span class="vopp">${against
+        ? against + ' opposing signal' + (against > 1 ? 's' : '')
+        : 'no opposing signals'}</span></div>` +
+      `</div>`;
+    return wrap;
+  }
+
+  function renderBeats(data) {
+    const proj = data.projections || {};
+    const anchor = proj.anchor || {};
+    const byMkt = {};
+    (data.picks || []).forEach(p => { byMkt[p.market] = p; });
+
+    if (els.beat1Stack) {
+      els.beat1Stack.innerHTML = '';
+      if (byMkt.moneyline) els.beat1Stack.appendChild(buildPickArticle(byMkt.moneyline));
+      if (proj.moneyline)  els.beat1Stack.appendChild(buildMLStrip(data, proj.moneyline));
+    }
+    if (els.beat2Stack) {
+      els.beat2Stack.innerHTML = '';
+      if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread));
+      if (proj.spread)  els.beat2Stack.appendChild(buildDotPlot('Spread', proj.spread, 'anchor_spread', anchor, null));
+      if (byMkt.spread) { const t = buildTally(byMkt.spread); if (t) els.beat2Stack.appendChild(t); }
+    }
+    if (els.beat3Stack) {
+      els.beat3Stack.innerHTML = '';
+      if (byMkt.total) els.beat3Stack.appendChild(buildPickArticle(byMkt.total));
+      if (proj.total)  els.beat3Stack.appendChild(buildDotPlot('Total', proj.total, 'total', anchor, null));
+      if (byMkt.total) { const t = buildTally(byMkt.total); if (t) els.beat3Stack.appendChild(t); }
+    }
+  }
+
+  function opiBox(name, o) {
+    if (!o || o.score == null) {
+      return `<div class="opi-box"><div class="t">${escape(name)}</div>` +
+             `<div class="s">Not enough games yet — the index starts after three played.</div></div>`;
+    }
+    const bandTxt = {
+      hot_hype:    'running hot — the market historically overprices this band',
+      hot_breakout:'breakout pace — keeps beating projections',
+      cold_deep:   'deep cold — the market historically over-fades this band',
+      cold_mild:   'mildly under projection',
+    }[o.band] || 'playing to projection';
+    const mag = Math.max(3, Math.min(46, Math.abs(o.score) * 5));
+    const left = o.score >= 0 ? 50 : 50 - mag;
+    return `<div class="opi-box"><div class="t">${escape(name)}</div>` +
+           `<div class="opi-bar"><i style="left:${left}%;width:${mag}%"></i></div>` +
+           `<div class="s"><b>${o.score > 0 ? '+' : ''}${o.score}/gm</b> vs projection ` +
+           `over ${o.games} games · ${bandTxt}</div></div>`;
+  }
+
+  function renderReceipt(data) {
+    const el = els.receiptStack;
+    if (!el) return;
+    el.innerHTML = '';
+    const away = data.game?.away?.name || 'Away';
+    const home = data.game?.home?.name || 'Home';
+    if (data.opi) {
+      const box = document.createElement('div');
+      box.className = 'game-card';
+      box.innerHTML = `<div class="receipt-eyebrow">Form vs our projections — the Overperformance Index</div>` +
+        `<div class="opi-grid">${opiBox(home, data.opi.home)}${opiBox(away, data.opi.away)}</div>`;
+      el.appendChild(box);
+    }
+    const seen = {};
+    (data.picks || []).forEach(p => (p.voter_details || []).forEach(v => {
+      if (v.id && !seen[v.id]) seen[v.id] = v;
+    }));
+    const sigs = Object.values(seen);
+    if (sigs.length) {
+      const box = document.createElement('div');
+      box.className = 'game-card';
+      box.innerHTML = `<div class="receipt-eyebrow">The signals behind this game</div>` +
+        `<table class="sig-table"><thead><tr><th>Signal</th><th>Family</th><th>2026 record</th></tr></thead><tbody>` +
+        sigs.map(v => `<tr data-rule="${escape(v.id)}"><td>${escape(v.label)}</td>` +
+          `<td>${escape(v.family)}</td><td class="sig-rec">—</td></tr>`).join('') +
+        `</tbody></table>` +
+        `<div class="receipt-hash">Every signal above was pre-registered and sealed before the season ` +
+        `— nothing added, nothing curated. Verify: <code>sha256 e4776fd1cbd58d2b…3a145e</code> · ` +
+        `<a href="${API_BASE}/canonical/ledger.csv?season=2026">full ledger CSV ↗</a></div>`;
+      el.appendChild(box);
+      fillSigRecords(box);
+    }
+  }
+
+  async function fillSigRecords(box) {
+    try {
+      const res = await fetch(`${API_BASE}/canonical/ledger?season=2026`);
+      const j = await res.json();
+      const last = {};
+      (j.rows || []).forEach(r => {
+        if (r.line && r.line.indexOf('rule:') === 0) last[r.line.slice(5)] = r;
+      });
+      box.querySelectorAll('tr[data-rule]').forEach(tr => {
+        const r = last[tr.getAttribute('data-rule')];
+        tr.querySelector('.sig-rec').textContent = r
+          ? `${r.running_wins}–${r.running_losses} (${r.running_pct != null ? r.running_pct + '%' : '—'})`
+          : '0–0 · frozen Aug 5';
+      });
+    } catch (e) { /* records stay as dashes */ }
   }
 
   /**
@@ -1189,20 +1375,7 @@
     `;
   }
 
-  function renderPicks(data) {
-    els.pickStack.innerHTML = '';
-    const picks = data.picks || [];
-    if (!picks.length) {
-      els.pickStack.innerHTML = `
-        <div class="pick-empty">
-          <div class="pick-empty-icon">i</div>
-          <div>No pick data available for this game yet.</div>
-        </div>
-      `;
-      return;
-    }
-
-    picks.forEach(p => {
+  function buildPickArticle(p) {
       const isNoEdge = p.tier === 'no_edge';
       const article = document.createElement('article');
       article.className = isNoEdge ? 'll-row ll-row--no-edge' : 'll-row';
@@ -1403,8 +1576,7 @@
         });
       }
 
-      els.pickStack.appendChild(article);
-    });
+      return article;
   }
 
   function formatSignedNumber(n) {
@@ -1647,9 +1819,9 @@
     // Render everything
     try {
       renderHero(data);
-      renderStoryline(data);
-      renderRead(data);
-      renderPicks(data);
+      renderDNA(data);
+      renderBeats(data);
+      renderReceipt(data);
       renderNumbers(data);
       renderSeries(data);
     } catch (e) {

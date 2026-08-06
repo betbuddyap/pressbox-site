@@ -1685,3 +1685,114 @@ footer {
   .numbers-card-head { padding: 10px 12px 8px; }
   .numbers-rows { padding: 2px 10px 6px; }
 }
+
+/* ============================================================
+ * 4-BEAT LAYOUT — Matchup DNA, ML strip, Vote Tally, Receipt
+ * ============================================================ */
+
+/* Matchup DNA (beat 0) */
+.dna-strip {
+  display: flex;
+  gap: var(--space-4);
+  background: #FFFFFF;
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-4) 0;
+}
+.dna-item { flex: 1; min-width: 0; }
+.dna-k {
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  font-weight: var(--weight-bold);
+}
+.dna-bar {
+  position: relative;
+  height: 6px;
+  background: var(--cream-dark);
+  border-radius: 3px;
+  margin: 5px 0 4px;
+}
+.dna-bar i {
+  position: absolute; top: 0; bottom: 0;
+  background: var(--gold);
+  border-radius: 3px;
+}
+.dna-v { font-size: 11.5px; color: var(--text-mid); }
+.dna-v b { color: var(--ink); }
+@media (max-width: 720px) { .dna-strip { flex-wrap: wrap; } .dna-item { flex: 1 1 42%; } }
+
+/* ML dot strip (beat 1) */
+.mlstrip-card { padding-bottom: var(--space-5); }
+.mlstrip-ends {
+  display: flex; justify-content: space-between;
+  font-size: 10px; letter-spacing: 0.03em; color: var(--text-light);
+  font-weight: var(--weight-bold);
+  margin-bottom: 2px;
+}
+.mlstrip-axis { position: relative; height: 76px; margin: 0 6px; }
+.mlstrip-rail { position: absolute; left: 0; right: 0; top: 48px; height: 2px; background: var(--border); }
+.mlstrip-tick { position: absolute; top: 38px; width: 2px; height: 22px; background: var(--rust); transform: translateX(-50%); }
+.mlstrip-ticklab { position: absolute; top: 62px; font-size: 10px; color: var(--rust); font-weight: var(--weight-bold); transform: translateX(-50%); white-space: nowrap; }
+.mlstrip-dot { position: absolute; top: 43px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2.5px solid var(--ink); transform: translateX(-50%); }
+.mlstrip-lab { position: absolute; top: 8px; font-size: 10px; color: var(--text-mid); transform: translateX(-50%); text-align: center; line-height: 1.25; white-space: nowrap; }
+.mlstrip-lab.lo { top: 22px; }
+.mlstrip-lab b { display: block; color: var(--ink); font-family: var(--sans); }
+
+/* Vote tally (beats 2-3) */
+.tally-grid {
+  display: grid;
+  grid-template-columns: 1fr 84px 1fr;
+  align-items: center;
+  gap: var(--space-3);
+}
+.vchips { display: flex; gap: 6px; flex-wrap: wrap; }
+.vchips--right { justify-content: flex-end; }
+.vchip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: var(--weight-bold);
+  padding: 3px 8px; border-radius: 10px;
+  border: 1px solid var(--ink); background: var(--cream);
+  cursor: default;
+}
+.vchip .vsq { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.vchip--model .vsq { background: var(--gold); }
+.vchip--consensus .vsq { background: var(--ink); }
+.vchip--situational .vsq { background: var(--silver); }
+.vchip--counter .vsq { background: #fff; border: 2px solid var(--rust); width: 6px; height: 6px; border-radius: 50%; }
+.vopp { font-size: 11px; color: var(--text-light); }
+.tally-net { text-align: center; }
+.tally-net .n { font-family: var(--serif); font-weight: var(--weight-bold); font-size: 22px; }
+.tally-net .k { font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-mid); }
+@media (max-width: 720px) {
+  .tally-grid { grid-template-columns: 1fr; }
+  .vchips--right { justify-content: flex-start; }
+  .tally-net { order: -1; }
+}
+
+/* The Receipt (beat 4) */
+.receipt-eyebrow {
+  font-size: 11px; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--gold); font-weight: var(--weight-bold);
+  margin-bottom: var(--space-3);
+}
+.opi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+@media (max-width: 720px) { .opi-grid { grid-template-columns: 1fr; } }
+.opi-box { background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: var(--space-3); }
+.opi-box .t { font-weight: var(--weight-bold); font-size: 13px; }
+.opi-box .s { font-size: 11.5px; color: var(--text-mid); margin-top: 4px; line-height: 1.45; }
+.opi-box .s b { color: var(--ink); font-family: var(--sans); }
+.opi-bar { position: relative; height: 6px; background: var(--cream-dark); border-radius: 3px; margin-top: 8px; }
+.opi-bar i { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: var(--gold); }
+.sig-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.sig-table th {
+  text-align: left; font-size: 10px; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--text-mid); padding: 4px 6px; border-bottom: 1px solid var(--ink);
+}
+.sig-table td { padding: 6px; border-bottom: 1px solid var(--cream-dark); vertical-align: top; }
+.sig-rec { white-space: nowrap; font-family: var(--sans); }
+.receipt-hash { font-size: 10.5px; color: var(--text-light); margin-top: var(--space-3); line-height: 1.5; }
+.receipt-hash code { background: var(--cream-dark); padding: 1px 5px; border-radius: 3px; font-size: 9.5px; }
+.receipt-hash a { color: var(--gold); }

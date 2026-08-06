@@ -14,7 +14,7 @@
 <!-- Tokens FIRST, then components -->
 <link rel="stylesheet" href="/css/tokens.css">
 <link rel="stylesheet" href="/css/components/live-lines.css">
-<link rel="stylesheet" href="/css/components/game.css">
+<link rel="stylesheet" href="/css/components/game.css?v=20260805b">
 
 <style>
   /* ── Site nav (kept in sync across pages) ── */
@@ -260,46 +260,53 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <!-- MAIN COLUMN -->
   <main class="game-main">
 
-    <!-- ZONE 2: STORYLINE (narrative) -->
-    <section class="game-section" id="storylineSection">
+    <!-- MATCHUP DNA (beat 0 — primes the page) -->
+    <div class="dna-strip" id="dnaStrip" style="display:none;"></div>
+
+    <!-- BEAT 1: WHO WINS (moneyline) -->
+    <section class="game-section" id="beat1Section">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">— PRESSBOX TAKE</div>
-          <h2 class="game-section-title">The <em>Storyline</em></h2>
+          <div class="game-section-eyebrow">— 1 · WHO WINS</div>
+          <h2 class="game-section-title">Straight <em>up</em>.</h2>
+          <p class="game-section-deck">Five win probabilities against the market's own number.</p>
         </div>
       </header>
-      <div class="game-card storyline-card" id="storylineCard">
-        <div class="storyline-lede" id="storylineLede" style="display:none;"></div>
-        <div class="storyline-text" id="storylineText"></div>
-        <div class="storyline-meta" id="storylineMeta"></div>
-      </div>
+      <div class="beat-stack" id="beat1Stack"></div>
     </section>
 
-    <!-- ZONE 3: THE READ (five-model projections) -->
-    <section class="game-section" id="readSection">
+    <!-- BEAT 2: THE MARGIN (spread) -->
+    <section class="game-section" id="beat2Section">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">— THE READ</div>
-          <h2 class="game-section-title">Five models. <em>One question.</em></h2>
-          <p class="game-section-deck">Where the market is, where we are.</p>
+          <div class="game-section-eyebrow">— 2 · THE MARGIN</div>
+          <h2 class="game-section-title">Against the <em>spread</em>.</h2>
         </div>
       </header>
-      <div class="read-stack" id="readStack">
-        <!-- Three chart cards rendered by JS: spread, total, moneyline -->
-      </div>
+      <div class="beat-stack" id="beat2Stack"></div>
     </section>
 
-    <!-- ZONE 4: THE PICK (active pick or no-pick note) -->
-    <section class="game-section" id="pickSection">
+    <!-- BEAT 3: THE SHAPE (total) -->
+    <section class="game-section" id="beat3Section">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">— THE PICK</div>
-          <h2 class="game-section-title">Where we <em>actually bet</em>.</h2>
+          <div class="game-section-eyebrow">— 3 · THE SHAPE OF THE GAME</div>
+          <h2 class="game-section-title">The <em>total</em>.</h2>
         </div>
       </header>
-      <div class="pick-stack" id="pickStack">
-        <!-- Picks rendered by JS, Live Lines accordion pattern -->
-      </div>
+      <div class="beat-stack" id="beat3Stack"></div>
+    </section>
+
+    <!-- BEAT 4: THE RECEIPT -->
+    <section class="game-section" id="receiptSection">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">— 4 · THE RECEIPT</div>
+          <h2 class="game-section-title">Show your <em>work</em>.</h2>
+          <p class="game-section-deck">Form vs our projections, this pick's paper trail, and every signal's live record.</p>
+        </div>
+      </header>
+      <div class="beat-stack" id="receiptStack"></div>
     </section>
 
     <!-- ZONE 5: THE NUMBERS (stat comparison) -->
@@ -354,7 +361,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260805a"></script>
+<script src="/js/game.js?v=20260805b"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
