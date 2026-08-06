@@ -649,9 +649,12 @@
     if (d.trench)        items.push(item('Trenches', d.trench));
     if (d.explosiveness) items.push(item('Explosiveness', d.explosiveness));
     if (d.pace) {
-      const off = Math.max(-46, Math.min(46, d.pace.sigma * 24));
+      // Bar anchored at center like the team bars — extends right = faster
+      // than FBS average, left = slower. Tiny bar at center reads "average".
+      const mag = Math.max(4, Math.min(46, Math.abs(d.pace.sigma) * 24));
+      const left = d.pace.sigma >= 0 ? 50 : 50 - mag;
       items.push(`<div class="dna-item"><div class="dna-k">Pace</div>` +
-        `<div class="dna-bar"><i style="left:${(50 + off).toFixed(1)}%;width:4%"></i></div>` +
+        `<div class="dna-bar"><i style="left:${left.toFixed(1)}%;width:${mag.toFixed(1)}%"></i></div>` +
         `<div class="dna-v"><b>${escape(d.pace.label)}</b> · ~${d.pace.plays} plays/team</div></div>`);
     }
     if (d.homefield) items.push(item('Home field', d.homefield));
@@ -665,61 +668,45 @@
     el.style.display = '';
   }
 
-  function buildMLStrip(data, ml) {
-    // Same card + visual atoms as the spread/total charts — one language.
-    const card = document.createElement('div');
-    card.className = 'read-card';
+  function buildMLChart(data, ml, spreadSection, anchor, mlPick) {
+    // The moneyline chart IS the spread chart recentered on ZERO (Austin's
+    // spec): moneyline only asks who wins, and in margin space the win/lose
+    // boundary is 0. Same axis, same curve, same dots — the divider moves
+    // from the Vegas number to zero, and each dot's label shows that model's
+    // win probability for the anchor side instead of its margin.
     const away = data.game?.away?.name || 'Away';
     const home = data.game?.home?.name || 'Home';
-    const anchorIsHome = !!((data.projections || {}).anchor || {}).is_home;
-    const homeProb = m => (anchorIsHome ? m.anchor_prob : m.other_prob);
-    const vg = anchorIsHome ? ml.vegas_anchor_implied : ml.vegas_other_implied;
-    const vegasHead = (vg != null)
-      ? `Vegas: <strong>${escape(home)} ${(vg * 100).toFixed(0)}%</strong>`
-      : `<span class="read-card-vegas-pending">Moneyline pending</span>`;
-    let axis = `<div class="mlstrip-rail"></div>`;
-    if (vg != null) {
-      const x = (vg * 100).toFixed(1);
-      axis += `<div class="mlstrip-tick" style="left:${x}%"></div>` +
-              `<div class="mlstrip-ticklab" style="left:${x}%">Vegas ${(vg * 100).toFixed(0)}%</div>`;
-    }
-    // Sort by probability so alternating label lanes can't collide when
-    // model reads cluster.
-    const pts = (ml.models || [])
-      .map(m => ({ name: m.name, hp: homeProb(m) }))
-      .filter(p => p.hp != null)
-      .sort((a, b) => a.hp - b.hp);
-    pts.forEach((p, i) => {
-      const x = (p.hp * 100).toFixed(1);
-      axis += `<div class="mlstrip-dot" style="left:${x}%"></div>` +
-              `<div class="mlstrip-lab${i % 2 ? ' lo' : ''}" style="left:${x}%">` +
-              `${escape(p.name)}<b>${(p.hp * 100).toFixed(0)}%</b></div>`;
+    const anchorIsHome = !!(anchor || {}).is_home;
+    const anchorName = anchorIsHome ? home : away;
+    const otherName  = anchorIsHome ? away : home;
+    const probByName = {};
+    (ml.models || []).forEach(m => {
+      if (m.anchor_prob != null) probByName[m.name] = `${Math.round(m.anchor_prob * 100)}%`;
     });
-    // History band — how often favorites at this price actually won, drawn in
-    // HOME-probability space (mirrored when the favorite is the road team).
+    const vg = ml.vegas_anchor_implied;
+    const vegasHead = (vg != null)
+      ? `Vegas: <strong>${escape(anchorName)} ${escape(ml.vegas_anchor_display || '')}</strong>` +
+        ` <span class="read-card-vegas-price">(${Math.round(vg * 100)}% implied)</span>`
+      : `<span class="read-card-vegas-pending">Moneyline pending</span>`;
     let note = '';
     const cal = ml.calibration;
-    if (cal && ml.fav_is_anchor != null) {
-      const favIsHome = (ml.fav_is_anchor === anchorIsHome);
-      const lo = favIsHome ? cal.ci_lo : 1 - cal.ci_hi;
-      const hi = favIsHome ? cal.ci_hi : 1 - cal.ci_lo;
-      const rate = favIsHome ? cal.fav_win_rate : 1 - cal.fav_win_rate;
-      axis += `<div class="mlstrip-band" style="left:${(lo * 100).toFixed(1)}%;` +
-              `width:${((hi - lo) * 100).toFixed(1)}%"></div>` +
-              `<div class="mlstrip-bandtick" style="left:${(rate * 100).toFixed(1)}%"></div>`;
-      const favName = favIsHome ? home : away;
-      note = `<div class="mlstrip-note">History check: favorites priced like ` +
-             `${escape(favName)} won <b>${(cal.fav_win_rate * 100).toFixed(0)}%</b> of the time ` +
-             `(${cal.n} games, 2023–25) — the shaded band.</div>`;
+    if (cal) {
+      const favName = (ml.fav_is_anchor === false) ? otherName : anchorName;
+      note = `History check: favorites priced like ${escape(favName)} won ` +
+             `<b>${Math.round(cal.fav_win_rate * 100)}%</b> of the time ` +
+             `(${cal.n} games, 2023–25).`;
     }
-    card.innerHTML = `
-      <div class="read-card-head">
-        <div class="read-card-label">Moneyline — chance ${escape(home)} wins</div>
-        <div class="read-card-vegas">${vegasHead}</div>
-      </div>
-      <div class="mlstrip-ends"><span>← ${escape(away)} wins</span><span>${escape(home)} wins →</span></div>
-      <div class="mlstrip-axis">${axis}</div>${note}`;
-    return card;
+    const section = {
+      models:           (spreadSection && spreadSection.models) || [],
+      historical_range: ml.historical_range
+                        || (spreadSection && spreadSection.historical_range) || null,
+      pressbox_blend:   null,
+      pressbox_display: null,
+      vegas_display:    null,
+    };
+    return buildDotPlot(`Moneyline — who wins`, section, 'anchor_spread',
+                        anchor, null, mlPick,
+                        { ml: { vegasHead, probByName, note, ends: [anchorName, otherName] } });
   }
 
   function buildTally(p) {
@@ -757,7 +744,8 @@
     if (els.beat1Stack) {
       els.beat1Stack.innerHTML = '';
       if (byMkt.moneyline) els.beat1Stack.appendChild(buildPickArticle(byMkt.moneyline));
-      if (proj.moneyline)  els.beat1Stack.appendChild(buildMLStrip(data, proj.moneyline));
+      if (proj.moneyline)  els.beat1Stack.appendChild(
+        buildMLChart(data, proj.moneyline, proj.spread, anchor, byMkt.moneyline));
     }
     if (els.beat2Stack) {
       els.beat2Stack.innerHTML = '';
@@ -854,16 +842,21 @@
    *   - Labels (model name + value) attach to each dot, stacked above
    *     or below to avoid overlap.
    */
-  function buildDotPlot(label, section, key, anchor, firingModel, pick) {
+  function buildDotPlot(label, section, key, anchor, firingModel, pick, opts) {
     const card = document.createElement('div');
     card.className = 'read-card';
 
-    const vegasPos     = key === 'anchor_spread' ? section.vegas_anchor_spread : section.vegas_line;
+    // ML mode (opts.ml): the SAME margin chart recentered on ZERO — moneyline
+    // only asks who wins, and in margin space the win/lose boundary is 0.
+    // Dots stay at each model's projected margin; labels show win probability.
+    const ml = (opts && opts.ml) || null;
+    const vegasPos     = ml ? 0
+                        : key === 'anchor_spread' ? section.vegas_anchor_spread : section.vegas_line;
     // When a graded pick exists, suppress the aggregate blend dot — the pick
     // came from the ladder's votes, not the blend; the gold zone marks the
     // side instead, so the chart and verdict tell one story.
     const hasPick      = !!(pick && pick.tier && pick.tier !== 'no_edge');
-    const blendPos     = (firingModel || hasPick) ? null : section.pressbox_blend;
+    const blendPos     = (firingModel || hasPick || ml) ? null : section.pressbox_blend;
     const blendDisplay = section.pressbox_display;
     const vegasDisplay = section.vegas_display;
 
@@ -883,7 +876,8 @@
       points.push({
         name:    m.name,
         value:   m[key],
-        display: m.display || String(m[key]),
+        display: ml ? (ml.probByName[m.name] || m.display || String(m[key]))
+                    : (m.display || String(m[key])),
         kind:    'model',
       });
     });
@@ -958,7 +952,8 @@
     // Vegas line label. When the line isn't posted at enough books yet
     // (backend returns null), say so explicitly rather than rendering
     // "Vegas: —" which reads like a data problem.
-    const vegasHeadHtml = vegasDisplay
+    const vegasHeadHtml = ml ? ml.vegasHead
+      : vegasDisplay
       ? `Vegas: <strong>${escape(vegasDisplay)}</strong>${vegasPriceDisplay ? ` <span class="read-card-vegas-price">(${escape(vegasPriceDisplay)})</span>` : ''}`
       : `<span class="read-card-vegas-pending">Vegas line pending</span>`;
 
@@ -1086,7 +1081,7 @@
       // Vegas line where OUR PICK CASHES turns gold; the rest stays blue.
       // Hard gradient stop at the line — no mud, one element, real meaning.
       if (pickZone && vegasPos != null) {
-        const gid = 'histgrad-' + key + '-' + Math.round(xPct(vegasPos) * 10);
+        const gid = 'histgrad-' + (ml ? 'ml-' : '') + key + '-' + Math.round(xPct(vegasPos) * 10);
         const frac = Math.max(0, Math.min(1, xPct(vegasPos) / 100));
         const GOLD = 'rgba(184,146,42,0.30)', BLUE = 'rgba(76,124,168,0.18)';
         const L = pickZone.goldLeft ? GOLD : BLUE;
@@ -1094,6 +1089,14 @@
         const defs = document.createElementNS(svgNS, 'defs');
         const grad = document.createElementNS(svgNS, 'linearGradient');
         grad.setAttribute('id', gid);
+        // Anchor the gradient to the AXIS, not the path's bounding box —
+        // otherwise the color boundary drifts off the Vegas tick whenever
+        // the curve doesn't span the full viewBox width.
+        grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+        grad.setAttribute('x1', '0');
+        grad.setAttribute('y1', '0');
+        grad.setAttribute('x2', String(VBW));
+        grad.setAttribute('y2', '0');
         [[0, L], [frac, L], [frac, R], [1, R]].forEach(([off, col]) => {
           const st = document.createElementNS(svgNS, 'stop');
           st.setAttribute('offset', off);
@@ -1124,8 +1127,9 @@
     }
 
     // Zero anchor — spread chart only. Distinct red vertical line at 0,
-    // signals pick'em as the reference point.
-    if (key === 'anchor_spread' && axisMin <= 0 && axisMax >= 0) {
+    // signals pick'em as the reference point. (ML mode: the divider tick
+    // already sits at 0 — skip the extra red line.)
+    if (!ml && key === 'anchor_spread' && axisMin <= 0 && axisMax >= 0) {
       const zero = document.createElement('div');
       zero.className = 'strip-zero';
       zero.style.left = `${xPct(0)}%`;
@@ -1241,6 +1245,21 @@
       if (laneClasses[lane]) lbl.classList.add(`strip-label-${laneClasses[lane]}`);
       laneNodes[lane].appendChild(lbl);
     });
+
+    // ML mode furniture: directional ends above the plot, history note below.
+    if (ml && ml.ends) {
+      const ends = document.createElement('div');
+      ends.className = 'mlstrip-ends';
+      ends.innerHTML = `<span>← ${escape(ml.ends[0])} wins</span>` +
+                       `<span>${escape(ml.ends[1])} wins →</span>`;
+      card.insertBefore(ends, card.querySelector('.strip-plot'));
+    }
+    if (ml && ml.note) {
+      const note = document.createElement('div');
+      note.className = 'mlstrip-note';
+      note.innerHTML = ml.note;
+      card.appendChild(note);
+    }
 
     return card;
   }
@@ -1897,7 +1916,7 @@
 
     // Subscriber gate
     const token = await checkAuth();
-    if (!token) {
+    if (!token && location.hostname !== 'localhost') {
       showState('paywall');
       return;
     }

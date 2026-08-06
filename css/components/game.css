@@ -1757,8 +1757,9 @@ footer {
 .dna-v b { color: var(--ink); }
 @media (max-width: 720px) { .dna-items { flex-wrap: wrap; } .dna-item { flex: 1 1 42%; } }
 
-/* ML dot strip (beat 1) — same visual atoms as the spread/total charts:
- * 2px border rail, 10px text-mid dots w/ white ring, 1.5px ink Vegas line. */
+/* Moneyline chart furniture (beat 1). The chart itself IS buildDotPlot —
+ * the spread chart recentered on zero — so it inherits all .strip-* styles.
+ * These two are the ML-only extras: directional ends + the history note. */
 .mlstrip-ends {
   display: flex; justify-content: space-between;
   font-family: var(--sans);
@@ -1766,36 +1767,11 @@ footer {
   color: var(--text-light); font-weight: var(--weight-bold);
   margin: var(--space-3) 0 0;
 }
-.mlstrip-axis { position: relative; height: 84px; margin: 0 12px; }
-.mlstrip-rail { position: absolute; left: 0; right: 0; top: 54px; height: 2px; background: var(--border); border-radius: 1px; }
-.mlstrip-tick { position: absolute; top: 26px; width: 1.5px; height: 56px; background: var(--ink); transform: translateX(-50%); z-index: 3; }
-.mlstrip-ticklab { position: absolute; top: 8px; font-family: var(--sans); font-size: 11px; color: var(--ink); font-weight: 700; letter-spacing: 0.3px; transform: translateX(-50%); white-space: nowrap; }
-.mlstrip-dot {
-  position: absolute; top: 55px; width: 10px; height: 10px; border-radius: 50%;
-  background: var(--text-mid); border: 2px solid #fff;
-  box-shadow: 0 0 0 1px var(--text-mid);
-  transform: translate(-50%, -50%); z-index: 4;
-}
-.mlstrip-band {
-  position: absolute; top: 47px; height: 16px;
-  background: rgba(76, 124, 168, 0.18);
-  border-radius: 8px;
-  z-index: 1;
-}
-.mlstrip-bandtick {
-  position: absolute; top: 47px; height: 16px; width: 1.5px;
-  background: rgba(76, 124, 168, 0.55);
-  transform: translateX(-50%);
-  z-index: 2;
-}
 .mlstrip-note {
   font-family: var(--sans); font-size: 11.5px; color: var(--text-mid);
   margin-top: var(--space-2);
 }
 .mlstrip-note b { color: var(--ink); }
-.mlstrip-lab { position: absolute; top: 26px; font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: 0.3px; color: var(--text-mid); transform: translateX(-50%); text-align: center; line-height: 1.3; white-space: nowrap; }
-.mlstrip-lab.lo { top: 62px; }
-.mlstrip-lab b { display: block; color: var(--ink); font-weight: 700; }
 
 /* Picked-side zone on the spread/total charts — the region where the pick
  * cashes, in the same gold-pale the site uses for highlights. */
