@@ -1690,6 +1690,13 @@ footer {
  * 4-BEAT LAYOUT — Matchup DNA, ML strip, Vote Tally, Receipt
  * ============================================================ */
 
+/* Beat containers — same rhythm as the old read/pick stacks */
+.beat-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* Matchup DNA (beat 0) */
 .dna-strip {
   display: flex;
@@ -1724,22 +1731,40 @@ footer {
 .dna-v b { color: var(--ink); }
 @media (max-width: 720px) { .dna-strip { flex-wrap: wrap; } .dna-item { flex: 1 1 42%; } }
 
-/* ML dot strip (beat 1) */
-.mlstrip-card { padding-bottom: var(--space-5); }
+/* ML dot strip (beat 1) — same visual atoms as the spread/total charts:
+ * 2px border rail, 10px text-mid dots w/ white ring, 1.5px ink Vegas line. */
 .mlstrip-ends {
   display: flex; justify-content: space-between;
-  font-size: 10px; letter-spacing: 0.03em; color: var(--text-light);
-  font-weight: var(--weight-bold);
-  margin-bottom: 2px;
+  font-family: var(--sans);
+  font-size: 10px; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--text-light); font-weight: var(--weight-bold);
+  margin: var(--space-3) 0 0;
 }
-.mlstrip-axis { position: relative; height: 76px; margin: 0 6px; }
-.mlstrip-rail { position: absolute; left: 0; right: 0; top: 48px; height: 2px; background: var(--border); }
-.mlstrip-tick { position: absolute; top: 38px; width: 2px; height: 22px; background: var(--rust); transform: translateX(-50%); }
-.mlstrip-ticklab { position: absolute; top: 62px; font-size: 10px; color: var(--rust); font-weight: var(--weight-bold); transform: translateX(-50%); white-space: nowrap; }
-.mlstrip-dot { position: absolute; top: 43px; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 2.5px solid var(--ink); transform: translateX(-50%); }
-.mlstrip-lab { position: absolute; top: 8px; font-size: 10px; color: var(--text-mid); transform: translateX(-50%); text-align: center; line-height: 1.25; white-space: nowrap; }
-.mlstrip-lab.lo { top: 22px; }
-.mlstrip-lab b { display: block; color: var(--ink); font-family: var(--sans); }
+.mlstrip-axis { position: relative; height: 84px; margin: 0 6px; }
+.mlstrip-rail { position: absolute; left: 0; right: 0; top: 54px; height: 2px; background: var(--border); border-radius: 1px; }
+.mlstrip-tick { position: absolute; top: 26px; width: 1.5px; height: 56px; background: var(--ink); transform: translateX(-50%); z-index: 3; }
+.mlstrip-ticklab { position: absolute; top: 8px; font-family: var(--sans); font-size: 11px; color: var(--ink); font-weight: 700; letter-spacing: 0.3px; transform: translateX(-50%); white-space: nowrap; }
+.mlstrip-dot {
+  position: absolute; top: 55px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--text-mid); border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--text-mid);
+  transform: translate(-50%, -50%); z-index: 4;
+}
+.mlstrip-lab { position: absolute; top: 26px; font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: 0.3px; color: var(--text-mid); transform: translateX(-50%); text-align: center; line-height: 1.3; white-space: nowrap; }
+.mlstrip-lab.lo { top: 62px; }
+.mlstrip-lab b { display: block; color: var(--ink); font-weight: 700; }
+
+/* Picked-side zone on the spread/total charts — the region where the pick
+ * cashes, in the same gold-pale the site uses for highlights. */
+.strip-zone {
+  position: absolute;
+  top: 50%;
+  height: 26px;
+  transform: translateY(-50%);
+  background: var(--gold-pale);
+  border-radius: 4px;
+  z-index: 1;
+}
 
 /* Vote tally (beats 2-3) */
 .tally-grid {

@@ -659,31 +659,42 @@
   }
 
   function buildMLStrip(data, ml) {
+    // Same card + visual atoms as the spread/total charts — one language.
     const card = document.createElement('div');
-    card.className = 'game-card mlstrip-card';
+    card.className = 'read-card';
     const away = data.game?.away?.name || 'Away';
     const home = data.game?.home?.name || 'Home';
     const anchorIsHome = !!((data.projections || {}).anchor || {}).is_home;
     const homeProb = m => (anchorIsHome ? m.anchor_prob : m.other_prob);
-    let html = `<div class="mlstrip-ends"><span>${escape(away).toUpperCase()} WINS</span>` +
-               `<span>${escape(home).toUpperCase()} WINS</span></div>` +
-               `<div class="mlstrip-axis"><div class="mlstrip-rail"></div>`;
     const vg = anchorIsHome ? ml.vegas_anchor_implied : ml.vegas_other_implied;
+    const vegasHead = (vg != null)
+      ? `Vegas: <strong>${escape(home)} ${(vg * 100).toFixed(0)}%</strong>`
+      : `<span class="read-card-vegas-pending">Moneyline pending</span>`;
+    let axis = `<div class="mlstrip-rail"></div>`;
     if (vg != null) {
       const x = (vg * 100).toFixed(1);
-      html += `<div class="mlstrip-tick" style="left:${x}%"></div>` +
-              `<div class="mlstrip-ticklab" style="left:${x}%">VEGAS ${(vg * 100).toFixed(0)}%</div>`;
+      axis += `<div class="mlstrip-tick" style="left:${x}%"></div>` +
+              `<div class="mlstrip-ticklab" style="left:${x}%">Vegas ${(vg * 100).toFixed(0)}%</div>`;
     }
-    (ml.models || []).forEach((m, i) => {
-      const hp = homeProb(m);
-      if (hp == null) return;
-      const x = (hp * 100).toFixed(1);
-      html += `<div class="mlstrip-dot" style="left:${x}%"></div>` +
+    // Sort by probability so alternating label lanes can't collide when
+    // model reads cluster.
+    const pts = (ml.models || [])
+      .map(m => ({ name: m.name, hp: homeProb(m) }))
+      .filter(p => p.hp != null)
+      .sort((a, b) => a.hp - b.hp);
+    pts.forEach((p, i) => {
+      const x = (p.hp * 100).toFixed(1);
+      axis += `<div class="mlstrip-dot" style="left:${x}%"></div>` +
               `<div class="mlstrip-lab${i % 2 ? ' lo' : ''}" style="left:${x}%">` +
-              `${escape(m.name)}<b>${(hp * 100).toFixed(0)}%</b></div>`;
+              `${escape(p.name)}<b>${(p.hp * 100).toFixed(0)}%</b></div>`;
     });
-    html += '</div>';
-    card.innerHTML = html;
+    card.innerHTML = `
+      <div class="read-card-head">
+        <div class="read-card-label">Moneyline — chance ${escape(home)} wins</div>
+        <div class="read-card-vegas">${vegasHead}</div>
+      </div>
+      <div class="mlstrip-ends"><span>← ${escape(away)} wins</span><span>${escape(home)} wins →</span></div>
+      <div class="mlstrip-axis">${axis}</div>`;
     return card;
   }
 
@@ -727,13 +738,13 @@
     if (els.beat2Stack) {
       els.beat2Stack.innerHTML = '';
       if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread));
-      if (proj.spread)  els.beat2Stack.appendChild(buildDotPlot('Spread', proj.spread, 'anchor_spread', anchor, null));
+      if (proj.spread)  els.beat2Stack.appendChild(buildDotPlot('Spread', proj.spread, 'anchor_spread', anchor, null, byMkt.spread));
       if (byMkt.spread) { const t = buildTally(byMkt.spread); if (t) els.beat2Stack.appendChild(t); }
     }
     if (els.beat3Stack) {
       els.beat3Stack.innerHTML = '';
       if (byMkt.total) els.beat3Stack.appendChild(buildPickArticle(byMkt.total));
-      if (proj.total)  els.beat3Stack.appendChild(buildDotPlot('Total', proj.total, 'total', anchor, null));
+      if (proj.total)  els.beat3Stack.appendChild(buildDotPlot('Total', proj.total, 'total', anchor, null, byMkt.total));
       if (byMkt.total) { const t = buildTally(byMkt.total); if (t) els.beat3Stack.appendChild(t); }
     }
   }
@@ -819,16 +830,16 @@
    *   - Labels (model name + value) attach to each dot, stacked above
    *     or below to avoid overlap.
    */
-  function buildDotPlot(label, section, key, anchor, firingModel) {
+  function buildDotPlot(label, section, key, anchor, firingModel, pick) {
     const card = document.createElement('div');
     card.className = 'read-card';
 
     const vegasPos     = key === 'anchor_spread' ? section.vegas_anchor_spread : section.vegas_line;
-    // When a cell fired, suppress the aggregate blend dot — the pick
-    // came from one model hitting cell bands, not from the blend. The
-    // user gets a clearer story when we highlight that model in rust
-    // and remove the aggregate that didn't drive the decision.
-    const blendPos     = firingModel ? null : section.pressbox_blend;
+    // When a graded pick exists, suppress the aggregate blend dot — the pick
+    // came from the ladder's votes, not the blend; the gold zone marks the
+    // side instead, so the chart and verdict tell one story.
+    const hasPick      = !!(pick && pick.tier && pick.tier !== 'no_edge');
+    const blendPos     = (firingModel || hasPick) ? null : section.pressbox_blend;
     const blendDisplay = section.pressbox_display;
     const vegasDisplay = section.vegas_display;
 
@@ -945,6 +956,30 @@
     const above   = card.querySelector('.strip-labels-above');
     const below   = card.querySelector('.strip-labels-below');
     const ticksEl = card.querySelector('.strip-ticks');
+
+    // Picked-side zone — the stretch of the axis where the pick cashes.
+    // Anchor-frame spreads: values MORE NEGATIVE than the line favor the
+    // anchor side; totals: over cashes above the line, under below.
+    if (hasPick && vegasPos != null) {
+      const sideRaw = pick.history?.current?.side_raw || null;
+      let z0 = null, z1 = null;
+      if (key === 'anchor_spread' && (sideRaw === 'home' || sideRaw === 'away')) {
+        const anchorSide = anchor.is_home ? 'home' : 'away';
+        if (sideRaw === anchorSide) { z0 = 0; z1 = xPct(vegasPos); }
+        else                        { z0 = xPct(vegasPos); z1 = 100; }
+      } else if (key === 'total' && (sideRaw === 'over' || sideRaw === 'under')) {
+        if (sideRaw === 'over') { z0 = xPct(vegasPos); z1 = 100; }
+        else                    { z0 = 0; z1 = xPct(vegasPos); }
+      }
+      if (z0 != null && z1 - z0 > 0) {
+        const zone = document.createElement('div');
+        zone.className = 'strip-zone';
+        zone.style.left = z0 + '%';
+        zone.style.width = (z1 - z0) + '%';
+        zone.title = 'Where our pick cashes';
+        axisEl.insertBefore(zone, axisEl.firstChild);
+      }
+    }
 
     // Axis tick labels
     for (let t = Math.ceil(axisMin / tickStep) * tickStep; t <= axisMax; t += tickStep) {
@@ -1121,11 +1156,24 @@
 
     const sortedPts = [...points].sort((a, b) => a.value - b.value);
 
+    // Coincident-dot handling: when models agree (dots within ~1.5% of the
+    // axis), fan them vertically so four stacked reads don't render as one
+    // blob — the "models cluster at pick'em while Vegas sits at -10" game
+    // must still show four distinct dots.
+    const placedX = [];
     sortedPts.forEach((p) => {
       const isPick = firingModel && p.name === firingModel;
+      const x = xPct(p.value);
+      const clash = placedX.filter(v => Math.abs(v - x) < 1.6).length;
+      placedX.push(x);
       const dot = document.createElement('div');
       dot.className = isPick ? 'strip-dot strip-dot-pick' : 'strip-dot';
-      dot.style.left = `${xPct(p.value)}%`;
+      if (clash) {
+        const dir = clash % 2 ? 1 : -1;
+        const step = Math.ceil(clash / 2) * 9;
+        dot.style.marginTop = `${dir * step}px`;
+      }
+      dot.style.left = `${x}%`;
       dot.title = isPick
         ? `${p.name}: ${p.display} — this is the pick`
         : `${p.name}: ${p.display}`;
