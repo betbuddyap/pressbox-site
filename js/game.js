@@ -654,6 +654,7 @@
         `<div class="dna-bar"><i style="left:${(50 + off).toFixed(1)}%;width:4%"></i></div>` +
         `<div class="dna-v"><b>${escape(d.pace.label)}</b> · ~${d.pace.plays} plays/team</div></div>`);
     }
+    if (d.homefield) items.push(item('Home field', d.homefield));
     // Header anchors the bar directions: away team owns the left half,
     // home team the right — a bar leaning left = edge to the away side.
     el.innerHTML =
@@ -694,13 +695,30 @@
               `<div class="mlstrip-lab${i % 2 ? ' lo' : ''}" style="left:${x}%">` +
               `${escape(p.name)}<b>${(p.hp * 100).toFixed(0)}%</b></div>`;
     });
+    // History band — how often favorites at this price actually won, drawn in
+    // HOME-probability space (mirrored when the favorite is the road team).
+    let note = '';
+    const cal = ml.calibration;
+    if (cal && ml.fav_is_anchor != null) {
+      const favIsHome = (ml.fav_is_anchor === anchorIsHome);
+      const lo = favIsHome ? cal.ci_lo : 1 - cal.ci_hi;
+      const hi = favIsHome ? cal.ci_hi : 1 - cal.ci_lo;
+      const rate = favIsHome ? cal.fav_win_rate : 1 - cal.fav_win_rate;
+      axis += `<div class="mlstrip-band" style="left:${(lo * 100).toFixed(1)}%;` +
+              `width:${((hi - lo) * 100).toFixed(1)}%"></div>` +
+              `<div class="mlstrip-bandtick" style="left:${(rate * 100).toFixed(1)}%"></div>`;
+      const favName = favIsHome ? home : away;
+      note = `<div class="mlstrip-note">History check: favorites priced like ` +
+             `${escape(favName)} won <b>${(cal.fav_win_rate * 100).toFixed(0)}%</b> of the time ` +
+             `(${cal.n} games, 2023–25) — the shaded band.</div>`;
+    }
     card.innerHTML = `
       <div class="read-card-head">
         <div class="read-card-label">Moneyline — chance ${escape(home)} wins</div>
         <div class="read-card-vegas">${vegasHead}</div>
       </div>
       <div class="mlstrip-ends"><span>← ${escape(away)} wins</span><span>${escape(home)} wins →</span></div>
-      <div class="mlstrip-axis">${axis}</div>`;
+      <div class="mlstrip-axis">${axis}</div>${note}`;
     return card;
   }
 
