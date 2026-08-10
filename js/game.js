@@ -1897,7 +1897,9 @@
 
   function renderSeries(data) {
     const s = data.series;
-    if (!s || !s.games || !s.games.length) {
+    // Show when there are games OR a summary — "first-ever meeting" is a
+    // real data point, not a missing section.
+    if (!s || (!(s.games || []).length && !s.summary)) {
       els.seriesSection.style.display = 'none';
       return;
     }
