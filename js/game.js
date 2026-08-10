@@ -648,6 +648,7 @@
     if (d.talent)        items.push(item('Talent', d.talent));
     if (d.trench)        items.push(item('Trenches', d.trench));
     if (d.explosiveness) items.push(item('Explosiveness', d.explosiveness));
+    if (d.efficiency)    items.push(item('Efficiency', d.efficiency));
     if (d.pace) {
       // Bar anchored at center like the team bars — extends right = faster
       // than FBS average, left = slower. Tiny bar at center reads "average".
@@ -1755,7 +1756,8 @@
     // everything else. One group header each (Austin: "efficiency, scoring,
     // discipline aren't in the DNA — separate that out").
     const DNA_TAG = { talent: 'Talent', trench: 'Trenches',
-                      explosiveness: 'Explosiveness', pace: 'Pace' };
+                      explosiveness: 'Explosiveness', efficiency: 'Efficiency',
+                      pace: 'Pace' };
     let dnaHeadDone = false, restHeadDone = false;
 
     cats.forEach(cat => {
