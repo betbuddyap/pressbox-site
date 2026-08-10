@@ -1751,38 +1751,61 @@
       els.numbersStack.appendChild(note);
     }
 
+    // Two page-level groups: cards that break down a DNA strip bar, then
+    // everything else. One group header each (Austin: "efficiency, scoring,
+    // discipline aren't in the DNA — separate that out").
+    const DNA_TAG = { talent: 'Talent', trench: 'Trenches',
+                      explosiveness: 'Explosiveness', pace: 'Pace' };
+    let dnaHeadDone = false, restHeadDone = false;
+
     cats.forEach(cat => {
+      if (cat.dna && !dnaHeadDone) {
+        dnaHeadDone = true;
+        const gh = document.createElement('div');
+        gh.className = 'numbers-grouphead';
+        gh.textContent = 'Matchup DNA — the numbers behind the strip';
+        els.numbersStack.appendChild(gh);
+      } else if (!cat.dna && !restHeadDone) {
+        restHeadDone = true;
+        const gh = document.createElement('div');
+        gh.className = 'numbers-grouphead';
+        gh.textContent = 'Beyond the DNA — full profile';
+        els.numbersStack.appendChild(gh);
+      }
+
       const card = document.createElement('div');
       card.className = 'numbers-card';
 
-      // Special-case: Defense — Advanced splits into "Allowed" (lower better)
-      // and "Generated" (higher better) sub-groups. Headed with explanatory
-      // italic subheads so the reader knows which direction = good.
+      // Own metrics and opponent metrics read together: rows carrying a
+      // group render under Offense / Defense subheads; ungrouped rows
+      // (the DNA aggregate composites) lead the card.
+      const rows = cat.rows || [];
       let bodyHtml;
-      if (cat.name === 'Defense — Advanced') {
-        const allowedRows = (cat.rows || []).filter(r => r.lower_better);
-        const generatedRows = (cat.rows || []).filter(r => !r.lower_better);
-
-        const sections = [];
-        if (allowedRows.length) {
-          sections.push(`
-            <div class="numbers-subhead">What this defense allows <span class="numbers-subhead-hint">(shorter bar = better)</span></div>
-            ${allowedRows.map(r => renderStatRow(r)).join('')}
-          `);
+      if (rows.some(r => r.group)) {
+        const parts = [];
+        const leadRows = rows.filter(r => !r.group);
+        const offRows  = rows.filter(r => r.group === 'off');
+        const defRows  = rows.filter(r => r.group === 'def');
+        if (leadRows.length) parts.push(leadRows.map(r => renderStatRow(r)).join(''));
+        if (offRows.length) {
+          parts.push(`<div class="numbers-subhead">Offense</div>` +
+                     offRows.map(r => renderStatRow(r)).join(''));
         }
-        if (generatedRows.length) {
-          sections.push(`
-            <div class="numbers-subhead">What this defense generates <span class="numbers-subhead-hint">(longer bar = better)</span></div>
-            ${generatedRows.map(r => renderStatRow(r)).join('')}
-          `);
+        if (defRows.length) {
+          parts.push(`<div class="numbers-subhead">Defense</div>` +
+                     defRows.map(r => renderStatRow(r)).join(''));
         }
-        bodyHtml = sections.join('');
+        bodyHtml = parts.join('');
       } else {
-        bodyHtml = (cat.rows || []).map(r => renderStatRow(r)).join('');
+        bodyHtml = rows.map(r => renderStatRow(r)).join('');
       }
 
+      const dnaTag = cat.dna && DNA_TAG[cat.dna]
+        ? `<div class="numbers-dna-tag">DNA · ${escape(DNA_TAG[cat.dna])}</div>`
+        : '';
       card.innerHTML = `
         <div class="numbers-card-head">
+          ${dnaTag}
           <h3 class="numbers-card-title">${escape(cat.name)}</h3>
         </div>
         <div class="numbers-teamhead">

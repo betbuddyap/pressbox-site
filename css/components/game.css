@@ -1306,6 +1306,30 @@
 
 /* Sub-head used inside categories that split by direction
    (currently only Defense — Advanced). */
+/* Page-level group header separating the DNA-breakdown cards from the
+   rest-of-profile cards. */
+.numbers-grouphead {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-light);
+  padding: 10px 2px 0;
+}
+.numbers-grouphead:not(:first-child) { margin-top: var(--space-3); }
+
+/* Small tag tying a stat card back to its Matchup DNA strip bar. */
+.numbers-dna-tag {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+
 .numbers-subhead {
   font-family: var(--sans);
   font-style: italic;
