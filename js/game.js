@@ -377,12 +377,24 @@
       els.projected.style.display = 'none';
       return;
     }
-    // When a cell fired, the projected score follows the firing model for that
-    // market (spread and total independently) so it supports the pick; each
-    // axis falls back to the blend when nothing fired.
+    // Projected score sources, per market (Austin's rule: the hero must
+    // reflect the picks): a GRADED pick projects from its fired signal's
+    // historical outcome mean — pick-side frame, so an Under pick's mean
+    // lands under the number by construction. No graded pick → the old
+    // firing-model / blend chain.
+    const pkByMkt = {};
+    (data.picks || []).forEach(pk => { if (!pkByMkt[pk.market]) pkByMkt[pk.market] = pk; });
+    const ruleMean = (sec, pk) =>
+      (pk && pk.tier && pk.tier !== 'no_edge'
+       && sec?.historical_range?.source === 'rule'
+       && sec.historical_range.mean != null)
+        ? sec.historical_range.mean : null;
+    const spreadRuleMean = ruleMean(p.spread, pkByMkt.spread);
+    const totalRuleMean  = ruleMean(p.total,  pkByMkt.total);
+
     const firing = firingModelByMarket(data);
-    const effAnchorSpread = projAxisValue(p.spread, 'anchor_spread', firing.spread, blendAnchorSpread);
-    const effTotal        = projAxisValue(p.total,  'total',        firing.total,  blendTotal);
+    const effAnchorSpread = spreadRuleMean ?? projAxisValue(p.spread, 'anchor_spread', firing.spread, blendAnchorSpread);
+    const effTotal        = totalRuleMean  ?? projAxisValue(p.total,  'total',        firing.total,  blendTotal);
 
     // Convert anchor spread back to home margin:
     //   if anchor is home: home_margin = -anchor_spread
@@ -397,11 +409,10 @@
     els.projAwayLbl.textContent = data.game?.away?.name || '';
     els.projHomeLbl.textContent = data.game?.home?.name || '';
 
-    // The projected score is the MODEL BLEND; graded picks come from signal
-    // patterns and can FADE it. When they do, say so right here so the hero
+    // Caption the projection with its source; when a market still runs on
+    // the blend and a graded pick fades it, say so explicitly so the hero
     // never silently contradicts the pick cards below (Austin's rule).
-    const pkByMkt = {};
-    (data.picks || []).forEach(pk => { if (!pkByMkt[pk.market]) pkByMkt[pk.market] = pk; });
+    const usedSignal = spreadRuleMean != null || totalRuleMean != null;
     const conflicts = [];
     const tPick = pkByMkt.total, vTot = p.total?.vegas_line;
     if (tPick && tPick.tier !== 'no_edge' && vTot != null) {
@@ -427,6 +438,8 @@
     }
     noteEl.textContent = conflicts.length
       ? `Model blend — ${conflicts.join('; ')}. Graded signals outrank the blend.`
+      : usedSignal
+      ? 'Projected from the fired signals’ historical outcomes'
       : 'Model blend';
 
     if (awayPts > homePts) {
