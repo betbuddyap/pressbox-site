@@ -227,6 +227,42 @@
   background: linear-gradient(135deg, var(--tier-bg) 50%, transparent 50%);
 }
 
+/* Hero grade strip — one badge per market in the current badge language
+   (replaces the old single-tier corner ribbon). */
+.ctx-grades {
+  position: absolute;
+  top: 12px; left: 12px;
+  z-index: 5;
+  display: flex;
+  gap: 16px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 14px;
+}
+.ctx-grade { display: flex; align-items: center; gap: 8px; }
+.ctx-grade-mkt {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-mid);
+}
+@media (max-width: 600px) {
+  .ctx-grades { gap: 10px; padding: 7px 10px; top: 8px; left: 8px; }
+  .ctx-grade { gap: 5px; }
+}
+
+/* Model-blend caption under the projected score. */
+.proj-blend-note {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-mid);
+  text-align: center;
+  margin-top: 6px;
+}
+
 /* Tier color mappings — used by ribbon + pick badges */
 .tier-a    { --tier-bg: var(--gold);             --tier-fg: var(--ink); }
 .tier-b    { --tier-bg: var(--silver);           --tier-fg: var(--ink); }
@@ -886,17 +922,23 @@
   z-index: 3;
 }
 
-/* Zero anchor (spread chart only) — distinct red vertical line. */
+/* Zero anchor (spread chart only) — quiet pick'em reference. Deliberately
+   subdued: the LOUD vertical belongs to the Vegas line, never to zero
+   (readers were mistaking this line for Vegas when it was rust-red). */
 .strip-zero {
   position: absolute;
   top: 50%;
-  height: 80px;
-  width: 1.5px;
-  background: var(--rust);
-  transform: translate(-0.75px, -50%);
+  height: 60px;
+  width: 1px;
+  background: var(--text-light);
+  transform: translate(-0.5px, -50%);
   z-index: 2;
-  opacity: 0.85;
+  opacity: 0.55;
 }
+
+/* Vegas label — rendered through the model-label lane system. */
+.strip-label-vegas .strip-label-name  { color: var(--ink); }
+.strip-label-vegas .strip-label-value { color: var(--ink); font-weight: 700; }
 
 /* Historical outcome band — shaded region showing where games with
    this Vegas line have historically landed (~p25 to p75). Used as a

@@ -190,19 +190,21 @@
       `<span class="ctx-breadcrumb-sep">›</span>` +
       `<span>${escape(g.away?.name)} @ ${escape(g.home?.name)}</span>`;
 
-    // Tier ribbon (only if there's a non-no-edge pick)
-    const ribbonPick = (data.picks || []).find(p => p.tier && p.tier !== 'no_edge');
-    if (ribbonPick) {
-      const tierClass = TIER_CLASS[ribbonPick.tier] || 'tier-no-edge';
-      const boltSvg = ribbonPick.bolt
-        ? ' <svg class="ctx-ribbon-bolt" viewBox="0 0 24 24" fill="currentColor" aria-label="streak-aligned"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg>'
-        : '';
-      const ribbonLabel = escape(ribbonPick.tier_display || ribbonPick.tier) + boltSvg;
-      els.ribbon.outerHTML =
-        `<div class="ctx-ribbon ${tierClass}" id="ctxRibbon">${ribbonLabel}</div>`;
-    } else {
-      els.ribbon.outerHTML = `<div id="ctxRibbon"></div>`;
-    }
+    // Grade strip — one current-look badge per market (replaces the old
+    // single-tier corner ribbon). Beat order: moneyline, spread, total.
+    const gradePicks = {};
+    (data.picks || []).forEach(p => { if (!gradePicks[p.market]) gradePicks[p.market] = p; });
+    const gradesHtml = ['moneyline', 'spread', 'total']
+      .filter(mk => gradePicks[mk])
+      .map(mk => {
+        const p = gradePicks[mk];
+        return `<div class="ctx-grade">` +
+               `<span class="ctx-grade-mkt">${escape(MARKET_DISPLAY[mk] || mk)}</span>` +
+               llBadge(p.tier, p.bolt) + `</div>`;
+      }).join('');
+    els.ribbon.outerHTML = gradesHtml
+      ? `<div class="ctx-grades" id="ctxRibbon">${gradesHtml}</div>`
+      : `<div id="ctxRibbon"></div>`;
 
     // Team names
     els.awayName.textContent = g.away?.name || '—';
@@ -394,6 +396,38 @@
     els.projHome.textContent = Math.round(homePts);
     els.projAwayLbl.textContent = data.game?.away?.name || '';
     els.projHomeLbl.textContent = data.game?.home?.name || '';
+
+    // The projected score is the MODEL BLEND; graded picks come from signal
+    // patterns and can FADE it. When they do, say so right here so the hero
+    // never silently contradicts the pick cards below (Austin's rule).
+    const pkByMkt = {};
+    (data.picks || []).forEach(pk => { if (!pkByMkt[pk.market]) pkByMkt[pk.market] = pk; });
+    const conflicts = [];
+    const tPick = pkByMkt.total, vTot = p.total?.vegas_line;
+    if (tPick && tPick.tier !== 'no_edge' && vTot != null) {
+      const s = tPick.history?.current?.side_raw;
+      if ((s === 'under' && effTotal > vTot) || (s === 'over' && effTotal < vTot)) {
+        conflicts.push(`the graded ${s === 'under' ? 'Under' : 'Over'} ${vTot} fades this total`);
+      }
+    }
+    const sPick = pkByMkt.spread, vAnch = p.spread?.vegas_anchor_spread;
+    if (sPick && sPick.tier !== 'no_edge' && vAnch != null) {
+      const s = sPick.history?.current?.side_raw;   // 'home' | 'away'
+      const vegasHomeMargin = anchorIsHome ? -vAnch : vAnch;
+      const agrees = s === 'home' ? homeMargin > vegasHomeMargin
+                   : s === 'away' ? homeMargin < vegasHomeMargin : true;
+      if (!agrees) conflicts.push('the graded spread pick fades this margin');
+    }
+    let noteEl = document.getElementById('projBlendNote');
+    if (!noteEl) {
+      noteEl = document.createElement('div');
+      noteEl.id = 'projBlendNote';
+      noteEl.className = 'proj-blend-note';
+      els.projected.appendChild(noteEl);
+    }
+    noteEl.textContent = conflicts.length
+      ? `Model blend — ${conflicts.join('; ')}. Graded signals outrank the blend.`
+      : 'Model blend';
 
     if (awayPts > homePts) {
       els.projAway.classList.add('winner');
@@ -862,9 +896,12 @@
     // backend serves spreads in ANCHOR frame (anchor = the favorite), so when
     // the anchor is the HOME team the whole axis mirrors (x -> -x) into
     // home-margin space: right of zero = home wins/covers by more.
+    // GEOMETRY flips into hero space; PRINTED NUMBERS stay in betting
+    // convention (Vegas favorite is always negative — site rule), i.e. the
+    // anchor-frame quotes: tick labels negate back under heroFlip and dot
+    // labels keep their backend quote strings.
     const heroFlip = key === 'anchor_spread' && !!(anchor && anchor.is_home);
     const hv   = v => (v == null ? null : (heroFlip ? -v : v));
-    const fmtM = v => (v > 0 ? '+' : '') + (Math.round(v * 10) / 10);
     const vegasPos     = ml ? 0
                         : key === 'anchor_spread' ? hv(section.vegas_anchor_spread) : section.vegas_line;
     // When a graded pick exists, suppress the aggregate blend dot — the pick
@@ -873,7 +910,7 @@
     const hasPick      = !!(pick && pick.tier && pick.tier !== 'no_edge');
     const blendRaw     = (firingModel || hasPick || ml) ? null : section.pressbox_blend;
     const blendPos     = key === 'anchor_spread' ? hv(blendRaw) : blendRaw;
-    const blendDisplay = (heroFlip && blendPos != null) ? fmtM(blendPos) : section.pressbox_display;
+    const blendDisplay = section.pressbox_display;
     const vegasDisplay = section.vegas_display;
 
     // Optional Vegas price tag. e.g. "Vegas: TCU -2.5 (-110)"
@@ -894,7 +931,6 @@
         name:    m.name,
         value:   v,
         display: ml ? (ml.probByName[m.name] || m.display || String(m[key]))
-                    : heroFlip ? fmtM(v)
                     : (m.display || String(m[key])),
         kind:    'model',
       });
@@ -1027,7 +1063,10 @@
       axisEl.insertBefore(zone, axisEl.firstChild);
     }
 
-    // Axis tick labels
+    // Axis tick labels. Positions are hero-space; printed numbers are the
+    // betting quote (negated back under heroFlip so the favorite's side
+    // reads negative — "Memphis only has to lose by less than 5.5" means
+    // the tick at UNLV's -5.5, never a +5.5).
     for (let t = Math.ceil(axisMin / tickStep) * tickStep; t <= axisMax; t += tickStep) {
       const tick = document.createElement('div');
       tick.className = 'strip-tick';
@@ -1037,9 +1076,10 @@
       lab.className = 'strip-tick-label';
       if (key === 'anchor_spread' && t === 0) lab.classList.add('strip-tick-label-zero');
       lab.style.left = `${xPct(t)}%`;
+      const dt = (heroFlip && t !== 0) ? -t : t;
       lab.textContent = (key === 'anchor_spread')
-        ? (t > 0 ? '+' + t : t)
-        : t;
+        ? (dt > 0 ? '+' + dt : dt)
+        : dt;
       ticksEl.appendChild(lab);
     }
 
@@ -1235,6 +1275,21 @@
       // (already in `above` which is lane 0, so no movement needed).
     }
 
+    // Vegas label — through the same lane system so it can't collide with
+    // model labels. Placed before them so it gets the best available lane
+    // (Austin couldn't FIND the Vegas line among unlabeled ticks).
+    if (vegasPos != null && !ml && vegasDisplay) {
+      const vx = xPct(vegasPos);
+      const vLbl = document.createElement('div');
+      vLbl.className = 'strip-label strip-label-vegas';
+      vLbl.style.left = `${vx}%`;
+      vLbl.innerHTML = `<span class="strip-label-name">Vegas</span>` +
+                       `<span class="strip-label-value">${escape(vegasDisplay)}</span>`;
+      const lane = tryPlace(vx, BLEND_HALF_PCT);
+      if (laneClasses[lane]) vLbl.classList.add(`strip-label-${laneClasses[lane]}`);
+      laneNodes[lane].appendChild(vLbl);
+    }
+
     const sortedPts = [...points].sort((a, b) => a.value - b.value);
 
     // Coincident-dot handling: when models agree (dots within ~1.5% of the
@@ -1287,6 +1342,48 @@
       note.className = 'mlstrip-note';
       note.innerHTML = ml.note;
       card.appendChild(note);
+    }
+
+    // History check (spread/total) — the ML chart's "history check" idea on
+    // the margin charts: what share of these historical finals landed on
+    // each side of TODAY'S number (trapezoid mass split of the curve).
+    // Rule-sourced curves phrase it as the fired signal's own record.
+    if (!ml && densityCurve.length >= 3 && vegasPos != null
+        && histRange?.sample_size && endsPair) {
+      let left = 0, total = 0;
+      for (let i = 1; i < densityCurve.length; i++) {
+        const [x0, y0] = densityCurve[i - 1];
+        const [x1, y1] = densityCurve[i];
+        total += (x1 - x0) * (y0 + y1) / 2;
+        if (x1 <= vegasPos) {
+          left += (x1 - x0) * (y0 + y1) / 2;
+        } else if (x0 < vegasPos) {
+          const t = (vegasPos - x0) / (x1 - x0);
+          const ym = y0 + (y1 - y0) * t;
+          left += (vegasPos - x0) * (y0 + ym) / 2;
+        }
+      }
+      if (total > 0) {
+        const pctLeft = left / total;
+        let sideName, pct;
+        if (pickZone) {
+          pct = pickZone.goldLeft ? pctLeft : 1 - pctLeft;
+          sideName = pickZone.goldLeft ? endsPair[0] : endsPair[1];
+        } else {
+          pct = Math.max(pctLeft, 1 - pctLeft);
+          sideName = pctLeft >= 0.5 ? endsPair[0] : endsPair[1];
+        }
+        const n = histRange.sample_size;
+        const pctTxt = `<b>${Math.round(pct * 100)}%</b>`;
+        const note = document.createElement('div');
+        note.className = 'mlstrip-note';
+        note.innerHTML = (histRange.source === 'rule')
+          ? `History check: in the ${n} games where this pick's #1 signal fired, ` +
+            `${pctTxt} of finals landed on the ${escape(sideName)} side of today's number.`
+          : `History check: at numbers like today's, ${pctTxt} of finals landed ` +
+            `on the ${escape(sideName)} side (${n} games, 2023–25).`;
+        card.appendChild(note);
+      }
     }
 
     return card;
