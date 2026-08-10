@@ -764,25 +764,37 @@
   function buildTally(p) {
     const det = p.voter_details || [];
     if (!det.length) return null;
-    const net = p.net_votes != null ? p.net_votes : det.length;
-    const against = Math.max(0, det.length - net);
+    const detAgainst = p.voter_details_against || [];
+    // Counts derive from the chip lists when the against side is known —
+    // one source of truth, so the headline always matches the chips shown.
+    const against = detAgainst.length
+      || Math.max(0, det.length - (p.net_votes != null ? p.net_votes : det.length));
+    const net = det.length - against;
     const wrap = document.createElement('div');
     wrap.className = 'game-card tally-card';
-    const chips = det.map(v => {
-      const tip = v.family === 'counter'
-        ? ' title="Counter-signal: one of our own reads leans the other way — in a spot where it has been reliably wrong, so its lean counts FOR this side."'
-        : '';
-      return `<span class="vchip vchip--${escape(v.family)}"${tip}>` +
+    const chip = (v, mod, tipText) => {
+      const tip = tipText ? ` title="${tipText}"` : '';
+      return `<span class="vchip vchip--${escape(v.family)}${mod || ''}"${tip}>` +
              `<span class="vsq"></span>${escape(v.label)}</span>`;
-    }).join('');
+    };
+    const chips = det.map(v => chip(v, '', v.family === 'counter'
+      ? 'Counter-signal: one of our own reads leans the other way — in a spot where it has been reliably wrong, so its lean counts FOR this side.'
+      : '')).join('');
+    // Opposing signals get NAMED, muted chips — they explain the net math
+    // (2 for, 1 against = net 1 = C) and they're graded in the ledger like
+    // every other fire. Legacy payloads without ids fall back to the count.
+    const oppChips = detAgainst.length
+      ? detAgainst.map(v => chip(v, ' vchip--against',
+          'Opposing signal: voted the other side of this market — it subtracts from the net.')).join('')
+      : `<span class="vopp">${against
+          ? against + ' opposing signal' + (against > 1 ? 's' : '')
+          : 'no opposing signals'}</span>`;
     wrap.innerHTML =
       `<div class="tally-grid">` +
       `<div class="vchips">${chips}</div>` +
       `<div class="tally-net"><div class="n">${det.length}–${against}</div>` +
       `<div class="k">net ${net} · ${escape(p.tier_display || p.tier || '')}</div></div>` +
-      `<div class="vchips vchips--right"><span class="vopp">${against
-        ? against + ' opposing signal' + (against > 1 ? 's' : '')
-        : 'no opposing signals'}</span></div>` +
+      `<div class="vchips vchips--right">${oppChips}</div>` +
       `</div>`;
     return wrap;
   }

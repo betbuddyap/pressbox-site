@@ -1872,6 +1872,14 @@ footer {
 .vchip--consensus .vsq { background: var(--ink); }
 .vchip--situational .vsq { background: var(--silver); }
 .vchip--counter .vsq { background: #fff; border: 2px solid var(--rust); width: 6px; height: 6px; border-radius: 50%; }
+/* Opposing signal — named but visually pulling the other way: dashed,
+   uncolored, muted. */
+.vchip--against {
+  border: 1px dashed var(--text-light);
+  background: transparent;
+  color: var(--text-mid);
+}
+.vchip--against .vsq { opacity: 0.4; }
 .vopp { font-size: 11px; color: var(--text-light); }
 .tally-net { text-align: center; }
 .tally-net .n { font-family: var(--serif); font-weight: var(--weight-bold); font-size: 22px; }
