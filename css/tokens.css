@@ -34,10 +34,10 @@
   --gold:         #B8922A;   /* primary accent */
   --gold-light:   #D4A83A;   /* hover, highlights */
   --gold-pale:    #F5EDD0;   /* gold bg fills */
-  --gold-deep:    #A88420;   /* gold for SMALL TEXT — thin glyphs render
-                                perceptually lighter than a solid --gold
-                                fill, so text needs this deeper shade to
-                                LOOK like the same gold as the bars */
+  --gold-deep:    #B8860B;   /* gold for SMALL TEXT — thin glyphs lose
+                                SATURATION perceptually, so text gold needs
+                                more chroma (yellower, same depth), not a
+                                darker shade (reads gray), to match bars */
 
   /* — Tier medal fills (A/B/C badges) — */
   --gold-medal:   var(--gold);   /* A tier — gold (reuse brand gold) */
