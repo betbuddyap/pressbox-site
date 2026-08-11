@@ -818,6 +818,9 @@
       if (byMkt.moneyline) els.beat1Stack.appendChild(buildPickArticle(byMkt.moneyline));
       if (proj.moneyline)  els.beat1Stack.appendChild(
         buildMLChart(data, proj.moneyline, proj.spread, anchor, byMkt.moneyline));
+      // ML expressions ride the A+ spread's voters — show the tally here too
+      // so a banded ML pick names the signals behind it.
+      if (byMkt.moneyline) { const t = buildTally(byMkt.moneyline); if (t) els.beat1Stack.appendChild(t); }
     }
     if (els.beat2Stack) {
       els.beat2Stack.innerHTML = '';
