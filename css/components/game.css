@@ -1939,10 +1939,10 @@ footer {
 }
 .sig-table td { padding: 6px; border-bottom: 1px solid var(--cream-dark); vertical-align: top; }
 .sig-rec { white-space: nowrap; font-family: var(--sans); }
-/* Mobile: the FAMILY column forces every signal label to wrap 2-3 lines —
-   drop it (the chip colors already encode family on the tallies). */
+/* Mobile: the FAMILY column (3rd, after the new Market column) forces every
+   signal label to wrap 2-3 lines — drop it (chip colors encode family). */
 @media (max-width: 600px) {
-  .sig-table th:nth-child(2), .sig-table td:nth-child(2) { display: none; }
+  .sig-table th:nth-child(3), .sig-table td:nth-child(3) { display: none; }
   .sig-table { font-size: 11px; }
   .sig-table td { padding: 5px 4px; }
 }

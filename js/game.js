@@ -893,22 +893,34 @@
         `<div class="opi-grid">${opiBox(home, data.opi.home)}${opiBox(away, data.opi.away)}</div>`;
       el.appendChild(box);
     }
-    // UNION of every signal that voted on this game — all three markets,
-    // BOTH sides (against-voters count; they explain the nets).
+    // One row PER BET, not per rule (Austin's spec): a signal that fires on
+    // both the spread and the moneyline is two separately-graded bets — the
+    // Market column distinguishes them and each row carries ITS market's
+    // ledger record (`rule:<id>` = ATS, `rule:<id>:ml` = moneyline).
+    const MKT_LABEL = { spread: 'Spread', total: 'Total', ml: 'ML', moneyline: 'ML' };
     const seen = {};
-    const addSig = v => { if (v && v.id && !seen[v.id]) seen[v.id] = v; };
+    const addSig = (v, mkt) => {
+      if (!v || !v.id) return;
+      const k = v.id + '|' + mkt;
+      if (!seen[k]) seen[k] = { ...v, market: mkt };
+    };
     (data.picks || []).forEach(p => {
-      (p.voter_details || []).forEach(addSig);
-      (p.voter_details_against || []).forEach(addSig);
+      const mkt = (p.market === 'moneyline' || p.market === 'ml') ? 'ml' : p.market;
+      (p.voter_details || []).forEach(v => addSig(v, mkt));
+      (p.voter_details_against || []).forEach(v => addSig(v, mkt));
     });
     const sigs = Object.values(seen);
     if (sigs.length) {
       const box = document.createElement('div');
       box.className = 'game-card';
       box.innerHTML = `<div class="receipt-eyebrow">The signals behind this game</div>` +
-        `<table class="sig-table"><thead><tr><th>Signal</th><th>Family</th><th>2026 record</th></tr></thead><tbody>` +
-        sigs.map(v => `<tr data-rule="${escape(v.id)}"><td>${escape(v.label)}</td>` +
-          `<td>${escape(v.family)}</td><td class="sig-rec">—</td></tr>`).join('') +
+        `<table class="sig-table"><thead><tr><th>Signal</th><th>Market</th><th>Family</th><th>2026 record</th></tr></thead><tbody>` +
+        sigs.map(v => {
+          const recKey = v.market === 'ml' ? `${v.id}:ml` : v.id;
+          return `<tr data-rule="${escape(recKey)}"><td>${escape(v.label)}</td>` +
+            `<td>${escape(MKT_LABEL[v.market] || v.market)}</td>` +
+            `<td>${escape(v.family)}</td><td class="sig-rec">—</td></tr>`;
+        }).join('') +
         `</tbody></table>` +
         `<div class="receipt-hash">Every signal above was pre-registered and sealed before the season ` +
         `— nothing added, nothing curated. Verify: <code>sha256 e4776fd1…3a145e</code> (spread/total) · ` +
