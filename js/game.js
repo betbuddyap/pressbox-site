@@ -415,8 +415,19 @@
     const homePts = (effTotal + homeMargin) / 2;
     const awayPts = (effTotal - homeMargin) / 2;
 
-    els.projAway.textContent = Math.round(awayPts);
-    els.projHome.textContent = Math.round(homePts);
+    // Rounding can collapse a small margin into a displayed TIE (22.15 /
+    // 21.85 -> 22-22). CFB has no ties — break toward the projected winner
+    // (the ML pick's side when graded, else the margin's sign).
+    let rHome = Math.round(homePts);
+    let rAway = Math.round(awayPts);
+    if (rHome === rAway) {
+      const mlSide = (mlPk && mlPk.tier && mlPk.tier !== 'no_edge')
+        ? mlPk.history?.current?.side_raw : null;
+      const homeWins = mlSide ? mlSide === 'home' : homeMargin >= 0;
+      if (homeWins) rHome += 1; else rAway += 1;
+    }
+    els.projAway.textContent = rAway;
+    els.projHome.textContent = rHome;
     els.projAwayLbl.textContent = data.game?.away?.name || '';
     els.projHomeLbl.textContent = data.game?.home?.name || '';
 
@@ -453,10 +464,11 @@
       ? 'Projected from the fired signals’ historical outcomes'
       : 'Model blend';
 
-    if (awayPts > homePts) {
+    // Winner emphasis follows the DISPLAYED scores (tie-break included).
+    if (rAway > rHome) {
       els.projAway.classList.add('winner');
       els.projHome.classList.remove('winner');
-    } else if (homePts > awayPts) {
+    } else if (rHome > rAway) {
       els.projHome.classList.add('winner');
       els.projAway.classList.remove('winner');
     }
