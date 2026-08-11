@@ -1421,7 +1421,7 @@
 .numbers-row-val {
   font-family: var(--sans);
   font-style: normal;
-  font-weight: 600;
+  font-weight: var(--weight-bold);
   font-size: 12px;
   color: var(--ink);
   letter-spacing: 0.3px;
