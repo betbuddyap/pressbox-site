@@ -396,25 +396,24 @@
   }
 
   // ── Render: filters (used by all populated states) ───────────
+  // One row, single-select: a MARKET (Spread/Total/Moneyline) or a TIER
+  // (A+/A/B/C) at a time — Austin's spec. "All" clears.
   function renderFilters() {
     const f = state.filters;
-    const isActive = (m) => f.market === m && !f.aplusOnly;
-    const aplusActive = f.aplusOnly;
+    const mkt = (m) => `aria-pressed="${f.market === m && !f.tier ? 'true' : 'false'}"`;
+    const tr = (t) => `aria-pressed="${f.tier === t ? 'true' : 'false'}"`;
     return `
       <div class="ll-filters" role="group" aria-label="Filter picks">
         <span class="ll-filter-label">Pick Type</span>
         <button class="ll-filter-pill" data-filter="all"
-          aria-pressed="${!f.market && !f.aplusOnly && !f.gradedOnly ? 'true' : 'false'}">All</button>
-        <button class="ll-filter-pill" data-filter="spread"
-          aria-pressed="${isActive('spread') ? 'true' : 'false'}">Spread</button>
-        <button class="ll-filter-pill" data-filter="total"
-          aria-pressed="${isActive('total') ? 'true' : 'false'}">Total</button>
-        <button class="ll-filter-pill" data-filter="ml"
-          aria-pressed="${isActive('ml') ? 'true' : 'false'}">ML</button>
-        <button class="ll-filter-pill" data-filter="graded"
-          aria-pressed="${f.gradedOnly ? 'true' : 'false'}">Graded</button>
-        <button class="ll-filter-pill" data-filter="aplus"
-          aria-pressed="${aplusActive ? 'true' : 'false'}">A only</button>
+          aria-pressed="${!f.market && !f.tier ? 'true' : 'false'}">All</button>
+        <button class="ll-filter-pill" data-filter="spread" ${mkt('spread')}>Spread</button>
+        <button class="ll-filter-pill" data-filter="total" ${mkt('total')}>Total</button>
+        <button class="ll-filter-pill" data-filter="ml" ${mkt('ml')}>Moneyline</button>
+        <button class="ll-filter-pill" data-filter="tier:A+" ${tr('A+')}>A+</button>
+        <button class="ll-filter-pill" data-filter="tier:A" ${tr('A')}>A</button>
+        <button class="ll-filter-pill" data-filter="tier:B" ${tr('B')}>B</button>
+        <button class="ll-filter-pill" data-filter="tier:C" ${tr('C')}>C</button>
       </div>
     `;
   }
@@ -447,7 +446,8 @@
     const inWeek = state.picks.filter(p => state.week === null || p.week === state.week);
     const totalInWeek = inWeek.length;
     const filteredCount = filtered.length;
-    const anyActive = !!(state.filters.market || state.filters.aplusOnly || state.filters.gradedOnly);
+    const anyActive = !!(state.filters.market || state.filters.tier
+                         || state.filters.aplusOnly || state.filters.gradedOnly);
 
     const metaText = anyActive
       ? `${filteredCount} pick${filteredCount === 1 ? '' : 's'} · filtered from ${totalInWeek}`
@@ -486,6 +486,7 @@
     return picks.filter(p => {
       // Filter by selected week (week-tab bar)
       if (state.week !== null && p.week !== state.week) return false;
+      if (f.tier && p.tier !== f.tier) return false;
       if (f.aplusOnly && p.tier !== 'A') return false;
       if (f.gradedOnly && (!p.tier || p.tier === 'no_edge')) return false;
       if (f.market && p.market !== f.market) return false;
@@ -935,16 +936,17 @@
           state.filters.tier = null;
           state.filters.aplusOnly = false;
           state.filters.gradedOnly = false;
-        } else if (f === 'graded') {
-          state.filters.gradedOnly = !state.filters.gradedOnly;
-        } else if (f === 'aplus') {
-          state.filters.aplusOnly = !state.filters.aplusOnly;
-          if (state.filters.aplusOnly) {
-            state.filters.market = null;
-          }
+        } else if (f.startsWith('tier:')) {
+          const t = f.slice(5);
+          state.filters.tier = (state.filters.tier === t) ? null : t;
+          state.filters.market = null;
+          state.filters.aplusOnly = false;
+          state.filters.gradedOnly = false;
         } else {
           state.filters.market = (state.filters.market === f) ? null : f;
+          state.filters.tier = null;
           state.filters.aplusOnly = false;
+          state.filters.gradedOnly = false;
         }
         render();
       });

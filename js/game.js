@@ -400,7 +400,17 @@
     // Convert anchor spread back to home margin:
     //   if anchor is home: home_margin = -anchor_spread
     //   if anchor is away: home_margin = anchor_spread
-    const homeMargin = anchorIsHome ? -effAnchorSpread : effAnchorSpread;
+    let homeMargin = anchorIsHome ? -effAnchorSpread : effAnchorSpread;
+
+    // A graded ML pick NAMES a winner — the hero must never contradict it
+    // (Austin's rule). Clamp the margin to a minimal win when the blend
+    // leans the other way.
+    const mlPk = pkByMkt.moneyline;
+    if (mlPk && mlPk.tier && mlPk.tier !== 'no_edge') {
+      const s = mlPk.history?.current?.side_raw;
+      if (s === 'home' && homeMargin <= 0) homeMargin = 1;
+      if (s === 'away' && homeMargin >= 0) homeMargin = -1;
+    }
 
     const homePts = (effTotal + homeMargin) / 2;
     const awayPts = (effTotal - homeMargin) / 2;
@@ -868,10 +878,14 @@
         `<div class="opi-grid">${opiBox(home, data.opi.home)}${opiBox(away, data.opi.away)}</div>`;
       el.appendChild(box);
     }
+    // UNION of every signal that voted on this game — all three markets,
+    // BOTH sides (against-voters count; they explain the nets).
     const seen = {};
-    (data.picks || []).forEach(p => (p.voter_details || []).forEach(v => {
-      if (v.id && !seen[v.id]) seen[v.id] = v;
-    }));
+    const addSig = v => { if (v && v.id && !seen[v.id]) seen[v.id] = v; };
+    (data.picks || []).forEach(p => {
+      (p.voter_details || []).forEach(addSig);
+      (p.voter_details_against || []).forEach(addSig);
+    });
     const sigs = Object.values(seen);
     if (sigs.length) {
       const box = document.createElement('div');
@@ -882,7 +896,8 @@
           `<td>${escape(v.family)}</td><td class="sig-rec">—</td></tr>`).join('') +
         `</tbody></table>` +
         `<div class="receipt-hash">Every signal above was pre-registered and sealed before the season ` +
-        `— nothing added, nothing curated. Verify: <code>sha256 e4776fd1cbd58d2b…3a145e</code> · ` +
+        `— nothing added, nothing curated. Verify: <code>sha256 e4776fd1…3a145e</code> (spread/total) · ` +
+        `<code>fdc3bf0c…c73104</code> (moneyline) · ` +
         `<a href="${API_BASE}/canonical/ledger.csv?season=2026">full ledger CSV ↗</a></div>`;
       el.appendChild(box);
       fillSigRecords(box);
@@ -1370,18 +1385,22 @@
                        `<span>${escape(endsPair[1])} →</span>`;
       card.insertBefore(ends, card.querySelector('.strip-plot'));
     }
-    if (ml && ml.note) {
+    // ML aggregate calibration note — only when the curve is NOT the fired
+    // signal's own (a graded ML pick gets the signal-conditioned note below).
+    const mlRuleCurve = ml && histRange?.source === 'rule' && densityCurve.length >= 3;
+    if (ml && ml.note && !mlRuleCurve) {
       const note = document.createElement('div');
       note.className = 'mlstrip-note';
       note.innerHTML = ml.note;
       card.appendChild(note);
     }
 
-    // History check (spread/total) — the ML chart's "history check" idea on
-    // the margin charts: what share of these historical finals landed on
-    // each side of TODAY'S number (trapezoid mass split of the curve).
-    // Rule-sourced curves phrase it as the fired signal's own record.
-    if (!ml && densityCurve.length >= 3 && vegasPos != null
+    // History check — what share of these historical finals landed on each
+    // side of TODAY'S number (trapezoid mass split of the curve). Applies to
+    // spread/total always, and to the ML chart when a graded ML pick serves
+    // its signal's own curve. Rule-sourced curves phrase it as the fired
+    // signal's record.
+    if ((!ml || mlRuleCurve) && densityCurve.length >= 3 && vegasPos != null
         && histRange?.sample_size && endsPair) {
       let left = 0, total = 0;
       for (let i = 1; i < densityCurve.length; i++) {
