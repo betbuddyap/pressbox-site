@@ -612,7 +612,11 @@
     //   "Memphis +3 · DraftKings"          (single book)
     //   "Memphis +3 · DraftKings + 1 other"  (one tied book)
     //   "Under 54.5 · FanDuel + 2 others"    (multiple tied books)
-    if (!p.side) return '<span class="ll-row-pick-num">—</span>';
+    // No side = CONTESTED no-edge (vote count tied) — there is genuinely
+    // no lean, so say that rather than a bare dash or "?".
+    if (!p.side || p.side === '?') {
+      return '<span class="ll-row-pick-num">Signals tied — no lean</span>';
+    }
     const bookName = esc(p.book?.name || '');
     const tied = Number(p.tied_books_count || 0);
     let bookText = bookName;

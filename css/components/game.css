@@ -1099,6 +1099,13 @@
   color: var(--rust);
   font-weight: 700;
 }
+/* Vegas label lives in the ticks row, at the tick — where the line meets
+   the scale. Nearby tick numbers are suppressed by the renderer. */
+.strip-tick-label-vegas {
+  color: var(--ink);
+  font-weight: 700;
+  white-space: nowrap;
+}
 
 /* Vegas label - shown in card header, "Vegas: UNLV -10.5" */
 /* Legacy class shims (kept so old markup wouldn't blow up) */

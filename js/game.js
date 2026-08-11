@@ -747,12 +747,17 @@
              `<b>${Math.round(cal.fav_win_rate * 100)}%</b> of the time ` +
              `(${cal.n} games, 2023–25).`;
     }
+    // Blend dot: same gold marker as the spread chart (position = blend
+    // margin), labeled with the blend's HOME win probability.
+    const blendHomeProb = anchorIsHome ? ml.pressbox_anchor_prob : ml.pressbox_other_prob;
     const section = {
       models:           (spreadSection && spreadSection.models) || [],
       historical_range: ml.historical_range
                         || (spreadSection && spreadSection.historical_range) || null,
-      pressbox_blend:   null,
-      pressbox_display: null,
+      pressbox_blend:   (spreadSection && spreadSection.pressbox_blend != null
+                         && blendHomeProb != null)
+                        ? spreadSection.pressbox_blend : null,
+      pressbox_display: blendHomeProb != null ? `${Math.round(blendHomeProb * 100)}%` : null,
       vegas_display:    null,
     };
     return buildDotPlot(`Moneyline — chance ${home} wins`, section, 'anchor_spread',
@@ -933,7 +938,7 @@
     // came from the ladder's votes, not the blend; the gold zone marks the
     // side instead, so the chart and verdict tell one story.
     const hasPick      = !!(pick && pick.tier && pick.tier !== 'no_edge');
-    const blendRaw     = (firingModel || hasPick || ml) ? null : section.pressbox_blend;
+    const blendRaw     = (firingModel || hasPick) ? null : section.pressbox_blend;
     const blendPos     = key === 'anchor_spread' ? hv(blendRaw) : blendRaw;
     const blendDisplay = section.pressbox_display;
     const vegasDisplay = section.vegas_display;
@@ -1092,11 +1097,16 @@
     // betting quote (negated back under heroFlip so the favorite's side
     // reads negative — "Memphis only has to lose by less than 5.5" means
     // the tick at UNLV's -5.5, never a +5.5).
+    // The Vegas label lives in THIS row (at the tick, where the line meets
+    // the scale) — never in the dot-label lanes, where it crowded them into
+    // overlap. Tick numbers within its span are suppressed.
+    const vegasTickLabel = (vegasPos != null && !ml && vegasDisplay);
     for (let t = Math.ceil(axisMin / tickStep) * tickStep; t <= axisMax; t += tickStep) {
       const tick = document.createElement('div');
       tick.className = 'strip-tick';
       tick.style.left = `${xPct(t)}%`;
       ticksEl.appendChild(tick);
+      if (vegasTickLabel && Math.abs(xPct(t) - xPct(vegasPos)) < 7) continue;
       const lab = document.createElement('div');
       lab.className = 'strip-tick-label';
       if (key === 'anchor_spread' && t === 0) lab.classList.add('strip-tick-label-zero');
@@ -1106,6 +1116,13 @@
         ? (dt > 0 ? '+' + dt : dt)
         : dt;
       ticksEl.appendChild(lab);
+    }
+    if (vegasTickLabel) {
+      const vLab = document.createElement('div');
+      vLab.className = 'strip-tick-label strip-tick-label-vegas';
+      vLab.style.left = `${xPct(vegasPos)}%`;
+      vLab.textContent = `Vegas ${vegasDisplay}`;
+      ticksEl.appendChild(vLab);
     }
 
     // Historical density curve — mirrored shape rendered as inline SVG.
@@ -1288,8 +1305,9 @@
           return i;
         }
       }
-      // All lanes full — fall back to lane 0 and accept the overlap
-      return 0;
+      // All lanes full — no room without stacking text on text. Signal the
+      // caller to skip the label; the dot keeps its hover tooltip.
+      return -1;
     }
 
     // Reserve lane 0 for the blend label if present
@@ -1298,21 +1316,6 @@
       lanes[0].push({ x: blendX, halfW: BLEND_HALF_PCT });
       // The blend label was already appended above; tag its lane class
       // (already in `above` which is lane 0, so no movement needed).
-    }
-
-    // Vegas label — through the same lane system so it can't collide with
-    // model labels. Placed before them so it gets the best available lane
-    // (Austin couldn't FIND the Vegas line among unlabeled ticks).
-    if (vegasPos != null && !ml && vegasDisplay) {
-      const vx = xPct(vegasPos);
-      const vLbl = document.createElement('div');
-      vLbl.className = 'strip-label strip-label-vegas';
-      vLbl.style.left = `${vx}%`;
-      vLbl.innerHTML = `<span class="strip-label-name">Vegas</span>` +
-                       `<span class="strip-label-value">${escape(vegasDisplay)}</span>`;
-      const lane = tryPlace(vx, BLEND_HALF_PCT);
-      if (laneClasses[lane]) vLbl.classList.add(`strip-label-${laneClasses[lane]}`);
-      laneNodes[lane].appendChild(vLbl);
     }
 
     const sortedPts = [...points].sort((a, b) => a.value - b.value);
@@ -1347,6 +1350,7 @@
 
       const xCenter = xPct(p.value);
       const lane = tryPlace(xCenter, LABEL_HALF_PCT);
+      if (lane === -1) return;   // no clean slot — dot + tooltip only
       if (laneClasses[lane]) lbl.classList.add(`strip-label-${laneClasses[lane]}`);
       laneNodes[lane].appendChild(lbl);
     });
@@ -1607,6 +1611,13 @@
     // reflect where the pick is NOW, not where it started. Otherwise
     // the headline contradicts the history shown when expanded.
     const side = p.history?.current?.side || p.side_display || '';
+
+    // No side at all = a CONTESTED verdict — the vote count tied, so there
+    // is genuinely no lean. Say that instead of rendering a sideless quote
+    // (a spread number without a team is meaningless).
+    if (!side || side === '?') {
+      return '<span class="ll-row-pick-num">Signals tied — no lean</span>';
+    }
     const bookName = p.history?.current?.book?.name
       || p.book
       || '';
