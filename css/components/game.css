@@ -253,6 +253,12 @@
   .ctx-grades { gap: 10px; padding: 7px 10px; top: 8px; left: 8px; }
   .ctx-grade { gap: 5px; }
 }
+/* Reserve the hero's top band when the grade strip is present so it never
+   sits on top of a long team name (was covering "GEORGIA TECH"). */
+.ctx.has-grades .ctx-inner { padding-top: 78px; }
+@media (max-width: 600px) {
+  .ctx.has-grades .ctx-inner { padding-top: 64px; }
+}
 
 /* Model-blend caption under the projected score. */
 .proj-blend-note {

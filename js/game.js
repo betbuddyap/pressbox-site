@@ -205,6 +205,7 @@
     els.ribbon.outerHTML = gradesHtml
       ? `<div class="ctx-grades" id="ctxRibbon">${gradesHtml}</div>`
       : `<div id="ctxRibbon"></div>`;
+    document.getElementById('ctxHero')?.classList.toggle('has-grades', !!gradesHtml);
 
     // Team names
     els.awayName.textContent = g.away?.name || '—';
