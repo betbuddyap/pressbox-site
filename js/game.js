@@ -775,8 +775,11 @@
     const blendHomeProb = anchorIsHome ? ml.pressbox_anchor_prob : ml.pressbox_other_prob;
     const section = {
       models:           (spreadSection && spreadSection.models) || [],
-      historical_range: ml.historical_range
-                        || (spreadSection && spreadSection.historical_range) || null,
+      // ONLY the ML block's own curve (the ML pick's signal when graded,
+      // the who-wins line band otherwise). Never borrow the spread
+      // section's — that's the SPREAD pick's rule curve, and it made a
+      // no-edge ML read like a fired signal (Austin caught it on FSU).
+      historical_range: ml.historical_range || null,
       pressbox_blend:   (spreadSection && spreadSection.pressbox_blend != null
                          && blendHomeProb != null)
                         ? spreadSection.pressbox_blend : null,
