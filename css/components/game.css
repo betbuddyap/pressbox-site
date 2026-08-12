@@ -255,13 +255,13 @@
 /* Phones: full-width cream band attached to the hero's top edge — no
    floating card, contents centered, costs only its own height. */
 @media (max-width: 600px) {
-  /* Phones: the grade strip moves to the BOTTOM of the hero — the same
-     place the pick row lives on the Upcoming cards — instead of floating
-     above everything. Native on the dark hero (no card, no cream band),
-     centered, translucent-cream labels, hairline on top. The hero is
-     flexed so the strip (an earlier sibling in the DOM) orders last. */
+  /* Phones: the grade strip moves to the BOTTOM of the hero (where the
+     pick row lives on the Upcoming cards) and keeps the DESKTOP look —
+     the same floating cream card, centered. The hero is flexed so the
+     strip (an earlier sibling in the DOM) orders last. NOTE: no width
+     rule on .ctx-inner — width:100% + its 32px side padding overflowed
+     the viewport and shoved the down-and-distance off screen. */
   .ctx { display: flex; flex-direction: column; }
-  .ctx-inner { width: 100%; }
   .ctx-grades {
     order: 99;
     position: relative;
@@ -270,19 +270,9 @@
     top: auto;
     left: auto;
     z-index: 3;
-    display: flex;
-    justify-content: center;
-    width: auto;
-    gap: 16px;
-    margin: 0;
-    padding: 11px 8px;
-    background: transparent;
-    border: 0;
-    border-top: 1px solid rgba(248, 245, 238, 0.18);
-    border-radius: 0;
+    width: fit-content;
+    margin: 0 auto 14px;
   }
-  .ctx-grade { gap: 6px; }
-  .ctx-grades .ctx-grade-mkt { color: rgba(248, 245, 238, 0.7); }
   .ctx.has-grades .ctx-inner { padding-top: 18px; }
 }
 

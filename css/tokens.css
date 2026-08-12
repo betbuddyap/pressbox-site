@@ -32,7 +32,7 @@
 
   /* — Gold scale (accents, brand) — */
   --gold:         #B8922A;   /* primary accent */
-  --gold-light:   #D4A83A;   /* hover, highlights */
+  --gold-light:   #E7BE4D;   /* hover, highlights — the on-dark gold; brightened (was #D4A83A, read dim on the dark hero/cards) */
   --gold-pale:    #F5EDD0;   /* gold bg fills */
   --gold-deep:    #B8860B;   /* gold for SMALL TEXT — thin glyphs lose
                                 SATURATION perceptually, so text gold needs
