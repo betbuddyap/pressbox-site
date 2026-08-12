@@ -699,8 +699,8 @@
     font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.02em;
-    width: 36px;
-    height: 32px;
+    width: 32px;
+    height: 26px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -710,7 +710,7 @@
   }
   .gc.slate .gc-pick-outcome.out-win,  .gc.gotw-card .gc-pick-outcome.out-win  { background: var(--sage); color: #fff; }
   .gc.slate .gc-pick-outcome.out-loss, .gc.gotw-card .gc-pick-outcome.out-loss { background: var(--rust); color: #fff; }
-  .gc.slate .gc-pick-outcome.out-push, .gc.gotw-card .gc-pick-outcome.out-push { background: var(--ink); color: #fff; }
+  .gc.slate .gc-pick-outcome.out-push, .gc.gotw-card .gc-pick-outcome.out-push { background: rgba(248,245,238,0.14); color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.4); }
   .gc.slate .gc-pick-outcome.out-void, .gc.gotw-card .gc-pick-outcome.out-void { background: transparent; color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.4); }
   .gc.slate .gc-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
   .gc.slate .gc-team-name { font-size: 22px; line-height: 1.15; }
@@ -747,17 +747,17 @@
   /* When the slot has a tier badge, fade the label slightly so the badge
      reads as the dominant element. */
   .gc.slate .gc-pick-slot.has-tier .gc-pick-label, .gc.gotw-card .gc-pick-slot.has-tier .gc-pick-label { color: rgba(248,245,238,0.45); }
-  /* Badge = the canonical .ll-badge proportions from Live Lines (36×32
-     block, 1px ink keyline, 4px radius, cream-on-gold A). The old pill
-     (28×20, ink-on-gold) read as a different, cheaper badge system. */
+  /* Badge = the Live Lines badge language (ink keyline, 4px radius,
+     cream-on-gold A) scaled down a notch for the cards — same 11px type,
+     shorter block (36×32 read too tall here). */
   .gc.slate .gc-pick-tier, .gc.gotw-card .gc-pick-tier {
     font-family: var(--sans);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.02em;
     text-transform: uppercase;
-    width: 36px;
-    height: 32px;
+    width: 32px;
+    height: 26px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -784,10 +784,11 @@
    * Compact 16px chip for the pill-sized gc badges; chip wears the tier color,
    * bolt wears that tier's text color, ink keyline (gold on A+). */
   .gc-pick-tier { position: relative; }
+  /* No cream outline — on the dark cards the extra white ring outside the
+     keyline read heavy-handed (Austin). The ink/gold border is enough. */
   .gc-bolt {
     position: absolute; top: -7px; right: -7px; width: 16px; height: 16px;
     border-radius: 50%; border: 1px solid var(--ink);
-    outline: 2px solid var(--cream);
     display: flex; align-items: center; justify-content: center;
   }
   .gc-bolt svg { width: 11px; height: 11px; display: block; }
@@ -796,21 +797,20 @@
   .gc-bolt--c     { background: var(--bronze); color: var(--cream); }
   .gc-bolt--aplus { background: var(--ink);    color: var(--gold-light); border-color: var(--gold); }
 
-  /* Live bet-status chip — same corner-chip language as the bolt, but
-     TOP-LEFT (bolt keeps top-right, they never collide). The grade badge
-     stays the hero; the chip is a quiet marker: sage ▲ tracking to win,
-     rust ▼ behind, neutral for push/undecided. Full detail in title text. */
-  .gc-perf-chip {
-    position: absolute; top: -7px; left: -7px; width: 16px; height: 16px;
-    border-radius: 50%; border: 1px solid var(--ink);
-    outline: 2px solid var(--cream);
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--sans); font-size: 9px; font-weight: 800; line-height: 1;
+  /* Live bet-status mark — a bare glyph BESIDE the badge (no circle, no
+     border, nothing competing with the streak chip): sage ▲ tracking to
+     win, rust ▼ behind, quiet dash/dot for push/undecided. Full phrasing
+     lives in the title text. */
+  .gc-perf-mark {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
   }
-  .gc-perf-chip.perf-win     { background: var(--sage); color: #fff; }
-  .gc-perf-chip.perf-loss    { background: var(--rust); color: #fff; }
-  .gc-perf-chip.perf-push    { background: var(--ink);  color: var(--cream); }
-  .gc-perf-chip.perf-pending { background: var(--cream); color: var(--ink); }
+  .gc-perf-mark.perf-win     { color: var(--sage-mid); }
+  .gc-perf-mark.perf-loss    { color: var(--rust-light); }
+  .gc-perf-mark.perf-push    { color: rgba(248,245,238,0.6); }
+  .gc-perf-mark.perf-pending { color: rgba(248,245,238,0.55); }
 
   /* GOTW live/final: the center "at" becomes the score */
   .gc-gotw-score {
@@ -828,7 +828,8 @@
     .gc.slate .gc-at { font-size: 13px; }
     .gc.slate .gc-meta { font-size: 12px; }
     .gc.slate .gc-pick-label, .gc.gotw-card .gc-pick-label { font-size: 10px; }
-    .gc.slate .gc-pick-tier, .gc.gotw-card .gc-pick-tier { font-size: 9px; padding: 2px 5px; min-width: 24px; }
+    .gc.slate .gc-pick-tier, .gc.gotw-card .gc-pick-tier { font-size: 10px; width: 28px; height: 22px; }
+    .gc.slate .gc-pick-outcome, .gc.gotw-card .gc-pick-outcome { font-size: 11px; width: 28px; height: 22px; }
     .gc.slate .gc-pick-slot, .gc.gotw-card .gc-pick-slot { gap: 4px; }
   }
 
@@ -1271,15 +1272,15 @@ function gotwSlot(label, slotData, g, market) {
   const tierFull = slotData && slotData.tier_full;
   const tierKey = TIER_KEY[tierFull];
   if (tierKey) {
-    let chip = '';
+    let mark = '';
     if (status === 'live' && market && g.away_points != null && g.home_points != null) {
       const perf = computeLivePerf(market, slotData, g.away_points, g.home_points, g.home_team, g.away_team);
       if (perf) {
         const glyph = ({ win: '▲', loss: '▼', push: '–', pending: '·' })[perf.cls] || '';
-        chip = `<span class="gc-perf-chip perf-${perf.cls}" title="${perf.label}">${glyph}</span>`;
+        mark = `<span class="gc-perf-mark perf-${perf.cls}" title="${perf.label}">${glyph}</span>`;
       }
     }
-    return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span><span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${chip}${gcBolt(slotData, tierKey)}</span></div>`;
+    return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span><span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${gcBolt(slotData, tierKey)}</span>${mark}</div>`;
   }
   return `<div class="gc-pick-slot empty"><span class="gc-pick-label">${label}</span></div>`;
 }
@@ -1957,11 +1958,11 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
       ? computeLivePerf(market, slotData, awayPts, homePts, g.home_team, g.away_team)
       : null;
     const glyph = perf ? ({ win: '▲', loss: '▼', push: '–', pending: '·' })[perf.cls] : '';
-    const chip = perf
-      ? `<span class="gc-perf-chip perf-${perf.cls}" title="${perf.label}">${glyph}</span>`
+    const mark = perf
+      ? `<span class="gc-perf-mark perf-${perf.cls}" title="${perf.label}">${glyph}</span>`
       : '';
     return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span>` +
-           `<span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${chip}${gcBolt(slotData, tierKey)}</span></div>`;
+           `<span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${gcBolt(slotData, tierKey)}</span>${mark}</div>`;
   };
 
   return `

@@ -869,7 +869,9 @@
       const axis = card.querySelector('.strip-axis');
       if (!axis) return;
       const val = kind === 'total' ? (hp + ap) : (hp - ap);
-      const pct = clamp(((val - lo) / (hi - lo)) * 100, 0, 100);
+      // Clamp INSIDE the axis (1.5-98.5%) so an off-scale value parks the
+      // dot fully visible at the edge instead of hanging half off it.
+      const pct = clamp(((val - lo) / (hi - lo)) * 100, 1.5, 98.5);
       let mk = axis.querySelector('.strip-live-marker');
       if (!mk) {
         mk = document.createElement('div');
@@ -1794,22 +1796,31 @@
         ? `${escape(market)} — No Edge`
         : escape(market);
 
-      // Locked rows print the RELEASED bet (the graded one), not the
-      // last market read.
+      // Once the game kicks off, rows stop tracking the market. Real picks
+      // print the RELEASED bet — the exact side/line/book we grade against
+      // (grading is vs the release, never the closing line) — tagged
+      // "as released". No-edge verdicts aren't bets; they just note the
+      // market closed.
       const pickLineHtml = (locked && releasedEvt && !isNoEdge)
         ? `${escape(releasedEvt.side || '—')} ${escape(releasedEvt.line || '')}` +
           `${releasedEvt.book?.name ? ' at ' + escape(releasedEvt.book.name) : ''}` +
-          `<span class="ll-row-locknote"> · locked at kickoff</span>`
-        : llPickLine(p);
+          `<span class="ll-row-locknote"> · as released</span>`
+        : llPickLine(p) + (locked
+            ? `<span class="ll-row-locknote"> · market closed</span>` : '');
       const outcomeChipHtml = outcomeCls
         ? `<span class="ll-outcome-chip out-${outcomeCls}" title="Graded against the released line">${escape(p.outcome)}</span>`
         : '';
+
+      // Locked cards wear the RELEASED grade too — the tier we published
+      // is the tier we're graded on, not the last regrade before kickoff.
+      const headerTier = (locked && releasedEvt && !isNoEdge && releasedEvt.tier)
+        ? releasedEvt.tier : p.tier;
 
       const headerHtml = `
         <button class="ll-row-header" data-action="toggle"
                 aria-controls="ll-acc-${escape(String(p.pick_id || 'ne-' + p.market))}"
                 aria-expanded="false">
-          ${llBadge(p.tier, p.bolt)}
+          ${llBadge(headerTier, p.bolt)}
           <div class="ll-row-content">
             <div class="ll-row-matchup">${matchupLabel}</div>
             <div class="ll-row-pick">${pickLineHtml}</div>
@@ -1867,8 +1878,8 @@
             <div class="ll-event">
               <span class="ll-event-dot"></span>
               <div class="ll-event-title">
-                <strong>Locked at kickoff</strong>
-                · grades against the released line
+                <strong>Locked</strong>
+                · grades against the released line above
               </div>
               <div class="ll-event-time">Live</div>
             </div>
