@@ -13,7 +13,7 @@
 
 <!-- Tokens FIRST, components AFTER — same as live-lines so cards match exactly -->
 <link rel="stylesheet" href="/css/tokens.css">
-<link rel="stylesheet" href="/css/components/live-lines.css">
+<link rel="stylesheet" href="/css/components/live-lines.css?v=20260807j">
 
 <style>
   /* ── Site nav (copied from live-lines.html — keep in sync across pages) ── */
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     slipOpen: false, grade: null, grading: false,
     mode: 'prebuilt',          // open on the pre-built gallery (fast: no model on the presets path)
     presets: null, presetPool: null, presetsLoading: false, presetsError: false,
-    buildFilters: { market: null, aplusOnly: false, gradedOnly: false },
+    buildFilters: { market: null, tier: null },
   };
 
   const root = document.getElementById('pl-root');
@@ -441,28 +441,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (state.mode === 'custom') renderSlip();
   }
 
-  // Same pill row as Live Lines (reuses .ll-filters / .ll-filter-pill). "Graded"
-  // hides no-edge picks; market pills and Graded combine; A only is the narrow one.
+  // Same pill row as Live Lines — identical options and behavior:
+  // All / Spread / Total / Moneyline / A+ / A / B / C. Market and tier
+  // are each single-select and mutually exclusive, exactly like the board.
   function renderBuildFilters() {
     const f = state.buildFilters;
-    const isActive = (m) => f.market === m && !f.aplusOnly;
+    const mkt = (m) => `aria-pressed="${f.market === m ? 'true' : 'false'}"`;
+    const tr  = (t) => `aria-pressed="${f.tier === t ? 'true' : 'false'}"`;
     return `
       <div class="ll-filters" role="group" aria-label="Filter picks">
         <span class="ll-filter-label">Pick Type</span>
-        <button class="ll-filter-pill" data-filter="all" aria-pressed="${!f.market && !f.aplusOnly && !f.gradedOnly ? 'true' : 'false'}">All</button>
-        <button class="ll-filter-pill" data-filter="spread" aria-pressed="${isActive('spread') ? 'true' : 'false'}">Spread</button>
-        <button class="ll-filter-pill" data-filter="total" aria-pressed="${isActive('total') ? 'true' : 'false'}">Total</button>
-        <button class="ll-filter-pill" data-filter="ml" aria-pressed="${isActive('ml') ? 'true' : 'false'}">ML</button>
-        <button class="ll-filter-pill" data-filter="graded" aria-pressed="${f.gradedOnly ? 'true' : 'false'}">Graded</button>
-        <button class="ll-filter-pill" data-filter="aplus" aria-pressed="${f.aplusOnly ? 'true' : 'false'}">A only</button>
+        <button class="ll-filter-pill" data-filter="all" aria-pressed="${!f.market && !f.tier ? 'true' : 'false'}">All</button>
+        <button class="ll-filter-pill" data-filter="spread" ${mkt('spread')}>Spread</button>
+        <button class="ll-filter-pill" data-filter="total" ${mkt('total')}>Total</button>
+        <button class="ll-filter-pill" data-filter="ml" ${mkt('ml')}>Moneyline</button>
+        <button class="ll-filter-pill" data-filter="tier:A+" ${tr('A+')}>A+</button>
+        <button class="ll-filter-pill" data-filter="tier:A" ${tr('A')}>A</button>
+        <button class="ll-filter-pill" data-filter="tier:B" ${tr('B')}>B</button>
+        <button class="ll-filter-pill" data-filter="tier:C" ${tr('C')}>C</button>
       </div>`;
   }
 
   function applyBuildFilters(picks) {
     const f = state.buildFilters;
     return picks.filter(p => {
-      if (f.aplusOnly && p.tier !== 'A') return false;
-      if (f.gradedOnly && (!p.tier || p.tier === 'no_edge')) return false;
+      if (f.tier && p.tier !== f.tier) return false;
       if (f.market && p.market !== f.market) return false;
       return true;
     });
@@ -799,10 +802,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (fpill) {
       const f = fpill.dataset.filter;
       const bf = state.buildFilters;
-      if (f === 'all') { bf.market = null; bf.aplusOnly = false; bf.gradedOnly = false; }
-      else if (f === 'graded') { bf.gradedOnly = !bf.gradedOnly; }
-      else if (f === 'aplus') { bf.aplusOnly = !bf.aplusOnly; if (bf.aplusOnly) bf.market = null; }
-      else { bf.market = (bf.market === f) ? null : f; bf.aplusOnly = false; }
+      if (f === 'all') { bf.market = null; bf.tier = null; }
+      else if (f.startsWith('tier:')) {
+        const t = f.slice(5);
+        bf.tier = (bf.tier === t) ? null : t;
+        bf.market = null;
+      } else {
+        bf.market = (bf.market === f) ? null : f;
+        bf.tier = null;
+      }
       render();
       return;
     }

@@ -622,6 +622,9 @@
 .ll-bet-button {
   display: block;
   width: 100%;
+  /* explicit — pages without a global border-box reset (parlay) were
+     rendering width:100% + side padding 16px wider than the card */
+  box-sizing: border-box;
   background: var(--ink);
   color: var(--cream);
   font-family: var(--sans);
@@ -643,6 +646,7 @@
 .ll-game-link {
   display: block;
   width: 100%;
+  box-sizing: border-box;
   text-align: center;
   font-size: var(--text-base);
   font-weight: var(--weight-semi);
