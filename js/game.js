@@ -461,7 +461,7 @@
     noteEl.textContent = conflicts.length
       ? `Model blend — ${conflicts.join('; ')}. Graded signals outrank the blend.`
       : usedSignal
-      ? 'Projected from the fired signals’ historical outcomes'
+      ? 'Projected from graded signal history'
       : 'Model blend';
 
     // Winner emphasis follows the DISPLAYED scores (tie-break included).

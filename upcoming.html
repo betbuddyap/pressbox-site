@@ -163,18 +163,19 @@
   .gc-seam { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, rgba(212,168,58,0) 0%, rgba(212,168,58,0.55) 30%, rgba(212,168,58,0.55) 70%, rgba(212,168,58,0) 100%); transform: translateX(-0.5px); z-index: 2; }
 
   /* TIER RIBBON — corner ribbon, top-left of the card */
+  /* Corner tag — current badge language (inset, bordered, no diagonal),
+     matching the game page's grade chips instead of the old flush ribbon. */
   .gc-ribbon {
-    position: absolute; top: 0; left: 0; z-index: 4;
+    position: absolute; top: 10px; left: 10px; z-index: 4;
     font-family: var(--sans); font-weight: 800;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    padding: 5px 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    letter-spacing: 1.2px; text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--ink);
+    border-radius: 4px;
     display: flex; align-items: center; gap: 5px;
     white-space: nowrap;
   }
-  .gc-ribbon::after {
-    content: ''; position: absolute; left: 100%; top: 0; bottom: 0; width: 8px;
-  }
+  .gc-ribbon::after { display: none; }
   .gc-ribbon.tier-a  { background: var(--gold); color: var(--ink); }
   .gc-ribbon.tier-a::after  { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
   .gc-ribbon.tier-b  { background: var(--silver); color: var(--ink); }
@@ -265,6 +266,9 @@
   .gc.gotw-card .gc-team-sub { font-size: 11px; }
   .gc.gotw-card .gc-at { font-size: 32px; padding: 0 22px; }
   .gc.gotw-card .gc-why { font-size: 14px; max-width: 520px; }
+  @media (max-width: 760px) {
+    .gc.gotw-card .gc-why { font-size: 12px; line-height: 1.45; max-width: 100%; }
+  }
   .gc.gotw-card .gc-cta { font-size: 11px; }
 
   /* ── FEATURED PRODUCTS (POTW/TOTW/Parlay 3-up) ── */
@@ -727,10 +731,12 @@
   .gc.slate .gc-pick-tier.tier-gl, .gc.gotw-card .gc-pick-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
   .gc.slate .gc-pick-tier.tier-ne, .gc.gotw-card .gc-pick-tier.tier-ne { background: transparent; color: rgba(248,245,238,0.6); border-color: rgba(248,245,238,0.35); }
   /* A+ = corroborated top tier: ink fill, gold lettering (inverse of A). */
-  .gc.slate .gc-pick-tier.tier-aplus, .gc.gotw-card .gc-pick-tier.tier-aplus { background: var(--ink); color: var(--gold-light); }
-  .gc-ribbon.tier-aplus { background: var(--ink); color: var(--gold-light); }
-  .gc-ribbon.tier-aplus::after { background: linear-gradient(135deg, var(--ink) 50%, transparent 50%); }
-  .gc-pill-tier.tier-aplus, .parlay-leg-tier.tier-aplus { background: var(--ink); color: var(--gold-light); }
+  /* A+ everywhere = the canonical live-lines badge: ink fill, gold-light
+     lettering, GOLD keyline. */
+  .gc.slate .gc-pick-tier.tier-aplus, .gc.gotw-card .gc-pick-tier.tier-aplus { background: var(--ink); color: var(--gold-light); border: 1px solid var(--gold); }
+  .gc-ribbon.tier-aplus { background: var(--ink); color: var(--gold-light); border-color: var(--gold); }
+  .gc-pill-tier.tier-aplus, .parlay-leg-tier.tier-aplus { background: var(--ink); color: var(--gold-light); border: 1px solid var(--gold); }
+  .legend-tag.tier-aplus { background: var(--ink); color: var(--gold-light); border-color: var(--gold); }
   /* Bolt = streak-alignment marker (fade ring retired w/ the ladder cutover).
    * Compact 16px chip for the pill-sized gc badges; chip wears the tier color,
    * bolt wears that tier's text color, ink keyline (gold on A+). */

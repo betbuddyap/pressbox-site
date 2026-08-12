@@ -249,24 +249,38 @@
   letter-spacing: 0.03em;
   color: var(--text-mid);
 }
-@media (max-width: 600px) {
-  .ctx-grades { gap: 10px; padding: 7px 10px; top: 8px; left: 8px; }
-  .ctx-grade { gap: 5px; }
-}
 /* Reserve the hero's top band when the grade strip is present so it never
    sits on top of a long team name (was covering "GEORGIA TECH"). */
 .ctx.has-grades .ctx-inner { padding-top: 78px; }
+/* Phones: the absolute corner box forced a tall reserved band — flow the
+   strip inline at the top of the hero instead. */
 @media (max-width: 600px) {
-  .ctx.has-grades .ctx-inner { padding-top: 64px; }
+  .ctx-grades {
+    position: static;
+    width: fit-content;
+    margin: 12px auto 0;
+    gap: 10px;
+    padding: 7px 10px;
+  }
+  .ctx-grade { gap: 5px; }
+  .ctx.has-grades .ctx-inner { padding-top: 12px; }
 }
 
-/* Model-blend caption under the projected score. */
+/* Projection-source caption under the projected score. Sits on the DARK
+   hero panel — cream ink, not gray, and constrained so it reads as a
+   caption instead of a stray sentence. */
 .proj-blend-note {
+  /* The panel is a 3-column grid (away | dash | home) — span it all or
+     the caption lands under the away score. */
+  grid-column: 1 / -1;
   font-family: var(--sans);
-  font-size: 11px;
-  color: var(--text-mid);
+  font-style: italic;
+  font-size: 10.5px;
+  color: rgba(248, 245, 238, 0.72);
   text-align: center;
-  margin-top: 6px;
+  margin: 2px auto 0;
+  max-width: 340px;
+  line-height: 1.45;
 }
 
 /* Tier color mappings — used by ribbon + pick badges */
