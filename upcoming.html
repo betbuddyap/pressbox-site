@@ -190,8 +190,6 @@
   .gc-ribbon.tier-gl::after { background: linear-gradient(135deg, var(--sage-mid) 50%, transparent 50%); }
   .gc-ribbon.featured { background: var(--gold); color: var(--ink); }
   .gc-ribbon.featured::after { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
-  .gc-ribbon.gotw    { background: var(--gold); color: var(--ink); }
-  .gc-ribbon.gotw::after    { background: linear-gradient(135deg, var(--gold) 50%, transparent 50%); }
   .gc-ribbon.waiting { background: var(--text-mid); color: #fff; }
   .gc-ribbon.waiting::after { background: linear-gradient(135deg, var(--text-mid) 50%, transparent 50%); }
 
@@ -261,7 +259,21 @@
   /* ── GOTW (biggest) ── */
   .gc.gotw-card { min-height: 320px; }
   .gc.gotw-card .gc-content { min-height: 320px; padding: 28px 36px; display: flex; flex-direction: column; justify-content: space-between; gap: 18px; position: relative; z-index: 3; }
-  .gc.gotw-card .gc-ribbon { font-size: 11px; }
+  /* GOTW marker = editorial eyebrow (no box): centered gold masthead in the
+     top strip, time keeps the right edge. Stacks centered on phones. */
+  .gc-strip.gotw-strip { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+  .gc-eyebrow {
+    grid-column: 2; text-align: center; white-space: nowrap;
+    font-family: var(--sans); font-weight: 800; font-size: 11px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--gold-light);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  }
+  .gc-strip.gotw-strip .gc-meta { grid-column: 3; justify-self: end; }
+  @media (max-width: 600px) {
+    .gc-strip.gotw-strip { grid-template-columns: 1fr; gap: 4px; }
+    .gc-eyebrow { grid-column: 1; font-size: 10px; letter-spacing: 2.5px; }
+    .gc-strip.gotw-strip .gc-meta { grid-column: 1; justify-self: center; }
+  }
   .gc.gotw-card .gc-team-name { font-size: 56px; }
   .gc.gotw-card .gc-team-sub { font-size: 11px; }
   .gc.gotw-card .gc-at { font-size: 32px; padding: 0 22px; }
@@ -1861,9 +1873,9 @@ function renderGotW(g) {
     <a class="gc-link" href="/game.html?id=${g.game_id}">
       <div class="gc gotw-card">
         ${bgHTML(awayColor, homeColor)}
-        <div class="gc-ribbon gotw">★ Game of the Week</div>
         <div class="gc-content">
-          <div class="gc-strip">
+          <div class="gc-strip gotw-strip">
+            <span class="gc-eyebrow">★ Game of the Week ★</span>
             <span class="gc-meta">${time}</span>
           </div>
           <div class="gc-teams">
