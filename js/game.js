@@ -205,6 +205,10 @@
     els.ribbon.outerHTML = gradesHtml
       ? `<div class="ctx-grades" id="ctxRibbon">${gradesHtml}</div>`
       : `<div id="ctxRibbon"></div>`;
+    // outerHTML detaches the cached node — re-acquire so the NEXT render
+    // (live polling hits this every 20s) writes into the live DOM instead
+    // of a parentless orphan.
+    els.ribbon = document.getElementById('ctxRibbon');
     document.getElementById('ctxHero')?.classList.toggle('has-grades', !!gradesHtml);
 
     // Team names
@@ -251,9 +255,14 @@
       renderProjectedScore(data);
     }
 
-    // Meta row (kickoff + venue)
+    // Meta row (kickoff + venue). Postponed/canceled games render the
+    // pregame layout, so say so instead of advertising a dead kickoff.
     const metaParts = [];
-    if (g.kickoff_display) {
+    if (g.status === 'postponed') {
+      metaParts.push(`<div class="ctx-meta-item"><strong>POSTPONED</strong></div>`);
+    } else if (g.status === 'canceled') {
+      metaParts.push(`<div class="ctx-meta-item"><strong>CANCELED</strong></div>`);
+    } else if (g.kickoff_display) {
       metaParts.push(`<div class="ctx-meta-item"><strong>${escape(g.kickoff_display)}</strong></div>`);
     }
     if (g.venue) {
@@ -280,11 +289,21 @@
     const clockLine = [periodLabel, clock].filter(Boolean).join(' · ');
     els.pgLiveClock.textContent = clockLine || '';
 
-    const awayName = g.away?.team || '';
-    const homeName = g.home?.team || '';
-    const possessionTeam = g.current_possession_team || '';
-    const awayHasBall = possessionTeam === awayName;
-    const homeHasBall = possessionTeam === homeName;
+    const awayName = g.away?.name || '';
+    const homeName = g.home?.name || '';
+    // Possession comes from ESPN as ITS display name ("Florida State
+    // Seminoles"), not our CFBD name ("Florida State"). Loose-match by
+    // containment; on a double match ("Texas" inside "Texas A&M Aggies")
+    // the longer — more specific — name wins. No match → no ball shown.
+    const poss = (g.current_possession_team || '').toLowerCase();
+    const possScore = (n) => {
+      n = (n || '').toLowerCase();
+      return n && poss && (poss.includes(n) || n.includes(poss)) ? n.length : 0;
+    };
+    const aPoss = possScore(awayName);
+    const hPoss = possScore(homeName);
+    const awayHasBall = aPoss > 0 && aPoss > hPoss;
+    const homeHasBall = hPoss > 0 && hPoss > aPoss;
     const ballHTML = '<span class="pg-live-ball" title="Possession">●</span>';
 
     els.pgLiveAwayName.innerHTML = escape(awayName.toUpperCase()) +
@@ -2197,31 +2216,61 @@
   }
 
   // ────── LIVE POLLING ──────
+  // Three lifecycle jobs:
+  //   1. Game already live at load → poll every 20s, refresh the hero.
+  //   2. Page opened BEFORE kickoff → arm a timer that starts the same
+  //      poll at kickoff, so the hero flips to live without a reload.
+  //   3. Poll sees the game go FINAL → reload once. The whole page
+  //      (picks with W/L chips, receipt, charts) re-renders in its
+  //      final state — much safer than re-running every renderer live.
   let _livePollTimer = null;
+  let _kickoffArmTimer = null;
   let _visibilityHooked = false;
   function startLivePolling(initialData, gameId, token) {
     stopLivePolling();
-    const status = initialData.game?.status;
-    if (status !== 'in_progress') return;   // only poll for live games
+    if (_kickoffArmTimer) { clearTimeout(_kickoffArmTimer); _kickoffArmTimer = null; }
+    const g = initialData.game || {};
 
     const tick = async () => {
       if (document.hidden) return;          // skip while tab is backgrounded
       try {
         const refresh = await fetchBreakdown(gameId, token);
-        if (!refresh || refresh.notFound || refresh.error) return;
-        // Only re-render the parts that change live. Avoid re-rendering
-        // the storyline / picks blocks which haven't changed.
-        renderHero(refresh);
-        // Once game leaves live state, stop polling.
-        if (refresh.game?.status !== 'in_progress') {
+        if (!refresh || refresh.notFound) return;
+        const st = refresh.game?.status;
+        if (st === 'final') {
           stopLivePolling();
+          window.location.reload();
+          return;
         }
+        if (st === 'canceled' || st === 'postponed') {
+          stopLivePolling();
+          window.location.reload();
+          return;
+        }
+        // Only re-render the parts that change live (in_progress), or
+        // keep waiting quietly if the pre-kickoff poll started early.
+        if (st === 'in_progress') renderHero(refresh);
       } catch (e) {
         console.warn('live poll failed:', e);
       }
     };
 
-    _livePollTimer = setInterval(tick, 20000);   // 20s cadence
+    const startLoop = () => {
+      if (_livePollTimer) return;
+      _livePollTimer = setInterval(tick, 20000);   // 20s cadence
+      tick();
+    };
+
+    if (g.status === 'in_progress') {
+      _livePollTimer = setInterval(tick, 20000);
+    } else if (g.status === 'upcoming' && g.kickoff_iso) {
+      // Arm the poll at kickoff (only if it's within the next 12 hours —
+      // no point holding a day-long timer on an open tab).
+      const delay = Date.parse(g.kickoff_iso) - Date.now();
+      if (!isNaN(delay) && delay < 12 * 3600 * 1000) {
+        _kickoffArmTimer = setTimeout(startLoop, Math.max(30 * 1000, delay));
+      }
+    }
 
     if (!_visibilityHooked) {
       document.addEventListener('visibilitychange', () => {

@@ -270,7 +270,8 @@
   @media (max-width: 600px) {
     .gc-strip.gotw-strip { grid-template-columns: 1fr; gap: 4px; }
     .gc-eyebrow { grid-column: 1; font-size: 10px; letter-spacing: 2.5px; }
-    .gc-strip.gotw-strip .gc-meta { grid-column: 1; justify-self: center; }
+    .gc-strip.gotw-strip .gc-meta,
+    .gc-strip.gotw-strip .gc-live-badge { grid-column: 1; justify-self: center; }
   }
   .gc.gotw-card .gc-team-name { font-size: 56px; }
   .gc.gotw-card .gc-team-sub { font-size: 11px; }
@@ -604,8 +605,14 @@
   .gc-live-perf.perf-push   { background: rgba(248,245,238,0.18); }
   .gc-live-perf.perf-pending { background: rgba(248,245,238,0.12); }
 
+  /* The slate grid collapses to 1 column at 720px — the live hero's
+     span-2 must release at the SAME breakpoint or it overflows the row
+     in the 601-720px band. */
+  @media (max-width: 720px) {
+    .gc.slate.live-hero { grid-column: 1; }
+  }
   @media (max-width: 600px) {
-    .gc.slate.live-hero { grid-column: 1; min-height: 180px; }
+    .gc.slate.live-hero { min-height: 180px; }
     .gc-live-num { font-size: 44px; }
     .gc-live-dash { font-size: 22px; }
     .gc-live-team-name { font-size: 12px; }
@@ -628,10 +635,25 @@
     box-shadow: 0 0 0 0 var(--rust);
     animation: gc-live-pulse 1.8s ease-in-out infinite;
   }
+  /* Inside the rust LIVE badge the dot must be CREAM — the generic
+     .gc.slate rule above outspecifies the badge rule and was painting
+     a rust dot on a rust badge (invisible). */
+  .gc.slate .gc-live-badge .gc-live-dot {
+    width: 8px; height: 8px;
+    background: var(--cream);
+    margin-right: 0;
+    box-shadow: 0 0 0 0 rgba(248,245,238,0.7);
+    animation: gc-live-pulse-cream 1.4s ease-in-out infinite;
+  }
   @keyframes gc-live-pulse {
     0%   { box-shadow: 0 0 0 0 rgba(178,75,55,0.7); }
     70%  { box-shadow: 0 0 0 6px rgba(178,75,55,0); }
     100% { box-shadow: 0 0 0 0 rgba(178,75,55,0); }
+  }
+  @keyframes gc-live-pulse-cream {
+    0%   { box-shadow: 0 0 0 0 rgba(248,245,238,0.7); }
+    70%  { box-shadow: 0 0 0 6px rgba(248,245,238,0); }
+    100% { box-shadow: 0 0 0 0 rgba(248,245,238,0); }
   }
 
   /* Faintly desaturate canceled / postponed cards as a whole */
@@ -1286,6 +1308,60 @@ async function init() {
   document.getElementById('content').style.display = 'block';
   renderWeek(currentWeek);
   boardRendered = true;
+  startLiveRefresh();
+}
+
+// ── LIVE REFRESH ──
+// The lifecycle worker updates games.status + live broadcast fields every
+// minute on game days. Re-fetch the board every 45s while the DISPLAYED
+// week has a live game or one near kickoff (−30m → +6h), so live cards
+// tick and scheduled→live→final flips land without a manual reload.
+// Outside those windows the interval is a no-op — zero network calls.
+let _liveRefreshTimer = null;
+let _liveRefreshBusy = false;
+
+function weekNeedsLiveRefresh() {
+  const nowMs = Date.now();
+  return allGames.some(g => {
+    if (g.week !== currentWeek) return false;
+    if (g.status === 'live') return true;
+    if (g.status && g.status !== 'scheduled') return false;
+    const t = g.raw_date ? Date.parse(g.raw_date) : NaN;
+    return !isNaN(t) && (t - 30 * 60 * 1000) < nowMs && nowMs < (t + 6 * 3600 * 1000);
+  });
+}
+
+async function refreshBoard() {
+  if (document.hidden || _liveRefreshBusy || !weekNeedsLiveRefresh()) return;
+  _liveRefreshBusy = true;
+  try {
+    const token = await getAccessToken();
+    const authHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const [gRes, pRes] = await Promise.all([
+      fetch(`${API}/games/upcoming?season=${SEASON}`, { credentials: 'omit', headers: authHeaders }),
+      fetch(`${API}/picks/upcoming?season=${SEASON}`, { credentials: 'omit', headers: authHeaders }),
+    ]);
+    if (gRes.ok) {
+      const j = await gRes.json().catch(() => null);
+      if (j && j.games) allGames = j.games;
+    }
+    if (pRes.ok) {
+      const j = await pRes.json().catch(() => null);
+      if (j && j.picks) picksByGameId = j.picks;
+    }
+    renderWeek(currentWeek);
+  } catch (e) {
+    console.warn('live refresh failed', e);
+  }
+  _liveRefreshBusy = false;
+}
+
+function startLiveRefresh() {
+  if (_liveRefreshTimer) return;
+  _liveRefreshTimer = setInterval(refreshBoard, 45000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshBoard();
+  });
 }
 
 // Check for any obvious data anomalies and surface them
@@ -1323,11 +1399,25 @@ function buildWeekTabs(data) {
   if (!data || !data.weeks || !data.weeks.length) return;
   // Include all weeks. Sort numerically ascending; Week 0 stays first if present.
   weeksList = [...data.weeks].sort((a, b) => a - b);
-  firstAvailableWeek = weeksList[0];
-  currentWeek = firstAvailableWeek;
+  // Land on the CURRENT week: the earliest week that isn't fully played —
+  // latest kickoff + 12h grace, so Saturday's slate keeps its tab through
+  // Sunday morning, then the page advances on its own. (The old default,
+  // weeksList[0], opened on week 0 every visit all season.)
+  let defaultWeek = weeksList[weeksList.length - 1];
+  const nowMs = Date.now();
+  for (const w of weeksList) {
+    const kicks = allGames
+      .filter(g => g.week === w && g.raw_date)
+      .map(g => Date.parse(g.raw_date))
+      .filter(t => !isNaN(t));
+    const latest = kicks.length ? Math.max(...kicks) : NaN;
+    if (isNaN(latest) || latest + 12 * 3600 * 1000 > nowMs) { defaultWeek = w; break; }
+  }
+  firstAvailableWeek = defaultWeek;
+  currentWeek = defaultWeek;
   const tabsEl = document.getElementById('weekTabs');
   tabsEl.innerHTML = weeksList.map(w => `
-    <button class="week-tab ${w === firstAvailableWeek ? 'active' : ''}" onclick="setWeek(${w})" id="tab-${w}">
+    <button class="week-tab ${w === defaultWeek ? 'active' : ''}" onclick="setWeek(${w})" id="tab-${w}">
       ${w === 0 ? 'Week 0' : `Week ${w}`}
     </button>
   `).join('');
@@ -1399,6 +1489,8 @@ function renderWeek(week) {
     document.getElementById('gotwSection').style.display = 'block';
     document.getElementById('gotwContent').innerHTML = renderGotW(gotw);
     document.getElementById('gotwMeta').textContent =
+      gotw.status === 'live'  ? 'Live now' :
+      gotw.status === 'final' ? 'Final' :
       formatDate(gotw.date) + (gotw.time && gotw.time !== 'TBD' ? ' · ' + gotw.time : '');
   } else {
     document.getElementById('gotwSection').style.display = 'none';
@@ -1696,9 +1788,20 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
     else periodLabel = `OT${period - 4}`;
   }
 
-  // Possession ball indicator — sits next to team name with the ball
-  const awayBall = (possessionTeam === g.away_team) ? '<span class="gc-possession-ball" title="Possession">●</span>' : '';
-  const homeBall = (possessionTeam === g.home_team) ? '<span class="gc-possession-ball" title="Possession">●</span>' : '';
+  // Possession ball indicator — sits next to team name with the ball.
+  // ESPN reports ITS display name ("Florida State Seminoles"), not our
+  // CFBD name — loose containment match; longer match wins a double hit
+  // ("Texas" inside "Texas A&M Aggies"); no match → no ball.
+  const possLower = (possessionTeam || '').toLowerCase();
+  const possScore = (n) => {
+    n = (n || '').toLowerCase();
+    return n && possLower && (possLower.includes(n) || n.includes(possLower)) ? n.length : 0;
+  };
+  const aPossScore = possScore(g.away_team);
+  const hPossScore = possScore(g.home_team);
+  const ballSpan = '<span class="gc-possession-ball" title="Possession">●</span>';
+  const awayBall = (aPossScore > 0 && aPossScore > hPossScore) ? ballSpan : '';
+  const homeBall = (hPossScore > 0 && hPossScore > aPossScore) ? ballSpan : '';
 
   // Down + distance line
   let downDistance = '';
@@ -1786,9 +1889,10 @@ function computeLivePerf(market, slotData, awayPts, homePts, homeTeam, awayTeam)
     const pickPts = pickIsHome ? homePts : awayPts;
     const oppPts  = pickIsHome ? awayPts : homePts;
     const margin = (pickPts - oppPts) + line;
-    if (margin > 0) return { cls: 'win', label: `Cover +${margin.toFixed(1)}` };
-    if (margin === 0) return { cls: 'push', label: 'ATS push' };
-    return { cls: 'loss', label: `Cover ${margin.toFixed(1)}` };
+    // Present tense — a Q1 lead is "covering", not a graded win.
+    if (margin > 0) return { cls: 'win', label: `Covering +${margin.toFixed(1)}` };
+    if (margin === 0) return { cls: 'push', label: 'On the number' };
+    return { cls: 'loss', label: `Need ${(-margin).toFixed(1)}` };
   }
 
   if (market === 'total') {
@@ -1796,14 +1900,15 @@ function computeLivePerf(market, slotData, awayPts, homePts, homeTeam, awayTeam)
     const sum = homePts + awayPts;
     const isOver = (side || '').toLowerCase() === 'over';
     if (isOver) {
+      // Points never come off the board — once past the line, Over IS won.
       if (sum > line) return { cls: 'win', label: 'OVER hit' };
       const remaining = (line - sum).toFixed(1);
       return { cls: 'pending', label: `Need ${remaining}` };
     } else {
-      // under
+      // Under can only LOSE early, never win early — cushion, not victory.
       if (sum > line) return { cls: 'loss', label: 'OVER hit' };
       const cushion = (line - sum).toFixed(1);
-      return { cls: 'win', label: `Under by ${cushion}` };
+      return { cls: 'pending', label: `Cushion ${cushion}` };
     }
   }
 
@@ -1857,6 +1962,21 @@ function renderGotW(g) {
   const awayRank = powerRankings[g.away_team];
   const time = g.time && g.time !== 'TBD' ? formatDate(g.date) + ' · ' + g.time : formatDate(g.date);
 
+  // Lifecycle-aware meta: the featured hero must never advertise a future
+  // kickoff while the same game is LIVE or final in the slate below it.
+  const aPts = g.away_points, hPts = g.home_points;
+  const scoreTxt = (aPts != null && hPts != null) ? `${aPts}–${hPts}` : '';
+  let stripMeta = `<span class="gc-meta">${time}</span>`;
+  if (g.status === 'live') {
+    const p = g.current_period;
+    const pl = p ? (p <= 4 ? `Q${p}` : `OT${p - 4}`) : '';
+    const bits = [pl, g.current_clock, scoreTxt].filter(Boolean).join(' · ');
+    stripMeta = `<span class="gc-live-badge"><span class="gc-live-dot"></span>LIVE</span>` +
+                (bits ? `<span class="gc-meta">${bits}</span>` : '');
+  } else if (g.status === 'final') {
+    stripMeta = `<span class="gc-meta">Final${scoreTxt ? ' · ' + scoreTxt : ''}</span>`;
+  }
+
   return `
     <a class="gc-link" href="/game.html?id=${g.game_id}">
       <div class="gc gotw-card">
@@ -1864,7 +1984,7 @@ function renderGotW(g) {
         <div class="gc-content">
           <div class="gc-strip gotw-strip">
             <span class="gc-eyebrow">★ Game of the Week ★</span>
-            <span class="gc-meta">${time}</span>
+            ${stripMeta}
           </div>
           <div class="gc-teams">
             ${teamSideHTML(g.away_team, g.away_conference, awayRank, 'away')}
