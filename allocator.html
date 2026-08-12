@@ -206,7 +206,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     amount: 1000,          // total the user wants to bet, split 100%
     presetKey: 'moderate',
     includeParlays: true,  // roll a parlay or two into the mix
-    filters: { tiers: [] },   // empty = all picks; otherwise a multi-select of A/B/C
+    // Same filter model as Live Lines / Parlay: market and tier are each
+    // single-select and mutually exclusive; null/null = all picks.
+    filters: { market: null, tier: null },
     loading: true, error: false,
   };
 
@@ -403,8 +405,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Kelly sizing ─────────────────────────────────────────────
   function matchesFilters(leg) {
     if (state.week != null && leg.week !== state.week) return false;
-    const tiers = state.filters.tiers;
-    if (tiers.length && !tiers.includes(leg.tier)) return false;
+    const f = state.filters;
+    if (f.tier && leg.tier !== f.tier) return false;
+    if (f.market && leg.market !== f.market) return false;
     return true;
   }
 
@@ -413,6 +416,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const beta = currentPreset().beta;
 
     // Build candidates with a weight = win_prob * decimal_odds^beta.
+    // (Stake-sizing rework is under discussion with Austin — do NOT
+    // change this formula without his sign-off.)
     const cand = [];
     for (const leg of state.legs) {
       if (!matchesFilters(leg)) continue;
@@ -424,8 +429,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Parlays: single-slate, and they span markets/tiers — so only in the mix
-    // when no tier filter is narrowing the board (i.e. "All picks").
-    if (state.includeParlays && !state.filters.tiers.length) {
+    // when no filter is narrowing the board (i.e. "All").
+    if (state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const pl of state.parlays) {
         if (state.week != null && pl.week !== state.week) continue;
         const p = pl.our_prob, dec = pl.decimal_odds;
@@ -503,19 +508,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function filtersHTML() {
-    const sel = state.filters.tiers;
+    // Same pill row as Live Lines / Parlay — identical options + semantics.
+    const f = state.filters;
     const pill = (key, label, active) =>
       `<button type="button" class="ll-filter-pill${active ? ' active' : ''}" data-filter="${key}"
                aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
-    // Tier selector: multi-select. "All picks" clears it; A/B/C stack together.
     return `
       <div class="ll-filters" style="margin-bottom:var(--space-4);">
-        <span class="ll-filter-label">Include</span>
-        ${pill('all', 'All picks', sel.length === 0)}
-        ${pill('A+', 'A+', sel.includes('A+'))}
-        ${pill('A', 'A', sel.includes('A'))}
-        ${pill('B', 'B', sel.includes('B'))}
-        ${pill('C', 'C', sel.includes('C'))}
+        <span class="ll-filter-label">Pick Type</span>
+        ${pill('all', 'All', !f.market && !f.tier)}
+        ${pill('spread', 'Spread', f.market === 'spread')}
+        ${pill('total', 'Total', f.market === 'total')}
+        ${pill('ml', 'Moneyline', f.market === 'ml')}
+        ${pill('tier:A+', 'A+', f.tier === 'A+')}
+        ${pill('tier:A', 'A', f.tier === 'A')}
+        ${pill('tier:B', 'B', f.tier === 'B')}
+        ${pill('tier:C', 'C', f.tier === 'C')}
       </div>`;
   }
 
@@ -880,10 +888,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (fpill && !fpill.classList.contains('al-preset-pill')) {
       const key = fpill.dataset.filter;
       const f = state.filters;
-      if (key === 'all') { f.tiers = []; }
-      else {
-        const i = f.tiers.indexOf(key);
-        if (i >= 0) f.tiers.splice(i, 1); else f.tiers.push(key);
+      if (key === 'all') { f.market = null; f.tier = null; }
+      else if (key.startsWith('tier:')) {
+        const t = key.slice(5);
+        f.tier = (f.tier === t) ? null : t;
+        f.market = null;
+      } else {
+        f.market = (f.market === key) ? null : key;
+        f.tier = null;
       }
       render();
       return;
