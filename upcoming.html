@@ -1641,6 +1641,8 @@ function renderWeek(week) {
 
 // ── SLATE RENDER ──
 // Sort all games by kickoff, group by date, sub-group Saturdays by time bin.
+// FINALS sink to the bottom of the page as their own group (ESPN-style) —
+// the action stays on top, the record keeps below.
 function renderSlate(games) {
   // Sort by kickoff ascending. TBD games sort to the end of their date.
   const sorted = games.slice().sort((a, b) => {
@@ -1652,9 +1654,12 @@ function renderSlate(games) {
     return aIso < bIso ? -1 : aIso > bIso ? 1 : 0;
   });
 
+  const finals = sorted.filter(g => g.status === 'final');
+  const active = sorted.filter(g => g.status !== 'final');
+
   // Group by calendar date (YYYY-MM-DD). Keep insertion order.
   const byDate = new Map();
-  sorted.forEach(g => {
+  active.forEach(g => {
     const key = dateKey(g);
     if (!byDate.has(key)) byDate.set(key, []);
     byDate.get(key).push(g);
@@ -1692,6 +1697,18 @@ function renderSlate(games) {
           <span class="date-head-meta">${dateGames.length} ${dateGames.length === 1 ? 'game' : 'games'}</span>
         </div>
         ${body}
+      </div>
+    `);
+  }
+
+  if (finals.length) {
+    blocks.push(`
+      <div class="date-group">
+        <div class="date-head">
+          <span class="date-head-day"><em>Final</em></span>
+          <span class="date-head-meta">${finals.length} ${finals.length === 1 ? 'game' : 'games'}</span>
+        </div>
+        <div class="slate-grid">${finals.map(renderSlateCard).join('')}</div>
       </div>
     `);
   }

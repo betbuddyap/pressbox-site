@@ -323,10 +323,11 @@
     const homeHasBall = hPoss > 0 && hPoss > aPoss;
     const ballHTML = '<span class="pg-live-ball" title="Possession">●</span>';
 
-    els.pgLiveAwayName.innerHTML = escape(awayName.toUpperCase()) +
-      (awayHasBall ? ' ' + ballHTML : '');
-    els.pgLiveHomeName.innerHTML = (homeHasBall ? ballHTML + ' ' : '') +
-      escape(homeName.toUpperCase());
+    // The serif hero names above already say who's who — repeating them
+    // in sans here doubled the names (Austin). The name slots now carry
+    // ONLY the possession dot, floating over the possessing side's score.
+    els.pgLiveAwayName.innerHTML = awayHasBall ? ballHTML : '';
+    els.pgLiveHomeName.innerHTML = homeHasBall ? ballHTML : '';
 
     const awayPts = g.away_points;
     const homePts = g.home_points;
@@ -886,9 +887,13 @@
       const axis = card.querySelector('.strip-axis');
       if (!axis) return;
       const val = kind === 'total' ? (hp + ap) : (hp - ap);
-      // Clamp INSIDE the axis (1.5-98.5%) so an off-scale value parks the
-      // dot fully visible at the edge instead of hanging half off it.
-      const pct = clamp(((val - lo) / (hi - lo)) * 100, 1.5, 98.5);
+      // Clamp INSIDE the axis so an off-scale value parks the dot fully
+      // visible at the edge. The margin is computed in PIXELS (half the
+      // dot + its ring), not a fixed percent — 1.5% was 12px on a desktop
+      // chart but only ~4px on a phone, where the dot hung off the edge.
+      const axisW = axis.getBoundingClientRect().width || 0;
+      const edgePct = axisW > 0 ? Math.min(10, (9 / axisW) * 100) : 3;
+      const pct = clamp(((val - lo) / (hi - lo)) * 100, edgePct, 100 - edgePct);
       let mk = axis.querySelector('.strip-live-marker');
       if (!mk) {
         mk = document.createElement('div');
