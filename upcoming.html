@@ -233,8 +233,6 @@
 
   /* BOTTOM STRIP */
   .gc-foot { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .gc-why { font-family: var(--sans); font-weight: 400; color: rgba(248,245,238,0.92); line-height: 1.5; }
-  .gc-why strong { font-weight: 700; color: var(--gold-light); }
   .gc-cta { font-family: var(--sans); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-light); flex-shrink: 0; }
   .gc-cta::after { content: '→'; margin-left: 8px; display: inline-block; transition: transform 0.2s; }
   .gc-link:hover .gc-cta::after { transform: translateX(4px); }
@@ -277,11 +275,8 @@
   .gc.gotw-card .gc-team-name { font-size: 56px; }
   .gc.gotw-card .gc-team-sub { font-size: 11px; }
   .gc.gotw-card .gc-at { font-size: 32px; padding: 0 22px; }
-  .gc.gotw-card .gc-why { font-size: 14px; max-width: 520px; }
-  @media (max-width: 760px) {
-    .gc.gotw-card .gc-why { font-size: 12px; line-height: 1.45; max-width: 100%; }
-  }
   .gc.gotw-card .gc-cta { font-size: 11px; }
+  .gc.gotw-card .gc-foot { justify-content: flex-end; }
 
   /* ── FEATURED PRODUCTS (POTW/TOTW/Parlay 3-up) ── */
   /* The cards are narrower (1/3 width), so text needs to scale down */
@@ -1860,14 +1855,7 @@ function renderGotW(g) {
   const awayColor = colorFor(g.away_team);
   const homeRank = powerRankings[g.home_team];
   const awayRank = powerRankings[g.away_team];
-  const margin = Math.abs((teamScores[g.home_team] || 0) - (teamScores[g.away_team] || 0));
   const time = g.time && g.time !== 'TBD' ? formatDate(g.date) + ' · ' + g.time : formatDate(g.date);
-
-  let whyParts = [];
-  if (homeRank && awayRank && homeRank <= 25 && awayRank <= 25) whyParts.push(`<strong>Two top-25 teams.</strong>`);
-  if (margin < 3) whyParts.push(`Projected margin: <strong>${margin.toFixed(1)} points.</strong>`);
-  if (g.conference_game) whyParts.push(`Conference implications on the line.`);
-  if (!whyParts.length) whyParts.push(`The most evenly matched headliner of the slate.`);
 
   return `
     <a class="gc-link" href="/game.html?id=${g.game_id}">
@@ -1889,7 +1877,6 @@ function renderGotW(g) {
             ${gotwSlot('ML',     slots.ml)}
           </div>
           <div class="gc-foot">
-            <div class="gc-why">${whyParts.join(' ')}</div>
             <div class="gc-cta">Full Breakdown</div>
           </div>
         </div>
