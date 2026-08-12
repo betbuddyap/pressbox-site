@@ -1561,6 +1561,9 @@
     letter-spacing: 0.3px;
     color: var(--text-mid);
     line-height: 1.2;
+    /* Never bleed into the bars — wrap inside the label column. */
+    overflow-wrap: break-word;
+    overflow: hidden;
   }
   .numbers-row-label::before,
   .numbers-row-label::after { display: none; }
