@@ -14,7 +14,7 @@
 <!-- Tokens FIRST, then components -->
 <link rel="stylesheet" href="/css/tokens.css?v=20260806q">
 <link rel="stylesheet" href="/css/components/live-lines.css">
-<link rel="stylesheet" href="/css/components/game.css?v=20260806z">
+<link rel="stylesheet" href="/css/components/game.css?v=20260807b">
 
 <style>
   /* ── Site nav (kept in sync across pages) ── */
@@ -220,10 +220,6 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
            when game.status === 'in_progress'. ESPN-sourced broadcast
            data: period, clock, down/distance, possession, last play. -->
       <div id="pgLive" class="pg-live" style="display:none;">
-        <div class="pg-live-strip">
-          <span class="pg-live-badge"><span class="pg-live-dot"></span>LIVE</span>
-          <span class="pg-live-clock" id="pgLiveClock"></span>
-        </div>
         <div class="pg-live-score">
           <div class="pg-live-team away">
             <div class="pg-live-team-name" id="pgLiveAwayName"></div>
@@ -235,7 +231,13 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
             <div class="pg-live-team-name" id="pgLiveHomeName"></div>
           </div>
         </div>
-        <div class="pg-live-situation" id="pgLiveSituation"></div>
+        <!-- One status row: LIVE badge + clock on the left, down & distance
+             on the right — the old floating top strip read as misplaced. -->
+        <div class="pg-live-row">
+          <span class="pg-live-badge"><span class="pg-live-dot"></span>LIVE</span>
+          <span class="pg-live-clock" id="pgLiveClock"></span>
+          <span class="pg-live-situation" id="pgLiveSituation"></span>
+        </div>
         <div class="pg-live-lastplay" id="pgLiveLastPlay"></div>
       </div>
 
@@ -361,7 +363,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260807a"></script>
+<script src="/js/game.js?v=20260807b"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->

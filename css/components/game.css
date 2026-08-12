@@ -486,25 +486,29 @@
   position: relative;
 }
 
-.pg-live-strip {
+/* Status row: LIVE badge + clock grouped left, down & distance pushed
+   right — one bordered line under the score instead of a floating strip. */
+.pg-live-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 4px;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 7px 0;
+  border-top: 1px solid rgba(248,245,238,0.18);
+  border-bottom: 1px solid rgba(248,245,238,0.18);
 }
 .pg-live-badge {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   background: var(--rust);
   color: var(--cream);
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: 3px;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 2.4px;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
 }
 .pg-live-badge .pg-live-dot {
@@ -521,7 +525,7 @@
 }
 .pg-live-clock {
   font-family: var(--sans);
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--cream);
@@ -577,16 +581,13 @@
 }
 
 .pg-live-situation {
-  text-align: center;
   font-family: var(--sans);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--cream);
   text-transform: uppercase;
-  padding: 8px 0;
-  border-top: 1px solid rgba(248,245,238,0.18);
-  border-bottom: 1px solid rgba(248,245,238,0.18);
+  margin-left: auto;
 }
 
 .pg-live-lastplay {
@@ -935,6 +936,72 @@
   height: 2px;
   background: var(--border);
   border-radius: 1px;
+}
+
+/* Graded-outcome chip in the pick-row header — square block in the
+   grade-badge proportions. Sage = win, rust = loss (data-viz colors:
+   this IS the win/loss data), ink push. Sits on cream, so ink keyline. */
+.ll-outcome-chip {
+  flex-shrink: 0;
+  width: 36px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+}
+.ll-outcome-chip.out-win  { background: var(--sage); color: #fff; }
+.ll-outcome-chip.out-loss { background: var(--rust); color: #fff; }
+.ll-outcome-chip.out-push { background: var(--ink); color: var(--cream); }
+.ll-outcome-chip.out-void { background: transparent; color: var(--text-mid); }
+.ll-row-locknote { color: var(--text-mid); font-style: italic; }
+
+/* Live-game marker — rust dot at where the game currently sits on the
+   axis (home margin on spread/ML, combined points on total). Tag reads
+   LIVE while in progress (pulsing), FINAL once done (still). */
+.strip-live-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  pointer-events: none;
+}
+.strip-live-dot {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--rust);
+  border: 2px solid var(--cream);
+  box-shadow: 0 0 0 1px var(--rust);
+  animation: strip-live-pulse 1.8s ease-in-out infinite;
+}
+.strip-live-marker.is-final .strip-live-dot { animation: none; }
+.strip-live-tag {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--rust);
+  background: var(--cream);
+  padding: 0 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+@keyframes strip-live-pulse {
+  0%   { box-shadow: 0 0 0 1px var(--rust); }
+  50%  { box-shadow: 0 0 0 5px rgba(178, 75, 55, 0.25); }
+  100% { box-shadow: 0 0 0 1px var(--rust); }
 }
 
 /* Vegas vertical reference line — tall tick, no circle. */

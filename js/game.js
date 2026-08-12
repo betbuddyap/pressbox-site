@@ -849,6 +849,42 @@
     return wrap;
   }
 
+  // ────── LIVE MARKER ON THE CHARTS ──────
+  // A rust dot labeled LIVE at where the game currently sits on each
+  // chart's axis — home margin for spread/ML (hero space: right = home),
+  // combined points for total. Label flips to FINAL when the game ends.
+  // Idempotent: creates the marker on first call, then just repositions,
+  // so the 20s live poll can move it without rebuilding the beats.
+  function updateLiveMarkers(g) {
+    if (!g) return;
+    const isLive  = g.status === 'in_progress';
+    const isFinal = g.status === 'final';
+    const hp = g.home_points, ap = g.away_points;
+    if ((!isLive && !isFinal) || hp == null || ap == null) return;
+    document.querySelectorAll('.read-card[data-live-kind]').forEach(card => {
+      const kind = card.dataset.liveKind;
+      const lo = parseFloat(card.dataset.axisMin);
+      const hi = parseFloat(card.dataset.axisMax);
+      if (!isFinite(lo) || !isFinite(hi) || hi <= lo) return;
+      const axis = card.querySelector('.strip-axis');
+      if (!axis) return;
+      const val = kind === 'total' ? (hp + ap) : (hp - ap);
+      const pct = clamp(((val - lo) / (hi - lo)) * 100, 0, 100);
+      let mk = axis.querySelector('.strip-live-marker');
+      if (!mk) {
+        mk = document.createElement('div');
+        mk.className = 'strip-live-marker';
+        mk.innerHTML = '<span class="strip-live-dot"></span><span class="strip-live-tag"></span>';
+        axis.appendChild(mk);
+      }
+      mk.style.left = pct + '%';
+      mk.classList.toggle('is-final', isFinal);
+      mk.querySelector('.strip-live-tag').textContent = isFinal ? 'FINAL' : 'LIVE';
+      mk.title = (isFinal ? 'Final: ' : 'Live: ') +
+                 (kind === 'total' ? `${ap + hp} combined points` : `${ap}–${hp}`);
+    });
+  }
+
   function renderBeats(data) {
     const proj = data.projections || {};
     const anchor = proj.anchor || {};
@@ -859,7 +895,7 @@
 
     if (els.beat1Stack) {
       els.beat1Stack.innerHTML = '';
-      if (byMkt.moneyline) els.beat1Stack.appendChild(buildPickArticle(byMkt.moneyline));
+      if (byMkt.moneyline) els.beat1Stack.appendChild(buildPickArticle(byMkt.moneyline, data.game));
       if (proj.moneyline)  els.beat1Stack.appendChild(
         buildMLChart(data, proj.moneyline, proj.spread, anchor, byMkt.moneyline));
       // ML expressions ride the A+ spread's voters — show the tally here too
@@ -868,16 +904,19 @@
     }
     if (els.beat2Stack) {
       els.beat2Stack.innerHTML = '';
-      if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread));
+      if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread, data.game));
       if (proj.spread)  els.beat2Stack.appendChild(buildDotPlot('Spread', proj.spread, 'anchor_spread', anchor, null, byMkt.spread, { ends: [awayN, homeN] }));
       if (byMkt.spread) { const t = buildTally(byMkt.spread); if (t) els.beat2Stack.appendChild(t); }
     }
     if (els.beat3Stack) {
       els.beat3Stack.innerHTML = '';
-      if (byMkt.total) els.beat3Stack.appendChild(buildPickArticle(byMkt.total));
+      if (byMkt.total) els.beat3Stack.appendChild(buildPickArticle(byMkt.total, data.game));
       if (proj.total)  els.beat3Stack.appendChild(buildDotPlot('Total', proj.total, 'total', anchor, null, byMkt.total, { ends: ['Under', 'Over'] }));
       if (byMkt.total) { const t = buildTally(byMkt.total); if (t) els.beat3Stack.appendChild(t); }
     }
+
+    // Live/final game marker on every chart just built
+    updateLiveMarkers(data.game);
   }
 
   function opiBox(name, o) {
@@ -1100,6 +1139,14 @@
     }
     const range = axisMax - axisMin;
     const xPct = (v) => clamp(((v - axisMin) / range) * 100, 0, 100);
+
+    // Tag the card with its axis frame so updateLiveMarkers() can place
+    // the live-game dot later (and keep moving it during the 20s poll)
+    // without rebuilding the chart. Hero space: spread/ML x = home margin,
+    // total x = combined points.
+    card.dataset.liveKind = ml ? 'ml' : (key === 'anchor_spread' ? 'spread' : 'total');
+    card.dataset.axisMin = axisMin;
+    card.dataset.axisMax = axisMax;
 
     // Header
     // Vegas line label. When the line isn't posted at enough books yet
@@ -1724,8 +1771,18 @@
     `;
   }
 
-  function buildPickArticle(p) {
+  function buildPickArticle(p, g) {
       const isNoEdge = p.tier === 'no_edge';
+      // Lifecycle: once the game kicks off the bet is LOCKED — the card
+      // stops tracking the market and shows the released bet (that's what
+      // grading settles against). Once graded, a W/L/P chip joins the
+      // header. No-edge verdicts never carry a chip — they aren't bets.
+      const gameStatus = g?.status;
+      const locked = gameStatus === 'in_progress' || gameStatus === 'final';
+      const releasedEvt = p.history?.released || null;
+      const outcomeCls = (!isNoEdge && p.outcome)
+        ? ({ W: 'win', L: 'loss', P: 'push', V: 'void' })[p.outcome] || null
+        : null;
       const article = document.createElement('article');
       article.className = isNoEdge ? 'll-row ll-row--no-edge' : 'll-row';
       article.setAttribute('data-pick-id', String(p.pick_id || ''));
@@ -1737,6 +1794,17 @@
         ? `${escape(market)} — No Edge`
         : escape(market);
 
+      // Locked rows print the RELEASED bet (the graded one), not the
+      // last market read.
+      const pickLineHtml = (locked && releasedEvt && !isNoEdge)
+        ? `${escape(releasedEvt.side || '—')} ${escape(releasedEvt.line || '')}` +
+          `${releasedEvt.book?.name ? ' at ' + escape(releasedEvt.book.name) : ''}` +
+          `<span class="ll-row-locknote"> · locked at kickoff</span>`
+        : llPickLine(p);
+      const outcomeChipHtml = outcomeCls
+        ? `<span class="ll-outcome-chip out-${outcomeCls}" title="Graded against the released line">${escape(p.outcome)}</span>`
+        : '';
+
       const headerHtml = `
         <button class="ll-row-header" data-action="toggle"
                 aria-controls="ll-acc-${escape(String(p.pick_id || 'ne-' + p.market))}"
@@ -1744,8 +1812,9 @@
           ${llBadge(p.tier, p.bolt)}
           <div class="ll-row-content">
             <div class="ll-row-matchup">${matchupLabel}</div>
-            <div class="ll-row-pick">${llPickLine(p)}</div>
+            <div class="ll-row-pick">${pickLineHtml}</div>
           </div>
+          ${outcomeChipHtml}
           <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -1778,7 +1847,8 @@
           `;
         }).join('');
 
-        // Current/result event: graded → rs-outcome; else Live Lines "Now"
+        // Current/result event: graded → rs-outcome; live/locked → the
+        // kickoff lock note; else Live Lines "Now"
         const outcomeBlock = llOutcomeBlock(p.outcome);
         let currentEventHtml = '';
         if (outcomeBlock) {
@@ -1790,6 +1860,17 @@
                 · ${outcomeBlock}
               </div>
               <div class="ll-event-time">Graded</div>
+            </div>
+          `;
+        } else if (locked) {
+          currentEventHtml = `
+            <div class="ll-event">
+              <span class="ll-event-dot"></span>
+              <div class="ll-event-title">
+                <strong>Locked at kickoff</strong>
+                · grades against the released line
+              </div>
+              <div class="ll-event-time">Live</div>
             </div>
           `;
         } else if (current) {
@@ -1867,7 +1948,7 @@
               ${currentEventHtml}
             </div>
 
-            ${booksHtml ? `
+            ${booksHtml && !locked ? `
               <div class="ll-other-books" data-other-books="${escape(String(p.pick_id))}">
                 <button type="button" class="ll-other-books-header" data-action="toggle-books"
                         aria-expanded="false">
@@ -1882,7 +1963,7 @@
               </div>
             ` : ''}
 
-            ${currentBookName && !p.outcome ? `
+            ${currentBookName && !p.outcome && !locked ? `
               <a class="ll-bet-button" href="${escape(currentBookUrl)}"
                  target="_blank" rel="noopener noreferrer"
                  aria-label="Bet at ${escape(currentBookName)} (opens in new tab)"
@@ -2214,6 +2295,12 @@
         });
       } else {
         Object.assign(data.game, { status: 'final', away_points: 31, home_points: 24 });
+        // Stamp fabricated outcomes so the W/L/P header chips render
+        const letters = ['W', 'L', 'P'];
+        let li = 0;
+        (data.picks || []).forEach(p => {
+          if (p.tier && p.tier !== 'no_edge') p.outcome = letters[li++ % 3];
+        });
       }
       const wm = document.createElement('div');
       wm.textContent = 'DEMO — fabricated game state';
@@ -2282,7 +2369,10 @@
         }
         // Only re-render the parts that change live (in_progress), or
         // keep waiting quietly if the pre-kickoff poll started early.
-        if (st === 'in_progress') renderHero(refresh);
+        if (st === 'in_progress') {
+          renderHero(refresh);
+          updateLiveMarkers(refresh.game);
+        }
       } catch (e) {
         console.warn('live poll failed:', e);
       }
