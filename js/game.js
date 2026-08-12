@@ -2191,6 +2191,39 @@
       return;
     }
 
+    // ── DEMO MODE (?demo=live | ?demo=final) ──────────────────────
+    // Fabricates a game state CLIENT-SIDE ONLY, through the same
+    // renderers that run on real live data, so the live/final hero can
+    // be previewed before the season. Nothing is written anywhere; a
+    // fixed watermark marks the page as fabricated. Polling is skipped
+    // (a real refresh would overwrite the demo 20s in).
+    const demoMode = new URLSearchParams(location.search).get('demo');
+    if ((demoMode === 'live' || demoMode === 'final') && data.game) {
+      const away = data.game.away?.name || 'Away';
+      if (demoMode === 'live') {
+        Object.assign(data.game, {
+          status: 'in_progress',
+          away_points: 21, home_points: 17,
+          current_period: 3, current_clock: '7:21',
+          current_down: 3, current_distance: 7,
+          current_yard_line: `${away.substring(0, 4).toUpperCase()} 32`,
+          // ESPN-style display name on purpose — exercises the loose match
+          current_possession_team: `${away} Fightin' Demos`,
+          is_red_zone: false,
+          last_play_text: `(7:21 - 3rd) ${away} pass complete short right for 11 yards.`,
+        });
+      } else {
+        Object.assign(data.game, { status: 'final', away_points: 31, home_points: 24 });
+      }
+      const wm = document.createElement('div');
+      wm.textContent = 'DEMO — fabricated game state';
+      wm.style.cssText = 'position:fixed;bottom:12px;left:12px;z-index:999;' +
+        'background:#0F0E0A;color:#D4A83A;font:700 11px var(--sans);' +
+        'letter-spacing:1px;text-transform:uppercase;padding:6px 12px;' +
+        'border-radius:4px;opacity:.92;pointer-events:none;';
+      document.body.appendChild(wm);
+    }
+
     // Render everything
     try {
       renderHero(data);
@@ -2212,7 +2245,7 @@
     // by re-fetching every 20 seconds. Stops automatically when the
     // game leaves live state, or when the tab is hidden. Re-resumes
     // when the tab regains focus.
-    startLivePolling(data, gameId, token);
+    if (!demoMode) startLivePolling(data, gameId, token);
   }
 
   // ────── LIVE POLLING ──────

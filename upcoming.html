@@ -1304,11 +1304,81 @@ async function init() {
 
   buildWeekTabs(gamesRes);
   checkDataHealth();
+  if (DEMO_MODE) applyDemoState();
   document.getElementById('loadingState').style.display = 'none';
   document.getElementById('content').style.display = 'block';
   renderWeek(currentWeek);
   boardRendered = true;
-  startLiveRefresh();
+  // Demo states are client-side fabrications — a real refresh would
+  // overwrite them 45s in, so the live refresh loop stays off in demo.
+  if (!DEMO_MODE) startLiveRefresh();
+}
+
+// ── DEMO MODE (?demo=live) ──────────────────────────────────────────
+// Fabricates live/final game states CLIENT-SIDE ONLY, rendered through
+// the exact same card renderers real live data will use, so the live
+// board can be previewed before the season. Nothing is written anywhere;
+// a fixed watermark marks the page as fabricated.
+const DEMO_MODE = new URLSearchParams(location.search).get('demo') === 'live';
+
+function applyDemoState() {
+  const wk = allGames.filter(g => g.week === currentWeek && g.is_fbs_matchup);
+  if (!wk.length) return;
+
+  // The GOTW hero goes live so its strip shows LIVE · clock · score
+  const gotw = selectGameOfWeek(wk);
+  const others = wk.filter(g => g !== gotw);
+  const live1 = others[0], live2 = others[1], fin = others[2];
+
+  if (gotw) Object.assign(gotw, {
+    status: 'live', current_period: 2, current_clock: '0:44',
+    away_points: 14, home_points: 10,
+  });
+  if (live1) Object.assign(live1, {
+    status: 'live', current_period: 3, current_clock: '7:21',
+    away_points: 21, home_points: 17,
+    current_down: 3, current_distance: 7,
+    current_yard_line: `${live1.away_team.substring(0, 4).toUpperCase()} 32`,
+    // ESPN-style display name on purpose — exercises the loose match
+    current_possession_team: `${live1.away_team} Fightin' Demos`,
+    is_red_zone: false,
+  });
+  if (live2) Object.assign(live2, {
+    status: 'live', current_period: 4, current_clock: '2:05',
+    away_points: 24, home_points: 28,
+    current_down: 1, current_distance: 0,
+    current_yard_line: `${live2.home_team.substring(0, 4).toUpperCase()} 4`,
+    current_possession_team: live2.home_team,
+    is_red_zone: true,
+  });
+  if (fin) Object.assign(fin, { status: 'final', away_points: 31, home_points: 24 });
+
+  // Fabricated picks so live perf chips and final W/L chips render
+  const mkSlots = (g, slots) => {
+    const entry = picksByGameId[g.game_id] || {};
+    entry.slots = Object.assign(entry.slots || { spread: null, total: null, ml: null }, slots);
+    picksByGameId[g.game_id] = entry;
+  };
+  if (live1) mkSlots(live1, {
+    spread: { tier_full: 'A', side: live1.away_team, best_line: -3.5, pick_text: `${live1.away_team} -3.5` },
+    total:  { tier_full: 'B', side: 'Under', best_line: 52.5, pick_text: 'Under 52.5' },
+  });
+  if (live2) mkSlots(live2, {
+    ml: { tier_full: 'C', side: live2.home_team, best_line: null, pick_text: `${live2.home_team} ML` },
+  });
+  if (fin) mkSlots(fin, {
+    spread: { tier_full: 'A', result: 'win',  side: fin.away_team, best_line: -2.5 },
+    total:  { tier_full: 'C', result: 'loss', side: 'Over', best_line: 48.5 },
+    ml:     { tier_full: 'B', result: 'push', side: fin.away_team, best_line: null },
+  });
+
+  const wm = document.createElement('div');
+  wm.textContent = 'DEMO — fabricated game states';
+  wm.style.cssText = 'position:fixed;bottom:12px;left:12px;z-index:999;' +
+    'background:var(--ink);color:var(--gold-light);font:700 11px var(--sans);' +
+    'letter-spacing:1px;text-transform:uppercase;padding:6px 12px;' +
+    'border-radius:4px;opacity:.92;pointer-events:none;';
+  document.body.appendChild(wm);
 }
 
 // ── LIVE REFRESH ──
