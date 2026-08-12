@@ -778,8 +778,8 @@
   .conf-pill.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 
   /* ── LEGEND ── */
-  .legend { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 14px 20px; background: var(--cream-dark); border-radius: 4px; margin-bottom: 24px; font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
-  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend { display: flex; align-items: center; justify-content: center; gap: 12px 22px; flex-wrap: wrap; padding: 14px 20px; background: var(--cream-dark); border-radius: 4px; margin-bottom: 24px; font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
+  .legend-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
   .legend-tag { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; min-width: 28px; padding: 3px 6px; border: 1px solid var(--ink); border-radius: 3px; box-sizing: border-box; text-align: center; display: inline-block; }
   .legend-tag.tier-a { background: var(--gold);   color: var(--ink); }
   .legend-tag.tier-b { background: var(--silver); color: var(--ink); }
@@ -957,13 +957,14 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <!-- LEGEND -->
     <div class="section">
       <!-- Grades = NET SIGNAL COUNT, same scale on spread, total & moneyline
-           (the old ML-only SM/GL/LT bands are retired). -->
+           (the old ML-only SM/GL/LT bands are retired). Kept SHORT so the
+           row balances — one line on desktop, two clean rows on phones. -->
       <div class="legend">
-        <div class="legend-item"><span class="legend-tag tier-aplus">A+</span> <span class="legend-desc">Net 4+ signals · highest conviction</span></div>
+        <div class="legend-item"><span class="legend-tag tier-aplus">A+</span> <span class="legend-desc">Net 4+ signals</span></div>
         <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Net 3 signals</span></div>
         <div class="legend-item"><span class="legend-tag tier-b">B</span> <span class="legend-desc">Net 2 signals</span></div>
         <div class="legend-item"><span class="legend-tag tier-c">C</span> <span class="legend-desc">Net 1 signal</span></div>
-        <div class="legend-item"><span class="legend-tag tier-ne">NE</span> <span class="legend-desc">No edge · verdict, not a pick</span></div>
+        <div class="legend-item"><span class="legend-tag tier-ne">NE</span> <span class="legend-desc">No edge</span></div>
       </div>
     </div>
 

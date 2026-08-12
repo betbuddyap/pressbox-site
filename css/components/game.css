@@ -252,18 +252,24 @@
 /* Reserve the hero's top band when the grade strip is present so it never
    sits on top of a long team name (was covering "GEORGIA TECH"). */
 .ctx.has-grades .ctx-inner { padding-top: 78px; }
-/* Phones: the absolute corner box forced a tall reserved band — flow the
-   strip inline at the top of the hero instead. */
+/* Phones: full-width cream band attached to the hero's top edge — no
+   floating card, contents centered, costs only its own height. */
 @media (max-width: 600px) {
   .ctx-grades {
     position: static;
-    width: fit-content;
-    margin: 12px auto 0;
-    gap: 10px;
-    padding: 7px 10px;
+    display: flex;
+    justify-content: center;
+    width: auto;
+    gap: 14px;
+    margin: 0;
+    padding: 9px 8px;
+    background: var(--cream);
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
   }
-  .ctx-grade { gap: 5px; }
-  .ctx.has-grades .ctx-inner { padding-top: 12px; }
+  .ctx-grade { gap: 6px; }
+  .ctx.has-grades .ctx-inner { padding-top: 14px; }
 }
 
 /* Projection-source caption under the projected score. Sits on the DARK
