@@ -689,28 +689,24 @@
      — the W/L/P square blocks are retired (Austin: keep the grade card,
      mark the result next to it). */
 
-  /* FINAL hero — the live hero's layout in gold: once games land the
-     slate reads as a scoreboard. */
+  /* FINAL hero — the live hero's layout with the drama off: neutral dark
+     tint (no gold card treatment) and a big serifed gold "Final" where
+     the LIVE badge sits. Once games land the slate reads as a scoreboard. */
   .gc.slate.final-hero {
     grid-column: span 2;
-    border: 2px solid var(--gold);
   }
   .gc-final-tint {
     position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(180deg, rgba(184,146,42,0.28) 0%, rgba(15,14,10,0.60) 100%);
+    background: linear-gradient(180deg, rgba(15,14,10,0.28) 0%, rgba(15,14,10,0.62) 100%);
   }
   .gc-final-badge {
-    display: inline-flex;
-    align-items: center;
-    background: var(--gold);
-    color: var(--ink);
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-family: var(--sans);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--gold-light);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
   }
   @media (max-width: 720px) {
     .gc.slate.final-hero { grid-column: 1; }
@@ -1281,7 +1277,7 @@ function gotwSlot(label, slotData, g, market) {
     } else if (status === 'live' && market && g.away_points != null && g.home_points != null) {
       const perf = computeLivePerf(market, slotData, g.away_points, g.home_points, g.home_team, g.away_team);
       if (perf) {
-        const glyph = ({ win: '▲', loss: '▼', push: '–', pending: '·' })[perf.cls] || '';
+        const glyph = ({ win: '▲', loss: '▼', push: '–', pending: '–' })[perf.cls] || '';
         mark = `<span class="gc-perf-mark perf-${perf.cls}" title="${perf.label}">${glyph}</span>`;
       }
     }
@@ -1955,7 +1951,7 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
     const perf = hasScores
       ? computeLivePerf(market, slotData, awayPts, homePts, g.home_team, g.away_team)
       : null;
-    const glyph = perf ? ({ win: '▲', loss: '▼', push: '–', pending: '·' })[perf.cls] : '';
+    const glyph = perf ? ({ win: '▲', loss: '▼', push: '–', pending: '–' })[perf.cls] : '';
     const mark = perf
       ? `<span class="gc-perf-mark perf-${perf.cls}" title="${perf.label}">${glyph}</span>`
       : '';
@@ -2033,7 +2029,7 @@ function renderFinalCard(g, slots, awayPts, homePts, homeColor, awayColor) {
         <div class="gc-final-tint"></div>
         <div class="gc-content">
           <div class="gc-live-strip">
-            <span class="gc-final-badge">FINAL</span>
+            <span class="gc-final-badge">Final</span>
           </div>
           <div class="gc-live-score">
             <div class="gc-live-team away${homeWon ? ' loser' : ''}">

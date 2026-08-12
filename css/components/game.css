@@ -512,18 +512,16 @@
   border-top: 1px solid rgba(248, 245, 238, 0.18);
   border-bottom: 1px solid rgba(248, 245, 238, 0.18);
 }
+/* Big serifed gold "Final" — same treatment as the Upcoming final hero
+   (the gold badge box read heavy — Austin). */
 .pg-final-badge {
-  display: inline-flex;
-  align-items: center;
-  background: var(--gold);
-  color: var(--ink);
-  padding: 4px 10px;
-  border-radius: 3px;
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1.8px;
-  text-transform: uppercase;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--gold-light);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }
 .pg-final-proj {
   font-family: var(--sans);
@@ -985,27 +983,21 @@
   border-radius: 1px;
 }
 
-/* Graded-outcome chip in the pick-row header — square block in the
-   grade-badge proportions. Sage = win, rust = loss (data-viz colors:
-   this IS the win/loss data), ink push. Sits on cream, so ink keyline. */
-.ll-outcome-chip {
+/* Graded outcome in the pick-row header — plain colored TEXT (the block
+   chip read chunky). Sage win / rust loss / gray push: data-viz colors,
+   this IS the win/loss data. */
+.ll-outcome-text {
   flex-shrink: 0;
-  width: 36px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   font-family: var(--sans);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.02em;
-  border: 1px solid var(--ink);
-  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
-.ll-outcome-chip.out-win  { background: var(--sage); color: #fff; }
-.ll-outcome-chip.out-loss { background: var(--rust); color: #fff; }
-.ll-outcome-chip.out-push { background: var(--ink); color: var(--cream); }
-.ll-outcome-chip.out-void { background: transparent; color: var(--text-mid); }
+.ll-outcome-text.out-win  { color: var(--sage); }
+.ll-outcome-text.out-loss { color: var(--rust); }
+.ll-outcome-text.out-push { color: var(--text-mid); }
+.ll-outcome-text.out-void { color: var(--text-light); }
 .ll-row-locknote { color: var(--text-mid); font-style: italic; }
 
 /* Live-game marker — rust dot at where the game currently sits on the

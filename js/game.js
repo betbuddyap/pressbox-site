@@ -1825,7 +1825,8 @@
         : llPickLine(p) + (locked
             ? `<span class="ll-row-locknote"> · market closed</span>` : '');
       const outcomeChipHtml = outcomeCls
-        ? `<span class="ll-outcome-chip out-${outcomeCls}" title="Graded against the released line">${escape(p.outcome)}</span>`
+        ? `<span class="ll-outcome-text out-${outcomeCls}" title="Graded against the released line">` +
+          `${({ win: 'Win', loss: 'Loss', push: 'Push', void: 'Void' })[outcomeCls]}</span>`
         : '';
 
       // Locked cards wear the RELEASED grade too — the tier we published
