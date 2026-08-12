@@ -255,26 +255,35 @@
 /* Phones: full-width cream band attached to the hero's top edge — no
    floating card, contents centered, costs only its own height. */
 @media (max-width: 600px) {
-  /* NO card and NO cream band on phones — the strip goes native on the
-     dark hero (the cream stripe broke the hero's look — Austin).
-     Centered label+badge pairs, translucent cream labels, badges carry
-     their own fills, hairline separator underneath. */
+  /* Phones: the grade strip moves to the BOTTOM of the hero — the same
+     place the pick row lives on the Upcoming cards — instead of floating
+     above everything. Native on the dark hero (no card, no cream band),
+     centered, translucent-cream labels, hairline on top. The hero is
+     flexed so the strip (an earlier sibling in the DOM) orders last. */
+  .ctx { display: flex; flex-direction: column; }
+  .ctx-inner { width: 100%; }
   .ctx-grades {
-    position: static;
+    order: 99;
+    position: relative;
+    /* reset the desktop rule's absolute offsets — they still shift a
+       position:relative element (this was the 12px down-right drift) */
+    top: auto;
+    left: auto;
+    z-index: 3;
     display: flex;
     justify-content: center;
     width: auto;
     gap: 16px;
     margin: 0;
-    padding: 10px 8px;
+    padding: 11px 8px;
     background: transparent;
     border: 0;
-    border-bottom: 1px solid rgba(248, 245, 238, 0.18);
+    border-top: 1px solid rgba(248, 245, 238, 0.18);
     border-radius: 0;
   }
   .ctx-grade { gap: 6px; }
   .ctx-grades .ctx-grade-mkt { color: rgba(248, 245, 238, 0.7); }
-  .ctx.has-grades .ctx-inner { padding-top: 10px; }
+  .ctx.has-grades .ctx-inner { padding-top: 18px; }
 }
 
 /* Projection-source caption under the projected score. Sits on the DARK
