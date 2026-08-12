@@ -685,33 +685,36 @@
   .gc.slate .gc-pick-slot.perf-push   .gc-pick-perf { background: rgba(248,245,238,0.2); color: var(--cream); }
   .gc.slate .gc-pick-slot.perf-pending .gc-pick-perf { background: rgba(248,245,238,0.15); color: var(--cream); }
 
-  /* Final-state outcome chip (W/L/P/V) */
-  .gc.slate .gc-pick-slot.has-outcome, .gc.gotw-card .gc-pick-slot.has-outcome {
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
+  /* Final results render as glyphs beside the tier badge (.gc-perf-mark)
+     — the W/L/P square blocks are retired (Austin: keep the grade card,
+     mark the result next to it). */
+
+  /* FINAL hero — the live hero's layout in gold: once games land the
+     slate reads as a scoreboard. */
+  .gc.slate.final-hero {
+    grid-column: span 2;
+    border: 2px solid var(--gold);
   }
-  /* W/L/P: square blocks in the grade-badge proportions, white glyph +
-     white keyline. Green = win, rust = loss (data-viz colors — this IS
-     the win/loss data), ink-neutral push. */
-  .gc.slate .gc-pick-outcome, .gc.gotw-card .gc-pick-outcome {
-    font-family: var(--sans);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    width: 32px;
-    height: 26px;
+  .gc-final-tint {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(180deg, rgba(184,146,42,0.28) 0%, rgba(15,14,10,0.60) 100%);
+  }
+  .gc-final-badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    border: 1px solid #fff;
-    box-sizing: border-box;
+    background: var(--gold);
+    color: var(--ink);
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
   }
-  .gc.slate .gc-pick-outcome.out-win,  .gc.gotw-card .gc-pick-outcome.out-win  { background: var(--sage); color: #fff; }
-  .gc.slate .gc-pick-outcome.out-loss, .gc.gotw-card .gc-pick-outcome.out-loss { background: var(--rust); color: #fff; }
-  .gc.slate .gc-pick-outcome.out-push, .gc.gotw-card .gc-pick-outcome.out-push { background: rgba(248,245,238,0.14); color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.4); }
-  .gc.slate .gc-pick-outcome.out-void, .gc.gotw-card .gc-pick-outcome.out-void { background: transparent; color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.4); }
+  @media (max-width: 720px) {
+    .gc.slate.final-hero { grid-column: 1; }
+  }
   .gc.slate .gc-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
   .gc.slate .gc-team-name { font-size: 22px; line-height: 1.15; }
   .gc.slate .gc-team-sub { font-size: 11px; gap: 8px; margin-top: 3px; }
@@ -812,13 +815,20 @@
   .gc-perf-mark.perf-push    { color: rgba(248,245,238,0.6); }
   .gc-perf-mark.perf-pending { color: rgba(248,245,238,0.55); }
 
-  /* GOTW live/final: the center "at" becomes the score */
+  /* GOTW live/final: the center "at" becomes the score — BIGGER than the
+     team names at every width (the score is the headline once it's real) */
   .gc-gotw-score {
     font-family: var(--serif); font-style: italic; font-weight: 700;
-    font-size: 40px; line-height: 1; color: var(--cream);
+    font-size: 64px; line-height: 1; color: var(--cream);
     text-shadow: 0 1px 8px rgba(0,0,0,0.5); white-space: nowrap;
     padding: 0 22px;
   }
+  @media (max-width: 480px) {
+    .gc-gotw-score { font-size: 36px; padding: 0 10px; }
+  }
+  /* Grid items stretch by default — without this the LIVE badge inflated
+     to fill its whole column (the "large orange bar"). Pin it top-left. */
+  .gc-strip.gotw-strip .gc-live-badge { justify-self: start; align-self: center; }
 
   @media (max-width: 720px) {
     .gc.slate { min-height: 168px; }
@@ -829,7 +839,6 @@
     .gc.slate .gc-meta { font-size: 12px; }
     .gc.slate .gc-pick-label, .gc.gotw-card .gc-pick-label { font-size: 10px; }
     .gc.slate .gc-pick-tier, .gc.gotw-card .gc-pick-tier { font-size: 10px; width: 28px; height: 22px; }
-    .gc.slate .gc-pick-outcome, .gc.gotw-card .gc-pick-outcome { font-size: 11px; width: 28px; height: 22px; }
     .gc.slate .gc-pick-slot, .gc.gotw-card .gc-pick-slot { gap: 4px; }
   }
 
@@ -1258,22 +1267,18 @@ function gcBolt(slotData, tierKey) {
   return `<span class="gc-bolt gc-bolt--${tierKey}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`;
 }
 // Hero (Game of the Week) pick badge — identical markup/look to the slate
-// cards, including the live status chip and the final W/L/P block.
+// cards: tier badge stays the hero, with a live status glyph or a final
+// result glyph beside it.
 function gotwSlot(label, slotData, g, market) {
   const status = g && g.status;
-  // Final + graded → W/L/P block replaces the tier badge
-  if (status === 'final' && slotData && slotData.result) {
-    const r = slotData.result;
-    const cls = ({ win: 'win', loss: 'loss', push: 'push', void: 'void' })[r] || '';
-    const txt = ({ win: 'W', loss: 'L', push: 'P', void: 'V' })[r] || '—';
-    return `<div class="gc-pick-slot has-outcome"><span class="gc-pick-label">${label}</span>` +
-           `<span class="gc-pick-outcome out-${cls}">${txt}</span></div>`;
-  }
   const tierFull = slotData && slotData.tier_full;
   const tierKey = TIER_KEY[tierFull];
   if (tierKey) {
     let mark = '';
-    if (status === 'live' && market && g.away_points != null && g.home_points != null) {
+    // Final + graded → tier badge stays, result glyph beside it
+    if (status === 'final' && slotData.result) {
+      mark = resultMark(slotData);
+    } else if (status === 'live' && market && g.away_points != null && g.home_points != null) {
       const perf = computeLivePerf(market, slotData, g.away_points, g.home_points, g.home_team, g.away_team);
       if (perf) {
         const glyph = ({ win: '▲', loss: '▼', push: '–', pending: '·' })[perf.cls] || '';
@@ -1811,11 +1816,16 @@ function renderSlateCard(g) {
                      homePts !== null && homePts !== undefined);
 
   // ── LIVE state: hero card with broadcast data ──────────────────
-  // Layout differs from scheduled/final to communicate "this is
-  // happening RIGHT NOW". Score becomes the headline, LIVE indicator
-  // is prominent, period/clock/down/possession render below.
+  // Layout differs from scheduled to communicate "this is happening
+  // RIGHT NOW". Score becomes the headline, LIVE indicator is
+  // prominent, period/clock/down/possession render below.
   if (status === 'live') {
     return renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRank, awayRank);
+  }
+  // ── FINAL state: same hero layout in GOLD — the slate reads as a
+  // scoreboard once games land, with result glyphs beside the grades.
+  if (status === 'final' && hasScores) {
+    return renderFinalCard(g, slots, awayPts, homePts, homeColor, awayColor);
   }
 
   // ── Status strip for non-live states ──────────────────────────
@@ -1833,22 +1843,10 @@ function renderSlateCard(g) {
     statusHTML = `<span class="gc-meta">${timeText}</span>`;
   }
 
-  // ── Pick slots (no live perf, since live handled above) ──────
+  // ── Pick slots (live + final have their own hero renderers above) ──
   const slot = (label, slotData, market) => {
     const tierFull = slotData && slotData.tier_full;
     const tierKey = TIER_KEY[tierFull];
-
-    if (status === 'final' && slotData && slotData.result) {
-      const r = slotData.result;
-      const cls = ({win:'win', loss:'loss', push:'push', void:'void'})[r] || '';
-      const txt = ({win:'W', loss:'L', push:'P', void:'V'})[r] || '—';
-      return `
-        <div class="gc-pick-slot has-outcome">
-          <span class="gc-pick-label">${label}</span>
-          <span class="gc-pick-outcome out-${cls}">${txt}</span>
-        </div>
-      `;
-    }
 
     if (tierKey) {
       return `
@@ -1998,6 +1996,67 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
   `;
 }
 
+// ────── FINAL CARD (hero layout in gold) ──────
+// The live hero's layout with the drama swapped for record-keeping:
+// gold border + tint, still FINAL badge, big score with loser dimmed,
+// and each graded slot keeps its tier badge with a result glyph beside
+// it (sage check win, rust cross loss, dim dash push).
+const RESULT_GLYPH = { win: '✓', loss: '✕', push: '–', void: '∅' };
+const RESULT_CLS   = { win: 'win', loss: 'loss', push: 'push', void: 'push' };
+const RESULT_WORD  = { win: 'Win', loss: 'Loss', push: 'Push', void: 'Void' };
+
+function resultMark(slotData) {
+  const r = slotData && slotData.result;
+  if (!r || (slotData.tier_full === 'no_edge')) return '';
+  const cls = RESULT_CLS[r];
+  if (!cls) return '';
+  return `<span class="gc-perf-mark perf-${cls}" title="${RESULT_WORD[r]}">${RESULT_GLYPH[r]}</span>`;
+}
+
+function renderFinalCard(g, slots, awayPts, homePts, homeColor, awayColor) {
+  const awayWon = awayPts > homePts;
+  const homeWon = homePts > awayPts;
+
+  const finalSlot = (label, slotData) => {
+    const tierKey = TIER_KEY[slotData && slotData.tier_full];
+    if (!tierKey) {
+      return `<div class="gc-pick-slot empty"><span class="gc-pick-label">${label}</span></div>`;
+    }
+    return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span>` +
+           `<span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${gcBolt(slotData, tierKey)}</span>${resultMark(slotData)}</div>`;
+  };
+
+  return `
+    <a class="gc-link" href="/game.html?id=${g.game_id}">
+      <div class="gc slate status-final final-hero">
+        ${bgHTML(awayColor, homeColor)}
+        <div class="gc-final-tint"></div>
+        <div class="gc-content">
+          <div class="gc-live-strip">
+            <span class="gc-final-badge">FINAL</span>
+          </div>
+          <div class="gc-live-score">
+            <div class="gc-live-team away${homeWon ? ' loser' : ''}">
+              <div class="gc-live-team-name">${g.away_team}</div>
+              <div class="gc-live-num">${awayPts}</div>
+            </div>
+            <span class="gc-live-dash">—</span>
+            <div class="gc-live-team home${awayWon ? ' loser' : ''}">
+              <div class="gc-live-num">${homePts}</div>
+              <div class="gc-live-team-name">${g.home_team}</div>
+            </div>
+          </div>
+          <div class="gc-picks">
+            ${finalSlot('Spread', slots.spread)}
+            ${finalSlot('Total',  slots.total)}
+            ${finalSlot('ML',     slots.ml)}
+          </div>
+        </div>
+      </div>
+    </a>
+  `;
+}
+
 // ────── PICK PERFORMANCE OVERLAY (live games) ──────
 // Given a pick and current score, return a short performance label.
 // Returns null if perf can't be computed (missing data).
@@ -2103,15 +2162,17 @@ function renderGotW(g) {
   // kickoff while the same game is LIVE or final in the slate below it.
   const aPts = g.away_points, hPts = g.home_points;
   const scoreTxt = (aPts != null && hPts != null) ? `${aPts}–${hPts}` : '';
+  // The big center score carries the number — the strip only carries
+  // quarter/clock (score twice read as a mistake).
   let stripMeta = `<span class="gc-meta">${time}</span>`;
   if (g.status === 'live') {
     const p = g.current_period;
     const pl = p ? (p <= 4 ? `Q${p}` : `OT${p - 4}`) : '';
-    const bits = [pl, g.current_clock, scoreTxt].filter(Boolean).join(' · ');
+    const bits = [pl, g.current_clock].filter(Boolean).join(' · ');
     stripMeta = `<span class="gc-live-badge"><span class="gc-live-dot"></span>LIVE</span>` +
                 (bits ? `<span class="gc-meta">${bits}</span>` : '');
   } else if (g.status === 'final') {
-    stripMeta = `<span class="gc-meta">Final${scoreTxt ? ' · ' + scoreTxt : ''}</span>`;
+    stripMeta = `<span class="gc-meta">Final</span>`;
   }
 
   return `

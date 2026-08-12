@@ -94,6 +94,8 @@
     pgScore:   $('pgScore'),
     pgAway:    $('pgAwayNum'),
     pgHome:    $('pgHomeNum'),
+    pgFinalRow:  $('pgFinalRow'),
+    pgFinalProj: $('pgFinalProj'),
     pgLive:           $('pgLive'),
     pgLiveClock:      $('pgLiveClock'),
     pgLiveAwayName:   $('pgLiveAwayName'),
@@ -237,6 +239,7 @@
     if (isLive) {
       els.pgLive.style.display = '';
       els.pgScore.style.display = 'none';
+      if (els.pgFinalRow) els.pgFinalRow.style.display = 'none';
       els.preGame.style.display = 'none';
       renderLiveHero(data);
     } else if (isFinal) {
@@ -248,9 +251,23 @@
       els.pgAway.classList.toggle('loser', !awayWon && g.away_points !== g.home_points);
       els.pgHome.classList.toggle('loser',  awayWon && g.away_points !== g.home_points);
       els.preGame.style.display = 'none';
+      // FINAL row (same gold badge as Upcoming) + what we projected.
+      // renderProjectedScore computes into the hidden pregame block —
+      // lift its numbers so the recap and pregame view can never differ.
+      if (els.pgFinalRow) {
+        let projTxt = '';
+        try {
+          renderProjectedScore(data);
+          const pa = els.projAway?.textContent, ph = els.projHome?.textContent;
+          if (pa && ph && pa !== '—' && ph !== '—') projTxt = `We projected ${pa}–${ph}`;
+        } catch (e) { /* recap is optional — never block the score */ }
+        if (els.pgFinalProj) els.pgFinalProj.textContent = projTxt;
+        els.pgFinalRow.style.display = '';
+      }
     } else {
       els.pgLive.style.display = 'none';
       els.pgScore.style.display = 'none';
+      if (els.pgFinalRow) els.pgFinalRow.style.display = 'none';
       els.preGame.style.display = '';
       renderProjectedScore(data);
     }

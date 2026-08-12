@@ -14,7 +14,7 @@
 <!-- Tokens FIRST, then components -->
 <link rel="stylesheet" href="/css/tokens.css?v=20260806q">
 <link rel="stylesheet" href="/css/components/live-lines.css">
-<link rel="stylesheet" href="/css/components/game.css?v=20260807c">
+<link rel="stylesheet" href="/css/components/game.css?v=20260807d">
 
 <style>
   /* ── Site nav (kept in sync across pages) ── */
@@ -215,6 +215,13 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
           <div class="pg-score-num" id="pgHomeNum"></div>
         </div>
       </div>
+      <!-- Final status row (below the score, mirroring the live row) —
+           same gold FINAL badge as Upcoming, plus the original projection
+           so the score reads against what we said pregame. -->
+      <div id="pgFinalRow" class="pg-final-row" style="display:none;">
+        <span class="pg-final-badge">FINAL</span>
+        <span class="pg-final-proj" id="pgFinalProj"></span>
+      </div>
 
       <!-- Live hero block — populated by renderLiveHero() in game.js
            when game.status === 'in_progress'. ESPN-sourced broadcast
@@ -363,7 +370,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260807c"></script>
+<script src="/js/game.js?v=20260807d"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
