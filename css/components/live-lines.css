@@ -319,6 +319,11 @@
    so it stays regular weight in the muted ink. Sans per the number rule
    (small inline numbers are never serif). */
 .ll-row-pick-px {
+  /* Pinned, not inherited: this span sits next to the pick line AND inside
+     the other-books rows, which inherit different families/sizes. Match the
+     number it prices — sans per the small-inline-number rule. */
+  font-family: var(--sans);
+  font-size: var(--text-base);
   color: var(--text-mid);
   font-weight: var(--weight-regular);
 }
