@@ -1768,7 +1768,11 @@
     if (p.market === 'moneyline' || p.market === 'ml') {
       return `${escape(side)} ML <span class="ll-row-pick-num">${escape(lineRaw)}</span>${bookText}`;
     }
-    return `${escape(side)} <span class="ll-row-pick-num">${escape(lineRaw)}</span>${bookText}`;
+    // CURRENT juice, same as the Live Lines row — a +5.5 at -115 is a worse
+    // bet than a +5.5 at -105. ML's line already IS its price.
+    const px = p.history?.current?.price
+      ? ` <span class="ll-row-pick-px">(${escape(p.history.current.price)})</span>` : '';
+    return `${escape(side)} <span class="ll-row-pick-num">${escape(lineRaw)}</span>${px}${bookText}`;
   }
 
   function llHistoryTime(iso) {
