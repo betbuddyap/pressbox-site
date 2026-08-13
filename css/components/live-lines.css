@@ -315,6 +315,14 @@
   font-weight: var(--weight-bold);
 }
 
+/* The juice on a spread/total row — secondary to the number it prices,
+   so it stays regular weight in the muted ink. Sans per the number rule
+   (small inline numbers are never serif). */
+.ll-row-pick-px {
+  color: var(--text-mid);
+  font-weight: var(--weight-regular);
+}
+
 .ll-row-chevron {
   width: 16px;
   height: 16px;

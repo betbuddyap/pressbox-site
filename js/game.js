@@ -1823,8 +1823,10 @@
       // (grading is vs the release, never the closing line) — tagged
       // "as released". No-edge verdicts aren't bets; they just note the
       // market closed.
+      const relPx = releasedEvt?.price
+        ? ` <span class="ll-row-pick-px">(${escape(releasedEvt.price)})</span>` : '';
       const pickLineHtml = (locked && releasedEvt && !isNoEdge)
-        ? `${escape(releasedEvt.side || '—')} ${escape(releasedEvt.line || '')}` +
+        ? `${escape(releasedEvt.side || '—')} ${escape(releasedEvt.line || '')}${relPx}` +
           `${releasedEvt.book?.name ? ' at ' + escape(releasedEvt.book.name) : ''}` +
           `<span class="ll-row-locknote"> · as released</span>`
         : llPickLine(p) + (locked

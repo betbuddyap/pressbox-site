@@ -624,13 +624,17 @@
     if (tied === 1) bookText = `${bookName} + 1 other`;
     else if (tied > 1) bookText = `${bookName} + ${tied} others`;
 
-    if (p.market === 'total') {
-      return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span> · ${bookText}`;
-    }
+    // Spread/total juice is NOT always -110 — a +5.5 at -115 is a worse bet
+    // than a +5.5 at -105, and the price is also what justifies the book we
+    // credited (a better NUMBER can be worth worse juice). ML's line already
+    // IS its price, so it never gets a second one.
+    const px = p.price
+      ? ` <span class="ll-row-pick-px">(${esc(p.price)})</span>` : '';
+
     if (p.market === 'ml') {
       return `${esc(p.side)} ML <span class="ll-row-pick-num">${esc(p.line)}</span> · ${bookText}`;
     }
-    return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span> · ${bookText}`;
+    return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span>${px} · ${bookText}`;
   }
 
   // ── Accordion body (history + other books + bet button) ──────
