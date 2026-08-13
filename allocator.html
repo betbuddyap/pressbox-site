@@ -94,7 +94,11 @@
   .al-bet { display: block; }
   @media (max-width: 640px) {
     .al-head { flex-wrap: wrap; gap: var(--space-3); }
-    .al-head > .ll-row-content { order: 1; }
+    /* flex-basis 0, not auto: with wrap on, the line breaks on base sizes
+       before anything shrinks, so a long matchup would shove the stake and
+       chevron onto a line of their own. Zero basis keeps the head at two
+       rows and lets the matchup wrap inside its own column instead. */
+    .al-head > .ll-row-content { order: 1; flex: 1 1 0; }
     .al-head > .al-stake { order: 2; margin-left: auto; }
     .al-head > .ll-row-chevron { order: 3; }
     .al-head > .al-metrics { order: 4; flex: 1 0 100%; margin-top: var(--space-1); gap: var(--space-6); }
