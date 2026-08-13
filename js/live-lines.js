@@ -687,7 +687,7 @@
     const currentLine = pick.line || '';
     const currentSide = pick.side || '';
     const currentTier = pick.tier || '';
-    const currentBookUrl = pick.book?.url || '#';
+    const currentBookUrl = pick.book?.url || '';
 
     // Other books: exclude only the one already shown as the primary on
     // the row above. Multiple books can tie for "best" — we don't want
@@ -710,21 +710,27 @@
         b.delta === 'match' ? 'll-book-delta--match' :
         (b.delta && b.delta.startsWith('+')) ? 'll-book-delta--better' :
         'll-book-delta--worse';
+      // No URL = we have no destination we trust (a book can rebrand or
+      // retire its domain — ESPN BET did). Render the row as plain text
+      // rather than sending someone into a browser security warning.
+      const hasUrl = !!(b.book && b.book.url);
+      const openTag = hasUrl
+        ? `<a class="ll-book-row" href="${esc(url)}" target="_blank" rel="noopener noreferrer" aria-label="Bet at ${name} (opens in new tab)">`
+        : `<div class="ll-book-row">`;
       return `
-        <a class="ll-book-row" href="${esc(url)}" target="_blank" rel="noopener noreferrer"
-           aria-label="Bet at ${name} (opens in new tab)">
+        ${openTag}
           <span class="ll-book-name">
-            ${name}
+            ${name}${hasUrl ? `
             <svg class="ll-book-name-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="M6 4h6v6M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+            </svg>` : ''}
           </span>
           <span>
             <span class="ll-book-line">${line}</span>${b.price
               ? ` <span class="ll-row-pick-px">(${esc(b.price)})</span>` : ''}
             <span class="${deltaClass}"> (${esc(b.delta)})</span>
           </span>
-        </a>
+        ${hasUrl ? '</a>' : '</div>'}
       `;
     }).join('') : '';
 
@@ -767,12 +773,16 @@
         </div>
       ` : ''}
 
+      ${currentBookUrl ? `
       <a class="ll-bet-button" href="${esc(currentBookUrl)}"
          target="_blank" rel="noopener noreferrer"
          aria-label="Bet at ${esc(currentBook)} (opens in new tab)"
          style="margin-top:var(--space-4);">
         Bet at ${esc(currentBook)} →
-      </a>
+      </a>` : `
+      <div class="ll-bet-button" style="margin-top:var(--space-4);cursor:default;opacity:0.75;">
+        Best price at ${esc(currentBook)}
+      </div>`}
       <a class="ll-game-link" href="/game.html?game_id=${esc(pick.game_id || '')}">
         Full game breakdown →
       </a>

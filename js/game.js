@@ -1950,25 +1950,29 @@
             b.delta === 'match' ? 'll-book-delta--match' :
             (b.delta && String(b.delta).startsWith('+')) ? 'll-book-delta--better' :
             'll-book-delta--worse';
+          // No URL = no destination we trust (books rebrand and retire
+          // domains — ESPN BET did). Plain text beats a security warning.
+          const hasUrl = !!(b.book && b.book.url);
           return `
-            <a class="ll-book-row" href="${escape(url)}" target="_blank" rel="noopener noreferrer"
-               aria-label="Bet at ${name} (opens in new tab)">
+            ${hasUrl
+              ? `<a class="ll-book-row" href="${escape(url)}" target="_blank" rel="noopener noreferrer" aria-label="Bet at ${name} (opens in new tab)">`
+              : `<div class="ll-book-row">`}
               <span class="ll-book-name">
-                ${name}
+                ${name}${hasUrl ? `
                 <svg class="ll-book-name-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M6 4h6v6M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
+                </svg>` : ''}
               </span>
               <span>
                 <span class="ll-book-line">${line}</span>${b.price
                   ? ` <span class="ll-row-pick-px">(${escape(b.price)})</span>` : ''}
                 <span class="${deltaClass}"> (${escape(String(b.delta))})</span>
               </span>
-            </a>
+            ${hasUrl ? '</a>' : '</div>'}
           `;
         }).join('') : '';
 
-        const currentBookUrl = current?.book?.url || '#';
+        const currentBookUrl = current?.book?.url || '';
 
         bodyHtml = `
           <div id="ll-acc-${escape(String(p.pick_id))}" class="ll-accordion">
@@ -2004,7 +2008,7 @@
               </div>
             ` : ''}
 
-            ${currentBookName && !p.outcome && !locked ? `
+            ${currentBookName && currentBookUrl && !p.outcome && !locked ? `
               <a class="ll-bet-button" href="${escape(currentBookUrl)}"
                  target="_blank" rel="noopener noreferrer"
                  aria-label="Bet at ${escape(currentBookName)} (opens in new tab)"
