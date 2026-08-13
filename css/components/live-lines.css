@@ -623,6 +623,20 @@
   color: var(--ink);
 }
 
+/* Why a book isn't clickable (e.g. "app only") — sits where the
+   external-link icon would be, so an unlinked row reads as deliberate
+   rather than broken. */
+.ll-book-note {
+  margin-left: 6px;
+  font-family: var(--sans);
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-regular);
+  font-style: italic;
+  color: var(--text-light);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .ll-book-delta--worse  { color: var(--rust); font-weight: var(--weight-regular); font-size: var(--text-base); }
 .ll-book-delta--match  { color: var(--text-light); font-weight: var(--weight-regular); font-size: var(--text-base); }
 .ll-book-delta--better { color: var(--sage); font-weight: var(--weight-regular); font-size: var(--text-base); }

@@ -723,7 +723,7 @@
             ${name}${hasUrl ? `
             <svg class="ll-book-name-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="M6 4h6v6M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>` : ''}
+            </svg>` : (b.book?.note ? `<span class="ll-book-note">${esc(b.book.note)}</span>` : '')}
           </span>
           <span>
             <span class="ll-book-line">${line}</span>${b.price
@@ -781,7 +781,7 @@
         Bet at ${esc(currentBook)} →
       </a>` : `
       <div class="ll-bet-button" style="margin-top:var(--space-4);cursor:default;opacity:0.75;">
-        Best price at ${esc(currentBook)}
+        Best price at ${esc(currentBook)}${pick.book?.note ? ` — ${esc(pick.book.note)}` : ''}
       </div>`}
       <a class="ll-game-link" href="/game.html?game_id=${esc(pick.game_id || '')}">
         Full game breakdown →

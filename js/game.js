@@ -1961,7 +1961,7 @@
                 ${name}${hasUrl ? `
                 <svg class="ll-book-name-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                   <path d="M6 4h6v6M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>` : ''}
+                </svg>` : (b.book?.note ? `<span class="ll-book-note">${escape(b.book.note)}</span>` : '')}
               </span>
               <span>
                 <span class="ll-book-line">${line}</span>${b.price
@@ -2015,7 +2015,11 @@
                  style="margin-top:var(--space-4);">
                 Bet at ${escape(currentBookName)} →
               </a>
-            ` : ''}
+            ` : (currentBookName && !currentBookUrl && !p.outcome && !locked ? `
+              <div class="ll-bet-button" style="margin-top:var(--space-4);cursor:default;opacity:0.75;">
+                Best price at ${escape(currentBookName)}${current?.book?.note ? ` — ${escape(current.book.note)}` : ''}
+              </div>
+            ` : '')}
           </div>
         `;
       } else {
