@@ -1960,7 +1960,8 @@
                 </svg>
               </span>
               <span>
-                <span class="ll-book-line">${line}</span>
+                <span class="ll-book-line">${line}</span>${b.price
+                  ? ` <span class="ll-row-pick-px">(${escape(b.price)})</span>` : ''}
                 <span class="${deltaClass}"> (${escape(String(b.delta))})</span>
               </span>
             </a>

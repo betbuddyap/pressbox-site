@@ -720,7 +720,8 @@
             </svg>
           </span>
           <span>
-            <span class="ll-book-line">${line}</span>
+            <span class="ll-book-line">${line}</span>${b.price
+              ? ` <span class="ll-row-pick-px">(${esc(b.price)})</span>` : ''}
             <span class="${deltaClass}"> (${esc(b.delta)})</span>
           </span>
         </a>
