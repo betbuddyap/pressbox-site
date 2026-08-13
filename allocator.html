@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bankroll Allocator — PressBox Analytics</title>
-<meta name="description" content="Size every +edge pick against a single bankroll with zero-vig Kelly stake sizing — our win probability against the fair line, so conviction drives the split.">
+<meta name="description" content="Size every +edge pick against a single bankroll — stakes scale with how far our win probability sits past each bet's break-even price.">
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -412,56 +412,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  // ── Zero-vig Kelly sizing (Austin's spec, 2026-08-12) ───────────────
-  // Every bet is priced at FAIR, no-vig odds and staked by Kelly on our
-  // probability:   f = (p − q0) / (1 − q0)
-  // q0 = the market's no-vig probability for the side. The backend
-  // already serves it: exactly 0.50 for spread/total (the juice is
-  // symmetric) and a de-vigged two-way implied for moneylines. At fair
-  // odds Kelly reduces to that one line — a 53% read sizes to ~6%
-  // weight, a 67% read to ~34%, and anything at or below fair sizes to
-  // $0 and drops off the sheet. Conviction drives the split; no
-  // hand-tuned multipliers anywhere.
-  function kellyWeight(p, q0) {
-    if (!(p > 0) || !(q0 > 0) || q0 >= 1) return 0;
-    return Math.max(0, (p - q0) / (1 - q0));
+  // ── Delta sizing (Austin's spec, 2026-08-12) ────────────────────────
+  // baseline = the PRICE's implied probability (1/decimal — what the bet
+  // has to beat to profit, vig included: -110 must beat 52.4%, +400 must
+  // beat 20%). delta = our probability − baseline.
+  //   weight = delta × our probability
+  // The second factor risk-weights the same delta by how often the bet
+  // actually cashes: a 5% delta at 60% sizes 2.4× a 5% delta at 25%.
+  // Bets at/below their price's implied get $0 and drop off the sheet.
+  function deltaWeight(p, dec) {
+    if (!(p > 0) || !(dec > 1)) return 0;
+    const baseline = 1 / dec;
+    return Math.max(0, (p - baseline) * p);
   }
 
   function computeRows() {
     const amount = Number(state.amount) || 0;
     const beta = currentPreset().beta;
 
-    // weight = zero-vig Kelly fraction × payout^beta (the preset tilt:
-    // Conservative β=0 is pure Kelly at fair odds; Aggressive leans
-    // toward the bigger payouts among the +EV set).
+    // weight = delta × our_prob × payout^beta (the preset tilt:
+    // Conservative β=0 is the pure delta sizing; Aggressive leans
+    // toward the bigger payouts among the +delta set).
     const cand = [];
     for (const leg of state.legs) {
       if (!matchesFilters(leg)) continue;
       const p = leg.our_prob, dec = leg.decimal_odds;
       if (!(p > 0) || !(dec > 1)) continue;
-      const q0 = (leg.vegas_implied != null) ? leg.vegas_implied : 0.5;
-      const f = kellyWeight(p, q0);
-      if (!(f > 0)) continue;             // at/below fair → no stake
+      const f = deltaWeight(p, dec);
+      if (!(f > 0)) continue;             // at/below the price's implied → no stake
       cand.push({ item: leg, is_parlay: false, p, dec,
                   weight: f * Math.pow(dec, beta),
                   edge: (leg.edge != null ? leg.edge : null), ev: (p * dec - 1) });
     }
 
     // Parlays: single-slate, and they span markets/tiers — so only in the mix
-    // when no filter is narrowing the board (i.e. "All"). Fair prob = the
-    // ticket's market fair probability when served; else the product of its
-    // legs' no-vig probabilities.
+    // when no filter is narrowing the board (i.e. "All"). Same formula: the
+    // ticket's combined decimal sets the baseline it has to beat.
     if (state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const pl of state.parlays) {
         if (state.week != null && pl.week !== state.week) continue;
         const p = pl.our_prob, dec = pl.decimal_odds;
         if (!(p > 0) || !(dec > 1)) continue;
-        let q0 = (pl.fair_prob != null) ? pl.fair_prob : null;
-        if (q0 == null && Array.isArray(pl.legs) && pl.legs.length) {
-          q0 = pl.legs.reduce((s, l) =>
-            s * (l.vegas_implied != null ? l.vegas_implied : 0.5), 1);
-        }
-        const f = kellyWeight(p, (q0 != null ? q0 : 0.5));
+        const f = deltaWeight(p, dec);
         if (!(f > 0)) continue;
         cand.push({ item: pl, is_parlay: true, p, dec,
                     weight: f * Math.pow(dec, beta),
@@ -487,11 +479,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         <p class="al-eyebrow">— Bankroll Allocator</p>
         <h1 class="al-headline">Your bet, divvied up.</h1>
         <p class="al-sub">
-          Enter what you want to wager in total and every pick where our number
-          beats the fair, no-vig line gets a slice — Kelly-sized, so the further
-          ahead of the market we think we are, the bigger the bet. Conservative
-          is pure Kelly, Aggressive tilts toward the bigger payouts, Moderate
-          splits the difference — the whole amount always gets allocated.
+          Enter what you want to wager in total and every pick whose win
+          probability beats its price gets a slice — sized by how far past
+          break-even we have it, weighted by how often the bet cashes.
+          Conservative is the pure sizing, Aggressive tilts toward the bigger
+          payouts, Moderate splits the difference — the whole amount always
+          gets allocated.
         </p>
       </div>`;
   }
@@ -746,7 +739,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!rows.length) {
       const amount = Number(state.amount) || 0;
       if (!(amount > 0)) return `<div class="al-empty">Enter an amount above to split across the board.</div>`;
-      return `<div class="al-empty">Nothing clears the fair line under these filters right now. Try clearing a filter or switching weeks.</div>`;
+      return `<div class="al-empty">Nothing beats its price under these filters right now. Try clearing a filter or switching weeks.</div>`;
     }
     return rows.map(rowHTML).join('');
   }
