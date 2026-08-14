@@ -65,6 +65,16 @@
     <label>Batch size</label><br>
     <input type="number" id="batchSize" value="5" min="1" max="20" style="width:80px">
   </div>
+  <div>
+    <!-- /admin/* on the API now requires ADMIN_BILLING_KEY. Held in
+         sessionStorage, not localStorage: this page is deployed publicly at
+         pressboxanalytics.com/admin-narratives.html, so the key should die with
+         the tab rather than sit on disk. Sent as a header, never in the query
+         string, so it stays out of Render's access logs. -->
+    <label>Admin key</label><br>
+    <input type="password" id="adminKey" placeholder="ADMIN_BILLING_KEY" style="width:220px"
+           autocomplete="off" spellcheck="false">
+  </div>
   <div style="margin-top:18px;">
     <button id="startBtn" onclick="startGeneration()">▶ Start</button>
     <button id="stopBtn" onclick="stopGeneration()" disabled style="margin-left:8px;background:#555;color:#ccc;">■ Stop</button>
@@ -81,6 +91,16 @@
 <script>
 const API = 'https://betbuddy-backend.onrender.com';
 let running = false;
+
+// Remember the key for the life of the tab so a 15-week run isn't 15 retypes.
+const keyEl = document.getElementById('adminKey');
+keyEl.value = sessionStorage.getItem('pbAdminKey') || '';
+keyEl.addEventListener('change', () => sessionStorage.setItem('pbAdminKey', keyEl.value.trim()));
+
+function adminHeaders() {
+  const k = (document.getElementById('adminKey').value || '').trim();
+  return k ? { 'X-Admin-Key': k } : {};
+}
 
 function log(msg, type = 'info') {
   const div = document.createElement('div');
@@ -107,13 +127,27 @@ async function generateBatch(season, week, offset, limit, overwrite) {
   const url = `${API}/admin/generate-narratives?season=${season}&week=${week}&overwrite=${overwrite}&limit=${limit}&offset=${offset}`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 120000); // 2 min timeout
-  const resp = await fetch(url, { signal: controller.signal });
+  const resp = await fetch(url, { signal: controller.signal, headers: adminHeaders() });
   clearTimeout(timer);
+  // 403 = bad/missing key, 503 = ADMIN_BILLING_KEY not set on the server. Say
+  // which; a bare "failed" here is what wasted an afternoon on the API side.
+  if (resp.status === 403 || resp.status === 503) {
+    const why = resp.status === 403
+      ? 'Rejected (403): bad or missing admin key.'
+      : 'Rejected (503): ADMIN_BILLING_KEY is not set on the server.';
+    const err = new Error(why);
+    err.auth = true;   // stop the whole run, not just this week
+    throw err;
+  }
   return await resp.json();
 }
 
 async function startGeneration() {
   if (running) return;
+  if (!(document.getElementById('adminKey').value || '').trim()) {
+    log('Enter the admin key first — /admin/* on the API is no longer open.', 'err');
+    return;
+  }
   running = true;
   document.getElementById('startBtn').disabled = true;
   document.getElementById('stopBtn').disabled = false;
@@ -163,6 +197,7 @@ async function startGeneration() {
         }
       } catch(e) {
         log(`Error: ${e.message}`, 'err');
+        if (e.auth) running = false;   // no point retrying 14 more weeks
         break;
       }
     }
