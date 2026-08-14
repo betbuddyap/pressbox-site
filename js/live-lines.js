@@ -487,7 +487,11 @@
       // Filter by selected week (week-tab bar)
       if (state.week !== null && p.week !== state.week) return false;
       if (f.tier && p.tier !== f.tier) return false;
-      if (f.aplusOnly && p.tier !== 'A') return false;
+      // Top tier is A+ AND A. This shorthand is not currently wired to a pill
+      // (nothing sets aplusOnly true), but it excluded A+ outright — which
+      // would have hidden the strongest picks on the board, moneyline
+      // included, the moment anyone wired it up.
+      if (f.aplusOnly && p.tier !== 'A' && p.tier !== 'A+') return false;
       if (f.gradedOnly && (!p.tier || p.tier === 'no_edge')) return false;
       if (f.market && p.market !== f.market) return false;
       if (f.tier && p.tier !== f.tier) return false;
