@@ -1355,9 +1355,12 @@
       const tip = !histRange?.sample_size ? ''
         : histRange.source === 'bloc'
           ? `Outcome density for the ${histRange.signal_count} signals behind this pick, ` +
-            `weighted by how many games each has (deepest: ${histRange.sample_size})`
+            `weighted by how many games each has (deepest: ${histRange.sample_size}). ` +
+            `These signals were found in the 2023–25 seasons this record comes from — ` +
+            `2026 is the live test.`
         : histRange.source === 'rule'
-          ? `Outcome density for the signal behind this pick (n=${histRange.sample_size})`
+          ? `Outcome density for the signal behind this pick (n=${histRange.sample_size}). ` +
+            `Found in the 2023–25 seasons this record comes from — 2026 is the live test.`
           : `Historical outcome density for games at this Vegas line (n=${histRange.sample_size})`;
       if (tip) svg.setAttribute('aria-label', tip);
       axisEl.appendChild(svg);
@@ -1542,21 +1545,21 @@
       if (rate != null || total > 0) {
         const note = document.createElement('div');
         note.className = 'mlstrip-note';
-        const CAVEAT = ` <span class="caveat">Found in those same seasons — ` +
-                       `2026 is the live test.</span>`;
+        // "In 2023–25" carries the in-sample framing inherently; the sitewide
+        // footer carries past-performance. The found-in-those-seasons caveat
+        // lives in the curve tooltip, not stamped on every card (Austin).
         if (rate != null && histRange.source === 'bloc') {
           // Bloc-weighted: the number is the signals' own pooled record, the
-          // same n-weighted rate that prices this leg. NOT the curve's area —
-          // each stored curve is only its ±1σ core, so integrating it overstates.
+          // same n-weighted rate that prices this leg — never the curve's area.
           note.innerHTML =
             `History check: ${histRange.signal_count} signals back this pick. ` +
             `In 2023–25 the side they pointed to won <b>${Math.round(rate * 100)}%</b> ` +
-            `of the time, counting each signal by how many games it has.` + CAVEAT;
+            `of the time, counting each signal by how many games it has.`;
         } else if (rate != null) {
           note.innerHTML =
             `History check: one signal backs this pick. In 2023–25 it fired ` +
             `${histRange.sample_size} times and the side it pointed to won ` +
-            `<b>${Math.round(rate * 100)}%</b> of them.` + CAVEAT;
+            `<b>${Math.round(rate * 100)}%</b> of them.`;
         } else {
           const pctLeft = left / total;
           let sideName, pct;
