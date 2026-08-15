@@ -1981,6 +1981,14 @@ footer {
   margin-top: var(--space-2);
 }
 .mlstrip-note b { color: var(--ink); }
+/* The proving-season caveat under the history-check sentence — same muted
+ * ink, its own line, slightly recessed so the record reads first. */
+.mlstrip-note .caveat {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--text-mid);
+  opacity: .85;
+}
 
 /* Picked-side zone on the spread/total charts — the region where the pick
  * cashes, in the same gold-pale the site uses for highlights. */

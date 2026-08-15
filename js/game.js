@@ -424,7 +424,7 @@
     (data.picks || []).forEach(pk => { if (!pkByMkt[pk.market]) pkByMkt[pk.market] = pk; });
     const ruleMean = (sec, pk) =>
       (pk && pk.tier && pk.tier !== 'no_edge'
-       && sec?.historical_range?.source === 'rule'
+       && ['rule', 'bloc'].includes(sec?.historical_range?.source)
        && sec.historical_range.mean != null)
         ? sec.historical_range.mean : null;
     const spreadRuleMean = ruleMean(p.spread, pkByMkt.spread);
@@ -1352,9 +1352,13 @@
         path.style.stroke = 'rgba(107,100,85,0.35)';
       }
       svg.appendChild(path);
-      const tip = histRange?.sample_size
-        ? `Historical outcome density for games at this Vegas line (n=${histRange.sample_size})`
-        : '';
+      const tip = !histRange?.sample_size ? ''
+        : histRange.source === 'bloc'
+          ? `Outcome density for the ${histRange.signal_count} signals behind this pick, ` +
+            `weighted by how many games each has (deepest: ${histRange.sample_size})`
+        : histRange.source === 'rule'
+          ? `Outcome density for the signal behind this pick (n=${histRange.sample_size})`
+          : `Historical outcome density for games at this Vegas line (n=${histRange.sample_size})`;
       if (tip) svg.setAttribute('aria-label', tip);
       axisEl.appendChild(svg);
     } else if (histLow != null && histHigh != null) {
@@ -1532,25 +1536,45 @@
           left += (vegasPos - x0) * (y0 + ym) / 2;
         }
       }
-      if (total > 0) {
-        const pctLeft = left / total;
-        let sideName, pct;
-        if (pickZone) {
-          pct = pickZone.goldLeft ? pctLeft : 1 - pctLeft;
-          sideName = pickZone.goldLeft ? endsPair[0] : endsPair[1];
-        } else {
-          pct = Math.max(pctLeft, 1 - pctLeft);
-          sideName = pctLeft >= 0.5 ? endsPair[0] : endsPair[1];
-        }
-        const n = histRange.sample_size;
-        const pctTxt = `<b>${Math.round(pct * 100)}%</b>`;
+      const rate = (histRange.source === 'rule' || histRange.source === 'bloc')
+                   && typeof histRange.cover_rate === 'number'
+                     ? histRange.cover_rate : null;
+      if (rate != null || total > 0) {
         const note = document.createElement('div');
         note.className = 'mlstrip-note';
-        note.innerHTML = (histRange.source === 'rule')
-          ? `History check: in the ${n} games where this pick's #1 signal fired, ` +
-            `${pctTxt} of finals landed on the ${escape(sideName)} side of today's number.`
-          : `History check: at numbers like today's, ${pctTxt} of finals landed ` +
-            `on the ${escape(sideName)} side (${n} games, 2023–25).`;
+        const CAVEAT = ` <span class="caveat">Found in those same seasons — ` +
+                       `2026 is the live test.</span>`;
+        if (rate != null && histRange.source === 'bloc') {
+          // Bloc-weighted: the number is the signals' own pooled record, the
+          // same n-weighted rate that prices this leg. NOT the curve's area —
+          // each stored curve is only its ±1σ core, so integrating it overstates.
+          note.innerHTML =
+            `History check: ${histRange.signal_count} signals back this pick. ` +
+            `In 2023–25 the side they pointed to won <b>${Math.round(rate * 100)}%</b> ` +
+            `of the time, counting each signal by how many games it has.` + CAVEAT;
+        } else if (rate != null) {
+          note.innerHTML =
+            `History check: one signal backs this pick. In 2023–25 it fired ` +
+            `${histRange.sample_size} times and the side it pointed to won ` +
+            `<b>${Math.round(rate * 100)}%</b> of them.` + CAVEAT;
+        } else {
+          const pctLeft = left / total;
+          let sideName, pct;
+          if (pickZone) {
+            pct = pickZone.goldLeft ? pctLeft : 1 - pctLeft;
+            sideName = pickZone.goldLeft ? endsPair[0] : endsPair[1];
+          } else {
+            pct = Math.max(pctLeft, 1 - pctLeft);
+            sideName = pctLeft >= 0.5 ? endsPair[0] : endsPair[1];
+          }
+          const pctTxt = `<b>${Math.round(pct * 100)}%</b>`;
+          note.innerHTML = (histRange.source === 'rule')
+            ? `History check: in the ${histRange.sample_size} games where this pick's ` +
+              `#1 signal fired, ${pctTxt} of finals landed on the ${escape(sideName)} ` +
+              `side of today's number.`
+            : `History check: at numbers like today's, ${pctTxt} of finals landed ` +
+              `on the ${escape(sideName)} side (${histRange.sample_size} games, 2023–25).`;
+        }
         card.appendChild(note);
       }
     }
