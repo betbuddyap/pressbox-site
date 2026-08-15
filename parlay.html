@@ -241,7 +241,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   function weekLabel(w) { return w === 0 ? 'Week 0' : `Week ${w}`; }
 
-  const TIER_SORT = { 'A': 6, 'smart_money': 5, 'B': 4, 'goldilocks': 3, 'C': 2, 'lottery': 1, 'no_edge': 0 };
+  // 'A+' has to be here: TIER_SORT[a.tier] || 0 sends any missing key to the
+  // BOTTOM, so an A+ leg sorted below no_edge. It applies to moneyline too as
+  // of the 2026-08-14 ML-native amendment (net 4 = A+ on the ML book).
+  const TIER_SORT = { 'A+': 7, 'A': 6, 'smart_money': 5, 'B': 4, 'goldilocks': 3, 'C': 2, 'lottery': 1, 'no_edge': 0 };
 
   function parseKickoff(iso) {
     if (!iso) return null;

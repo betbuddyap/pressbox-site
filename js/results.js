@@ -24,6 +24,10 @@
     ],
     tier: [
       { value: 'all',         label: 'All tiers'   },
+      // A+ grades on spread, total AND moneyline (net 4 = every model agrees).
+      // The results endpoint already reports it in TIER_DISPLAY / RECORD_TIERS;
+      // without this option the record existed but could not be filtered to.
+      { value: 'A+',          label: 'A+'          },
       { value: 'A',           label: 'A (Gold)'    },
       { value: 'B',           label: 'B (Silver)'  },
       { value: 'C',           label: 'C (Bronze)'  },
