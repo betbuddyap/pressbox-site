@@ -1511,7 +1511,8 @@
     }
     // ML aggregate calibration note — only when the curve is NOT the fired
     // signal's own (a graded ML pick gets the signal-conditioned note below).
-    const mlRuleCurve = ml && histRange?.source === 'rule' && densityCurve.length >= 3;
+    const mlRuleCurve = ml && ['rule', 'bloc'].includes(histRange?.source)
+                        && densityCurve.length >= 3;
     if (ml && ml.note && !mlRuleCurve) {
       const note = document.createElement('div');
       note.className = 'mlstrip-note';
