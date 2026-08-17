@@ -948,18 +948,25 @@
       return `<div class="opi-box"><div class="t">${escape(name)}</div>` +
              `<div class="s">Not enough games yet — the index starts after three played.</div></div>`;
     }
-    const bandTxt = {
-      hot_hype:    'running hot — the market historically overprices this band',
-      hot_breakout:'breakout pace — keeps beating projections',
-      cold_deep:   'deep cold — the market historically over-fades this band',
-      cold_mild:   'mildly under projection',
-    }[o.band] || 'playing to projection';
+    // Austin's structure (2026-08-15): who + the number in plain words, what
+    // the market historically does in this scenario, then the bolt as its
+    // own sentence naming the pick. The verb carries the sign so the reader
+    // never has to interpret +/-.
+    const over = o.score >= 0;
+    const magTxt = Math.abs(o.score).toFixed(1);
+    const s1 = `${escape(name)} is ${over ? 'overperforming' : 'underperforming'} ` +
+               `our projections by <b>${magTxt}</b> points a game over ${o.games} games.`;
+    const s2 = {
+      hot_hype:    'The market historically overprices teams in this scenario.',
+      hot_breakout:'Teams this far ahead are usually just better than we rated them — we don’t fade breakouts.',
+      cold_deep:   'The market historically over-fades teams in this scenario.',
+      cold_mild:   'A little under, but history says this band doesn’t matter either way.',
+    }[o.band] || 'That’s inside the normal range — playing to projection.';
     const mag = Math.max(3, Math.min(46, Math.abs(o.score) * 5));
     const left = o.score >= 0 ? 50 : 50 - mag;
     return `<div class="opi-box"><div class="t">${escape(name)}</div>` +
            `<div class="opi-bar"><i style="left:${left}%;width:${mag}%"></i></div>` +
-           `<div class="s"><b>${o.score > 0 ? '+' : ''}${o.score}/gm</b> vs projection ` +
-           `over ${o.games} games · ${bandTxt}${note ? escape(note) : ''}</div></div>`;
+           `<div class="s">${s1} ${s2}${note ? escape(note) : ''}</div></div>`;
   }
 
   function renderReceipt(data) {
@@ -990,9 +997,8 @@
           .map(p => p.market))];
         if (!mkts.length) return '';
         const label = mkts.join(' and ') + (mkts.length > 1 ? ' picks' : ' pick');
-        return o.band === 'hot_hype'
-          ? ` — that streak is the bolt on our ${label} against them.`
-          : ` — that streak is the bolt on our ${label} on them.`;
+        return ` The bolt on our ${label} ${o.band === 'hot_hype' ? 'against' : 'on'} ` +
+               `them marks this extra scenario aligning with our standard signals.`;
       };
       const box = document.createElement('div');
       box.className = 'game-card';
