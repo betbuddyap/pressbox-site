@@ -568,7 +568,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="pl-preset-legs">${legs}</div>
         </div>
         <div class="pl-preset-panel">
-          ${renderProbPair(c.our_prob, c.market_fair_prob)}
+          ${renderProbPair(c.our_prob, c.breakeven_prob)}
           ${renderBestBook(pre.best_book, pre.book_breakdown)}
           ${pre.note ? `<div class="pl-corr">${esc(pre.note)}</div>` : ''}
         </div>
@@ -767,7 +767,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       return `<div class="pl-corr">Add at least two priceable legs to see combined odds.</div>`;
     }
     const corr = g.correlation || {};
-    const vegas = (t.market_fair_prob != null) ? t.market_fair_prob : t.breakeven_prob;
+    // The PRICE'S implied (1/decimal, vig included) — the same baseline the
+    // allocator sizes against, so a ticket never looks +edge here and gets
+    // $0 there. The no-vig product (market_fair_prob) still rides in the
+    // payload for anyone doing analysis; it is not the displayed comparator.
+    const vegas = (t.breakeven_prob != null) ? t.breakeven_prob : t.market_fair_prob;
     const legN = g.leg_count ?? (g.legs ? g.legs.length : null);
     return `
       <div class="pl-result">
