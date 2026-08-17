@@ -1322,17 +1322,20 @@ async function init() {
   // it lands. Colors are different: fast (24h server-side cache) and the thing
   // that makes the cards look right, so they ride with the board below — that
   // way the first paint is already colored instead of flashing dark.
-  fetch(`${API}/rankings/power?season=2025&limit=200`)
+  // Same board as the Rankings page — the 2026 blend with the SP+ offseason
+  // delta (?offseason=1) — so the rank chips here can never disagree with it.
+  // Rank is derived by rating order, same as the rankings page's default tab.
+  fetch(`${API}/rankings/teams?season=2026&offseason=1`)
     .then(r => r.json()).catch(() => null)
     .then((rankRes) => {
-      if (rankRes && rankRes.rankings) {
-        rankRes.rankings.forEach(t => {
-          powerRankings[t.team] = t.rank;
-          teamScores[t.team] = t.score;
-        });
-        if (rankRes.full) {
-          rankRes.full.forEach(t => { teamScores[t.team] = t.score; });
-        }
+      if (rankRes && rankRes.teams) {
+        rankRes.teams
+          .filter(t => t.rating != null)
+          .sort((a, b) => b.rating - a.rating)
+          .forEach((t, i) => {
+            powerRankings[t.team] = i + 1;
+            teamScores[t.team] = t.rating;
+          });
       }
       if (boardRendered) { try { renderWeek(currentWeek); } catch (e) {} }
     }).catch(() => {});
