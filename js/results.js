@@ -1,10 +1,16 @@
 /* ============================================================
- * Results — Page logic
+ * Results — Live Lines for finished games
  * ============================================================
- * Fetches /canonical/results/aggregate + /canonical/results/breakdown
- * from the backend, manages filter state (season / tier / market via
- * dropdowns), renders the aggregate stats panel and nested per-season
- * → per-week → pick rows. Static rows — no accordion.
+ * One fetch: /canonical/results/feed. Game cards in the Live Lines
+ * language — released grade on the badge, the pick as it was graded
+ * (released price/book, line frozen at kickoff), win/loss/push glyph
+ * per pick, final score in the header, whole card links to the game
+ * page's final state. Week tabs + the sitewide market/tier pills.
+ *
+ * The old aggregate/history view (2022–25 backfill records, season
+ * dropdowns) is gone on purpose: this page is the 2026 record as it
+ * lands, game by game. ?demo=1 renders a fixture for pre-season
+ * layout checks (same precedent as the game page's demo mode).
  *
  * No external libraries. Vanilla JS.
  * ============================================================ */
@@ -13,432 +19,220 @@
   'use strict';
 
   const API_BASE = 'https://betbuddy-backend.onrender.com';
+  const SEASON = 2026;
+  const DEMO = new URLSearchParams(location.search).get('demo') === '1';
 
-  // ── Config: filter options ─────────────────────────────────────────
-  const FILTER_OPTIONS = {
-    season: [
-      { value: 'all',  label: 'All years' },
-      { value: '2024', label: '2024'      },
-      { value: '2025', label: '2025'      },
-      // 2026 added dynamically once first 2026 pick has graded
-    ],
-    tier: [
-      { value: 'all',         label: 'All tiers'   },
-      // A+ grades on spread, total AND moneyline (net 4 = every model agrees).
-      // The results endpoint already reports it in TIER_DISPLAY / RECORD_TIERS;
-      // without this option the record existed but could not be filtered to.
-      { value: 'A+',          label: 'A+'          },
-      { value: 'A',           label: 'A (Gold)'    },
-      { value: 'B',           label: 'B (Silver)'  },
-      { value: 'C',           label: 'C (Bronze)'  },
-      { value: 'smart_money', label: 'Smart Money' },
-      { value: 'goldilocks',  label: 'Goldilocks'  },
-      { value: 'lottery',     label: 'Lottery'     },
-    ],
-    market: [
-      { value: 'all',    label: 'All markets' },
-      { value: 'spread', label: 'Spread'      },
-      { value: 'total',  label: 'Total'       },
-      { value: 'ml',     label: 'Moneyline'   },
-    ],
-  };
-
-  const FILTER_DISPLAY_LABEL = {
-    season: 'Year',
-    tier:   'Tier',
-    market: 'Market',
-  };
-
-  // ── State ──────────────────────────────────────────────────────────
   const state = {
-    season: 'all',
-    tier:   'A',      // default view = A (gold); toggles reveal B/C/ml/all
-    market: 'all',
-    aggregate: null,
-    breakdown: null,
-    loading: false,
-    openDropdown: null, // 'season' | 'tier' | 'market' | null
+    games: [], weeks: [], week: null, record: {},
+    filters: { market: null, tier: null },
+    loading: true, error: false,
   };
 
-  // ── Helpers ────────────────────────────────────────────────────────
-  function $app() { return document.getElementById('results-app'); }
+  const root = document.getElementById('results-app');
 
   function esc(s) {
-    if (s == null) return '';
-    return String(s).replace(/[&<>"']/g, c => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[c]));
+    return String(s ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function weekLabel(w) { return w === 0 ? 'Week 0' : `Week ${w}`; }
+
+  // Tier badge — same map as live-lines/allocator/parlay, bolt included.
+  function renderBadge(tier, bolt) {
+    const map = {
+      'A+':      { label: 'A+', aria: 'A+ tier', key: 'aplus' },
+      'A':       { label: 'A',  aria: 'A tier',  key: 'A' },
+      'B':       { label: 'B',  aria: 'B tier',  key: 'B' },
+      'C':       { label: 'C',  aria: 'C tier',  key: 'C' },
+      'no_edge': { label: 'NE', aria: 'No edge', key: 'no_edge' },
+    };
+    const m = map[tier] || { label: esc(tier || '—'), aria: esc(tier || 'ungraded'), key: 'no_edge' };
+    const boltKey = ({ aplus: 'aplus', A: 'A', B: 'B', C: 'C' })[m.key];
+    const boltHtml = (bolt && boltKey)
+      ? `<span class="ll-bolt ll-bolt--${boltKey}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
+      : '';
+    const aria = bolt ? `${m.aria} — streak-aligned` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}</span>`;
   }
 
-  function fmtPct(v) {
-    if (v == null) return '—';
-    return (v * 100).toFixed(1) + '%';
+  // Bare glyphs, never chips (site convention): ✓ win, ✕ loss, – push.
+  function markHTML(result) {
+    const m = { win: ['✓', 'win', 'Win'], loss: ['✕', 'loss', 'Loss'],
+                push: ['–', 'push', 'Push'] }[result];
+    if (!m) return '';
+    return `<span class="rs-mark rs-mark--${m[1]}" aria-label="${m[2]}">${m[0]}</span>`;
   }
 
-  function fmtRoi(v) {
-    if (v == null) return '—';
-    const sign = v >= 0 ? '+' : '';
-    return sign + (v * 100).toFixed(1) + '%';
+  function marketLabel(mkt) {
+    return { spread: 'Spread', total: 'Total', ml: 'Moneyline' }[mkt] || mkt;
   }
 
-  function fmtPp(v) {
-    if (v == null) return '—';
-    // v is a fraction (e.g. 0.008 = 0.8 percentage points)
-    return (v * 100).toFixed(1) + ' pp';
-  }
-
-  function lookupLabel(filterName, value) {
-    const opts = FILTER_OPTIONS[filterName];
-    const found = opts.find(o => o.value === value);
-    return found ? found.label : value;
-  }
-
-  // Tier slug → CSS class key for .ll-badge--{key} (shared with Live Lines)
-  function tierBadgeKey(slug) {
-    if (slug === 'A+')          return 'aplus'; // "+" isn't valid in a class name
-    if (slug === 'A' || slug === 'B' || slug === 'C') return slug; // gold/silver/bronze
-    if (slug === 'ml_pickem')   return 'aplus'; // A+ ML expression rides the A+ look
-    return slug; // smart_money / goldilocks / lottery already match
-  }
-
-  // Short label inside the badge box
-  function tierBadgeShortLabel(slug) {
-    if (slug === 'A+')          return 'A+';
-    if (slug === 'A')           return 'A';
-    if (slug === 'B')           return 'B';
-    if (slug === 'C')           return 'C';
-    if (slug === 'smart_money') return 'SM';
-    if (slug === 'goldilocks')  return 'GL';
-    if (slug === 'lottery')     return 'LT';
-    if (slug === 'ml_pickem')   return 'ML';
-    return slug;
-  }
-
-  function fmtLine(line, market) {
-    if (line == null) return '';
-    // ml released_line is American odds; show with sign
-    // spread/total released_line is the betting line; show with sign
-    return line > 0 ? `+${line}` : String(line);
-  }
-
-  // ── Filter context label for the stats panel ───────────────────────
-  function statsContextLabel() {
-    const parts = [];
-    if (state.tier !== 'all') {
-      parts.push(lookupLabel('tier', state.tier).toUpperCase());
-    } else {
-      parts.push('ALL TIERS');
-    }
-    if (state.season === 'all') {
-      parts.push('ALL YEARS');
-    } else {
-      parts.push(state.season);
-    }
-    if (state.market !== 'all') {
-      parts.push(lookupLabel('market', state.market).toUpperCase());
-    } else {
-      parts.push('ALL MARKETS');
-    }
-    return parts.join(' · ');
-  }
-
-  // ── Render: header ─────────────────────────────────────────────────
-  function renderHeader() {
+  function pickLineHTML(p) {
+    // "Memphis +195 · FanDuel" / "Under 47.5 −108 · DraftKings" — the
+    // ll-row-pick classes give the exact Live Lines typography.
+    const px = p.price ? ` <span class="ll-row-pick-px">${esc(p.price)}</span>` : '';
+    const book = p.book && p.book.name ? ` · ${esc(p.book.name)}` : '';
+    const ne = p.tier === 'no_edge';
     return `
-      <header class="rs-header">
-        <div class="rs-eyebrow">— Results</div>
-        <h1 class="rs-headline">Two seasons under<br><em>the locked spec.</em></h1>
-        <p class="rs-lede">
-          Every pick. Every week. Every result.
-          <strong>No cherry-picking, no selective memory</strong> — the full record.
-        </p>
-      </header>
-    `;
+      <div class="rs-pick${ne ? ' rs-pick--ne' : ''}">
+        ${renderBadge(p.tier, p.bolt)}
+        <span class="rs-pick-mkt">${esc(marketLabel(p.market))}</span>
+        <span class="ll-row-pick"><span class="ll-row-pick-num">${esc(p.side || '')} ${esc(p.line || '')}</span>${px}${esc(book)}</span>
+        ${markHTML(p.result)}
+      </div>`;
   }
 
-  // ── Render: aggregate stats panel ──────────────────────────────────
-  function renderStatsPanel() {
-    const a = state.aggregate;
-    if (!a) {
-      return `
-        <section class="rs-stats">
-          <div class="rs-stats-context">Loading...</div>
-        </section>
-      `;
-    }
-
-    const showYoy = (state.season === 'all') && a.year_over_year_stability_pp != null;
-
-    const bottomCols = showYoy
-      ? `
-        <div class="rs-stat-cell">
-          <div class="rs-stat-value rs-stat-value--md rs-stat-value--sage">${esc(fmtRoi(a.roi))}</div>
-          <div class="rs-stat-label">ROI</div>
-        </div>
-        <div class="rs-stat-cell">
-          <div class="rs-stat-value rs-stat-value--md">${esc(a.total_picks)}</div>
-          <div class="rs-stat-label">picks graded</div>
-        </div>
-        <div class="rs-stat-cell">
-          <div class="rs-stat-value rs-stat-value--md">${esc(fmtPp(a.year_over_year_stability_pp))}</div>
-          <div class="rs-stat-label">y/y stability</div>
-        </div>
-      `
-      : `
-        <div class="rs-stat-cell">
-          <div class="rs-stat-value rs-stat-value--md rs-stat-value--sage">${esc(fmtRoi(a.roi))}</div>
-          <div class="rs-stat-label">ROI</div>
-        </div>
-        <div class="rs-stat-cell">
-          <div class="rs-stat-value rs-stat-value--md">${esc(a.total_picks)}</div>
-          <div class="rs-stat-label">picks graded</div>
-        </div>
-      `;
-
+  function gameCardHTML(g) {
+    const score = (g.home_points != null && g.away_points != null)
+      ? `${g.away_points}–${g.home_points}` : '';
     return `
-      <section class="rs-stats">
-        <div class="rs-stats-context">${esc(statsContextLabel())}</div>
-        <div class="rs-stats-top">
-          <div class="rs-stat-cell">
-            <div class="rs-stat-value rs-stat-value--lg">${esc(a.record)}</div>
-            <div class="rs-stat-label">record</div>
-          </div>
-          <div class="rs-stat-cell">
-            <div class="rs-stat-value rs-stat-value--lg rs-stat-value--gold">${esc(fmtPct(a.hit_rate))}</div>
-            <div class="rs-stat-label">hit rate</div>
-          </div>
+      <a class="ll-row rs-game" href="/game.html?id=${encodeURIComponent(g.game_id)}"
+         aria-label="${esc(g.matchup)} final — full breakdown">
+        <div class="rs-game-head">
+          <span class="rs-matchup">${esc(g.matchup || '')}</span>
+          <span class="rs-headright"><span class="rs-final">Final</span> <span class="rs-score">${esc(score)}</span></span>
         </div>
-        <div class="rs-stats-divider"></div>
-        <div class="rs-stats-bottom ${showYoy ? '' : 'rs-stats-bottom--two'}">
-          ${bottomCols}
-        </div>
-      </section>
-    `;
+        ${g.picks.map(pickLineHTML).join('')}
+      </a>`;
   }
 
-  // ── Render: filter dropdowns ───────────────────────────────────────
-  function renderDropdown(filterName) {
-    const opts = FILTER_OPTIONS[filterName];
-    const current = state[filterName];
-    const currentLabel = lookupLabel(filterName, current);
-    const isOpen = state.openDropdown === filterName;
-
-    const optionsHtml = opts.map(o => `
-      <button class="rs-dropdown-option"
-              data-filter="${esc(filterName)}"
-              data-value="${esc(o.value)}"
-              aria-selected="${o.value === current ? 'true' : 'false'}">
-        ${esc(o.label)}
-      </button>
-    `).join('');
-
+  function weekTabsHTML() {
+    if (!state.weeks || state.weeks.length <= 1) return '';
     return `
-      <div class="rs-dropdown ${isOpen ? 'open' : ''}" data-dropdown="${esc(filterName)}">
-        <button class="rs-dropdown-trigger" data-action="toggle-dropdown" data-filter="${esc(filterName)}">
-          <span class="rs-dropdown-label">${esc(FILTER_DISPLAY_LABEL[filterName])}</span>
-          <span class="rs-dropdown-value">
-            ${esc(currentLabel)}
-            <svg class="rs-dropdown-chevron" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M3 5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </button>
-        <div class="rs-dropdown-menu" role="listbox">
-          ${optionsHtml}
-        </div>
-      </div>
-    `;
+      <div class="ll-week-bar"><div class="ll-week-bar-inner" role="tablist" aria-label="Results week">
+        ${state.weeks.map(w => `
+          <button class="ll-week-tab ${w === state.week ? 'active' : ''}" data-week="${w}"
+                  role="tab" aria-selected="${w === state.week ? 'true' : 'false'}">${esc(weekLabel(w))}</button>
+        `).join('')}
+      </div></div>`;
   }
 
-  function renderFilters() {
+  function filtersHTML() {
+    const f = state.filters;
+    const pill = (key, label, active) =>
+      `<button type="button" class="ll-filter-pill${active ? ' active' : ''}" data-filter="${key}"
+               aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
     return `
-      <div class="rs-filters">
-        <span class="rs-filters-label">Filters</span>
-        ${renderDropdown('season')}
-        ${renderDropdown('tier')}
-        ${renderDropdown('market')}
-      </div>
-    `;
+      <div class="ll-filters" style="margin-bottom:var(--space-4);">
+        <span class="ll-filter-label">Pick Type</span>
+        ${pill('all', 'All', !f.market && !f.tier)}
+        ${pill('spread', 'Spread', f.market === 'spread')}
+        ${pill('total', 'Total', f.market === 'total')}
+        ${pill('ml', 'Moneyline', f.market === 'ml')}
+        ${pill('tier:A+', 'A+', f.tier === 'A+')}
+        ${pill('tier:A', 'A', f.tier === 'A')}
+        ${pill('tier:B', 'B', f.tier === 'B')}
+        ${pill('tier:C', 'C', f.tier === 'C')}
+      </div>`;
   }
 
-  // ── Render: per-pick row ───────────────────────────────────────────
-  function renderPick(p) {
-    const badgeKey   = tierBadgeKey(p.tier);
-    const badgeLabel = tierBadgeShortLabel(p.tier);
-    const lineStr    = fmtLine(p.line, p.market);
-    const bookStr    = p.book ? ` · ${esc(p.book)}` : '';
-
-    let outcomeClass, outcomeLabel;
-    if (p.outcome === 'W')      { outcomeClass = 'win';  outcomeLabel = 'WIN';  }
-    else if (p.outcome === 'L') { outcomeClass = 'loss'; outcomeLabel = 'LOSS'; }
-    else if (p.outcome === 'P') { outcomeClass = 'push'; outcomeLabel = 'PUSH'; }
-    else                         { outcomeClass = 'push'; outcomeLabel = '—';   }
-
-    return `
-      <div class="rs-pick">
-        <span class="ll-badge ll-badge--${esc(badgeKey)}" aria-label="${esc(p.tier_display)}">${esc(badgeLabel)}</span>
-        <div class="rs-pick-content">
-          <div class="rs-pick-matchup">${esc(p.matchup)}</div>
-          <div class="rs-pick-detail">
-            ${esc(p.side)} <span class="rs-pick-line">${esc(lineStr)}</span><span class="rs-pick-book">${bookStr}</span>
-          </div>
-        </div>
-        <span class="rs-outcome rs-outcome--${esc(outcomeClass)}">
-          <span class="rs-outcome-dot" aria-hidden="true"></span>
-          <span class="rs-outcome-label">${esc(outcomeLabel)}</span>
-        </span>
-      </div>
-    `;
+  function recordHTML() {
+    const r = state.record || {};
+    const w = r.win || 0, l = r.loss || 0, p = r.push || 0;
+    if (!(w + l + p)) return '';
+    const push = p ? ` · ${p} push${p === 1 ? '' : 'es'}` : '';
+    return `<div class="rs-record">${SEASON} so far:
+      <span class="ll-row-pick-num">${w}–${l}</span>${esc(push)}</div>`;
   }
 
-  // ── Render: per-week block ─────────────────────────────────────────
-  function renderWeek(wk) {
-    const picksHtml = wk.picks.map(renderPick).join('');
-    return `
-      <div class="rs-week">
-        <div class="rs-week-header">
-          <div class="rs-week-label">Week ${esc(wk.week)}</div>
-          <div class="rs-week-stats">
-            <span class="rs-stat-num">${esc(wk.record)}</span> · ${esc(fmtPct(wk.hit_rate))} · <span class="rs-stat-num">${esc(fmtRoi(wk.roi))}</span> ROI · ${esc(wk.total_picks)} pick${wk.total_picks === 1 ? '' : 's'}
-          </div>
-        </div>
-        ${picksHtml}
-      </div>
-    `;
+  function matchesFilters(p) {
+    const f = state.filters;
+    if (f.tier) return p.tier === f.tier;
+    if (f.market) return p.market === f.market;
+    return true;
   }
 
-  // ── Render: per-season block ───────────────────────────────────────
-  function renderSeason(s) {
-    const weeksHtml = s.weeks.map(renderWeek).join('');
-    return `
-      <section class="rs-season">
-        <div class="rs-season-header">
-          <h2 class="rs-season-year">${esc(s.year)} Season</h2>
-          <div class="rs-season-stats">
-            <span class="rs-stat-num">${esc(s.record)}</span> · ${esc(fmtPct(s.hit_rate))} · <span class="rs-stat-num">${esc(fmtRoi(s.roi))}</span> ROI · ${esc(s.total_picks)} picks
-          </div>
-        </div>
-        ${weeksHtml}
-      </section>
-    `;
-  }
-
-  // ── Render: breakdown (all seasons) ────────────────────────────────
-  function renderBreakdown() {
-    const b = state.breakdown;
-    if (!b) {
-      return `<div class="rs-loading">Loading picks...</div>`;
-    }
-    if (!b.seasons || b.seasons.length === 0) {
-      return renderEmptyState();
-    }
-    return b.seasons.map(renderSeason).join('');
-  }
-
-  function renderEmptyState() {
-    return `
-      <div class="rs-empty">
-        <div class="rs-empty-eyebrow">No results yet</div>
-        <div class="rs-empty-headline"><em>Nothing graded under that filter.</em></div>
-        <div class="rs-empty-sub">Try a different filter combination or clear filters to see the full record.</div>
-        <button class="rs-empty-cta" data-action="clear-filters">Clear filters</button>
-      </div>
-    `;
-  }
-
-  // ── Render: full page ──────────────────────────────────────────────
   function render() {
-    $app().innerHTML = `
-      ${renderHeader()}
-      ${renderStatsPanel()}
-      ${renderFilters()}
-      ${renderBreakdown()}
-      <p class="rs-footer-note">
-        Wins, losses, and pushes only. Picks that landed in No Edge by kickoff aren't counted here —
-        no side was recommended, so there's nothing to score.
-        The full live board is at <a href="/live-lines.html">Live Lines</a>.
-      </p>
-    `;
-    attachHandlers();
+    if (state.loading) { root.innerHTML = `<div class="ll-skeleton-stack">${'<div class="ll-skeleton ll-skeleton-row"></div>'.repeat(4)}</div>`; return; }
+    if (state.error) {
+      root.innerHTML = `<div class="rs-empty">Couldn’t load the record — try a refresh.</div>`;
+      return;
+    }
+    const header = `
+      <header class="rs-head">
+        <div class="rs-eyebrow">— Results</div>
+        <h1 class="rs-title">Every pick, graded.</h1>
+        <p class="rs-sub">Live Lines, for games that are over. Picks leave the board
+        when their game kicks off; when it goes final they land here — graded at the
+        released number, exactly as published. Click any game for the full breakdown.</p>
+        ${recordHTML()}
+      </header>`;
+
+    const inWeek = state.games.filter(g => state.week == null || g.week === state.week);
+    const cards = inWeek
+      .map(g => ({ ...g, picks: g.picks.filter(matchesFilters) }))
+      .filter(g => g.picks.length)
+      .map(gameCardHTML).join('');
+
+    const empty = state.games.length
+      ? `<div class="rs-empty">Nothing matches that filter this week.</div>`
+      : `<div class="rs-empty">The record starts with the Week 0 finals. Picks leave
+         Live Lines at kickoff and land here graded shortly after the final whistle.</div>`;
+
+    root.innerHTML = header + weekTabsHTML() + (state.games.length ? filtersHTML() : '')
+      + (cards || empty);
   }
 
-  // ── Handlers ───────────────────────────────────────────────────────
-  function attachHandlers() {
-    // Dropdown trigger toggling
-    document.querySelectorAll('[data-action="toggle-dropdown"]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const f = btn.dataset.filter;
-        state.openDropdown = (state.openDropdown === f) ? null : f;
-        render();
-      });
-    });
-
-    // Dropdown option selection
-    document.querySelectorAll('.rs-dropdown-option').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const filterName = btn.dataset.filter;
-        const value      = btn.dataset.value;
-        state[filterName]    = value;
-        state.openDropdown   = null;
-        refresh();
-      });
-    });
-
-    // Empty state CTA
-    document.querySelectorAll('[data-action="clear-filters"]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        state.season = 'all';
-        state.tier   = 'all';
-        state.market = 'all';
-        refresh();
-      });
-    });
-
-    // Close dropdowns on outside click
-    document.addEventListener('click', (e) => {
-      if (state.openDropdown && !e.target.closest('.rs-dropdown')) {
-        state.openDropdown = null;
-        render();
-      }
-    }, { once: true });
+  function demoPayload() {
+    return {
+      season: SEASON, weeks: [0], record: { win: 3, loss: 2, push: 1 },
+      games: [
+        { game_id: 'demo1', week: 0, matchup: 'Sample State @ Placeholder Tech',
+          home_points: 31, away_points: 17, picks: [
+            { market: 'spread', tier: 'A+', bolt: true, side: 'Placeholder Tech', line: '-9.5', price: '-108', book: { name: 'FanDuel' }, result: 'win' },
+            { market: 'total', tier: 'B', side: 'Under', line: '54.5', price: '-112', book: { name: 'DraftKings' }, result: 'loss' },
+            { market: 'ml', tier: 'C', side: 'Placeholder Tech', line: '-260', price: null, book: { name: 'theScore Bet' }, result: 'win' },
+          ]},
+        { game_id: 'demo2', week: 0, matchup: 'Fixture A&M @ Demo College',
+          home_points: 24, away_points: 24, picks: [
+            { market: 'spread', tier: 'B', side: 'Demo College', line: '+3', price: '-110', book: { name: 'Bovada' }, result: 'push' },
+            { market: 'total', tier: 'no_edge', side: 'Over', line: '48.5', price: '-105', book: { name: 'BetMGM' }, result: 'loss' },
+          ]},
+        { game_id: 'demo3', week: 0, matchup: 'Placeholder Poly @ Sample U',
+          home_points: 20, away_points: 27, picks: [
+            { market: 'ml', tier: 'A', side: 'Placeholder Poly', line: '+195', price: null, book: { name: 'FanDuel' }, result: 'win' },
+            { market: 'spread', tier: 'C', side: 'Sample U', line: '-4.5', price: '-115', book: { name: 'DraftKings' }, result: 'loss' },
+          ]},
+      ],
+    };
   }
 
-  // ── Fetch ──────────────────────────────────────────────────────────
-  async function refresh() {
-    if (state.loading) return;
-    state.loading = true;
-
-    const params = new URLSearchParams();
-    if (state.season !== 'all') params.append('season', state.season);
-    if (state.tier   !== 'all') params.append('tier',   state.tier);
-    if (state.market !== 'all') params.append('market', state.market);
-    const qs = params.toString();
-
+  async function load() {
     try {
-      const [aggRes, brkRes] = await Promise.all([
-        fetch(`${API_BASE}/canonical/results/aggregate${qs ? '?' + qs : ''}`, { credentials: 'omit' }),
-        fetch(`${API_BASE}/canonical/results/breakdown${qs ? '?' + qs : ''}`, { credentials: 'omit' }),
-      ]);
-      if (!aggRes.ok) throw new Error(`aggregate HTTP ${aggRes.status}`);
-      if (!brkRes.ok) throw new Error(`breakdown HTTP ${brkRes.status}`);
-
-      state.aggregate = await aggRes.json();
-      state.breakdown = await brkRes.json();
-      render();
-    } catch (err) {
-      console.error('Results fetch failed:', err);
-      $app().innerHTML = `
-        <div class="rs-loading" style="color:var(--rust);">
-          Couldn't load results. Refresh to try again.
-        </div>
-      `;
-    } finally {
+      const payload = DEMO ? demoPayload()
+        : await (await fetch(`${API_BASE}/canonical/results/feed?season=${SEASON}`,
+                             { credentials: 'omit' })).json();
+      state.games = payload.games || [];
+      state.weeks = (payload.weeks || []).slice().sort((a, b) => b - a); // latest first
+      state.record = payload.record || {};
+      if (state.week == null && state.weeks.length) state.week = state.weeks[0];
       state.loading = false;
+      render();
+    } catch (e) {
+      console.error('Results fetch failed:', e);
+      state.loading = false; state.error = true; render();
     }
   }
 
-  // ── Boot ───────────────────────────────────────────────────────────
-  refresh();
+  document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.ll-week-tab');
+    if (tab) {
+      state.week = Number(tab.dataset.week);
+      render(); return;
+    }
+    const pill = e.target.closest('.ll-filter-pill');
+    if (pill) {
+      const key = pill.dataset.filter;
+      if (key === 'all') state.filters = { market: null, tier: null };
+      else if (key.startsWith('tier:')) {
+        const t = key.slice(5);
+        state.filters = { market: null, tier: state.filters.tier === t ? null : t };
+      } else {
+        state.filters = { market: state.filters.market === key ? null : key, tier: null };
+      }
+      render();
+    }
+  });
+
+  render();
+  load();
 })();

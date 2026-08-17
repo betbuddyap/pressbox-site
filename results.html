@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Results — PressBox Analytics</title>
-<meta name="description" content="Two seasons under the locked spec. Every pick, every result, every tier.">
+<meta name="description" content="Every released pick, graded at the released number. The 2026 record, game by game.">
 
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -14,8 +14,8 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PressBox Analytics">
 <meta property="og:url" content="https://pressboxanalytics.com/results.html">
-<meta property="og:title" content="Track Record — PressBox Analytics">
-<meta property="og:description" content="Two seasons under the locked spec. Every pick, every result, every tier.">
+<meta property="og:title" content="Results — PressBox Analytics">
+<meta property="og:description" content="Every released pick, graded at the released number. The 2026 record, game by game.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
 <meta name="theme-color" content="#0F0E0A">
 
@@ -72,6 +72,38 @@
   .mobile-menu .close-btn { position: absolute; top: 24px; right: 24px; font-size: 28px; background: none; border: none; color: var(--ink); line-height: 1; cursor: pointer; }
   @media (min-width: 961px) { .hamburger { display: none !important; } }
   @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+
+  /* ── Results as Live Lines of past games ── */
+  .rs-head { margin: 44px 0 28px; }
+  .rs-eyebrow { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi);
+                text-transform: uppercase; letter-spacing: 0.03em; color: var(--gold); margin-bottom: 10px; }
+  .rs-title { font-family: var(--serif); font-weight: var(--weight-bold); color: var(--ink);
+              font-size: clamp(30px, 4.5vw, 42px); margin: 0 0 12px; }
+  .rs-sub { font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid);
+            line-height: 1.55; max-width: 640px; margin: 0; }
+  .rs-record { font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi);
+               color: var(--text-mid); margin-top: 14px; }
+  .rs-game { display: block; text-decoration: none; color: inherit;
+             padding: var(--space-4); margin-bottom: var(--space-3); }
+  .rs-game:hover { border-color: var(--gold); }
+  .rs-game-head { display: flex; justify-content: space-between; align-items: baseline;
+                  gap: 12px; margin-bottom: var(--space-2); }
+  .rs-matchup { font-family: var(--sans); font-size: var(--text-base); font-weight: var(--weight-semi); color: var(--ink); }
+  .rs-headright { white-space: nowrap; }
+  .rs-final { font-family: var(--serif); font-style: italic; font-weight: var(--weight-bold);
+              color: var(--gold); font-size: var(--text-sm); margin-right: 6px; }
+  .rs-score { font-family: var(--sans); font-weight: var(--weight-bold); color: var(--ink); }
+  .rs-pick { display: flex; align-items: center; gap: var(--space-3);
+             padding: 8px 0; border-top: 0.5px solid var(--cream-mid); }
+  .rs-pick--ne { opacity: 0.75; }
+  .rs-pick-mkt { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi);
+                 text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-mid);
+                 flex: 0 0 76px; }
+  .rs-mark { margin-left: auto; font-family: var(--sans); font-weight: var(--weight-bold); font-size: 15px; }
+  .rs-mark--win  { color: var(--sage); }
+  .rs-mark--loss { color: var(--rust); }
+  .rs-mark--push { color: var(--text-mid); }
+  .rs-empty { font-family: var(--sans); color: var(--text-mid); padding: 40px 0; line-height: 1.6; max-width: 560px; }
 </style>
 </head>
 
@@ -117,7 +149,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/results.js?v=20260805a"></script>
+<script src="/js/results.js?v=20260815a"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
