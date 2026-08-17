@@ -378,16 +378,26 @@
   .sf-px { color: var(--text-light); }
   .sf-chev { flex-shrink: 0; color: var(--text-light); font-size: 11px; }
   .sf-right { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); flex-shrink: 0; white-space: nowrap; }
-  /* upcoming — the dark slate card */
-  .sf-slate { margin-top: 14px; border-radius: 10px; padding: 12px 14px; background: linear-gradient(rgba(15,14,10,0.45), rgba(15,14,10,0.55)), linear-gradient(105deg, #154733, #BB0000); box-shadow: 0 6px 22px rgba(0,0,0,0.10); }
-  .sf-slate-strip { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(248,245,238,0.55); margin-bottom: 8px; }
-  .sf-slate-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-bottom: 12px; }
-  .sf-slate-team { font-family: var(--sans); font-size: 14px; font-weight: 700; color: var(--cream); }
-  .sf-slate-team:last-child { text-align: right; }
-  .sf-slate-at { font-family: var(--sans); font-size: 10px; color: rgba(248,245,238,0.45); }
-  .sf-slots { display: flex; justify-content: space-between; gap: 8px; }
-  .sf-slot { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; }
-  .sf-slot-lab { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(248,245,238,0.45); }
+  /* upcoming — faithful mini of the .gc.slate card: two team-color halves,
+     dark overlay, gold seam, serif names into a serif-italic gold "at",
+     time top-right, three pick slots over a cream hairline */
+  .sf-slate { position: relative; overflow: hidden; margin: 14px auto 0; max-width: 270px; border-radius: 6px; background: var(--ink); box-shadow: 0 6px 22px rgba(0,0,0,0.12); }
+  .sf-slate-bg { position: absolute; inset: 0; display: flex; }
+  .sf-slate-half { flex: 1; }
+  .sf-slate-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,14,10,0.22) 0%, rgba(15,14,10,0.42) 60%, rgba(15,14,10,0.72) 100%); }
+  .sf-slate-seam { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, rgba(212,168,58,0) 0%, rgba(212,168,58,0.55) 30%, rgba(212,168,58,0.55) 70%, rgba(212,168,58,0) 100%); transform: translateX(-0.5px); z-index: 2; }
+  .sf-slate-content { position: relative; z-index: 3; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; min-height: 150px; padding: 12px 14px 10px; }
+  .sf-slate-strip { display: flex; justify-content: flex-end; font-family: var(--sans); font-size: 11px; font-weight: 500; color: rgba(248,245,238,0.85); }
+  .sf-slate-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 4px; }
+  .sf-slate-side { min-width: 0; }
+  .sf-slate-side.away { text-align: right; padding-right: 10px; }
+  .sf-slate-side.home { text-align: left; padding-left: 10px; }
+  .sf-slate-team { font-family: var(--serif); font-size: 16px; font-weight: 700; line-height: 1.15; color: var(--cream); }
+  .sf-slate-conf { font-family: var(--sans); font-size: 9px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: rgba(248,245,238,0.78); margin-top: 3px; }
+  .sf-slate-at { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 12px; color: var(--gold-light); padding: 0 5px; }
+  .sf-slots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding-top: 8px; border-top: 1px solid rgba(248,245,238,0.12); }
+  .sf-slot { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 24px; }
+  .sf-slot-lab { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(248,245,238,0.45); }
   .sf-slot.empty .sf-slot-lab { color: rgba(248,245,238,0.30); }
   /* parlay — preset-card head + probs panel */
   .sf-legcount { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); margin-bottom: 10px; }
@@ -568,16 +578,30 @@
       <div class="surf">
         <div class="section-eyebrow" style="color:var(--gold);">02 — Upcoming</div>
         <div class="sf-slate" aria-hidden="true">
-          <div class="sf-slate-strip">Sat · 3:30 PM</div>
-          <div class="sf-slate-teams">
-            <span class="sf-slate-team">Oregon</span>
-            <span class="sf-slate-at">at</span>
-            <span class="sf-slate-team">Ohio State</span>
+          <div class="sf-slate-bg">
+            <div class="sf-slate-half" style="background:linear-gradient(135deg,#154733 0%,#0C2B1F 100%);"></div>
+            <div class="sf-slate-half" style="background:linear-gradient(225deg,#BB0000 0%,#7A0000 100%);"></div>
           </div>
-          <div class="sf-slots">
-            <div class="sf-slot"><span class="sf-slot-lab">Spread</span><span class="sf-badge sf-badge--A">A</span></div>
-            <div class="sf-slot"><span class="sf-slot-lab">Total</span><span class="sf-badge sf-badge--B">B</span></div>
-            <div class="sf-slot empty"><span class="sf-slot-lab">ML</span></div>
+          <div class="sf-slate-overlay"></div>
+          <div class="sf-slate-seam"></div>
+          <div class="sf-slate-content">
+            <div class="sf-slate-strip">Sat · 3:30 PM</div>
+            <div class="sf-slate-teams">
+              <div class="sf-slate-side away">
+                <div class="sf-slate-team">Oregon</div>
+                <div class="sf-slate-conf">Big Ten</div>
+              </div>
+              <span class="sf-slate-at">at</span>
+              <div class="sf-slate-side home">
+                <div class="sf-slate-team">Ohio State</div>
+                <div class="sf-slate-conf">Big Ten</div>
+              </div>
+            </div>
+            <div class="sf-slots">
+              <div class="sf-slot"><span class="sf-slot-lab">Spread</span><span class="sf-badge sf-badge--A">A</span></div>
+              <div class="sf-slot"><span class="sf-slot-lab">Total</span><span class="sf-badge sf-badge--B">B</span></div>
+              <div class="sf-slot empty"><span class="sf-slot-lab">ML</span></div>
+            </div>
           </div>
         </div>
         <p class="surf-cap"><b>The whole slate ahead</b> — every game a card, its grades on the front — then live scores in real time once games kick. The "what's coming, what's playing" view.</p>
