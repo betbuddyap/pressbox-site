@@ -171,24 +171,6 @@
   }
   .btn-ghost:hover { color: var(--text); }
 
-  /* ── HOW IT WORKS ────────────────────────────────────────── */
-  .how { padding: 96px 0; background: var(--cream); border-top: 1px solid var(--border); }
-  .how-steps { display: flex; flex-direction: column; gap: 0; }
-  .how-step { display: flex; gap: 24px; padding: 28px 0; border-bottom: 1px solid var(--border); }
-  .how-step:first-child { padding-top: 0; }
-  .how-step:last-child { border-bottom: none; }
-  .how-step-num {
-    font-family: var(--serif);
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--cream-mid);
-    line-height: 1;
-    flex-shrink: 0;
-    width: 40px;
-  }
-  .how-step-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-  .how-step-desc { font-family: var(--sans); font-size: 13px; font-weight: 300; color: var(--text-mid); line-height: 1.65; }
-  .how-step-desc strong { color: var(--text); font-weight: 600; }
   /* ── RESPONSIVE ──────────────────────────────────────────── */
   @media (max-width: 960px) {
     .hero-headline, .section-title { font-size: 32px; }
@@ -221,14 +203,6 @@
   .hero-plain .hero-headline { max-width: 760px; }
   .hero-plain .hero-sub { max-width: 600px; font-weight: 400; color: var(--text-mid); }
 
-  /* Step walkthrough — adds a day/step eyebrow above the existing how-step */
-  .how-step-eyebrow {
-    font-family: var(--sans); font-size: 9px; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold);
-    margin-bottom: 8px;
-  }
-  .steps-single { max-width: 760px; }
-
   /* ── ANCHOR: faithful Live Lines pick-row mock (matches .ll-row) ── */
   .anchor { padding: 64px 0 72px; background: var(--cream); border-top: 1px solid var(--border); }
   .anchor-stage { max-width: 600px; margin: 44px auto 0; }
@@ -241,11 +215,12 @@
     letter-spacing: 0.02em; border: 1px solid var(--ink); border-radius: 6px;
     background: var(--gold); color: var(--cream);
   }
-  /* Streak bolt — faithful mini of .ll-bolt: chip bg = badge fill, glyph = badge text */
+  /* Streak bolt — faithful mini of .ll-bolt, worn in its A+ colorway
+     (ink chip, gold glyph, gold keyline) so it reads clean on the gold badge */
   .llm-bolt {
     position: absolute; top: -8px; right: -8px; width: 19px; height: 19px;
-    border-radius: 50%; border: 1px solid var(--ink); outline: 2px solid var(--cream);
-    background: var(--gold); color: var(--cream);
+    border-radius: 50%; border: 1px solid var(--gold); outline: 2px solid var(--cream);
+    background: var(--ink); color: var(--gold-light);
     display: flex; align-items: center; justify-content: center;
   }
   .llm-bolt svg { width: 13px; height: 13px; display: block; fill: currentColor; }
@@ -287,49 +262,6 @@
   .grade-step-d strong { color: var(--ink); font-weight: 600; }
   .grade-pull { margin-top: 36px; max-width: 760px; font-family: var(--serif); font-size: 21px; font-style: italic; color: var(--gold); line-height: 1.5; border-left: 3px solid var(--gold); padding-left: 24px; }
 
-  /* ── MODEL BREAKDOWN: dot plot (faithful to game-page read-card) ── */
-  .breakdown { padding: 88px 0; background: var(--cream); border-top: 1px solid var(--border); }
-  .dp-stage { max-width: 600px; margin: 44px auto 0; background: #FFFFFF; border: 0.5px solid var(--border); border-radius: 4px; padding: 16px 28px 20px; box-shadow: 0 12px 44px rgba(0,0,0,0.07); }
-  .dp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--cream-mid); }
-  .dp-label { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); }
-  .dp-vegas-head { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); }
-  .dp-vegas-head strong { color: var(--ink); font-weight: 700; }
-  .dp-plot { position: relative; padding: 0 12px; }
-  .dp-labels { position: relative; height: 48px; }
-  .dp-labels-above { margin-bottom: 4px; }
-  .dp-labels-below { margin-top: 4px; }
-  .dp-axis-wrap { position: relative; height: 24px; display: flex; align-items: center; }
-  .dp-axis { position: relative; width: 100%; height: 2px; background: var(--border); border-radius: 1px; }
-  .dp-hist { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); width: 100%; height: 56px; z-index: 1; pointer-events: none; overflow: visible; }
-  .dp-hist path { fill: rgba(76,124,168,0.18); stroke: rgba(76,124,168,0.45); stroke-width: 1; }
-  .dp-zero { position: absolute; top: 50%; height: 80px; width: 1.5px; background: #B85A2A; transform: translate(-0.75px, -50%); z-index: 2; opacity: 0.85; }
-  .dp-vegas { position: absolute; top: 50%; height: 60px; width: 1.5px; background: var(--ink); transform: translate(-0.75px, -50%); z-index: 3; }
-  .dp-dot { position: absolute; top: 50%; width: 10px; height: 10px; background: var(--text-mid); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 4; box-shadow: 0 0 0 1px var(--text-mid); }
-  .dp-dot-pick { width: 14px; height: 14px; background: #B85A2A; box-shadow: 0 0 0 1px #B85A2A, 0 0 0 4px rgba(184,90,42,0.18); z-index: 5; }
-  .dp-lab { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; white-space: nowrap; pointer-events: none; }
-  .dp-labels-above .dp-lab { bottom: 4px; }
-  .dp-labels-below .dp-lab { top: 4px; }
-  .dp-labels-above .dp-lab.dp-lab-far { bottom: 26px; }
-  .dp-labels-below .dp-lab.dp-lab-far { top: 26px; }
-  .dp-lab-name { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-mid); text-transform: uppercase; }
-  .dp-lab-val { font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--ink); letter-spacing: 0.3px; }
-  .dp-lab-pick .dp-lab-name, .dp-lab-pick .dp-lab-val { color: #B85A2A; }
-  .dp-labels-above .dp-lab::after { content: ''; position: absolute; bottom: -6px; left: 50%; width: 1px; height: 4px; background: var(--border); transform: translateX(-50%); }
-  .dp-labels-above .dp-lab.dp-lab-far::after { height: 26px; bottom: -28px; }
-  .dp-labels-below .dp-lab::before { content: ''; position: absolute; top: -6px; left: 50%; width: 1px; height: 4px; background: var(--border); transform: translateX(-50%); }
-  .dp-labels-below .dp-lab.dp-lab-far::before { height: 26px; top: -28px; }
-  .dp-ticks { position: relative; margin-top: 6px; height: 16px; }
-  .dp-tick { position: absolute; top: 0; width: 1px; height: 4px; background: var(--cream-mid); transform: translateX(-50%); }
-  .dp-tick-label { position: absolute; top: 6px; font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--text-mid); letter-spacing: 0.3px; transform: translateX(-50%); }
-  .dp-tick-label-zero { color: #B85A2A; font-weight: 700; }
-  .dp-legend { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--cream-mid); }
-  .dp-legend-item { display: flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 12px; color: var(--text-mid); }
-  .dp-key { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
-  .dp-key-veg { width: 2px; height: 14px; flex-shrink: 0; background: var(--ink); }
-  .dp-key-hist { width: 16px; height: 11px; flex-shrink: 0; border-radius: 2px; background: rgba(76,124,168,0.22); border: 1px solid rgba(76,124,168,0.45); }
-  .dp-caption { max-width: 600px; margin: 28px auto 0; font-family: var(--sans); font-size: 15px; color: var(--text-mid); line-height: 1.7; text-align: center; }
-  .dp-caption b { color: var(--ink); font-weight: 600; }
-
   /* ── COMPARISON: them (ink) vs us (gold italic) ── */
   .compare { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
   .compare-list { margin-top: 44px; max-width: 760px; }
@@ -349,8 +281,11 @@
 
   /* ── NUMBERS (receipts) ── */
   .numbers { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
-  .numbers-big { font-family: var(--serif); font-size: 46px; font-weight: 700; color: var(--text); line-height: 1.05; letter-spacing: -1px; margin-top: 36px; }
-  .numbers-big span { color: var(--gold); }
+  /* stat blocks (the pricing-price pattern) — data display, not a second headline */
+  .numbers-stats { margin-top: 40px; display: flex; gap: 56px; flex-wrap: wrap; }
+  .numbers-stat-v { font-family: var(--serif); font-size: 36px; font-weight: 700; color: var(--text); line-height: 1; }
+  .numbers-stat--gold .numbers-stat-v { color: var(--gold); }
+  .numbers-stat small { display: block; font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); margin-top: 8px; }
   .numbers-line { font-family: var(--sans); font-size: 16px; font-weight: 300; color: var(--text-mid); line-height: 1.7; margin-top: 20px; max-width: 560px; }
   .numbers-line strong { color: var(--text); font-weight: 600; }
   .numbers-rebuild { font-family: var(--serif); font-size: 19px; font-style: italic; color: var(--gold); margin-top: 24px; }
@@ -361,6 +296,7 @@
      the rankings rk-row (serif rank + rating bar). ── */
   .surfaces { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
   .surf-grid { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px 44px; }
+  .surf--wide { grid-column: 1 / -1; width: 100%; max-width: 560px; margin: 0 auto; }
   .surf-mock { background: #FFFFFF; border: 0.5px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-top: 14px; box-shadow: 0 6px 22px rgba(0,0,0,0.05); }
   .surf-cap { font-family: var(--sans); font-size: 13.5px; font-weight: 300; color: var(--text-mid); line-height: 1.65; margin-top: 12px; }
   .surf-cap b { color: var(--ink); font-weight: 600; }
@@ -433,7 +369,8 @@
   @media (max-width: 600px) {
     .anchor-legend { grid-template-columns: 1fr; }
     .pricing-rows { gap: 26px; }
-    .numbers-big { font-size: 30px; }
+    .numbers-stats { gap: 32px; }
+    .numbers-stat-v { font-size: 28px; }
     .compare-us { font-size: 17px; }
   }
 
@@ -474,7 +411,7 @@
   <div class="container">
     <div class="section-eyebrow">PressBox Analytics</div>
     <h1 class="hero-headline">Every line. Every game.<br><em>Graded, top to bottom.</em></h1>
-    <p class="hero-sub">Every spread, total, and moneyline on every FBS-vs-FBS matchup gets a grade — from our highest-conviction plays down to the games we pass on. Re-graded every 30 minutes, and every call we've ever made stays on the record, losses included.</p>
+    <p class="hero-sub">Every spread, total, and moneyline on every FBS-vs-FBS matchup gets a grade — from our highest-conviction plays down to the games we pass on. And every call we've ever made stays on the public record, losses included.</p>
     <div class="hero-actions" style="margin-top:32px;">
       <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
       <a href="/how-it-works.html" class="btn-ghost">See how it works →</a>
@@ -487,11 +424,14 @@
   <div class="container">
     <div class="section-eyebrow">The Methodology</div>
     <h2 class="section-title">We didn't find a system. <em>We eliminated everything that wasn't one.</em></h2>
-    <div class="numbers-big">Over a million combinations tested · <span>219 survived</span></div>
+    <div class="numbers-stats">
+      <div class="numbers-stat"><div class="numbers-stat-v">1,000,000+</div><small>combinations tested</small></div>
+      <div class="numbers-stat numbers-stat--gold"><div class="numbers-stat-v">219</div><small>signals survived</small></div>
+    </div>
     <p class="numbers-line">Three seasons of history, and every variable we could measure — kickoff window, day of the week, conference, week of the season, line size, how far our models sat from the market — crossed with the situational spots bettors argue about: rest, travel, rankings, coaching changes, streaks, revenge games. For spreads and totals that made <strong>31,000 candidate signals</strong>. For the moneyline, where who <em>wins</em> is a different question than who covers, the search ran past <strong>a million candidate patterns</strong> over five million graded outcomes. Every one was graded point-in-time, at the line as it stood, then tested against random chance.</p>
     <p class="numbers-line">Almost everything died. <strong>173 spread-and-total signals and 46 moneyline patterns survived — 219 in all.</strong> Those are the voters: a pick's grade, C up to A+, is simply how many of them agree on it. And underneath, four models rebuilt from scratch — opponent-adjusted, zero fudge factors, every backtest that looked too good torn down until we found the bug.</p>
     <p class="numbers-line">One layer sits on top and never votes: the streak marker. When a team's recent form against our projections adds an extra scenario that aligns with the standard signals, the pick wears a small <strong>⚡ bolt</strong> — a marker on the grade, never part of it.</p>
-    <p class="numbers-rebuild">That's what a grade is made of. What it earns is settled in public — the grade locks at kickoff and the bet settles at the number we published, not the one that would've looked best.</p>
+    <p class="numbers-rebuild">That's what a grade is made of. What it earns gets settled in public.</p>
     <div class="hero-actions" style="margin-top:32px;">
       <a href="/results.html" class="btn-ghost">Watch the record land →</a>
     </div>
@@ -556,7 +496,7 @@
 <section class="surfaces" id="what-you-get">
   <div class="container">
     <div class="section-eyebrow">What You Get</div>
-    <h2 class="section-title">Six surfaces. <em>One discipline.</em></h2>
+    <h2 class="section-title">Seven surfaces. <em>One discipline.</em></h2>
     <p class="section-sub">Same picks, same grades, same numbers everywhere — each surface is a different job you'd hire them for.</p>
 
     <div class="surf-grid">
@@ -653,51 +593,73 @@
           <div class="sf-row"><span class="sf-badge sf-badge--B">B</span><span class="sf-mkt">Total</span><div class="sf-main"><div class="sf-pick">Under <b>51.5</b> <span class="sf-px">−105</span> · FanDuel</div></div><span class="sf-mark sf-mark--l">✕</span></div>
           <div class="sf-goto">Full breakdown →</div>
         </div>
-        <p class="surf-cap"><b>Live Lines for finished games</b> — every pick graded at the released number, exactly as published, linked to the full breakdown. The "hold us to it" view.</p>
+        <p class="surf-cap"><b>Live Lines for finished games</b> — every pick graded at the number we released, linked to the full breakdown. The "hold us to it" view.</p>
+      </div>
+
+      <div class="surf surf--wide">
+        <div class="section-eyebrow" style="color:var(--gold);">07 — The Game Page <span style="color:var(--text-light);font-weight:500;">(every pick opens one)</span></div>
+        <div class="surf-mock" aria-hidden="true">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+            <span class="sf-mkt" style="width:auto;">Spread — every model's read</span>
+            <span class="sf-right">Vegas: <b style="color:var(--ink);">Michigan −3</b></span>
+          </div>
+          <svg viewBox="0 0 320 60" style="display:block;width:100%;height:auto;">
+            <path d="M10,50 C70,47 105,18 160,13 C215,9 260,36 310,46 L310,50 L10,50 Z" fill="rgba(76,124,168,0.16)" stroke="rgba(76,124,168,0.42)" stroke-width="1"/>
+            <line x1="10" y1="50" x2="310" y2="50" stroke="var(--cream-mid)" stroke-width="2"/>
+            <line x1="128" y1="8" x2="128" y2="56" stroke="var(--ink)" stroke-width="1.5"/>
+            <circle cx="108" cy="50" r="4" fill="var(--text-mid)"/>
+            <circle cx="139" cy="50" r="4" fill="var(--text-mid)"/>
+            <circle cx="151" cy="50" r="4" fill="var(--text-mid)"/>
+            <circle cx="168" cy="50" r="4" fill="var(--text-mid)"/>
+            <circle cx="186" cy="50" r="4" fill="var(--text-mid)"/>
+          </svg>
+          <div class="sf-pick" style="margin-top:10px;">History check: <b>23 signals</b> back this pick — the side they pointed to covered <b>58.3%</b> in 2023–25.</div>
+        </div>
+        <p class="surf-cap"><b>Every pick opens into its game page</b> — each model's number on each market against the live line, the history behind the grade, the full journal, the team stats, and live scoring through the final whistle. The "under the hood" view.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 3 · HOW IT WORKS (4-step walkthrough) -->
-<section class="how">
+<!-- 5 · THE LIFE OF A PICK (release → re-grade → lock → record) -->
+<section class="grade">
   <div class="container">
-    <div class="section-eyebrow">How It Works</div>
-    <h2 class="section-title">From data to published tier — <em>start to settled.</em></h2>
-    <div class="how-steps steps-single" style="margin-top:48px;">
-      <div class="how-step">
-        <div class="how-step-num">01</div>
+    <div class="section-eyebrow">The Life of a Pick</div>
+    <h2 class="section-title">From release to the record — <em>one frozen number.</em></h2>
+    <p class="section-sub">A record only means something if you can't move the goalposts. Here's the whole lifecycle of every pick.</p>
+
+    <div class="grade-steps">
+      <div class="grade-step">
+        <div class="grade-step-k">01</div>
         <div>
-          <div class="how-step-eyebrow">Release</div>
-          <div class="how-step-title">Grades publish as bets clear</div>
-          <div class="how-step-desc">The five models each read the matchup. We compare every read to the market on every line — spread, total, and moneyline — and grade each gap on its own. When a read meets a proven set of criteria, that bet fires and earns its tier. Every bet on the board gets published, tier and all.</div>
+          <div class="grade-step-t">It releases once three books post a line</div>
+          <div class="grade-step-d">A pick goes live the moment at least three sportsbooks are posting that market. Right there we <strong>freeze the released line and tier</strong> — that frozen number is the bet of record, and the journal starts.</div>
         </div>
       </div>
-      <div class="how-step">
-        <div class="how-step-num">02</div>
+      <div class="grade-step">
+        <div class="grade-step-k">02</div>
         <div>
-          <div class="how-step-eyebrow">Live</div>
-          <div class="how-step-title">Grades update every 30 minutes</div>
-          <div class="how-step-desc">As books post lines, lines move, and best-book offers shift, we re-grade. Every change is journaled — you see the original release, the current state, and everything in between.</div>
+          <div class="grade-step-t">It re-grades every 30 minutes until kickoff</div>
+          <div class="grade-step-d">Every half hour, every pick is re-checked against the current best line at every book. The tier can climb, hold, or fall to <strong>No Edge</strong> as the market moves — and every change lands in the pick's journal, with the best book re-named each time.</div>
         </div>
       </div>
-      <div class="how-step">
-        <div class="how-step-num">03</div>
+      <div class="grade-step">
+        <div class="grade-step-k">03</div>
         <div>
-          <div class="how-step-eyebrow">Bet</div>
-          <div class="how-step-title">You bet</div>
-          <div class="how-step-desc">Pull up the Board. Sort by tier. Cross-reference with your bankroll and your read on the games. We name the best book on every pick.</div>
+          <div class="grade-step-t">It locks at kickoff, exactly as released</div>
+          <div class="grade-step-d">When the game starts, the pick leaves the board and locks — <strong>tier, line, price, and book, as released</strong>. Nothing about it can change once the ball is in the air.</div>
         </div>
       </div>
-      <div class="how-step">
-        <div class="how-step-num">04</div>
+      <div class="grade-step">
+        <div class="grade-step-k">04</div>
         <div>
-          <div class="how-step-eyebrow">Settle</div>
-          <div class="how-step-title">Results graded, the journal updates</div>
-          <div class="how-step-desc">Wins, losses, pushes, voids — every pick lands on the public Results page. Nothing hidden, no curation, no after-the-fact reframing.</div>
+          <div class="grade-step-t">It settles against the released line, in public</div>
+          <div class="grade-step-d">When the game goes final: win, loss, or push, scored against <strong>the line we released</strong> — not the closing line, not whichever number looks best after the fact. If we released Oklahoma +2.5, we're graded on +2.5. The settled pick posts to Results, linked to its game page.</div>
         </div>
       </div>
     </div>
+
+    <p class="grade-pull">We grade ourselves on the number we gave you — not the one that would've looked best.</p>
   </div>
 </section>
 
@@ -727,50 +689,8 @@
   </div>
 </section>
 
-<!-- 6 · HOW RESULTS ARE GRADED (integrity) -->
-<section class="grade">
-  <div class="container">
-    <div class="section-eyebrow">How We Grade Ourselves</div>
-    <h2 class="section-title">We're scored on the number <em>we gave you.</em></h2>
-    <p class="section-sub">A record only means something if you can't move the goalposts. Here's exactly how a bet gets settled.</p>
-
-    <div class="grade-steps">
-      <div class="grade-step">
-        <div class="grade-step-k">01</div>
-        <div>
-          <div class="grade-step-t">A bet releases at three books</div>
-          <div class="grade-step-d">A bet only goes live once at least three sportsbooks are posting that market. The moment it releases, we <strong>freeze our model's number and the tier</strong> we published. That frozen number is the bet of record.</div>
-        </div>
-      </div>
-      <div class="grade-step">
-        <div class="grade-step-k">02</div>
-        <div>
-          <div class="grade-step-t">It re-grades against the live market every 30 minutes</div>
-          <div class="grade-step-d">As the line moves, the tier moves with it. A bet can climb, hold, or slip to <strong>No Edge</strong> as the market runs past our number. Every change is journaled on the pick.</div>
-        </div>
-      </div>
-      <div class="grade-step">
-        <div class="grade-step-k">03</div>
-        <div>
-          <div class="grade-step-t">When the game ends, we settle against our released line</div>
-          <div class="grade-step-d">Win, loss, push, or void is scored against <strong>the number we published at release</strong> — not the closing line, not whatever number would have looked best after the fact. If we released Oklahoma +2.5, we're graded on +2.5.</div>
-        </div>
-      </div>
-      <div class="grade-step">
-        <div class="grade-step-k">04</div>
-        <div>
-          <div class="grade-step-t">The result lands on the public Results page</div>
-          <div class="grade-step-d">Every settled bet is posted, win or lose. The three-season backtest that built the system is separate and frozen — <strong>immutable receipts</strong> we don't touch.</div>
-        </div>
-      </div>
-    </div>
-
-    <p class="grade-pull">We grade ourselves on the number we gave you — not the one that would've looked best.</p>
-  </div>
-</section>
-
 <!-- 7 · THE FIVE MODELS (trimmed summary) -->
-<section id="the-model" style="border-top:1px solid var(--border);background:var(--cream-dark);">
+<section id="the-model" style="border-top:1px solid var(--border);background:var(--cream);">
   <div class="container" style="padding-top:88px;padding-bottom:88px;">
     <div class="section-eyebrow">The Model</div>
     <h2 class="section-title">Five reads. <em>One verdict per bet.</em></h2>
@@ -781,7 +701,7 @@
       <p class="section-sub" style="margin-bottom:18px;"><strong style="color:var(--ink);font-weight:700;">PPA</strong> — Expected points per play. The drive-by-drive read.</p>
       <p class="section-sub" style="margin-bottom:18px;"><strong style="color:var(--ink);font-weight:700;">Advanced</strong> — Success rate, explosiveness, finishing drives. The "how" of efficiency.</p>
       <p class="section-sub" style="margin-bottom:24px;"><strong style="color:var(--ink);font-weight:700;">Pace+</strong> — Our in-house model. Possession elasticity weighted by opponent strength.</p>
-      <p class="section-sub" style="border-top:1px solid var(--border);padding-top:24px;color:var(--text);">A bet doesn't fire because the models average out a certain way. It fires when one model's read lands inside a <strong style="color:var(--ink);">specific set of criteria</strong> — a proven combination of model, market, edge size, and line range. When that happens, we publish the pick and tell you <strong style="color:var(--ink);">which model fired it</strong>. When nothing lands, that's No Edge.</p>
+      <p class="section-sub" style="border-top:1px solid var(--border);padding-top:24px;color:var(--text);">A pick doesn't start because the models average out a certain way. It starts when one model's number lands in a <strong style="color:var(--ink);">proven spot</strong> — a specific combination of model, market, and line range that survived the three-season test. The grade then counts how many of the <strong style="color:var(--ink);">219 surviving signals</strong> independently back that same side. Four models can start a pick; <strong style="color:var(--ink);">Elo never does</strong> — it's context you see, not a vote. And when nothing proven lines up, we don't manufacture a lean — that market publishes as <strong style="color:var(--ink);">No Edge</strong>.</p>
     </div>
 
     <div class="hero-actions" style="margin-top:32px;">
@@ -790,68 +710,11 @@
   </div>
 </section>
 
-<!-- 7b · THE MODEL BREAKDOWN (dot plot) -->
-<section class="breakdown">
-  <div class="container">
-    <div class="section-eyebrow">The Breakdown</div>
-    <h2 class="section-title">Open any game. <em>See every read.</em></h2>
-    <p class="section-sub">The game page is the deepest view on the site — a written narrative, the stats, and the head-to-head history all sit alongside the model reads. Here's how those reads look: every model's number on one axis against the market line, for the spread on Oklahoma @ Michigan.</p>
-
-    <div class="dp-stage">
-      <div class="dp-head">
-        <div class="dp-label">Spread</div>
-        <div class="dp-vegas-head">Vegas: <strong>Mich −3</strong></div>
-      </div>
-      <div class="dp-plot">
-        <div class="dp-labels dp-labels-above">
-          <div class="dp-lab" style="left:29.2%;"><span class="dp-lab-name">Elo</span><span class="dp-lab-val">−3.5</span></div>
-          <div class="dp-lab" style="left:45.8%;"><span class="dp-lab-name">SP+</span><span class="dp-lab-val">−1.5</span></div>
-          <div class="dp-lab dp-lab-pick" style="left:62.5%;"><span class="dp-lab-name">Pace+</span><span class="dp-lab-val">+0.5</span></div>
-        </div>
-        <div class="dp-axis-wrap">
-          <div class="dp-axis">
-            <svg class="dp-hist" viewBox="0 0 1000 100" preserveAspectRatio="none"><path d="M100,49 L180,45 L260,36 L340,24 L420,18 L500,23 L580,33 L660,41 L740,46 L820,49 L820,51 L740,54 L660,59 L580,67 L500,77 L420,82 L340,76 L260,64 L180,55 L100,51 Z"/></svg>
-            <div class="dp-zero" style="left:58.3%;"></div>
-            <div class="dp-vegas" style="left:33.3%;"></div>
-            <div class="dp-dot" style="left:29.2%;"></div>
-            <div class="dp-dot" style="left:41.7%;"></div>
-            <div class="dp-dot" style="left:45.8%;"></div>
-            <div class="dp-dot" style="left:54.2%;"></div>
-            <div class="dp-dot dp-dot-pick" style="left:62.5%;"></div>
-          </div>
-        </div>
-        <div class="dp-labels dp-labels-below">
-          <div class="dp-lab" style="left:41.7%;"><span class="dp-lab-name">PPA</span><span class="dp-lab-val">−2</span></div>
-          <div class="dp-lab" style="left:54.2%;"><span class="dp-lab-name">Adv</span><span class="dp-lab-val">−0.5</span></div>
-        </div>
-        <div class="dp-ticks">
-          <div class="dp-tick" style="left:0%;"></div><div class="dp-tick-label" style="left:0%;">−7</div>
-          <div class="dp-tick" style="left:16.7%;"></div><div class="dp-tick-label" style="left:16.7%;">−5</div>
-          <div class="dp-tick" style="left:33.3%;"></div><div class="dp-tick-label" style="left:33.3%;">−3</div>
-          <div class="dp-tick" style="left:50%;"></div><div class="dp-tick-label" style="left:50%;">−1</div>
-          <div class="dp-tick" style="left:58.3%;"></div><div class="dp-tick-label dp-tick-label-zero" style="left:58.3%;">0</div>
-          <div class="dp-tick" style="left:66.7%;"></div><div class="dp-tick-label" style="left:66.7%;">+1</div>
-          <div class="dp-tick" style="left:83.3%;"></div><div class="dp-tick-label" style="left:83.3%;">+3</div>
-          <div class="dp-tick" style="left:100%;"></div><div class="dp-tick-label" style="left:100%;">+5</div>
-        </div>
-      </div>
-      <div class="dp-legend">
-        <div class="dp-legend-item"><span class="dp-key-veg"></span> Vegas line</div>
-        <div class="dp-legend-item"><span class="dp-key-hist"></span> Where these games land</div>
-        <div class="dp-legend-item"><span class="dp-key" style="background:var(--text-mid);"></span> Each model's read</div>
-        <div class="dp-legend-item"><span class="dp-key" style="background:#B85A2A;"></span> Firing model — the pick</div>
-      </div>
-    </div>
-
-    <p class="dp-caption">Five reads on one axis, against the market line — with the blue band showing where games at this number have historically landed. A bet fires when one model's read sits far enough off the line to meet a <b>specific set of criteria</b>: a proven combination of model, market, edge size, and line range. Here that's Pace+, and that firing model <b>is</b> the pick. When none of them meet the criteria, no dot turns rust — instead the chart shows a single gold dot, an aggregate of the models, and the read grades No Edge.</p>
-  </div>
-</section>
-
 <!-- 8 · PRICING -->
 <section class="pricing">
   <div class="container">
-    <div class="section-eyebrow">Pricing</div>
-    <h2 class="section-title">Release pricing. <em>Locked for life.</em></h2>
+    <div class="section-eyebrow">Pricing · The 2026 Season</div>
+    <h2 class="section-title">The whole board, the whole truth — <em>at release pricing, locked for life.</em></h2>
     <div class="pricing-rows">
       <div class="pricing-price">$3.99<small>per week</small></div>
       <div class="pricing-price">$11.99<small>per month</small></div>
@@ -859,18 +722,6 @@
     </div>
     <p class="pricing-lock">These are release prices. They lock for the life of your subscription. Resubscribers pay current pricing.</p>
     <div class="hero-actions" style="margin-top:32px;">
-      <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
-    </div>
-  </div>
-</section>
-
-<!-- 9 · CLOSING (founder-voice payoff) -->
-<section id="closing" style="border-top:1px solid var(--border);background:var(--cream);">
-  <div class="container" style="padding-top:88px;padding-bottom:88px;text-align:center;">
-    <div class="section-eyebrow" style="justify-content:center;">The 2026 Season</div>
-    <h2 class="section-title">The whole board. <em>The whole truth.</em></h2>
-    <p class="section-sub" style="margin:18px auto 32px;max-width:520px;">2026 is the first season under the locked spec. Every game. Every grade. Live.</p>
-    <div class="hero-actions" style="justify-content:center;">
       <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
     </div>
   </div>
