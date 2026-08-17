@@ -258,7 +258,10 @@
 
   .llm { max-width:540px; background:#FFF; border:0.5px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:0 10px 36px rgba(0,0,0,0.06); margin-top:28px; }
   .llm-head { display:flex; align-items:center; gap:14px; padding:20px 18px; }
-  .llm-badge { width:52px; height:46px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; font-family:var(--sans); font-size:17px; font-weight:700; border:1px solid var(--ink); border-radius:6px; background:var(--gold); color:var(--cream); }
+  .llm-badge { position:relative; width:52px; height:46px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; font-family:var(--sans); font-size:17px; font-weight:700; letter-spacing:0.02em; border:1px solid var(--ink); border-radius:6px; background:var(--gold); color:var(--cream); }
+  .llm-badge--aplus { background:var(--ink); color:var(--gold-light); border-color:var(--gold); }
+  .llm-bolt { position:absolute; top:-8px; right:-8px; width:19px; height:19px; border-radius:50%; border:1px solid var(--gold); outline:2px solid var(--cream); background:var(--ink); color:var(--gold-light); display:flex; align-items:center; justify-content:center; }
+  .llm-bolt svg { width:13px; height:13px; display:block; fill:currentColor; }
   .llm-content { flex:1 1 auto; min-width:0; }
   .llm-matchup { font-family:var(--sans); font-size:17px; font-weight:600; color:var(--ink); line-height:1.3; margin-bottom:3px; }
   .llm-pick { font-family:var(--sans); font-size:15px; color:var(--text-mid); line-height:1.3; }
@@ -440,88 +443,16 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <div class="page-header-inner">
     <div class="page-eyebrow">How It Works</div>
     <h1 class="page-title">You're in.<br><em>Here's how to use it.</em></h1>
-    <p class="page-sub">Two ways to read the board — go straight to the bets, or work through the slate game by game. Here's the whole journey, from the moment you log in to the number you actually bet.</p>
+    <p class="page-sub">Start with the grades — they're the whole product in one letter. Then the two boards that carry them, the game page underneath, and every tool built on top: the full journey from released pick to settled number.</p>
   </div>
 </div>
 
 <!-- CONTENT -->
 <div class="content">
 
-  <!-- 1 · TWO WAYS IN -->
-  <div class="section" id="start">
-    <div class="section-num">01 — After you log in</div>
-    <h2 class="section-title">Pick your way in.</h2>
-    <div class="section-body">
-      <p>Everything runs off one board. You just choose how to look at it — straight at the bets, or game by game. Move between the two whenever you want.</p>
-    </div>
-    <div class="fork">
-      <a href="/live-lines.html" class="fork-card">
-        <div class="fork-eyebrow">Live Lines</div>
-        <div class="fork-name">Start with <em>the bets.</em></div>
-        <div class="fork-desc">Every graded bet as its own row, ranked by grade. The fastest path from "what's worth betting" to a side, a number, and the best book to take it at.</div>
-        <span class="fork-go">Go to Live Lines →</span>
-      </a>
-      <a href="/upcoming.html" class="fork-card">
-        <div class="fork-eyebrow">Upcoming</div>
-        <div class="fork-name">Start with <em>the games.</em></div>
-        <div class="fork-desc">The full FBS-vs-FBS slate, matchup by matchup, with a grade badge on any game that has a live bet. Stays on through kickoff with live scores and updates.</div>
-        <span class="fork-go">Go to Upcoming →</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 2 · READING A PICK -->
-  <div class="section" id="the-row">
-    <div class="section-num">02 — On Live Lines</div>
-    <h2 class="section-title">How a pick is <em>presented.</em></h2>
-    <div class="section-body">
-      <p>On <a href="/live-lines.html">Live Lines</a>, every bet is one row. The grade sits on the left; the bet and the best book sit in the middle. Tap any row to open its full history. Here's a real one — the spread on Oklahoma @ Michigan.</p>
-    </div>
-
-    <div class="llm">
-      <div class="llm-head">
-        <div class="llm-badge">A</div>
-        <div class="llm-content">
-          <div class="llm-matchup">Oklahoma @ Michigan</div>
-          <div class="llm-pick"><b>Oklahoma +3</b> · DraftKings + 2 others</div>
-          <div class="llm-time">Sat, Sep 12 · 12:00 PM ET</div>
-        </div>
-        <div class="llm-chevron">▲</div>
-      </div>
-      <div class="llm-acc">
-        <div class="llm-acc-label">History</div>
-        <div class="llm-history">
-          <div class="llm-event">
-            <div class="llm-event-title"><strong>Released A</strong> · Oklahoma +2.5 at Bovada</div>
-            <div class="llm-event-time">Wed, Sep 9 · 6:12 PM</div>
-          </div>
-          <div class="llm-event">
-            <div class="llm-event-title">Line moved +2.5 → +3 · best book Bovada → DraftKings</div>
-            <div class="llm-event-time">Fri, Sep 11 · 9:40 AM</div>
-          </div>
-          <div class="llm-event">
-            <div class="llm-event-title"><strong>Current</strong> · A holding · Oklahoma +3 at DraftKings</div>
-            <div class="llm-event-time">Now</div>
-          </div>
-        </div>
-        <div class="llm-books"><span>Other books</span><span style="color:var(--text-light);font-size:12px;">▾</span></div>
-        <a href="/live-lines.html" class="llm-cta">Bet at DraftKings →</a>
-        <a href="/how-it-works.html" class="llm-breakdown">Full game breakdown →</a>
-      </div>
-    </div>
-
-    <div class="anno">
-      <div class="anno-item"><b>The grade.</b> The tier badge — A here means three independent signals agree; A+ is four or more. A small <span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> on the badge is the streak marker (explained below).</div>
-      <div class="anno-item"><b>The pick &amp; best book.</b> The exact side and number, the juice when it isn't standard, and where that line is best right now. "+ 2 others" means other books match it.</div>
-      <div class="anno-item"><b>The journal.</b> Open the row: the release, every line move and grade change since, and the current state — all on the record, nothing overwritten.</div>
-      <div class="anno-item"><b>Bet it / break it down.</b> Jump straight to the book, or open the full game page for the deep view.</div>
-      <div class="anno-item"><b>The lock.</b> Until kickoff, picks re-grade with the market every 30 minutes. At kickoff the row freezes <em>as released</em> — the grade and number you see from then on are the ones the bet settles at.</div>
-    </div>
-  </div>
-
   <!-- 3 · WHAT THE GRADES MEAN -->
   <div class="section" id="grades">
-    <div class="section-num">03 — The grades</div>
+    <div class="section-num">01 — The grades</div>
     <h2 class="section-title">What each grade <em>means.</em></h2>
     <div class="section-body">
       <p>Every grade is a count of <em>independent agreement</em> — how many of our proven signals fired on the same side of the same bet. One signal is a C. Four or more is an A+. The signals were found and tested across 2023–25; the grades they earn now are settled in public, game by game, on <a href="/results.html">Results</a>. Every grade is a published verdict, including the ones that say "pass."</p>
@@ -556,9 +487,83 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <p class="tier-note"><strong><span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> The bolt.</strong> Some picks carry a small bolt on the badge — our streak marker. It fires when a team's recent form sits in a band the market has historically mispriced <em>and</em> our pick already points the same way. It never changes a grade and never fires a pick on its own; the game page explains each one in plain words.</p>
   </div>
 
+  <!-- 2 · LIVE LINES & UPCOMING (the two boards, one section) -->
+  <div class="section" id="the-row">
+    <div class="section-num">02 — Live Lines &amp; Upcoming</div>
+    <h2 class="section-title">The board, and the slate.</h2>
+    <div class="section-body">
+      <p>Same picks, same grades — two doors in. Go straight at the bets on Live Lines, or walk the slate game by game on Upcoming; move between them whenever you want.</p>
+    </div>
+    <div class="fork">
+      <a href="/live-lines.html" class="fork-card">
+        <div class="fork-eyebrow">Live Lines</div>
+        <div class="fork-name">Start with <em>the bets.</em></div>
+        <div class="fork-desc">Every graded bet as its own row, ranked by grade. The fastest path from "what's worth betting" to a side, a number, and the best book to take it at.</div>
+        <span class="fork-go">Go to Live Lines →</span>
+      </a>
+      <a href="/upcoming.html" class="fork-card">
+        <div class="fork-eyebrow">Upcoming</div>
+        <div class="fork-name">Start with <em>the games.</em></div>
+        <div class="fork-desc">The full FBS-vs-FBS slate, matchup by matchup, with a grade badge on any game that has a live bet. Stays on through kickoff with live scores and updates.</div>
+        <span class="fork-go">Go to Upcoming →</span>
+      </a>
+    </div>
+
+    <div class="tier-group-label">Live Lines — the board</div>
+    <div class="section-body">
+      <p>On <a href="/live-lines.html">Live Lines</a>, every bet is one row, ranked by grade. The grade sits on the left; the bet and the best book sit in the middle. Tap any row to open its full history. Here's a real one — the spread on Oklahoma @ Michigan.</p>
+    </div>
+
+    <div class="llm">
+      <div class="llm-head">
+        <div class="llm-badge llm-badge--aplus">A+<span class="llm-bolt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span></div>
+        <div class="llm-content">
+          <div class="llm-matchup">Oklahoma @ Michigan</div>
+          <div class="llm-pick"><b>Oklahoma +3</b> · DraftKings + 2 others</div>
+          <div class="llm-time">Sat, Sep 12 · 12:00 PM ET</div>
+        </div>
+        <div class="llm-chevron">▲</div>
+      </div>
+      <div class="llm-acc">
+        <div class="llm-acc-label">History</div>
+        <div class="llm-history">
+          <div class="llm-event">
+            <div class="llm-event-title"><strong>Released A+</strong> · Oklahoma +2.5 at Bovada</div>
+            <div class="llm-event-time">Wed, Sep 9 · 6:12 PM</div>
+          </div>
+          <div class="llm-event">
+            <div class="llm-event-title">Line moved +2.5 → +3 · best book Bovada → DraftKings</div>
+            <div class="llm-event-time">Fri, Sep 11 · 9:40 AM</div>
+          </div>
+          <div class="llm-event">
+            <div class="llm-event-title"><strong>Current</strong> · A+ holding · Oklahoma +3 at DraftKings</div>
+            <div class="llm-event-time">Now</div>
+          </div>
+        </div>
+        <div class="llm-books"><span>Other books</span><span style="color:var(--text-light);font-size:12px;">▾</span></div>
+        <a href="/live-lines.html" class="llm-cta">Bet at DraftKings →</a>
+        <a href="/how-it-works.html" class="llm-breakdown">Full game breakdown →</a>
+      </div>
+    </div>
+
+    <div class="anno">
+      <div class="anno-item"><b>The grade.</b> The tier badge — A+ here, four or more independent signals on the same side. The small <span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> on its corner is the streak marker from section 01.</div>
+      <div class="anno-item"><b>The pick &amp; best book.</b> The exact side and number, the juice when it isn't standard, and where that line is best right now. "+ 2 others" means other books match it.</div>
+      <div class="anno-item"><b>The journal.</b> Open the row: the release, every line move and grade change since, and the current state — all on the record, nothing overwritten.</div>
+      <div class="anno-item"><b>Bet it / break it down.</b> Jump straight to the book, or open the full game page for the deep view.</div>
+      <div class="anno-item"><b>The lock.</b> Until kickoff, picks re-grade with the market every 30 minutes. At kickoff the row freezes <em>as released</em> — the grade and number you see from then on are the ones the bet settles at.</div>
+    </div>
+
+    <div class="tier-group-label">Upcoming — the slate</div>
+    <div class="section-body">
+      <p><a href="/upcoming.html">Upcoming</a> is the other door: every FBS-vs-FBS game as a card — kickoff time on top, the matchup in the middle, and the grades on the front, one slot each for Spread, Total, and ML. A badge in a slot means that bet is live on the board; an empty slot means that market has nothing yet. Scan the week, spot the games that matter, tap any card for its game page.</p>
+      <p><strong>When a game kicks off, its card becomes a scoreboard.</strong> The score takes over as the headline with a pulsing LIVE tag, the quarter and clock, down and distance, and a possession dot beside the team with the ball. The grades stay exactly as released — locked at kickoff — with a small ▲ or ▼ beside each pick showing live whether it's tracking to cash or running behind. At the final whistle the card flips to its gold final state, a ✓ or ✕ lands on every pick, finals sink to the bottom of the slate, and the graded picks post to <a href="/results.html">Results</a>.</p>
+    </div>
+  </div>
+
   <!-- 4 · WHERE THE GRADE SHOWS UP -->
   <div class="section" id="everywhere">
-    <div class="section-num">04 — One grade, everywhere</div>
+    <div class="section-num">03 — One grade, everywhere</div>
     <h2 class="section-title">Where the grade <em>shows up.</em></h2>
     <div class="section-body">
       <p>A bet's grade follows it across the whole product. Same verdict, everywhere you meet it.</p>
@@ -599,7 +604,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
   <!-- 5 · THE GAME PAGE -->
   <div class="section" id="game-page">
-    <div class="section-num">05 — The deep view</div>
+    <div class="section-num">04 — The deep view</div>
     <h2 class="section-title">The game page.</h2>
     <div class="section-body">
       <p>Tap "full game breakdown" on any bet and you land on the deepest view on the site. It's where the grade gets explained — in writing, in the numbers, and in the model reads.</p>
@@ -612,7 +617,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Head-to-head history</div><div class="gp-d">How these two have met before.</div></div></li>
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">The history check</div><div class="gp-d">Under each chart, the real record of the signals behind the pick — how many back it, and how the side they pointed to actually did across the games they fired on. The same evidence that prices the pick, in one sentence.</div></div></li>
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Form vs our projections</div><div class="gp-d">The Overperformance Index — how far each team has run above or below what we projected, in points per game. When a pick carries the <span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> streak marker, this is the section that explains it in plain words.</div></div></li>
-      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Live scoring — then the final state</div><div class="gp-d">Once the game kicks off, the page tracks it in real time, with the pick locked as released. After the final, the page keeps everything — the grade, the number, and the result — as the permanent record Results links back to.</div></div></li>
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Live scoring — then the final state</div><div class="gp-d">Once the game kicks off, the page goes live: the score tracks in real time up top, and a rust marker lands on every chart showing exactly where the game sits against the number right now — tagged LIVE while it runs, FINAL once it's done. The picks stay locked as released the whole way. After the final whistle the page freezes as the permanent record — grade, number, result — and Results links back to it.</div></div></li>
     </ul>
 
     <div class="section-body" style="margin-top:30px;">
@@ -676,7 +681,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
   <!-- 6 · PARLAY -->
   <div class="section" id="parlay">
-    <div class="section-num">06 — Parlay</div>
+    <div class="section-num">05 — Parlay</div>
     <h2 class="section-title">Stack the edges.</h2>
     <div class="section-body">
       <p>The <a href="/parlay.html">Parlay</a> page turns graded picks into tickets. Grab pre-built cards, or build your own from the full board — every leg is priced against the current best market line, and the card shows two numbers side by side: <strong>our hit probability</strong> (each leg's win probability multiplied through) and <strong>Vegas's implied</strong> (the probability the ticket's own price says it needs). The gap between them is the whole point.</p>
@@ -686,7 +691,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
   <!-- 7 · ALLOCATOR -->
   <div class="section" id="allocator">
-    <div class="section-num">07 — Allocator</div>
+    <div class="section-num">06 — Allocator</div>
     <h2 class="section-title">Your bankroll, <em>split for you.</em></h2>
     <div class="section-body">
       <p>Tell the <a href="/allocator.html">Allocator</a> how much you're putting in play. It sizes every bet on the board by how far our win probability sits above what the price requires, weighted by how often the bet actually cashes — so a strong edge at a fair price gets the biggest slice, a thin edge gets a sliver, and anything at or below its price gets nothing at all. Bets that don't earn a stake simply drop off the sheet.</p>
@@ -696,7 +701,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
   <!-- 8 · RESULTS & RANKINGS -->
   <div class="section" id="results">
-    <div class="section-num">08 — Results &amp; Rankings</div>
+    <div class="section-num">07 — Results &amp; Rankings</div>
     <h2 class="section-title">The record, and the map.</h2>
     <div class="section-body">
       <p><a href="/results.html">Results</a> is Live Lines for games that are over. When a game kicks off its picks leave the board; when it goes final they land there — the <strong>released</strong> grade on the badge, the pick at the number it was graded on, a ✓, ✕, or – next to each, and the final score up top. Every card links back to the game page's final state. Graded no-edge verdicts appear too, dimmed — published, but never counted in the record, because they were never bets.</p>
@@ -706,7 +711,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
   <!-- 9 · GRADED ON OUR NUMBER -->
   <div class="section" id="scoring">
-    <div class="section-num">09 — After the game</div>
+    <div class="section-num">08 — After the game</div>
     <h2 class="section-title">We're graded on the number <em>we gave you.</em></h2>
     <div class="section-body">
       <p>When a bet releases, we freeze the line and tier we published. It re-grades against the live market every 30 minutes and can slip to No Edge as the line moves. At kickoff it locks as released. When the game ends, win or loss is scored against the number we released — not a friendlier closing line. Every result lands on <a href="/results.html">Results</a>, win or lose, next to the games we passed on.</p>
