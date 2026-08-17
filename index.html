@@ -389,7 +389,6 @@
   .strip-zero { position: absolute; top: 50%; height: 60px; width: 1px; background: var(--text-light); transform: translate(-0.5px, -50%); z-index: 2; opacity: 0.55; }
   .strip-dot { position: absolute; top: 50%; width: 10px; height: 10px; background: var(--text-mid); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 4; box-shadow: 0 0 0 1px var(--text-mid); }
   .strip-dot-blend { width: 14px; height: 14px; background: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px rgba(184,146,42,0.18); z-index: 5; }
-  .strip-dot-pick { width: 14px; height: 14px; background: var(--rust); box-shadow: 0 0 0 1px var(--rust), 0 0 0 4px rgba(184,90,42,0.18); z-index: 5; }
   .strip-label { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; font-family: var(--sans); white-space: nowrap; pointer-events: none; }
   .strip-labels-above .strip-label { bottom: 4px; }
   .strip-labels-below .strip-label { top: 4px; }
@@ -398,7 +397,6 @@
   .strip-label-name { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-mid); text-transform: uppercase; }
   .strip-label-value { font-size: 11px; font-weight: 700; color: var(--ink); letter-spacing: 0.3px; }
   .strip-label-blend .strip-label-name, .strip-label-blend .strip-label-value { color: var(--gold); }
-  .strip-label-pick .strip-label-name, .strip-label-pick .strip-label-value { color: var(--rust); }
   .strip-labels-above .strip-label::after { content: ''; position: absolute; bottom: -6px; left: 50%; width: 1px; height: 4px; background: var(--border); transform: translateX(-50%); }
   .strip-labels-above .strip-label.strip-label-far::after { height: 26px; bottom: -28px; }
   .strip-labels-below .strip-label::before { content: ''; position: absolute; top: -6px; left: 50%; width: 1px; height: 4px; background: var(--border); transform: translateX(-50%); }
@@ -672,12 +670,12 @@
               <div class="strip-dot" style="left:46.67%;"></div>
               <div class="strip-dot" style="left:50%;"></div>
               <div class="strip-dot" style="left:56.67%;"></div>
-              <div class="strip-dot strip-dot-pick" style="left:63.33%;"></div>
+              <div class="strip-dot" style="left:63.33%;"></div>
             </div>
           </div>
           <div class="strip-labels strip-labels-below">
             <div class="strip-label" style="left:46.67%;"><span class="strip-label-name">PPA</span><span class="strip-label-value">−2</span></div>
-            <div class="strip-label strip-label-pick" style="left:63.33%;"><span class="strip-label-name">Pace+</span><span class="strip-label-value">+0.5</span></div>
+            <div class="strip-label" style="left:63.33%;"><span class="strip-label-name">Pace+</span><span class="strip-label-value">+0.5</span></div>
             <div class="strip-label strip-label-far" style="left:56.67%;"><span class="strip-label-name">Adv</span><span class="strip-label-value">−0.5</span></div>
           </div>
           <div class="strip-ticks">
@@ -776,7 +774,7 @@
       <p class="section-sub" style="margin-bottom:18px;"><strong style="color:var(--ink);font-weight:700;">PPA</strong> — Expected points per play. The drive-by-drive read.</p>
       <p class="section-sub" style="margin-bottom:18px;"><strong style="color:var(--ink);font-weight:700;">Advanced</strong> — Success rate, explosiveness, finishing drives. The "how" of efficiency.</p>
       <p class="section-sub" style="margin-bottom:24px;"><strong style="color:var(--ink);font-weight:700;">Pace+</strong> — Our in-house model. Possession elasticity weighted by opponent strength.</p>
-      <p class="section-sub" style="border-top:1px solid var(--border);padding-top:24px;color:var(--text);">A pick doesn't start because the models average out a certain way. It starts when one model's number lands in a <strong style="color:var(--ink);">proven spot</strong> — a specific combination of model, market, and line range that survived the three-season test. The grade then counts how many of the <strong style="color:var(--ink);">219 surviving signals</strong> independently back that same side. Four models can start a pick; <strong style="color:var(--ink);">Elo never does</strong> — it's context you see, not a vote. And when nothing proven lines up, we don't manufacture a lean — that market publishes as <strong style="color:var(--ink);">No Edge</strong>.</p>
+      <p class="section-sub" style="border-top:1px solid var(--border);padding-top:24px;color:var(--text);">A pick doesn't start because the models average out a certain way. It starts when a model's number lands in a <strong style="color:var(--ink);">proven spot</strong> — a specific combination of model, market, and line range that survived the three-season test — and usually several signals fire on the same side at once. The grade counts that agreement across the <strong style="color:var(--ink);">219 survivors</strong>. Four models carry signals; <strong style="color:var(--ink);">Elo never does</strong> — it's context you see, not a vote. And when nothing proven lines up, we don't manufacture a lean — that market publishes as <strong style="color:var(--ink);">No Edge</strong>.</p>
     </div>
 
     <div class="hero-actions" style="margin-top:32px;">

@@ -1500,27 +1500,28 @@
     // axis), fan them vertically so four stacked reads don't render as one
     // blob — the "models cluster at pick'em while Vegas sits at -10" game
     // must still show four distinct dots.
+    // Rust single-model highlight retired 2026-08-17 (Austin): under the
+    // ladder a pick is backed by a BLOC of signals, usually several, so
+    // marking one model as "the pick" misrepresents it. Dots stay uniform;
+    // the gold zone + history check carry the pick's story.
     const placedX = [];
     sortedPts.forEach((p) => {
-      const isPick = firingModel && p.name === firingModel;
       const x = xPct(p.value);
       const clash = placedX.filter(v => Math.abs(v - x) < 1.6).length;
       placedX.push(x);
       const dot = document.createElement('div');
-      dot.className = isPick ? 'strip-dot strip-dot-pick' : 'strip-dot';
+      dot.className = 'strip-dot';
       if (clash) {
         const dir = clash % 2 ? 1 : -1;
         const step = Math.ceil(clash / 2) * 9;
         dot.style.marginTop = `${dir * step}px`;
       }
       dot.style.left = `${x}%`;
-      dot.title = isPick
-        ? `${p.name}: ${p.display} — this is the pick`
-        : `${p.name}: ${p.display}`;
+      dot.title = `${p.name}: ${p.display}`;
       axisEl.appendChild(dot);
 
       const lbl = document.createElement('div');
-      lbl.className = isPick ? 'strip-label strip-label-pick' : 'strip-label';
+      lbl.className = 'strip-label';
       lbl.style.left = `${xPct(p.value)}%`;
       lbl.innerHTML = `<span class="strip-label-name">${escape(p.name)}</span><span class="strip-label-value">${escape(p.display)}</span>`;
 
@@ -1681,8 +1682,7 @@
       const homeProb  = anchorIsHome ? m.anchor_prob  : m.other_prob;
       const awayOdds  = anchorIsHome ? m.other_display : m.anchor_display;
       const homeOdds  = anchorIsHome ? m.anchor_display : m.other_display;
-      const isPick = firingModel && modelName === firingModel;
-      rows.push({ label: modelName, awayProb, homeProb, awayOdds, homeOdds, isPick });
+      rows.push({ label: modelName, awayProb, homeProb, awayOdds, homeOdds, isPick: false });
     });
 
     // PressBox blend — suppressed when a cell fired (firingModel set).

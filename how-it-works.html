@@ -338,7 +338,6 @@
   .strip-zero { position: absolute; top: 50%; height: 60px; width: 1px; background: var(--text-light); transform: translate(-0.5px, -50%); z-index: 2; opacity: 0.55; }
   .strip-dot { position: absolute; top: 50%; width: 10px; height: 10px; background: var(--text-mid); border: 2px solid #fff; border-radius: 50%; transform: translate(-50%, -50%); z-index: 4; box-shadow: 0 0 0 1px var(--text-mid); }
   .strip-dot-blend { width: 14px; height: 14px; background: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 0 4px rgba(184,146,42,0.18); z-index: 5; }
-  .strip-dot-pick { width: 14px; height: 14px; background: var(--rust); box-shadow: 0 0 0 1px var(--rust), 0 0 0 4px rgba(184,90,42,0.18); z-index: 5; }
   .strip-label { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; font-family: var(--sans); white-space: nowrap; pointer-events: none; }
   .strip-labels-above .strip-label { bottom: 4px; }
   .strip-labels-below .strip-label { top: 4px; }
@@ -347,7 +346,6 @@
   .strip-label-name { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: var(--text-mid); text-transform: uppercase; }
   .strip-label-value { font-size: 11px; font-weight: 700; color: var(--ink); letter-spacing: 0.3px; }
   .strip-label-blend .strip-label-name, .strip-label-blend .strip-label-value { color: var(--gold); }
-  .strip-label-pick .strip-label-name, .strip-label-pick .strip-label-value { color: var(--rust); }
   .strip-labels-above .strip-label::after { content: ''; position: absolute; bottom: -6px; left: 50%; width: 1px; height: 4px; background: var(--border); transform: translateX(-50%); }
   .strip-labels-above .strip-label.strip-label-far::after { height: 26px; bottom: -28px; }
   .strip-labels-below .strip-label::before { content: ''; position: absolute; top: -6px; left: 50%; width: 1px; height: 4px; background: var(--border); transform: translateX(-50%); }
@@ -618,7 +616,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     </ul>
 
     <div class="section-body" style="margin-top:30px;">
-      <p>The model reads are the heart of it. Each model puts its number on one axis against the Vegas line. A pick starts when one model's number lands in a <strong>proven spot</strong> — a combination of model, market, and line range that survived the three-season test. That firing model shows in <strong>rust</strong>; the grade is then the separate count of how many independent signals back the same side. When nothing proven fires, the market grades No Edge — the rust dot is replaced by a single <strong>gold dot</strong>, the blend of all four models, and the verdict is published all the same.</p>
+      <p>The model reads are the heart of it. Each model puts its number on one axis against the Vegas line. A pick exists because <strong>proven signals fired on that side</strong> — usually several at once — and the grade is their net agreement; the panel under the chart names each one and shows the vote. When nothing proven fires, the market grades No Edge and the chart shows a single <strong>gold dot</strong> instead — the blend of all four models — published all the same.</p>
       <p>Behind the dots, a shaded curve shows where games like this one actually landed — and it's split at the Vegas line: the <strong>gold side is where this pick cashes</strong>, the blue side is where it doesn't. Under every chart, the history check states the evidence in one sentence: how many signals back the pick, and how the side they pointed to actually did.</p>
     </div>
 
@@ -651,12 +649,12 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
           <div class="strip-dot" style="left:46.67%;"></div>
           <div class="strip-dot" style="left:50%;"></div>
           <div class="strip-dot" style="left:56.67%;"></div>
-          <div class="strip-dot strip-dot-pick" style="left:63.33%;"></div>
+          <div class="strip-dot" style="left:63.33%;"></div>
         </div>
       </div>
       <div class="strip-labels strip-labels-below">
         <div class="strip-label" style="left:46.67%;"><span class="strip-label-name">PPA</span><span class="strip-label-value">−2</span></div>
-        <div class="strip-label strip-label-pick" style="left:63.33%;"><span class="strip-label-name">Pace+</span><span class="strip-label-value">+0.5</span></div>
+        <div class="strip-label" style="left:63.33%;"><span class="strip-label-name">Pace+</span><span class="strip-label-value">+0.5</span></div>
         <div class="strip-label strip-label-far" style="left:56.67%;"><span class="strip-label-name">Adv</span><span class="strip-label-value">−0.5</span></div>
       </div>
       <div class="strip-ticks">
@@ -671,7 +669,6 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <div class="dp-legend">
         <div class="dp-legend-item"><span class="dp-key-veg"></span> Vegas line</div>
         <div class="dp-legend-item"><span class="dp-key" style="background:var(--text-mid);"></span> Each model's read</div>
-        <div class="dp-legend-item"><span class="dp-key" style="background:var(--rust);"></span> Firing model — the pick</div>
         <div class="dp-legend-item"><span class="dp-key-lobe"></span> Where these games land — gold side, the pick cashes</div>
       </div>
     </div>
