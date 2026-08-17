@@ -154,7 +154,8 @@
         <h1 class="rs-title">Every pick, graded.</h1>
         <p class="rs-sub">Live Lines, for games that are over. Picks leave the board
         when their game kicks off; when it goes final they land here — graded at the
-        released number, exactly as published. Click any game for the full breakdown.</p>
+        released number, exactly as published. Click any game for the full breakdown.
+        <a href="/how-it-works.html#results" style="font-weight:600;color:var(--gold);text-decoration:none;white-space:nowrap;">How grading works →</a></p>
         ${recordHTML()}
       </header>`;
 

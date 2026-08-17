@@ -465,6 +465,7 @@
         <div class="ll-meta">
           <span>${esc(metaText)}</span>
           <button class="ll-meta-refresh" id="ll-refresh-btn">refresh</button>
+          <a href="/how-it-works.html#the-row" style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--gold);text-decoration:none;">How to read this board →</a>
         </div>
       </header>
 
