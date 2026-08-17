@@ -943,7 +943,7 @@
     updateLiveMarkers(data.game);
   }
 
-  function opiBox(name, o) {
+  function opiBox(name, o, note) {
     if (!o || o.score == null) {
       return `<div class="opi-box"><div class="t">${escape(name)}</div>` +
              `<div class="s">Not enough games yet — the index starts after three played.</div></div>`;
@@ -959,7 +959,7 @@
     return `<div class="opi-box"><div class="t">${escape(name)}</div>` +
            `<div class="opi-bar"><i style="left:${left}%;width:${mag}%"></i></div>` +
            `<div class="s"><b>${o.score > 0 ? '+' : ''}${o.score}/gm</b> vs projection ` +
-           `over ${o.games} games · ${bandTxt}</div></div>`;
+           `over ${o.games} games · ${bandTxt}${note ? escape(note) : ''}</div></div>`;
   }
 
   function renderReceipt(data) {
@@ -969,10 +969,37 @@
     const away = data.game?.away?.name || 'Away';
     const home = data.game?.home?.name || 'Home';
     if (data.opi) {
+      // When a bolted pick exists, the OPI box of the team whose band drove
+      // it says so in words — hype-fade points at the hot team the pick goes
+      // AGAINST, cold-follow at the cold team the pick is ON. Same index
+      // feeds the badge's bolt and this section; this line is the visible
+      // link between them. Inherently true: the bolt only ever fires when
+      // the pick side agrees with the streak read.
+      const bolted = (data.picks || [])
+        .filter(p => p.bolt && p.tier && p.tier !== 'no_edge')
+        .map(p => ({
+          market: p.market,
+          side: p.history?.current?.side_raw || p.history?.released?.side_raw || null,
+        }))
+        .filter(p => p.side === 'home' || p.side === 'away');
+      const opiNote = (teamSide, o) => {
+        if (!o || !o.band || !bolted.length) return '';
+        const mkts = [...new Set(bolted
+          .filter(p => (o.band === 'hot_hype' && p.side !== teamSide)
+                    || (o.band === 'cold_deep' && p.side === teamSide))
+          .map(p => p.market))];
+        if (!mkts.length) return '';
+        const label = mkts.join(' and ') + (mkts.length > 1 ? ' picks' : ' pick');
+        return o.band === 'hot_hype'
+          ? ` — that streak is the bolt on our ${label} against them.`
+          : ` — that streak is the bolt on our ${label} on them.`;
+      };
       const box = document.createElement('div');
       box.className = 'game-card';
       box.innerHTML = `<div class="receipt-eyebrow">Form vs our projections — the Overperformance Index</div>` +
-        `<div class="opi-grid">${opiBox(home, data.opi.home)}${opiBox(away, data.opi.away)}</div>`;
+        `<div class="opi-grid">` +
+        `${opiBox(home, data.opi.home, opiNote('home', data.opi.home))}` +
+        `${opiBox(away, data.opi.away, opiNote('away', data.opi.away))}</div>`;
       el.appendChild(box);
     }
     // One row PER BET, not per rule (Austin's spec): a signal that fires on
