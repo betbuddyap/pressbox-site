@@ -459,9 +459,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // the sheet. Our win probability is deliberately unchanged: it prices the
   // PICK; the book only changes what you're paid for it (same convention as
   // the other-books rows everywhere else on the site).
-  function bookView(leg) {
-    if (!state.book) return leg;
-    const e = (leg.other_books || []).find(b => b.book && b.book.name === state.book);
+  function legAtBook(leg, bookName) {
+    const e = (leg.other_books || []).find(b => b.book && b.book.name === bookName);
     if (!e) return null;
     const px = (e.price != null) ? e.price
              : (leg.market === 'ml' ? e.line_raw : -110);
@@ -471,9 +470,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       line: e.line, line_raw: e.line_raw,
       price_american: (leg.market === 'ml' ? e.line_raw : px),
       decimal_odds: dec,
-      book: { name: state.book, url: (e.book && e.book.url) || null,
+      book: { name: bookName, url: (e.book && e.book.url) || null,
               note: (e.book && e.book.note) || null },
       other_books: [] };
+  }
+  function bookView(leg) {
+    if (!state.book) return leg;
+    return legAtBook(leg, state.book);
   }
   function parlayView(pl) {
     if (!state.book) return pl;
@@ -723,11 +726,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `<span class="ll-badge al-badge-parlay" aria-label="${esc(item.name || 'Parlay')} parlay, ${n} legs">${n}\u00d7</span>`;
   }
 
-  function parlayLegHTML(leg) {
+  // Legs inside a parlay card price at the TICKET's book \u2014 one slip, one
+  // book. Naming each leg's own best book here read as three different
+  // books for one bet; the ticket's book lives on the header and the
+  // bet button instead.
+  function parlayLegHTML(leg, ticketBook) {
+    const v = (ticketBook && legAtBook(leg, ticketBook)) || leg;
     return `
       <div class="al-pl-leg">
-        <div class="al-pl-leg-match">${esc(leg.matchup || '\u2014')}</div>
-        <div class="al-pl-leg-pick">${pickText(leg)}</div>
+        <div class="al-pl-leg-match">${esc(v.matchup || '\u2014')}</div>
+        <div class="al-pl-leg-pick">${pickText({ ...v, book: null })}</div>
       </div>`;
   }
 
@@ -773,14 +781,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? `<a class="ll-bet-button al-bet" href="${esc(pl.book.url)}" target="_blank" rel="noopener noreferrer"
             aria-label="Bet at ${esc(pl.book.name)} (opens in new tab)">Bet $${fmtMoney(r.stake)} at ${esc(pl.book.name)}${pl.price_american != null ? ' ' + price : ''} \u2192</a>`
       : '';
-    const legsHTML = (pl.legs || []).map(parlayLegHTML).join('');
+    const tbName = pl.book && pl.book.name;
+    const legsHTML = (pl.legs || []).map(l => parlayLegHTML(l, tbName)).join('');
     return `
       <article class="ll-row al-card al-card-parlay" aria-expanded="false">
         <button type="button" class="al-head" data-action="toggle-card" aria-expanded="false">
           ${parlayBadge(pl)}
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(pl.name || 'Parlay')} parlay</div>
-            <div class="ll-row-pick">${pl.leg_count || (pl.legs || []).length} legs \u00b7 <span class="ll-row-pick-num">${price}</span></div>
+            <div class="ll-row-pick">${pl.leg_count || (pl.legs || []).length} legs \u00b7 <span class="ll-row-pick-num">${price}</span>${tbName ? ' \u00b7 ' + esc(tbName) : ''}</div>
           </div>
           <div class="al-metrics">
             <div class="al-metric"><span class="al-metric-k">Hit prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
