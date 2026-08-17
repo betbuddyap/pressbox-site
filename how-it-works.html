@@ -291,6 +291,10 @@
   .tier-card-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
   .tier-chip { font-family:var(--sans); font-size:12px; font-weight:700; padding:5px 10px; border-radius:4px; letter-spacing:.3px; border:1px solid transparent; white-space:nowrap; }
   .tier-chip-aplus { background:var(--ink); color:var(--gold-light); border-color:var(--gold); }
+  /* Inline bolt for running copy — the real SVG glyph in a small A+ chip,
+     never the orange emoji */
+  .bolt-inline { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; vertical-align:-3px; background:var(--ink); color:var(--gold-light); border:1px solid var(--gold); }
+  .bolt-inline svg { width:10px; height:10px; display:block; fill:currentColor; }
   .tier-chip-a { background:var(--gold); color:var(--cream); border-color:var(--ink); }
   .tier-chip-b { background:var(--silver); color:var(--ink); border-color:var(--ink); }
   .tier-chip-c { background:var(--bronze); color:var(--cream); border-color:var(--ink); }
@@ -313,37 +317,20 @@
 
   .dp-stage { max-width:540px; margin:26px 0 0; background:#FFF; border:0.5px solid var(--border); border-radius:4px; padding:16px 24px 18px; box-shadow:0 10px 36px rgba(0,0,0,0.06); }
   .dp-head { display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid var(--cream-mid); }
-  .dp-label { font-family:var(--sans); font-size:11px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--ink); }
+  .dp-label { font-family:var(--sans); font-size:11px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--ink); }
   .dp-vegas-head { font-family:var(--sans); font-size:12px; font-weight:600; color:var(--text-mid); }
   .dp-vegas-head strong { color:var(--ink); font-weight:700; }
-  .dp-plot { position:relative; padding:0 12px; }
-  .dp-labels { position:relative; height:48px; }
-  .dp-labels-above { margin-bottom:4px; }
-  .dp-labels-below { margin-top:4px; }
-  .dp-axis-wrap { position:relative; height:24px; display:flex; align-items:center; }
-  .dp-axis { position:relative; width:100%; height:2px; background:var(--border); border-radius:1px; }
-  .dp-hist { position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); width:100%; height:56px; z-index:1; pointer-events:none; overflow:visible; }
-  .dp-hist path { fill:rgba(76,124,168,0.18); stroke:rgba(76,124,168,0.45); stroke-width:1; }
-  .dp-zero { position:absolute; top:50%; height:80px; width:1.5px; background:var(--rust); transform:translate(-0.75px,-50%); z-index:2; opacity:.85; }
-  .dp-vegas { position:absolute; top:50%; height:60px; width:1.5px; background:var(--ink); transform:translate(-0.75px,-50%); z-index:3; }
-  .dp-dot { position:absolute; top:50%; width:10px; height:10px; background:var(--text-mid); border:2px solid #fff; border-radius:50%; transform:translate(-50%,-50%); z-index:4; box-shadow:0 0 0 1px var(--text-mid); }
-  .dp-dot-pick { width:14px; height:14px; background:var(--rust); box-shadow:0 0 0 1px var(--rust),0 0 0 4px rgba(184,90,42,.18); z-index:5; }
-  .dp-lab { position:absolute; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; white-space:nowrap; pointer-events:none; }
-  .dp-labels-above .dp-lab { bottom:4px; }
-  .dp-labels-below .dp-lab { top:4px; }
-  .dp-lab-name { font-family:var(--sans); font-size:10px; font-weight:700; letter-spacing:.5px; color:var(--text-mid); text-transform:uppercase; }
-  .dp-lab-val { font-family:var(--sans); font-size:11px; font-weight:700; color:var(--ink); letter-spacing:.3px; }
-  .dp-lab-pick .dp-lab-name, .dp-lab-pick .dp-lab-val { color:var(--rust); }
-  .dp-labels-above .dp-lab::after { content:''; position:absolute; bottom:-6px; left:50%; width:1px; height:4px; background:var(--border); transform:translateX(-50%); }
-  .dp-labels-below .dp-lab::before { content:''; position:absolute; top:-6px; left:50%; width:1px; height:4px; background:var(--border); transform:translateX(-50%); }
-  .dp-ticks { position:relative; margin-top:6px; height:16px; }
-  .dp-tick { position:absolute; top:0; width:1px; height:4px; background:var(--cream-mid); transform:translateX(-50%); }
-  .dp-tick-label { position:absolute; top:6px; font-family:var(--sans); font-size:11px; font-weight:500; color:var(--text-mid); letter-spacing:.3px; transform:translateX(-50%); }
-  .dp-tick-label-zero { color:var(--rust); font-weight:700; }
-  .dp-legend { display:flex; gap:18px; flex-wrap:wrap; margin-top:24px; padding-top:16px; border-top:1px solid var(--cream-mid); }
+  /* The strip — drawn as one SVG, mirroring the real game-page chart:
+     mirrored two-tone density lobe (gold side = pick cashes), border axis,
+     subdued zero, ink Vegas line, gray model dots, gold blend, rust firer */
+  .dp-chart { display:block; width:100%; height:auto; }
+  .dp-hist-line { margin-top:14px; padding-top:12px; border-top:1px solid var(--cream-mid); font-family:var(--sans); font-size:13px; color:var(--text-mid); line-height:1.55; }
+  .dp-hist-line b { color:var(--ink); font-weight:700; }
+  .dp-legend { display:flex; gap:18px; flex-wrap:wrap; margin-top:18px; padding-top:16px; border-top:1px solid var(--cream-mid); }
   .dp-legend-item { display:flex; align-items:center; gap:8px; font-family:var(--sans); font-size:12px; color:var(--text-mid); }
   .dp-key { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
   .dp-key-veg { width:2px; height:14px; flex-shrink:0; background:var(--ink); }
+  .dp-key-lobe { width:18px; height:11px; border-radius:2px; flex-shrink:0; background:linear-gradient(90deg, rgba(76,124,168,0.30) 50%, rgba(184,146,42,0.40) 50%); border:1px solid rgba(107,100,85,0.35); }
 
   .gp-list { list-style:none; margin:22px 0 0; padding:0; }
   .gp-item { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
@@ -490,7 +477,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     </div>
 
     <div class="anno">
-      <div class="anno-item"><b>The grade.</b> The tier badge — A here means three independent signals agree; A+ is four or more. A small ⚡ on the badge is the streak marker (explained below).</div>
+      <div class="anno-item"><b>The grade.</b> The tier badge — A here means three independent signals agree; A+ is four or more. A small <span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> on the badge is the streak marker (explained below).</div>
       <div class="anno-item"><b>The pick &amp; best book.</b> The exact side and number, the juice when it isn't standard, and where that line is best right now. "+ 2 others" means other books match it.</div>
       <div class="anno-item"><b>The journal.</b> Open the row: the release, every line move and grade change since, and the current state — all on the record, nothing overwritten.</div>
       <div class="anno-item"><b>Bet it / break it down.</b> Jump straight to the book, or open the full game page for the deep view.</div>
@@ -529,10 +516,10 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
     <div class="tier-group-label">Moneyline</div>
     <div class="section-body">
-      <p>The moneyline runs on its <em>own</em> signal set — rebuilt from scratch for 2026. Instead of borrowing spread signals, we searched three seasons for patterns that predict who <em>wins</em> — a different question than who covers — and only the survivors made the book. The grades read the same way: each of our four models gets one vote per game, so <strong>C</strong> means one model's signals fired, <strong>B</strong> two, <strong>A</strong> three, and <strong>A+</strong> means all four models agree on the winner. And we only publish a moneyline priced between <strong>−300 and +300</strong> — outside that band, the payout math stops being worth your money.</p>
+      <p>The moneyline runs on its <em>own</em> signal set — rebuilt from scratch for 2026. Instead of borrowing spread signals, we searched the same three seasons for patterns that predict who <em>wins</em> — a different question than who covers — and only the survivors made the book. The grades count independent agreement here too, with one guard: moneyline signals that come from the same model share a single vote, so the count can't be padded by one model repeating itself. <strong>C</strong> is one vote, <strong>B</strong> two, <strong>A</strong> three, <strong>A+</strong> all four. And we only publish a moneyline priced between <strong>−300 and +300</strong> — outside that band, the payout math stops being worth your money.</p>
     </div>
 
-    <p class="tier-note"><strong>⚡ The bolt.</strong> Some picks carry a small bolt on the badge — our streak marker. It fires when a team's recent form sits in a band the market has historically mispriced <em>and</em> our pick already points the same way. It never changes a grade and never fires a pick on its own; the game page explains each one in plain words.</p>
+    <p class="tier-note"><strong><span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> The bolt.</strong> Some picks carry a small bolt on the badge — our streak marker. It fires when a team's recent form sits in a band the market has historically mispriced <em>and</em> our pick already points the same way. It never changes a grade and never fires a pick on its own; the game page explains each one in plain words.</p>
   </div>
 
   <!-- 4 · WHERE THE GRADE SHOWS UP -->
@@ -590,12 +577,12 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Team &amp; advanced stats</div><div class="gp-d">The numbers behind the call — efficiency, tempo, and the advanced splits the box score misses.</div></div></li>
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Head-to-head history</div><div class="gp-d">How these two have met before.</div></div></li>
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">The history check</div><div class="gp-d">Under each chart, the real record of the signals behind the pick — how many back it, and how the side they pointed to actually did across the games they fired on. The same evidence that prices the pick, in one sentence.</div></div></li>
-      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Form vs our projections</div><div class="gp-d">The Overperformance Index — how far each team has run above or below what we projected, in points per game. When a pick carries the ⚡ streak marker, this is the section that explains it in plain words.</div></div></li>
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Form vs our projections</div><div class="gp-d">The Overperformance Index — how far each team has run above or below what we projected, in points per game. When a pick carries the <span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> streak marker, this is the section that explains it in plain words.</div></div></li>
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Live scoring — then the final state</div><div class="gp-d">Once the game kicks off, the page tracks it in real time, with the pick locked as released. After the final, the page keeps everything — the grade, the number, and the result — as the permanent record Results links back to.</div></div></li>
     </ul>
 
     <div class="section-body" style="margin-top:30px;">
-      <p>The model reads are the heart of it. Each model puts its number on one axis against the Vegas line. A bet fires when one model's read sits far enough off the line to meet a <strong>specific set of criteria</strong> — a proven combination of model, market, edge size, and line range. That firing model is the pick, shown in rust. When nothing meets the criteria, a single gold aggregate dot appears instead and the read grades No Edge.</p>
+      <p>The model reads are the heart of it. Each model's number sits on one axis against the Vegas line, with the <strong>PressBox blend in gold</strong> and — when a pick has fired — the <strong>firing model in rust</strong>. Behind them, a shaded curve shows where games like this one actually landed: the <strong>gold side</strong> of the Vegas line is where the pick cashes, the blue side is where it doesn't. And under every chart, the history check states the evidence in one sentence — how many signals back the pick, and how the side they pointed to actually did.</p>
     </div>
 
     <div class="dp-stage">
@@ -603,43 +590,41 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="dp-label">Spread</div>
         <div class="dp-vegas-head">Vegas: <strong>Mich −3</strong></div>
       </div>
-      <div class="dp-plot">
-        <div class="dp-labels dp-labels-above">
-          <div class="dp-lab" style="left:29.2%;"><span class="dp-lab-name">Elo</span><span class="dp-lab-val">−3.5</span></div>
-          <div class="dp-lab" style="left:45.8%;"><span class="dp-lab-name">SP+</span><span class="dp-lab-val">−1.5</span></div>
-          <div class="dp-lab dp-lab-pick" style="left:62.5%;"><span class="dp-lab-name">Pace+</span><span class="dp-lab-val">+0.5</span></div>
-        </div>
-        <div class="dp-axis-wrap">
-          <div class="dp-axis">
-            <svg class="dp-hist" viewBox="0 0 1000 100" preserveAspectRatio="none"><path d="M100,49 L180,45 L260,36 L340,24 L420,18 L500,23 L580,33 L660,41 L740,46 L820,49 L820,51 L740,54 L660,59 L580,67 L500,77 L420,82 L340,76 L260,64 L180,55 L100,51 Z"/></svg>
-            <div class="dp-zero" style="left:58.3%;"></div>
-            <div class="dp-vegas" style="left:33.3%;"></div>
-            <div class="dp-dot" style="left:29.2%;"></div>
-            <div class="dp-dot" style="left:41.7%;"></div>
-            <div class="dp-dot" style="left:45.8%;"></div>
-            <div class="dp-dot" style="left:54.2%;"></div>
-            <div class="dp-dot dp-dot-pick" style="left:62.5%;"></div>
-          </div>
-        </div>
-        <div class="dp-labels dp-labels-below">
-          <div class="dp-lab" style="left:41.7%;"><span class="dp-lab-name">PPA</span><span class="dp-lab-val">−2</span></div>
-          <div class="dp-lab" style="left:54.2%;"><span class="dp-lab-name">Adv</span><span class="dp-lab-val">−0.5</span></div>
-        </div>
-        <div class="dp-ticks">
-          <div class="dp-tick" style="left:0%;"></div><div class="dp-tick-label" style="left:0%;">−7</div>
-          <div class="dp-tick" style="left:16.7%;"></div><div class="dp-tick-label" style="left:16.7%;">−5</div>
-          <div class="dp-tick" style="left:33.3%;"></div><div class="dp-tick-label" style="left:33.3%;">−3</div>
-          <div class="dp-tick" style="left:50%;"></div><div class="dp-tick-label" style="left:50%;">−1</div>
-          <div class="dp-tick" style="left:58.3%;"></div><div class="dp-tick-label dp-tick-label-zero" style="left:58.3%;">0</div>
-          <div class="dp-tick" style="left:66.7%;"></div><div class="dp-tick-label" style="left:66.7%;">+1</div>
-          <div class="dp-tick" style="left:83.3%;"></div><div class="dp-tick-label" style="left:83.3%;">+3</div>
-          <div class="dp-tick" style="left:100%;"></div><div class="dp-tick-label" style="left:100%;">+5</div>
-        </div>
-      </div>
+      <svg class="dp-chart" viewBox="0 0 640 170" aria-hidden="true">
+        <defs>
+          <linearGradient id="hiw-gp-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="640" y2="0">
+            <stop offset="0" stop-color="rgba(76,124,168,0.18)"/>
+            <stop offset="0.4047" stop-color="rgba(76,124,168,0.18)"/>
+            <stop offset="0.4047" stop-color="rgba(184,146,42,0.30)"/>
+            <stop offset="1" stop-color="rgba(184,146,42,0.30)"/>
+          </linearGradient>
+        </defs>
+        <path d="M70,88 C160,84 260,58 370,48 C460,40 545,72 600,86 L600,90 C545,104 460,136 370,128 C260,118 160,92 70,88 Z"
+              fill="url(#hiw-gp-grad)" stroke="rgba(107,100,85,0.35)" stroke-width="1"/>
+        <line x1="16" y1="88" x2="624" y2="88" stroke="var(--border)" stroke-width="2"/>
+        <line x1="381" y1="40" x2="381" y2="136" stroke="var(--text-light)" stroke-width="1" opacity="0.55"/>
+        <line x1="259" y1="26" x2="259" y2="150" stroke="var(--ink)" stroke-width="1.5"/>
+        <text x="259" y="18" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="10" font-weight="700" letter-spacing="0.5" fill="var(--ink)">VEGAS −3</text>
+        <text x="320" y="30" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="10" font-weight="700" letter-spacing="0.5" fill="var(--text-mid)">SP+ −1.5</text>
+        <text x="239" y="52" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="10" font-weight="700" letter-spacing="0.5" fill="var(--text-mid)">ELO −3.5</text>
+        <text x="360" y="52" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="10" font-weight="700" letter-spacing="0.5" fill="var(--text-mid)">ADV −0.5</text>
+        <circle cx="239" cy="88" r="5" fill="var(--text-mid)" stroke="#fff" stroke-width="2"/>
+        <circle cx="300" cy="88" r="5" fill="var(--text-mid)" stroke="#fff" stroke-width="2"/>
+        <circle cx="320" cy="88" r="5" fill="var(--text-mid)" stroke="#fff" stroke-width="2"/>
+        <circle cx="360" cy="88" r="5" fill="var(--text-mid)" stroke="#fff" stroke-width="2"/>
+        <circle cx="344" cy="88" r="7" fill="var(--gold)" stroke="#fff" stroke-width="2"/>
+        <circle cx="401" cy="88" r="7" fill="var(--rust)" stroke="#fff" stroke-width="2"/>
+        <text x="300" y="132" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="10" font-weight="700" letter-spacing="0.5" fill="var(--text-mid)">PPA −2</text>
+        <text x="401" y="132" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="10" font-weight="700" letter-spacing="0.5" fill="var(--rust)">PACE+ +0.5</text>
+        <text x="344" y="152" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="10" font-weight="700" letter-spacing="0.5" fill="var(--gold)">PRESSBOX −0.9</text>
+      </svg>
+      <div class="dp-hist-line">History check: <b>23 signals</b> back this pick — the side they pointed to covered <b>58.3%</b> of their games in 2023–25.</div>
       <div class="dp-legend">
         <div class="dp-legend-item"><span class="dp-key-veg"></span> Vegas line</div>
         <div class="dp-legend-item"><span class="dp-key" style="background:var(--text-mid);"></span> Each model's read</div>
+        <div class="dp-legend-item"><span class="dp-key" style="background:var(--gold);"></span> PressBox blend</div>
         <div class="dp-legend-item"><span class="dp-key" style="background:var(--rust);"></span> Firing model — the pick</div>
+        <div class="dp-legend-item"><span class="dp-key-lobe"></span> Where these games land — gold side, the pick cashes</div>
       </div>
     </div>
   </div>

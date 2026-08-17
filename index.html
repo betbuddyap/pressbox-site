@@ -215,8 +215,10 @@
     letter-spacing: 0.02em; border: 1px solid var(--ink); border-radius: 6px;
     background: var(--gold); color: var(--cream);
   }
-  /* Streak bolt — faithful mini of .ll-bolt, worn in its A+ colorway
-     (ink chip, gold glyph, gold keyline) so it reads clean on the gold badge */
+  /* A+ badge variant — same inverse-of-A treatment as .ll-badge--aplus */
+  .llm-badge--aplus { background: var(--ink); color: var(--gold-light); border-color: var(--gold); }
+  /* Streak bolt — faithful mini of .ll-bolt in the A+ colorway
+     (ink chip, gold glyph, gold keyline), matching its A+ badge */
   .llm-bolt {
     position: absolute; top: -8px; right: -8px; width: 19px; height: 19px;
     border-radius: 50%; border: 1px solid var(--gold); outline: 2px solid var(--cream);
@@ -224,6 +226,14 @@
     display: flex; align-items: center; justify-content: center;
   }
   .llm-bolt svg { width: 13px; height: 13px; display: block; fill: currentColor; }
+  /* Inline bolt for running copy — the real SVG glyph in a small A+ chip,
+     never the orange emoji */
+  .bolt-inline {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%; vertical-align: -3px;
+    background: var(--ink); color: var(--gold-light); border: 1px solid var(--gold);
+  }
+  .bolt-inline svg { width: 10px; height: 10px; display: block; fill: currentColor; }
   .llm-content { flex: 1 1 auto; min-width: 0; }
   .llm-matchup { font-family: var(--sans); font-size: 17px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 3px; }
   .llm-pick { font-family: var(--sans); font-size: 15px; color: var(--text-mid); line-height: 1.3; }
@@ -317,12 +327,13 @@
   /* upcoming — faithful mini of the .gc.slate card: two team-color halves,
      dark overlay, gold seam, serif names into a serif-italic gold "at",
      time top-right, three pick slots over a cream hairline */
-  .sf-slate { position: relative; overflow: hidden; margin: 14px auto 0; max-width: 270px; border-radius: 6px; background: var(--ink); box-shadow: 0 6px 22px rgba(0,0,0,0.12); }
+  .sf-slate-pair { display: flex; gap: 12px; margin-top: 14px; }
+  .sf-slate { position: relative; overflow: hidden; flex: 1 1 0; min-width: 0; border-radius: 6px; background: var(--ink); box-shadow: 0 6px 22px rgba(0,0,0,0.12); }
   .sf-slate-bg { position: absolute; inset: 0; display: flex; }
   .sf-slate-half { flex: 1; }
   .sf-slate-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,14,10,0.22) 0%, rgba(15,14,10,0.42) 60%, rgba(15,14,10,0.72) 100%); }
   .sf-slate-seam { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(180deg, rgba(212,168,58,0) 0%, rgba(212,168,58,0.55) 30%, rgba(212,168,58,0.55) 70%, rgba(212,168,58,0) 100%); transform: translateX(-0.5px); z-index: 2; }
-  .sf-slate-content { position: relative; z-index: 3; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; min-height: 150px; padding: 12px 14px 10px; }
+  .sf-slate-content { position: relative; z-index: 3; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; min-height: 168px; padding: 12px 14px 10px; }
   .sf-slate-strip { display: flex; justify-content: flex-end; font-family: var(--sans); font-size: 11px; font-weight: 500; color: rgba(248,245,238,0.85); }
   .sf-slate-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 4px; }
   .sf-slate-side { min-width: 0; }
@@ -365,6 +376,10 @@
 
   @media (max-width: 900px) {
     .surf-grid { grid-template-columns: 1fr; gap: 40px; }
+  }
+  @media (max-width: 560px) {
+    .sf-slate-pair { flex-direction: column; }
+    .sf-slate { flex: 0 0 auto; }
   }
   @media (max-width: 600px) {
     .anchor-legend { grid-template-columns: 1fr; }
@@ -430,7 +445,7 @@
     </div>
     <p class="numbers-line">Three seasons of history, and every variable we could measure — kickoff window, day of the week, conference, week of the season, line size, how far our models sat from the market — crossed with the situational spots bettors argue about: rest, travel, rankings, coaching changes, streaks, revenge games. For spreads and totals that made <strong>31,000 candidate signals</strong>. For the moneyline, where who <em>wins</em> is a different question than who covers, the search ran past <strong>a million candidate patterns</strong> over five million graded outcomes. Every one was graded point-in-time, at the line as it stood, then tested against random chance.</p>
     <p class="numbers-line">Almost everything died. <strong>173 spread-and-total signals and 46 moneyline patterns survived — 219 in all.</strong> Those are the voters: a pick's grade, C up to A+, is simply how many of them agree on it. And underneath, four models rebuilt from scratch — opponent-adjusted, zero fudge factors, every backtest that looked too good torn down until we found the bug.</p>
-    <p class="numbers-line">One layer sits on top and never votes: the streak marker. When a team's recent form against our projections adds an extra scenario that aligns with the standard signals, the pick wears a small <strong>⚡ bolt</strong> — a marker on the grade, never part of it.</p>
+    <p class="numbers-line">One layer sits on top and never votes: the streak marker. When a team's recent form against our projections adds an extra scenario that aligns with the standard signals, the pick wears a small <span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> <strong>bolt</strong> — a marker on the grade, never part of it.</p>
     <p class="numbers-rebuild">That's what a grade is made of. What it earns gets settled in public.</p>
     <div class="hero-actions" style="margin-top:32px;">
       <a href="/results.html" class="btn-ghost">Watch the record land →</a>
@@ -448,7 +463,7 @@
     <div class="anchor-stage">
       <div class="llm">
         <div class="llm-head">
-          <div class="llm-badge">A<span class="llm-bolt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span></div>
+          <div class="llm-badge llm-badge--aplus">A+<span class="llm-bolt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span></div>
           <div class="llm-content">
             <div class="llm-matchup">Oklahoma @ Michigan</div>
             <div class="llm-pick"><b>Oklahoma +3</b> · DraftKings + 2 others</div>
@@ -460,7 +475,7 @@
           <div class="llm-acc-label">History</div>
           <div class="llm-history">
             <div class="llm-event">
-              <div class="llm-event-title"><strong>Released A</strong> · Oklahoma +2.5 at Bovada</div>
+              <div class="llm-event-title"><strong>Released A+</strong> · Oklahoma +2.5 at Bovada</div>
               <div class="llm-event-time">Wed, Sep 9 · 6:12 PM</div>
             </div>
             <div class="llm-event">
@@ -468,7 +483,7 @@
               <div class="llm-event-time">Fri, Sep 11 · 9:40 AM</div>
             </div>
             <div class="llm-event">
-              <div class="llm-event-title"><strong>Current</strong> · A holding · Oklahoma +3 at DraftKings</div>
+              <div class="llm-event-title"><strong>Current</strong> · A+ holding · Oklahoma +3 at DraftKings</div>
               <div class="llm-event-time">Now</div>
             </div>
           </div>
@@ -479,7 +494,7 @@
       </div>
 
       <div class="anchor-legend">
-        <div class="anchor-legend-item"><div><b>The grade.</b> How many independent signals agree on the bet — C up to A+, our highest. The small ⚡ marks a streak-aligned pick.</div></div>
+        <div class="anchor-legend-item"><div><b>The grade.</b> How many independent signals agree on the bet — C up to A+, our highest. The small <span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> marks a streak-aligned pick.</div></div>
         <div class="anchor-legend-item"><div><b>The matchup &amp; pick.</b> Which game, and the exact side and number to bet.</div></div>
         <div class="anchor-legend-item"><div><b>The journal.</b> Every grade change and line move since release, on the record.</div></div>
         <div class="anchor-legend-item"><div><b>The best book.</b> Where the line is best right now — named for you.</div></div>
@@ -517,30 +532,59 @@
 
       <div class="surf">
         <div class="section-eyebrow" style="color:var(--gold);">02 — Upcoming</div>
-        <div class="sf-slate" aria-hidden="true">
-          <div class="sf-slate-bg">
-            <div class="sf-slate-half" style="background:linear-gradient(135deg,#154733 0%,#0C2B1F 100%);"></div>
-            <div class="sf-slate-half" style="background:linear-gradient(225deg,#BB0000 0%,#7A0000 100%);"></div>
-          </div>
-          <div class="sf-slate-overlay"></div>
-          <div class="sf-slate-seam"></div>
-          <div class="sf-slate-content">
-            <div class="sf-slate-strip">Sat · 3:30 PM</div>
-            <div class="sf-slate-teams">
-              <div class="sf-slate-side away">
-                <div class="sf-slate-team">Oregon</div>
-                <div class="sf-slate-conf">Big Ten</div>
+        <div class="sf-slate-pair" aria-hidden="true">
+          <div class="sf-slate">
+            <div class="sf-slate-bg">
+              <div class="sf-slate-half" style="background:linear-gradient(135deg,#154733 0%,#0C2B1F 100%);"></div>
+              <div class="sf-slate-half" style="background:linear-gradient(225deg,#BB0000 0%,#7A0000 100%);"></div>
+            </div>
+            <div class="sf-slate-overlay"></div>
+            <div class="sf-slate-seam"></div>
+            <div class="sf-slate-content">
+              <div class="sf-slate-strip">Sat · 3:30 PM</div>
+              <div class="sf-slate-teams">
+                <div class="sf-slate-side away">
+                  <div class="sf-slate-team">Oregon</div>
+                  <div class="sf-slate-conf">Big Ten</div>
+                </div>
+                <span class="sf-slate-at">at</span>
+                <div class="sf-slate-side home">
+                  <div class="sf-slate-team">Ohio State</div>
+                  <div class="sf-slate-conf">Big Ten</div>
+                </div>
               </div>
-              <span class="sf-slate-at">at</span>
-              <div class="sf-slate-side home">
-                <div class="sf-slate-team">Ohio State</div>
-                <div class="sf-slate-conf">Big Ten</div>
+              <div class="sf-slots">
+                <div class="sf-slot"><span class="sf-slot-lab">Spread</span><span class="sf-badge sf-badge--A">A</span></div>
+                <div class="sf-slot"><span class="sf-slot-lab">Total</span><span class="sf-badge sf-badge--B">B</span></div>
+                <div class="sf-slot empty"><span class="sf-slot-lab">ML</span></div>
               </div>
             </div>
-            <div class="sf-slots">
-              <div class="sf-slot"><span class="sf-slot-lab">Spread</span><span class="sf-badge sf-badge--A">A</span></div>
-              <div class="sf-slot"><span class="sf-slot-lab">Total</span><span class="sf-badge sf-badge--B">B</span></div>
-              <div class="sf-slot empty"><span class="sf-slot-lab">ML</span></div>
+          </div>
+          <div class="sf-slate">
+            <div class="sf-slate-bg">
+              <div class="sf-slate-half" style="background:linear-gradient(135deg,#BA0C2F 0%,#7A0820 100%);"></div>
+              <div class="sf-slate-half" style="background:linear-gradient(225deg,#9E1B32 0%,#6E1323 100%);"></div>
+            </div>
+            <div class="sf-slate-overlay"></div>
+            <div class="sf-slate-seam"></div>
+            <div class="sf-slate-content">
+              <div class="sf-slate-strip">Sat · 7:30 PM</div>
+              <div class="sf-slate-teams">
+                <div class="sf-slate-side away">
+                  <div class="sf-slate-team">Georgia</div>
+                  <div class="sf-slate-conf">SEC</div>
+                </div>
+                <span class="sf-slate-at">at</span>
+                <div class="sf-slate-side home">
+                  <div class="sf-slate-team">Alabama</div>
+                  <div class="sf-slate-conf">SEC</div>
+                </div>
+              </div>
+              <div class="sf-slots">
+                <div class="sf-slot"><span class="sf-slot-lab">Spread</span><span class="sf-badge sf-badge--aplus">A+</span></div>
+                <div class="sf-slot empty"><span class="sf-slot-lab">Total</span></div>
+                <div class="sf-slot"><span class="sf-slot-lab">ML</span><span class="sf-badge sf-badge--A">A</span></div>
+              </div>
             </div>
           </div>
         </div>
@@ -603,15 +647,28 @@
             <span class="sf-mkt" style="width:auto;">Spread — every model's read</span>
             <span class="sf-right">Vegas: <b style="color:var(--ink);">Michigan −3</b></span>
           </div>
-          <svg viewBox="0 0 320 60" style="display:block;width:100%;height:auto;">
-            <path d="M10,50 C70,47 105,18 160,13 C215,9 260,36 310,46 L310,50 L10,50 Z" fill="rgba(76,124,168,0.16)" stroke="rgba(76,124,168,0.42)" stroke-width="1"/>
-            <line x1="10" y1="50" x2="310" y2="50" stroke="var(--cream-mid)" stroke-width="2"/>
-            <line x1="128" y1="8" x2="128" y2="56" stroke="var(--ink)" stroke-width="1.5"/>
-            <circle cx="108" cy="50" r="4" fill="var(--text-mid)"/>
-            <circle cx="139" cy="50" r="4" fill="var(--text-mid)"/>
-            <circle cx="151" cy="50" r="4" fill="var(--text-mid)"/>
-            <circle cx="168" cy="50" r="4" fill="var(--text-mid)"/>
-            <circle cx="186" cy="50" r="4" fill="var(--text-mid)"/>
+          <svg viewBox="0 0 320 96" style="display:block;width:100%;height:auto;">
+            <defs>
+              <linearGradient id="sf-gp-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="320" y2="0">
+                <stop offset="0" stop-color="rgba(76,124,168,0.18)"/>
+                <stop offset="0.40625" stop-color="rgba(76,124,168,0.18)"/>
+                <stop offset="0.40625" stop-color="rgba(184,146,42,0.30)"/>
+                <stop offset="1" stop-color="rgba(184,146,42,0.30)"/>
+              </linearGradient>
+            </defs>
+            <path d="M40,52 C90,49 130,33 185,27 C235,22 275,42 300,50 L300,54 C275,62 235,82 185,77 C130,71 90,55 40,52 Z"
+                  fill="url(#sf-gp-grad)" stroke="rgba(107,100,85,0.35)" stroke-width="1"/>
+            <line x1="8" y1="52" x2="312" y2="52" stroke="var(--border)" stroke-width="2"/>
+            <line x1="190" y1="24" x2="190" y2="80" stroke="var(--text-light)" stroke-width="1" opacity="0.55"/>
+            <line x1="130" y1="14" x2="130" y2="90" stroke="var(--ink)" stroke-width="1.5"/>
+            <text x="130" y="10" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="9" font-weight="700" letter-spacing="0.5" fill="var(--ink)">VEGAS −3</text>
+            <circle cx="119" cy="52" r="5" fill="var(--text-mid)" stroke="#fff" stroke-width="2"/>
+            <circle cx="150" cy="52" r="5" fill="var(--text-mid)" stroke="#fff" stroke-width="2"/>
+            <circle cx="160" cy="52" r="5" fill="var(--text-mid)" stroke="#fff" stroke-width="2"/>
+            <circle cx="180" cy="52" r="5" fill="var(--text-mid)" stroke="#fff" stroke-width="2"/>
+            <circle cx="172" cy="52" r="7" fill="var(--gold)" stroke="#fff" stroke-width="2"/>
+            <circle cx="200" cy="52" r="7" fill="var(--rust)" stroke="#fff" stroke-width="2"/>
+            <text x="200" y="94" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="9" font-weight="700" letter-spacing="0.5" fill="var(--rust)">PACE+ +0.5</text>
           </svg>
           <div class="sf-pick" style="margin-top:10px;">History check: <b>23 signals</b> back this pick — the side they pointed to covered <b>58.3%</b> in 2023–25.</div>
         </div>
