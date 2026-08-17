@@ -279,7 +279,7 @@
   .grade-pull { margin-top: 36px; max-width: 760px; font-family: var(--serif); font-size: 21px; font-style: italic; color: var(--gold); line-height: 1.5; border-left: 3px solid var(--gold); padding-left: 24px; }
 
   /* ── MODEL BREAKDOWN: dot plot (faithful to game-page read-card) ── */
-  .breakdown { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
+  .breakdown { padding: 88px 0; background: var(--cream); border-top: 1px solid var(--border); }
   .dp-stage { max-width: 600px; margin: 44px auto 0; background: #FFFFFF; border: 0.5px solid var(--border); border-radius: 4px; padding: 16px 28px 20px; box-shadow: 0 12px 44px rgba(0,0,0,0.07); }
   .dp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--cream-mid); }
   .dp-label { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); }
@@ -330,7 +330,7 @@
   .compare-us { font-family: var(--serif); font-size: 19px; font-style: italic; font-weight: 400; color: var(--gold); line-height: 1.5; }
 
   /* ── PRICING ── */
-  .pricing { padding: 88px 0; background: var(--cream); border-top: 1px solid var(--border); }
+  .pricing { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
   .pricing-rows { margin-top: 40px; display: flex; gap: 48px; flex-wrap: wrap; }
   .pricing-price { font-family: var(--serif); font-size: 36px; font-weight: 700; color: var(--text); line-height: 1; }
   .pricing-price small { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-light); display: block; margin-top: 8px; }
@@ -346,10 +346,49 @@
   .numbers-line strong { color: var(--text); font-weight: 600; }
   .numbers-rebuild { font-family: var(--serif); font-size: 19px; font-style: italic; color: var(--gold); margin-top: 24px; }
 
+  /* ── SURFACES: six mini product mocks (faithful to the real components) ── */
+  .surfaces { padding: 88px 0; background: var(--cream-dark); border-top: 1px solid var(--border); }
+  .surf-grid { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px 44px; }
+  .surf-mock { background: #FFFFFF; border: 0.5px solid var(--border); border-radius: 10px; padding: 16px; margin-top: 14px; box-shadow: 0 6px 22px rgba(0,0,0,0.05); }
+  .surf-cap { font-family: var(--sans); font-size: 13.5px; font-weight: 300; color: var(--text-mid); line-height: 1.65; margin-top: 12px; }
+  .surf-cap b { color: var(--ink); font-weight: 600; }
+  .sf-row { display: flex; align-items: center; gap: 10px; }
+  .sf-row + .sf-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--cream-mid); }
+  .sf-badge { width: 30px; height: 26px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: 0.02em; border-radius: 4px; border: 1px solid var(--ink); }
+  .sf-badge--A { background: var(--gold); color: var(--cream); }
+  .sf-badge--aplus { background: var(--ink); color: var(--gold-light); border-color: var(--gold); }
+  .sf-badge--B { background: var(--silver); color: var(--ink); }
+  .sf-main { flex: 1 1 auto; min-width: 0; }
+  .sf-match { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+  .sf-pick { font-family: var(--sans); font-size: 12px; color: var(--text-mid); line-height: 1.35; margin-top: 1px; }
+  .sf-pick b { color: var(--ink); font-weight: 700; }
+  .sf-right { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); flex-shrink: 0; white-space: nowrap; }
+  .sf-live { display: inline-flex; align-items: center; gap: 6px; width: 30px; flex-shrink: 0; font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold); }
+  .sf-live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+  .sf-foot { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--cream-mid); display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--sans); font-size: 12px; color: var(--text-mid); }
+  .sf-foot b { color: var(--ink); font-weight: 700; }
+  .sf-bar-row + .sf-bar-row { margin-top: 12px; }
+  .sf-bar-lab { display: flex; justify-content: space-between; gap: 12px; font-family: var(--sans); font-size: 12px; color: var(--text-mid); margin-bottom: 5px; }
+  .sf-bar-lab b { color: var(--ink); font-weight: 700; }
+  .sf-bar-track { height: 8px; border-radius: 4px; background: var(--cream-dark); overflow: hidden; }
+  .sf-bar { height: 100%; border-radius: 4px; background: var(--gold); }
+  .sf-rank { display: flex; align-items: baseline; gap: 12px; }
+  .sf-rank + .sf-rank { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--cream-mid); }
+  .sf-rank-num { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--text-light); width: 14px; flex-shrink: 0; }
+  .sf-rank-team { flex: 1 1 auto; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink); }
+  .sf-rank-val { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); }
+  .sf-mark { font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .sf-mark--w { color: var(--sage); }
+  .sf-mark--l { color: var(--rust); }
+  .sf-final { font-family: var(--serif); font-size: 12px; font-weight: 700; font-style: italic; color: var(--gold); }
+
+  @media (max-width: 900px) {
+    .surf-grid { grid-template-columns: 1fr; gap: 40px; }
+  }
   @media (max-width: 600px) {
     .anchor-legend { grid-template-columns: 1fr; }
     .pricing-rows { gap: 26px; }
-    .numbers-big { font-size: 32px; }
+    .numbers-big { font-size: 30px; }
     .compare-us { font-size: 17px; }
   }
 
@@ -398,12 +437,27 @@
   </div>
 </section>
 
-<!-- 2 · ANCHOR — what one pick looks like -->
+<!-- 2 · THE METHODOLOGY (how we got here) -->
+<section class="numbers">
+  <div class="container">
+    <div class="section-eyebrow">The Methodology</div>
+    <h2 class="section-title">We didn't find a system. <em>We eliminated everything that wasn't one.</em></h2>
+    <div class="numbers-big">Over a million combinations tested · <span>219 survived</span></div>
+    <p class="numbers-line">Three seasons of history, and every variable we could measure — kickoff window, day of the week, conference, week of the season, line size, how far our models sat from the market — crossed with the situational spots bettors argue about: rest, travel, rankings, coaching changes, streaks, revenge games. For spreads and totals that made <strong>31,000 candidate signals</strong>. For the moneyline, where who <em>wins</em> is a different question than who covers, the search ran past <strong>a million candidate patterns</strong> over five million graded outcomes. Every one was graded point-in-time, at the line as it stood, then tested against random chance.</p>
+    <p class="numbers-line">Almost everything died. <strong>173 spread-and-total signals and 46 moneyline patterns survived — 219 in all.</strong> Those are the voters: a pick's grade, C up to A+, is simply how many of them agree on it. And underneath, four models rebuilt from scratch — opponent-adjusted, zero fudge factors, every backtest that looked too good torn down until we found the bug.</p>
+    <p class="numbers-rebuild">That's what a grade is made of. What it earns is settled in public — the grade locks at kickoff and the bet settles at the number we published, not the one that would've looked best.</p>
+    <div class="hero-actions" style="margin-top:32px;">
+      <a href="/results.html" class="btn-ghost">Watch the record land →</a>
+    </div>
+  </div>
+</section>
+
+<!-- 3 · THE BOARD — what one pick looks like -->
 <section class="anchor">
   <div class="container">
     <div class="section-eyebrow">The Board</div>
     <h2 class="section-title">This is what one pick looks like.</h2>
-    <p class="section-sub">Every graded bet gets a row like this — here's the spread on Oklahoma @ Michigan. Here's how to read it.</p>
+    <p class="section-sub">The backbone of the product. Every graded bet — every spread, total, and moneyline — gets a row like this; the rest of the site is built on top of them. Here's the spread on Oklahoma @ Michigan, and how to read it.</p>
 
     <div class="anchor-stage">
       <div class="llm">
@@ -452,6 +506,94 @@
   </div>
 </section>
 
+<!-- 4 · THE SURFACES (light overview, mini mocks) -->
+<section class="surfaces" id="what-you-get">
+  <div class="container">
+    <div class="section-eyebrow">What You Get</div>
+    <h2 class="section-title">Six surfaces. <em>One discipline.</em></h2>
+    <p class="section-sub">Same picks, same grades, same numbers everywhere — each surface is a different job you'd hire them for.</p>
+
+    <div class="surf-grid">
+      <div class="surf">
+        <div class="section-eyebrow" style="color:var(--gold);">01 — The Board <span style="color:var(--text-light);font-weight:500;">(Live Lines)</span></div>
+        <div class="surf-mock" aria-hidden="true">
+          <div class="sf-row">
+            <span class="sf-badge sf-badge--A">A</span>
+            <div class="sf-main">
+              <div class="sf-match">Oklahoma @ Michigan</div>
+              <div class="sf-pick">Pick: <b>Oklahoma +3</b> · −108 · DraftKings</div>
+            </div>
+            <span class="sf-right">Sat 12:00</span>
+          </div>
+        </div>
+        <p class="surf-cap"><b>Every bet on the board</b> — spread, total, and moneyline — tier-graded, best book named, re-graded every 30 minutes. The "what's the bet right now" view.</p>
+      </div>
+
+      <div class="surf">
+        <div class="section-eyebrow" style="color:var(--gold);">02 — Upcoming</div>
+        <div class="surf-mock" aria-hidden="true">
+          <div class="sf-row">
+            <span class="sf-badge sf-badge--aplus">A+</span>
+            <div class="sf-main"><div class="sf-match">Georgia @ Alabama</div><div class="sf-pick">3 bets live on the Board</div></div>
+            <span class="sf-right">Sat 3:30</span>
+          </div>
+          <div class="sf-row">
+            <span class="sf-live">Live</span>
+            <div class="sf-main"><div class="sf-match">Oregon @ Ohio State</div></div>
+            <span class="sf-right"><b style="color:var(--ink);">21–17</b> · Q3</span>
+          </div>
+        </div>
+        <p class="surf-cap"><b>The whole slate ahead</b>, tier-badged where bets are live — then scores in real time once games kick. The "what's coming, what's playing" view.</p>
+      </div>
+
+      <div class="surf">
+        <div class="section-eyebrow" style="color:var(--gold);">03 — Parlay</div>
+        <div class="surf-mock" aria-hidden="true">
+          <div class="sf-row"><span class="sf-badge sf-badge--aplus">A+</span><div class="sf-main"><div class="sf-pick"><b>Georgia −6.5</b> · −110</div></div></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--A">A</span><div class="sf-main"><div class="sf-pick"><b>Oklahoma +3</b> · −108</div></div></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--B">B</span><div class="sf-main"><div class="sf-pick"><b>Under 54.5</b> · −112</div></div></div>
+          <div class="sf-foot"><span>3 legs</span><b>+596 · $25 pays $174</b></div>
+        </div>
+        <p class="surf-cap"><b>Stack legs straight off the board</b> — every one priced at the live market, so you see the real combined edge before you bet it. The "stack the edges" view.</p>
+      </div>
+
+      <div class="surf">
+        <div class="section-eyebrow" style="color:var(--gold);">04 — Allocator</div>
+        <div class="surf-mock" aria-hidden="true">
+          <div class="sf-bar-row"><div class="sf-bar-lab"><span><b>Georgia −6.5</b> · A+</span><b>$420</b></div><div class="sf-bar-track"><div class="sf-bar" style="width:100%;"></div></div></div>
+          <div class="sf-bar-row"><div class="sf-bar-lab"><span><b>Oklahoma +3</b> · A</span><b>$330</b></div><div class="sf-bar-track"><div class="sf-bar" style="width:79%;"></div></div></div>
+          <div class="sf-bar-row"><div class="sf-bar-lab"><span><b>Under 54.5</b> · B</span><b>$250</b></div><div class="sf-bar-track"><div class="sf-bar" style="width:60%;"></div></div></div>
+          <div class="sf-foot"><span>$1,000 in play</span><b>every dollar placed</b></div>
+        </div>
+        <p class="surf-cap"><b>Give it a bankroll</b> and it splits the whole stack — heavier where the edge is bigger, and at one sportsbook's lines if you only play one. The "how much on each" view.</p>
+      </div>
+
+      <div class="surf">
+        <div class="section-eyebrow" style="color:var(--gold);">05 — Rankings</div>
+        <div class="surf-mock" aria-hidden="true">
+          <div class="sf-rank"><span class="sf-rank-num">1</span><span class="sf-rank-team">Georgia</span><span class="sf-rank-val">+31.2</span></div>
+          <div class="sf-rank"><span class="sf-rank-num">2</span><span class="sf-rank-team">Ohio State</span><span class="sf-rank-val">+29.8</span></div>
+          <div class="sf-rank"><span class="sf-rank-num">3</span><span class="sf-rank-team">Oregon</span><span class="sf-rank-val">+27.4</span></div>
+        </div>
+        <p class="surf-cap"><b>Every FBS team</b>, ranked by the same models that grade the bets — see what the system believes before you see what it bets. The "who's actually good" view.</p>
+      </div>
+
+      <div class="surf">
+        <div class="section-eyebrow" style="color:var(--gold);">06 — Results</div>
+        <div class="surf-mock" aria-hidden="true">
+          <div class="sf-row">
+            <div class="sf-main"><div class="sf-match">Oklahoma @ Michigan</div></div>
+            <span class="sf-right"><span class="sf-final">Final</span> <b style="color:var(--ink);">38–31</b></span>
+          </div>
+          <div class="sf-row"><span class="sf-badge sf-badge--A">A</span><div class="sf-main"><div class="sf-pick"><b>Oklahoma +3</b> · −108</div></div><span class="sf-mark sf-mark--w">✓</span></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--B">B</span><div class="sf-main"><div class="sf-pick"><b>Under 54.5</b> · −112</div></div><span class="sf-mark sf-mark--l">✕</span></div>
+        </div>
+        <p class="surf-cap"><b>Live Lines for finished games</b> — every pick graded at the released number, exactly as published, linked to the full breakdown. The "hold us to it" view.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 3 · HOW IT WORKS (4-step walkthrough) -->
 <section class="how">
   <div class="container">
@@ -494,44 +636,6 @@
   </div>
 </section>
 
-<!-- 4 · WHAT YOU GET (four actionable surfaces) -->
-<section id="what-you-get" style="border-top:1px solid var(--border);background:var(--cream);">
-  <div class="container" style="padding-top:80px;padding-bottom:80px;">
-    <div class="section-eyebrow">What You Get</div>
-    <h2 class="section-title">Six surfaces. <em>One discipline.</em></h2>
-
-    <div style="margin-top:48px;border-top:1px solid var(--border);padding-top:36px;">
-      <div class="section-eyebrow" style="color:var(--gold);">01 — The Board <span style="color:var(--text-light);font-weight:500;">(Live Lines)</span></div>
-      <p class="section-sub" style="margin-top:12px;">Every bet on the board — spread, total, and moneyline — tier-graded and best-book named. Every FBS-vs-FBS matchup with open lines; we don't grade games against FCS opponents. Re-graded every 30 minutes as the market moves. The "what's the bet right now" view.</p>
-    </div>
-
-    <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
-      <div class="section-eyebrow" style="color:var(--gold);">02 — Upcoming</div>
-      <p class="section-sub" style="margin-top:12px;">The full slate ahead — every upcoming FBS-vs-FBS game on the schedule, with a tier badge on the matchups that already have bets live on the Board. And it doesn't stop at kickoff: once games go live, Upcoming follows them in real time with scores and in-game updates. The "what's coming, what's playing, and where the edges are" view.</p>
-    </div>
-
-    <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
-      <div class="section-eyebrow" style="color:var(--gold);">03 — Parlay</div>
-      <p class="section-sub" style="margin-top:12px;">Build a parlay straight from live picks. Pull any legs off the board and every one is priced against the current best market line, so you see the true combined edge before you bet it. The "stack the edges" view.</p>
-    </div>
-
-    <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
-      <div class="section-eyebrow" style="color:var(--gold);">04 — Allocator</div>
-      <p class="section-sub" style="margin-top:12px;">Tell it how much you're putting in play and it splits the whole stack across the board for you — heavier on the picks with the biggest edge, lighter on the thin ones, so your money follows your best bets. Dial it Conservative, Moderate, or Aggressive — or pick your one sportsbook and it re-sizes everything at that book's lines. The "how much on each" view.</p>
-    </div>
-
-    <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
-      <div class="section-eyebrow" style="color:var(--gold);">05 — Rankings</div>
-      <p class="section-sub" style="margin-top:12px;">Every FBS team, ranked by the same models that grade the bets — so you can see what the system believes before you see what it bets. The "who's actually good" view.</p>
-    </div>
-
-    <div style="margin-top:36px;border-top:1px solid var(--border);padding-top:36px;">
-      <div class="section-eyebrow" style="color:var(--gold);">06 — Results</div>
-      <p class="section-sub" style="margin-top:12px;">Live Lines for games that are over. When a game kicks off its picks leave the board; when it goes final they land here — graded at the released number, exactly as published, linked to the full breakdown. The "hold us to it" view.</p>
-    </div>
-  </div>
-</section>
-
 <!-- 5 · WHY WE'RE DIFFERENT (comparison) -->
 <section class="compare">
   <div class="container">
@@ -558,22 +662,7 @@
   </div>
 </section>
 
-<!-- 6 · THE METHODOLOGY (the effort) -->
-<section class="numbers">
-  <div class="container">
-    <div class="section-eyebrow">The Methodology</div>
-    <h2 class="section-title">We didn't find a system. <em>We eliminated everything that wasn't one.</em></h2>
-    <div class="numbers-big">31,000+ signals tested · <span>173 survived</span></div>
-    <p class="numbers-line">For spreads and totals, we swept more than <strong>31,000 candidate signals</strong> across three seasons of history — every combination of kickoff window, day of the week, conference, week of the season, line size, and how far our models sat from the market, crossed with the situational spots bettors argue about: rest, travel, rankings, coaching changes, streaks, revenge games. Every candidate was graded point-in-time, against opening lines, then tested against random chance. The ones coincidence couldn't explain became the <strong>173-signal electorate</strong> — and a pick's grade, C up to A+, is simply how many of them agree.</p>
-    <p class="numbers-line">The moneyline got its own search, because who <em>wins</em> is a different question than who covers. Over <strong>a million candidate patterns</strong>, five million graded outcomes, two independent statistical hurdles each survivor had to clear — <strong>46 made the book</strong>. Underneath all of it: four models rebuilt from scratch, opponent-adjusted, with zero fudge factors, and every backtest that looked too good torn down until we found the bug.</p>
-    <p class="numbers-rebuild">That's what a grade is made of. What it earns is settled in public — the grade locks at kickoff and the bet settles at the number we published, not the one that would've looked best.</p>
-    <div class="hero-actions" style="margin-top:32px;">
-      <a href="/results.html" class="btn-ghost">Watch the record land →</a>
-    </div>
-  </div>
-</section>
-
-<!-- 6b · HOW RESULTS ARE GRADED (integrity) -->
+<!-- 6 · HOW RESULTS ARE GRADED (integrity) -->
 <section class="grade">
   <div class="container">
     <div class="section-eyebrow">How We Grade Ourselves</div>
@@ -606,7 +695,7 @@
         <div class="grade-step-k">04</div>
         <div>
           <div class="grade-step-t">The result lands on the public Results page</div>
-          <div class="grade-step-d">Every settled bet is posted, win or lose. The two-season backtest that built the system runs on separate, frozen logic against historical closing-line data — <strong>immutable receipts</strong> we don't touch.</div>
+          <div class="grade-step-d">Every settled bet is posted, win or lose. The three-season backtest that built the system is separate and frozen — <strong>immutable receipts</strong> we don't touch.</div>
         </div>
       </div>
     </div>
@@ -616,8 +705,8 @@
 </section>
 
 <!-- 7 · THE FIVE MODELS (trimmed summary) -->
-<section id="the-model" style="border-top:1px solid var(--border);background:var(--cream);">
-  <div class="container" style="padding-top:80px;padding-bottom:80px;">
+<section id="the-model" style="border-top:1px solid var(--border);background:var(--cream-dark);">
+  <div class="container" style="padding-top:88px;padding-bottom:88px;">
     <div class="section-eyebrow">The Model</div>
     <h2 class="section-title">Five reads. <em>One verdict per bet.</em></h2>
 
@@ -704,7 +793,6 @@
       <div class="pricing-price">$34.99<small>season pass</small></div>
     </div>
     <p class="pricing-lock">These are release prices. They lock for the life of your subscription. Resubscribers pay current pricing.</p>
-    <p class="pricing-first"><b>First charge anchored to Aug 23.</b> Subscribe today, pay nothing until picks drop for Week 0.</p>
     <div class="hero-actions" style="margin-top:32px;">
       <a href="/subscribe.html" class="btn-primary">Get the picks →</a>
     </div>
@@ -712,7 +800,7 @@
 </section>
 
 <!-- 9 · CLOSING (founder-voice payoff) -->
-<section id="closing" style="border-top:1px solid var(--border);background:var(--cream-dark);">
+<section id="closing" style="border-top:1px solid var(--border);background:var(--cream);">
   <div class="container" style="padding-top:88px;padding-bottom:88px;text-align:center;">
     <div class="section-eyebrow" style="justify-content:center;">The 2026 Season</div>
     <h2 class="section-title">The whole board. <em>The whole truth.</em></h2>
