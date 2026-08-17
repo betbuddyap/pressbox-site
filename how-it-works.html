@@ -290,6 +290,7 @@
   .tier-card { background:#fff; border:0.5px solid var(--border); border-radius:8px; padding:18px; }
   .tier-card-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
   .tier-chip { font-family:var(--sans); font-size:12px; font-weight:700; padding:5px 10px; border-radius:4px; letter-spacing:.3px; border:1px solid transparent; white-space:nowrap; }
+  .tier-chip-aplus { background:var(--ink); color:var(--gold-light); border-color:var(--gold); }
   .tier-chip-a { background:var(--gold); color:var(--cream); border-color:var(--ink); }
   .tier-chip-b { background:var(--silver); color:var(--ink); border-color:var(--ink); }
   .tier-chip-c { background:var(--bronze); color:var(--cream); border-color:var(--ink); }
@@ -357,15 +358,15 @@
 <!-- TICKER -->
 <div class="ticker">
   <div class="ticker-track">
-    Our highest tier: <b>122-58</b> · <b>67.8%</b> across two seasons<span>·</span>
-    <b>Gold, silver &amp; bronze</b> — three graded tiers<span>·</span>
-    <b>Every FBS-vs-FBS game</b> graded<span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
+    <b>Every FBS game</b> graded — spread, total &amp; moneyline<span>·</span>
+    <b>C to A+</b> — the grade is how many signals agree<span>·</span>
+    <b>No Edge published too</b> — the passes are on the record<span>·</span>
+    Scored on the <b>number we gave you</b><span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
-    Our highest tier: <b>122-58</b> · <b>67.8%</b> across two seasons<span>·</span>
-    <b>Gold, silver &amp; bronze</b> — three graded tiers<span>·</span>
-    <b>Every FBS-vs-FBS game</b> graded<span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
+    <b>Every FBS game</b> graded — spread, total &amp; moneyline<span>·</span>
+    <b>C to A+</b> — the grade is how many signals agree<span>·</span>
+    <b>No Edge published too</b> — the passes are on the record<span>·</span>
+    Scored on the <b>number we gave you</b><span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
   </div>
 </div>
@@ -380,6 +381,7 @@
       <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
       <li><a href="/upcoming.html">Upcoming</a></li>
       <li><a href="/parlay.html">Parlay</a></li>
+      <li><a href="/allocator.html">Allocator</a></li>
       <li><a href="/rankings.html">Rankings</a></li>
       <li><a href="/results.html">Results</a></li>
       <li><a href="/login.html" id="navAuth" style="opacity:0.7;">Sign in</a></li>
@@ -396,6 +398,7 @@
   <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
   <a href="/upcoming.html">Upcoming</a>
   <a href="/parlay.html">Parlay</a>
+  <a href="/allocator.html">Allocator</a>
   <a href="/rankings.html">Rankings</a>
   <a href="/results.html">Results</a>
   <a href="/login.html" id="navAuthMobile" style="opacity:0.7;">Sign in</a>
@@ -497,41 +500,36 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="section-num">03 — The grades</div>
     <h2 class="section-title">What each grade <em>means.</em></h2>
     <div class="section-body">
-      <p>Spreads and totals share one scale — read it as <em>how often we're right</em>, gold down to bronze. Moneylines get their own three, read as <em>how they pay</em>: a longshot that hits once in three tries can still be the most profitable bet on the board. Every grade is a published verdict — including the ones that say "pass."</p>
+      <p>Every grade is a count of <em>independent agreement</em> — how many of our proven signals fired on the same side of the same bet. One signal is a C. Four or more is an A+. The signals were found and tested across 2023–25; the grades they earn now are settled in public, game by game, on <a href="/results.html">Results</a>. Every grade is a published verdict, including the ones that say "pass."</p>
     </div>
 
     <div class="tier-group-label">Spread &amp; Total</div>
     <div class="tier-grid">
       <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-a">A</span><span class="tier-card-name">Gold — highest conviction</span></div>
-        <div class="tier-card-desc">Our tightest, most-repeatable setups — a strong edge with the model read and the market pulling the same way. <strong>67.8%</strong> against the spread and total across two seasons (122&#8209;58), our steadiest year to year — a 0.8&#8209;point gap between 2024 and 2025 — at roughly seven picks a week. <strong>+29.4% ROI.</strong></div>
+        <div class="tier-card-head"><span class="tier-chip tier-chip-aplus">A+</span><span class="tier-card-name">Four or more signals agree</span></div>
+        <div class="tier-card-desc">The rarest verdict on the board — four or more independent signals, all pulling the same way on the same number.</div>
       </div>
       <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-b">B</span><span class="tier-card-name">Silver — strong edge</span></div>
-        <div class="tier-card-desc">A clear, proven edge at higher volume — the bulk of the confident board. <strong>62.7%</strong> across two seasons (484&#8209;288), around thirty picks a week. <strong>+19.7% ROI.</strong></div>
+        <div class="tier-card-head"><span class="tier-chip tier-chip-a">A</span><span class="tier-card-name">Gold — three agree</span></div>
+        <div class="tier-card-desc">Three independent signals land on the same side.</div>
       </div>
       <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-c">C</span><span class="tier-card-name">Bronze — playable edge</span></div>
-        <div class="tier-card-desc">A real but slimmer edge, and the widest net we cast. <strong>58.1%</strong> across two seasons (428&#8209;309), about twenty-eight picks a week — a lower hit rate than gold or silver, still ahead over time. <strong>+11.2% ROI.</strong></div>
+        <div class="tier-card-head"><span class="tier-chip tier-chip-b">B</span><span class="tier-card-name">Silver — two agree</span></div>
+        <div class="tier-card-desc">Two signals, one side.</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-c">C</span><span class="tier-card-name">Bronze — one signal</span></div>
+        <div class="tier-card-desc">A single proven signal — the widest net we cast, and still a published, graded bet.</div>
       </div>
     </div>
     <p class="tier-note"><span class="tier-chip tier-chip-noedge">No Edge</span> Everything else grades <strong>No Edge</strong> — we ran the game and didn't find a bet worth making, or the market moved past the one we had. We publish that verdict too, right on the board.</p>
 
     <div class="tier-group-label">Moneyline</div>
-    <div class="tier-grid">
-      <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-sm">💰 Smart Money</span></div>
-        <div class="tier-card-desc">Moneyline value at fair prices — near-pickem to modest favorites. The one ML grade that wins outright <em>and</em> pays: <strong>64.5%</strong> (118&#8209;65), <strong>+31.4% ROI.</strong></div>
-      </div>
-      <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-gl">🐻 Goldilocks</span></div>
-        <div class="tier-card-desc">The middle-ground underdog — not chalk, not a longshot. Moderate dogs where the price and the read line up. Wins under half the time (<strong>45.6%</strong>, 57&#8209;68), but the plus money makes it pay: <strong>+27.1% ROI.</strong></div>
-      </div>
-      <div class="tier-card">
-        <div class="tier-card-head"><span class="tier-chip tier-chip-lt">🎟 Lottery</span></div>
-        <div class="tier-card-desc">Heavy underdogs and longshots. Hits less than a third of the time (<strong>28.9%</strong>, 24&#8209;59) — by design. A handful of big payouts carries it: <strong>+67.5% ROI.</strong></div>
-      </div>
+    <div class="section-body">
+      <p>The moneyline runs on its <em>own</em> signal set — rebuilt from scratch for 2026. Instead of borrowing spread signals, we searched three seasons for patterns that predict who <em>wins</em> — a different question than who covers — and only the survivors made the book. The grades read the same way: each of our four models gets one vote per game, so <strong>C</strong> means one model's signals fired, <strong>B</strong> two, <strong>A</strong> three, and <strong>A+</strong> means all four models agree on the winner. And we only publish a moneyline priced between <strong>−300 and +300</strong> — outside that band, the payout math stops being worth your money.</p>
     </div>
+
+    <p class="tier-note"><strong>⚡ The bolt.</strong> Some picks carry a small bolt on the badge — our streak marker. It fires when a team's recent form sits in a band the market has historically mispriced <em>and</em> our pick already points the same way. It never changes a grade and never fires a pick on its own; the game page explains each one in plain words.</p>
   </div>
 
   <!-- 4 · WHERE THE GRADE SHOWS UP -->

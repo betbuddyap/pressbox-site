@@ -257,15 +257,15 @@
 <!-- TICKER -->
 <div class="ticker">
   <div class="ticker-track">
-    Our highest tier: <b>122-58</b> · <b>67.8%</b> across two seasons<span>·</span>
-    <b>Gold, silver &amp; bronze</b> — three graded tiers<span>·</span>
-    <b>Every FBS game</b> graded<span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
+    <b>Every FBS game</b> graded — spread, total &amp; moneyline<span>·</span>
+    <b>C to A+</b> — the grade is how many signals agree<span>·</span>
+    <b>No Edge published too</b> — the passes are on the record<span>·</span>
+    Scored on the <b>number we gave you</b><span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
-    Our highest tier: <b>122-58</b> · <b>67.8%</b> across two seasons<span>·</span>
-    <b>Gold, silver &amp; bronze</b> — three graded tiers<span>·</span>
-    <b>Every FBS game</b> graded<span>·</span>
-    <b>0.8 percentage points</b> year-over-year stability<span>·</span>
+    <b>Every FBS game</b> graded — spread, total &amp; moneyline<span>·</span>
+    <b>C to A+</b> — the grade is how many signals agree<span>·</span>
+    <b>No Edge published too</b> — the passes are on the record<span>·</span>
+    Scored on the <b>number we gave you</b><span>·</span>
     2026 picks drop in time for <b>Week 0</b><span>·</span>
   </div>
 </div>
@@ -280,6 +280,7 @@
       <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
       <li><a href="/upcoming.html">Upcoming</a></li>
       <li><a href="/parlay.html">Parlay</a></li>
+      <li><a href="/allocator.html">Allocator</a></li>
       <li><a href="/rankings.html">Rankings</a></li>
       <li><a href="/results.html">Results</a></li>
       <li><a href="/login.html" id="navAuth" style="opacity:0.7;">Sign in</a></li>
@@ -296,6 +297,7 @@
   <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
   <a href="/upcoming.html">Upcoming</a>
   <a href="/parlay.html">Parlay</a>
+  <a href="/allocator.html">Allocator</a>
   <a href="/rankings.html">Rankings</a>
   <a href="/results.html">Results</a>
   <a href="/login.html" id="navAuthMobile" style="opacity:0.7;">Sign in</a>
@@ -358,7 +360,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <p>Then we caught another version of the same bug in different parts of the model. Rebuilt again. Numbers came in lower again.</p>
       <p>Then we caught data corruption in the rating refresh — duplicate rows polluting the inputs. Fixed it. Rebuilt the backtest a third time.</p>
       <p>Then we added a stability filter. Every signal in the locked system has to hold up year-over-year — not just hit a single-season win rate, but produce comparable results in 2024 and 2025. Signals that didn't pass got cut.</p>
-      <p>What remains is the locked spec. Our highest tier hit 67.8% across two seasons with a 0.8 percentage-point difference between years. Three audit passes. Two rebuilds. The number that remains is real.</p>
+      <p>What remains is the locked spec: only the signals that held up year over year, under three audit passes and two full rebuilds. The numbers that survived are smaller than the ones we threw away — which is exactly why we trust them enough to test in public.</p>
       <p><strong>Most operations would have shipped the first model. We didn't, and that's the point.</strong></p>
     </div>
   </div>
@@ -385,31 +387,18 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       </div>
       <div class="commitment">
         <div class="commitment-icon">✕</div>
-        <div class="commitment-text"><strong>Not infallible.</strong> We lose weeks. We lose games. The model is wrong sometimes. What it isn't is consistently wrong — and across the two seasons under the locked spec, that difference has added up.</div>
+        <div class="commitment-text"><strong>Not infallible.</strong> We lose weeks. We lose games. The model is wrong sometimes. What it isn't is consistently wrong — and that difference, compounded across a full season, is the entire bet this product makes.</div>
       </div>
     </div>
   </div>
 
-  <!-- The numbers -->
+  <!-- The record -->
   <div class="section">
     <div class="section-label">The record</div>
-    <h2 class="section-title">Two seasons under the locked spec. The numbers speak for themselves.</h2>
+    <h2 class="section-title">We're not going to tout a backtest. <em>Watch the real one land.</em></h2>
     <div class="section-body">
-      <p>Every stat below is backtested against opening lines from tracked sportsbooks. No look-ahead bias, no favorable assumptions, no cherry-picking the good weeks.</p>
-    </div>
-    <div class="stats-bar">
-      <div class="stat-item">
-        <div class="stat-val">67.8%</div>
-        <div class="stat-lbl">Highest tier hit rate · 122-58 · two seasons</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val">+29.4%</div>
-        <div class="stat-lbl">Highest tier ROI · point-in-time backtest</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val">0.8pp</div>
-        <div class="stat-lbl">Year-over-year stability · 2024 vs 2025</div>
-      </div>
+      <p>Everything in the system was found and tested against three seasons of history — point-in-time, opening lines, no look-ahead, audited until only the durable signals survived. But a number you earn on the seasons you searched is a claim, not a record. We know the difference, and we're not going to blur it.</p>
+      <p>So here's the deal instead: <strong>2026 is the test, and you get to watch it graded live.</strong> Every pick locks at kickoff, settles at the number we published, and lands on <a href="/results.html">Results</a> — wins, losses, and pushes, next to the games we passed on. If the system is what we believe it is, the record will say so in public, week by week, where nobody can retouch it.</p>
     </div>
   </div>
 
@@ -418,15 +407,14 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="section-label">What's next</div>
     <h2 class="section-title">PressBox on day one <em>isn't PressBox on day 365.</em></h2>
     <div class="section-body">
-      <p>Live today: the Board, the History, the Breakdown, and the Upcoming slate with live scores. Picks flow through the system on a 30-minute regrade cycle. Every grade change is journaled. Every line move is on the record.</p>
+      <p>Live today: the full Board on a 30-minute regrade cycle, the Upcoming slate with live scores, a game-page breakdown for every matchup, the Parlay builder pricing every leg against the market, the Allocator splitting your stake across the board — at the best line, or entirely at your one sportsbook — Rankings, and Results, where every graded pick lands in public. Every grade change is journaled. Every line move is on the record.</p>
+      <p>New for 2026: the moneyline runs on its own signal set, searched from scratch for patterns that predict who <em>wins</em> rather than who covers — because those turned out to be different questions with different answers.</p>
       <p><strong>What's coming after launch:</strong></p>
       <ul style="margin:0 0 1.2em;padding-left:1.2em;line-height:1.6;">
-        <li>A bet allocator — sizing each play against your bankroll and the tier's historical hit rate</li>
-        <li>A parlay builder and grader — assemble multi-leg bets and see them graded in the same journal as everything else</li>
         <li>A user picks ledger — log your own bets alongside ours, with running profit/loss</li>
         <li>Other sports — NFL is the natural next step</li>
       </ul>
-      <p>The 2026 college football season is the first season under the locked spec. Picks drop in time for Week 0 (Aug 29). Release pricing — $3.99/wk, $11.99/mo, $34.99 Season Pass — locks for the life of your subscription. Subscribe today and your first charge is anchored to Aug 23, when picks start to drop. Pay nothing until then.</p>
+      <p>The 2026 college football season is the first season under the locked spec. Picks drop in time for Week 0 (Aug 23). Release pricing — $3.99/wk, $11.99/mo, $34.99 Season Pass — locks for the life of your subscription. Subscribe today and your first charge is anchored to Aug 23, when picks start to drop. Pay nothing until then.</p>
     </div>
   </div>
 
