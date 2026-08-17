@@ -313,7 +313,10 @@
   /* shared bones — the Live Lines row language */
   .sf-row { display: flex; align-items: center; gap: 10px; }
   .sf-row + .sf-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--cream-mid); }
-  .sf-badge { width: 30px; height: 26px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.02em; border-radius: 4px; border: 1px solid var(--ink); }
+  .sf-badge { position: relative; width: 30px; height: 26px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.02em; border-radius: 4px; border: 1px solid var(--ink); }
+  /* mini of .ll-bolt, scaled to the mini badge — A+ colorway */
+  .sf-bolt { position: absolute; top: -7px; right: -7px; width: 15px; height: 15px; border-radius: 50%; border: 1px solid var(--gold); outline: 2px solid var(--cream); background: var(--ink); color: var(--gold-light); display: flex; align-items: center; justify-content: center; }
+  .sf-bolt svg { width: 10px; height: 10px; display: block; fill: currentColor; }
   .sf-badge--A { background: var(--gold); color: var(--cream); }
   .sf-badge--aplus { background: var(--ink); color: var(--gold-light); border-color: var(--gold); }
   .sf-badge--B { background: var(--silver); color: var(--ink); }
@@ -547,7 +550,7 @@
         <div class="section-eyebrow" style="color:var(--gold);">01 — The Board <span style="color:var(--text-light);font-weight:500;">(Live Lines)</span></div>
         <div class="surf-mock" aria-hidden="true">
           <div class="sf-row">
-            <span class="sf-badge sf-badge--A">A</span>
+            <span class="sf-badge sf-badge--aplus">A+<span class="sf-bolt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span></span>
             <div class="sf-main">
               <div class="sf-match">Oklahoma @ Michigan</div>
               <div class="sf-pick">Oklahoma <b>+3</b> <span class="sf-px">(−108)</span> · DraftKings + 2 others</div>
@@ -594,8 +597,8 @@
         <div class="section-eyebrow" style="color:var(--gold);">03 — Parlay</div>
         <div class="surf-mock" aria-hidden="true">
           <div class="sf-legcount">3-Leg Parlay</div>
-          <div class="sf-row"><span class="sf-badge sf-badge--aplus">A+</span><div class="sf-main"><div class="sf-match">Georgia @ Alabama</div><div class="sf-pick">Georgia <b>−6.5</b> <span class="sf-px">(−110)</span> · FanDuel</div></div></div>
-          <div class="sf-row"><span class="sf-badge sf-badge--A">A</span><div class="sf-main"><div class="sf-match">Oklahoma @ Michigan</div><div class="sf-pick">Oklahoma <b>+3</b> <span class="sf-px">(−108)</span> · DraftKings</div></div></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--aplus">A+<span class="sf-bolt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span></span><div class="sf-main"><div class="sf-match">Oklahoma @ Michigan</div><div class="sf-pick">Oklahoma <b>+3</b> <span class="sf-px">(−108)</span> · DraftKings</div></div></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--A">A</span><div class="sf-main"><div class="sf-match">Georgia @ Alabama</div><div class="sf-pick">Georgia <b>−6.5</b> <span class="sf-px">(−110)</span> · FanDuel</div></div></div>
           <div class="sf-row"><span class="sf-badge sf-badge--B">B</span><div class="sf-main"><div class="sf-match">Oregon @ Ohio State</div><div class="sf-pick">Under <b>54.5</b> <span class="sf-px">(−112)</span> · BetMGM</div></div></div>
           <div class="sf-probs">
             <div class="sf-prob sf-prob--ours"><span class="sf-prob-k">Our hit probability</span><span class="sf-prob-v">22.1%</span></div>
@@ -608,9 +611,9 @@
       <div class="surf">
         <div class="section-eyebrow" style="color:var(--gold);">04 — Allocator</div>
         <div class="surf-mock" aria-hidden="true">
-          <div class="sf-row"><span class="sf-badge sf-badge--aplus">A+</span><div class="sf-main"><div class="sf-match">Georgia @ Alabama</div><div class="sf-pick">Georgia <b>−6.5</b> <span class="sf-px">(−110)</span></div></div><div class="sf-stake"><div class="sf-stake-amt">$420</div><div class="sf-stake-lbl">42.0% of pot</div></div></div>
-          <div class="sf-row"><span class="sf-badge sf-badge--A">A</span><div class="sf-main"><div class="sf-match">Oklahoma @ Michigan</div><div class="sf-pick">Oklahoma <b>+3</b> <span class="sf-px">(−108)</span></div></div><div class="sf-stake"><div class="sf-stake-amt">$330</div><div class="sf-stake-lbl">33.0% of pot</div></div></div>
-          <div class="sf-row"><span class="sf-badge sf-badge--B">B</span><div class="sf-main"><div class="sf-match">Oregon @ Ohio State</div><div class="sf-pick">Under <b>54.5</b> <span class="sf-px">(−112)</span></div></div><div class="sf-stake"><div class="sf-stake-amt">$250</div><div class="sf-stake-lbl">25.0% of pot</div></div></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--aplus">A+<span class="sf-bolt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span></span><div class="sf-main"><div class="sf-match">Oklahoma @ Michigan</div><div class="sf-pick">Oklahoma <b>+3</b> <span class="sf-px">(−108)</span></div></div><div class="sf-stake"><div class="sf-stake-amt">$580</div><div class="sf-stake-lbl">58.0% of pot</div></div></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--A">A</span><div class="sf-main"><div class="sf-match">Georgia @ Alabama</div><div class="sf-pick">Georgia <b>−6.5</b> <span class="sf-px">(−110)</span></div></div><div class="sf-stake"><div class="sf-stake-amt">$280</div><div class="sf-stake-lbl">28.0% of pot</div></div></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--B">B</span><div class="sf-main"><div class="sf-match">Oregon @ Ohio State</div><div class="sf-pick">Under <b>54.5</b> <span class="sf-px">(−112)</span></div></div><div class="sf-stake"><div class="sf-stake-amt">$140</div><div class="sf-stake-lbl">14.0% of pot</div></div></div>
         </div>
         <p class="surf-cap"><b>Give it a bankroll</b> and it splits the whole stack — heavier where the edge is bigger, and at one sportsbook's lines if you only play one. The "how much on each" view.</p>
       </div>
@@ -632,7 +635,7 @@
             <div class="sf-main"><div class="sf-match">Oklahoma @ Michigan</div></div>
             <span class="sf-right"><span class="sf-final">Final</span> <b style="color:var(--ink);">38–31</b></span>
           </div>
-          <div class="sf-row"><span class="sf-badge sf-badge--A">A</span><span class="sf-mkt">Spread</span><div class="sf-main"><div class="sf-pick">Oklahoma <b>+3</b> <span class="sf-px">−108</span> · DraftKings</div></div><span class="sf-mark sf-mark--w">✓</span></div>
+          <div class="sf-row"><span class="sf-badge sf-badge--aplus">A+<span class="sf-bolt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span></span><span class="sf-mkt">Spread</span><div class="sf-main"><div class="sf-pick">Oklahoma <b>+3</b> <span class="sf-px">−108</span> · DraftKings</div></div><span class="sf-mark sf-mark--w">✓</span></div>
           <div class="sf-row"><span class="sf-badge sf-badge--B">B</span><span class="sf-mkt">Total</span><div class="sf-main"><div class="sf-pick">Under <b>51.5</b> <span class="sf-px">−105</span> · FanDuel</div></div><span class="sf-mark sf-mark--l">✕</span></div>
           <div class="sf-goto">Full breakdown →</div>
         </div>
