@@ -210,6 +210,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     amount: 1000,          // total the user wants to bet, split 100%
     presetKey: 'moderate',
     includeParlays: true,  // roll a parlay or two into the mix
+    // Single-book mode (user feedback: plenty of people only use one book).
+    // null = shop every book for the best line, the original behavior.
+    // A name = every bet re-priced at THAT book's line and juice; picks the
+    // book doesn't post drop off the sheet. Persisted across visits.
+    book: (() => { try { return localStorage.getItem('al_book') || null; } catch (e) { return null; } })(),
     // Same filter model as Live Lines / Parlay: market and tier are each
     // single-select and mutually exclusive; null/null = all picks.
     filters: { market: null, tier: null },
@@ -339,6 +344,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       edge:           (c.edge_vs_market != null ? c.edge_vs_market : null),
       legs:           Array.isArray(src.legs) ? src.legs : [],
       book:           bb ? { name: bb.book, url: bb.url } : null,
+      // Per-book full-ticket odds (books that post every leg). Single-book
+      // mode prices the ticket from here — or drops it if the book is absent.
+      book_breakdown: Array.isArray(src.book_breakdown) ? src.book_breakdown : [],
     };
   }
 
@@ -430,6 +438,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     return Math.max(0, (p - baseline) * p);
   }
 
+  // ── Single-book mode ────────────────────────────────────────────────
+  function amToDec(a) {
+    const o = Number(a);
+    if (!o || !isFinite(o)) return null;
+    return o > 0 ? 1 + o / 100 : 1 + 100 / (-o);
+  }
+  function allBookNames() {
+    const names = new Set();
+    for (const l of state.legs)
+      for (const b of (l.other_books || []))
+        if (b.book && b.book.name) names.add(b.book.name);
+    for (const pl of state.parlays)
+      for (const b of (pl.book_breakdown || []))
+        if (b.book) names.add(b.book);
+    return [...names].sort();
+  }
+  // The leg as YOUR book posts it — its line, its juice, its link. null =
+  // the book doesn't post this pick, so it can't be bet there and drops off
+  // the sheet. Our win probability is deliberately unchanged: it prices the
+  // PICK; the book only changes what you're paid for it (same convention as
+  // the other-books rows everywhere else on the site).
+  function bookView(leg) {
+    if (!state.book) return leg;
+    const e = (leg.other_books || []).find(b => b.book && b.book.name === state.book);
+    if (!e) return null;
+    const px = (e.price != null) ? e.price
+             : (leg.market === 'ml' ? e.line_raw : -110);
+    const dec = amToDec(px);
+    if (!(dec > 1)) return null;
+    return { ...leg,
+      line: e.line, line_raw: e.line_raw,
+      price_american: (leg.market === 'ml' ? e.line_raw : px),
+      decimal_odds: dec,
+      book: { name: state.book, url: (e.book && e.book.url) || null,
+              note: (e.book && e.book.note) || null },
+      other_books: [] };
+  }
+  function parlayView(pl) {
+    if (!state.book) return pl;
+    const e = (pl.book_breakdown || []).find(b => b.book === state.book);
+    if (!e || !(e.decimal_odds > 1)) return null;
+    return { ...pl, decimal_odds: e.decimal_odds, price_american: e.american_odds,
+             book: { name: state.book, url: e.url || null } };
+  }
+
   function computeRows() {
     const amount = Number(state.amount) || 0;
     const beta = currentPreset().beta;
@@ -438,8 +491,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Conservative β=0 is the pure delta sizing; Aggressive leans
     // toward the bigger payouts among the +delta set).
     const cand = [];
-    for (const leg of state.legs) {
-      if (!matchesFilters(leg)) continue;
+    for (const raw of state.legs) {
+      if (!matchesFilters(raw)) continue;
+      const leg = bookView(raw);          // single-book re-price, or drop
+      if (!leg) continue;
       const p = leg.our_prob, dec = leg.decimal_odds;
       if (!(p > 0) || !(dec > 1)) continue;
       const f = deltaWeight(p, dec);
@@ -453,8 +508,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // when no filter is narrowing the board (i.e. "All"). Same formula: the
     // ticket's combined decimal sets the baseline it has to beat.
     if (state.includeParlays && !state.filters.market && !state.filters.tier) {
-      for (const pl of state.parlays) {
-        if (state.week != null && pl.week !== state.week) continue;
+      for (const rawPl of state.parlays) {
+        if (state.week != null && rawPl.week !== state.week) continue;
+        const pl = parlayView(rawPl);     // single-book ticket price, or drop
+        if (!pl) continue;
         const p = pl.our_prob, dec = pl.decimal_odds;
         if (!(p > 0) || !(dec > 1)) continue;
         const f = deltaWeight(p, dec);
@@ -513,6 +570,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="al-toggle-box" aria-hidden="true"></span>
             Roll in a parlay or two
           </button>
+          <label class="al-field-label" for="al-book" style="margin-top:var(--space-4);">Your sportsbook</label>
+          <select class="al-input" id="al-book" aria-label="Size every bet at one sportsbook's lines">
+            <option value="">All books — best line</option>
+            ${allBookNames().map(n =>
+              `<option value="${esc(n)}"${state.book === n ? ' selected' : ''}>${esc(n)}</option>`).join('')}
+          </select>
+          ${state.book ? `<p class="al-hint" style="margin-top:var(--space-2);">Every stake sized at ${esc(state.book)}’s lines and juice. Picks ${esc(state.book)} doesn’t post are hidden.</p>` : ''}
         </div>
         <div class="al-controls-right">
           <label class="al-field-label">Weighting</label>
@@ -587,6 +651,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // no listed book is grouped under a clear catch-all.
   function bookTotalsHTML(rows) {
     if (!rows.length) return '';
+    // Single-book mode: everything is at one book by definition — a
+    // one-row "what to have at each book" table is just noise.
+    if (state.book) return '';
     const totals = new Map(), urls = new Map();
     for (const r of rows) {
       const b = r.item.book;
@@ -824,6 +891,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         recompute();
       });
       amt.addEventListener('blur', () => { amt.value = fmtMoney(state.amount); });
+    }
+    const bookSel = document.getElementById('al-book');
+    if (bookSel) {
+      bookSel.addEventListener('change', () => {
+        state.book = bookSel.value || null;
+        try {
+          if (state.book) localStorage.setItem('al_book', state.book);
+          else localStorage.removeItem('al_book');
+        } catch (e) { /* private mode — the choice just won't persist */ }
+        render();   // full render: the hint line and books section change too
+      });
     }
   }
 
