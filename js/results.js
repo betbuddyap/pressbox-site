@@ -92,6 +92,7 @@
           <span class="rs-headright"><span class="rs-final">Final</span> <span class="rs-score">${esc(score)}</span></span>
         </div>
         ${g.picks.map(pickLineHTML).join('')}
+        <div class="rs-goto" aria-hidden="true">Full breakdown →</div>
       </a>`;
   }
 
