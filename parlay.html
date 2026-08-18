@@ -290,6 +290,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `${esc(p.side)} <span class="ll-row-pick-num">${esc(p.line)}</span>${bookSuffix}`;
   }
 
+  // A leg as the TICKET's book posts it — one slip, one book. Legs inside a
+  // parlay card never name their own best book (that read as three books on
+  // a one-book bet); the ticket's book lives on the Bet button. Falls back
+  // to the board line, name stripped, if that book has no entry for a leg.
+  function legAtTicketBook(p, bookName) {
+    if (!bookName) return p;
+    const e = (p.other_books || []).find(b => b.book && b.book.name === bookName);
+    if (!e) return { ...p, book: null, tied_books_count: 0 };
+    return { ...p, line: e.line, book: null, tied_books_count: 0 };
+  }
+
   // ── Auth (mirrored) ──────────────────────────────────────────
   async function getAccessToken() {
     // Fast path: read the stored session token straight from localStorage — no
@@ -550,14 +561,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderPresetCard(pre) {
     const c = pre.combined || {};
     const n = pre.requested_legs || pre.leg_count || (pre.legs ? pre.legs.length : 0);
-    // Legs use the board's own .ll-row markup so they read identically to Live Lines.
+    // Legs use the board's own .ll-row markup so they read identically to Live
+    // Lines \u2014 but priced at the TICKET's book, names suppressed (one slip,
+    // one book; the book is on the Bet button below).
+    const tb = (pre.best_book && pre.best_book.book) || null;
     const legs = (pre.legs || []).map(leg => `
       <article class="ll-row">
         <div class="ll-row-header" style="cursor:default;">
           ${renderBadge(leg.tier, leg.bolt)}
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
-            <div class="ll-row-pick">${pickLineText(leg)}</div>
+            <div class="ll-row-pick">${pickLineText(legAtTicketBook(leg, tb))}</div>
           </div>
         </div>
       </article>`).join('');
@@ -736,13 +750,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const legs = [...state.selected.values()];
     const missing = new Set((state.grade && state.grade.missing_leg_ids) || []);
+    // Once a ticket is graded, its legs re-price at the ticket's book so the
+    // slip and the Bet button tell one story. Ungraded slips keep each leg's
+    // own best book — that's still the board context while building.
+    const slipBook = (state.grade && state.grade.best_book && state.grade.best_book.book) || null;
     const legsHtml = legs.map(p => {
       const flagged = missing.has(p.pick_id);
       return `
         <div class="pl-leg">
           <div class="pl-leg-main">
             <div class="pl-leg-matchup">${esc(p.matchup || '—')}</div>
-            <div class="pl-leg-pick">${pickLineText(p)}</div>
+            <div class="pl-leg-pick">${pickLineText(legAtTicketBook(p, slipBook))}</div>
             ${flagged ? `<div class="pl-leg-flag">No edge — can’t be priced as a leg. Remove it to grade the rest.</div>` : ''}
           </div>
           <button class="pl-leg-x" data-remove="${esc(p.pick_id)}" aria-label="Remove leg">&times;</button>
