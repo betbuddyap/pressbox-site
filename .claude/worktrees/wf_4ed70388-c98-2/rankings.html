@@ -15,7 +15,7 @@
 <meta property="og:url" content="https://pressboxanalytics.com/rankings.html">
 <meta property="og:title" content="Power Rankings — PressBox Analytics">
 <meta property="og:description" content="Every FBS team, ranked by a four-model blend. Filter by conference; see the signals behind each number.">
-<meta property="og:image" content="https://pressboxanalytics.com/og-image-2026.png">
+<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="PressBox Analytics">
@@ -23,7 +23,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Power Rankings — PressBox Analytics">
 <meta name="twitter:description" content="Every FBS team, ranked by a four-model blend. Filter by conference; see the signals behind each number.">
-<meta name="twitter:image" content="https://pressboxanalytics.com/og-image-2026.png">
+<meta name="twitter:image" content="https://pressboxanalytics.com/og-image.png">
 
 <meta name="theme-color" content="#0F0E0A">
 <meta name="description" content="Every FBS team, ranked by a four-model blend (SP+, PPA, Advanced, Pace+). Filter by conference; see the signals behind each number.">
@@ -370,7 +370,7 @@ function spotChips(reasons) {
 }
 
 // ── Load ────────────────────────────────────────────────────────────
-fetch(`${API}/rankings/teams?season=${SEASON}&offseason=1`)
+fetch(`${API}/rankings/teams?season=${SEASON}`)
   .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
   .then(payload => {
     state.payload = payload;

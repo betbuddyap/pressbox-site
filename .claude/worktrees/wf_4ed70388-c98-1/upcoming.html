@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://pressboxanalytics.com/upcoming.html">
 <meta property="og:title" content="Upcoming Games — PressBox Analytics">
 <meta property="og:description" content="Every FBS matchup, every week. Picks update live as lines move.">
-<meta property="og:image" content="https://pressboxanalytics.com/og-image-2026.png">
+<meta property="og:image" content="https://pressboxanalytics.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="PressBox Analytics">
@@ -25,7 +25,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Upcoming Games — PressBox Analytics">
 <meta name="twitter:description" content="Every FBS matchup, every week. Picks update live as lines move.">
-<meta name="twitter:image" content="https://pressboxanalytics.com/og-image-2026.png">
+<meta name="twitter:image" content="https://pressboxanalytics.com/og-image.png">
 
 <!-- Theme color (mobile browser chrome) -->
 <meta name="theme-color" content="#0F0E0A">
@@ -997,8 +997,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <div class="page-header-inner">
     <div class="page-eyebrow">2026 Season</div>
     <h1 class="page-title">Upcoming <em>Games</em></h1>
-    <p class="page-sub">Every FBS matchup, every week. Picks update live as lines move.
-      <a href="/how-it-works.html#the-row" style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--gold);text-decoration:none;white-space:nowrap;">How it all works →</a></p>
+    <p class="page-sub">Every FBS matchup, every week. Picks update live as lines move.</p>
   </div>
 </div>
 
@@ -1322,20 +1321,17 @@ async function init() {
   // it lands. Colors are different: fast (24h server-side cache) and the thing
   // that makes the cards look right, so they ride with the board below — that
   // way the first paint is already colored instead of flashing dark.
-  // Same board as the Rankings page — the 2026 blend with the SP+ offseason
-  // delta (?offseason=1) — so the rank chips here can never disagree with it.
-  // Rank is derived by rating order, same as the rankings page's default tab.
-  fetch(`${API}/rankings/teams?season=2026&offseason=1`)
+  fetch(`${API}/rankings/power?season=2025&limit=200`)
     .then(r => r.json()).catch(() => null)
     .then((rankRes) => {
-      if (rankRes && rankRes.teams) {
-        rankRes.teams
-          .filter(t => t.rating != null)
-          .sort((a, b) => b.rating - a.rating)
-          .forEach((t, i) => {
-            powerRankings[t.team] = i + 1;
-            teamScores[t.team] = t.rating;
-          });
+      if (rankRes && rankRes.rankings) {
+        rankRes.rankings.forEach(t => {
+          powerRankings[t.team] = t.rank;
+          teamScores[t.team] = t.score;
+        });
+        if (rankRes.full) {
+          rankRes.full.forEach(t => { teamScores[t.team] = t.score; });
+        }
       }
       if (boardRendered) { try { renderWeek(currentWeek); } catch (e) {} }
     }).catch(() => {});

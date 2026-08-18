@@ -1,0 +1,379 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Breakdown â€” PressBox Analytics</title>
+<meta name="description" content="The math behind every pick. Five-model projections, side-by-side stat comparisons, and our editorial read on this matchup.">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Tokens FIRST, then components -->
+<link rel="stylesheet" href="/css/tokens.css?v=20260807g">
+<link rel="stylesheet" href="/css/components/live-lines.css?v=20260813b">
+<link rel="stylesheet" href="/css/components/game.css?v=20260813b">
+
+<style>
+  /* â”€â”€ Site nav (kept in sync across pages) â”€â”€ */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0; padding: 0; }
+  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
+
+  .nav-links a.nav-live {
+    color: var(--rust) !important;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    position: relative;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .nav-links a.nav-live::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--rust);
+    border-radius: 50%;
+    margin-right: 7px;
+    vertical-align: 2px;
+    animation: pulse-live 2.4s ease-in-out infinite;
+  }
+  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
+  @keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
+
+  /* Hamburger */
+  .hamburger {
+    display: none;
+    flex-direction: column !important;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+    box-shadow: none;
+    width: 32px; height: 32px;
+  }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+  .mobile-menu {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--cream);
+    z-index: 200;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 32px;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-family: var(--serif); font-size: 22px; color: var(--ink); text-decoration: none; font-weight: 700; }
+  .mobile-menu .close-btn {
+    position: absolute;
+    top: 24px; right: 24px;
+    background: transparent;
+    border: 0;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  @media (max-width: 760px) {
+    .nav-links { display: none; }
+    .hamburger { display: flex !important; }
+  }
+</style>
+
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;"></a>
+    <ul class="nav-links">
+      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
+      <li><a href="/upcoming.html">Upcoming</a></li>
+      <li><a href="/parlay.html">Parlay</a></li>
+      <li><a href="/rankings.html">Rankings</a></li>
+      <li><a href="/results.html">Results</a></li>
+      <li><a href="/login.html" id="navAuth" style="opacity:0.7;">Sign in</a></li>
+    </ul>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">âœ•</button>
+  <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
+  <a href="/upcoming.html">Upcoming</a>
+  <a href="/parlay.html">Parlay</a>
+  <a href="/rankings.html">Rankings</a>
+  <a href="/results.html">Results</a>
+  <a href="/login.html" id="navAuthMobile" style="opacity:0.7;">Sign in</a>
+</div>
+
+<script>
+function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+</script>
+
+<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+     STATE: LOADING
+     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div id="loadingState" class="game-loading">
+  <div class="game-loading-spinner"></div>
+  <div class="game-loading-msg">Loading gameâ€¦</div>
+</div>
+
+<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+     STATE: ERROR
+     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div id="errorState" class="game-status" style="display:none;">
+  <h1 class="game-status-title"><em>Something</em> went wrong</h1>
+  <p class="game-status-sub">We couldn't load this game right now. Please try again in a moment.</p>
+  <a href="/live-lines.html" class="game-status-btn">Back to Live Lines</a>
+</div>
+
+<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+     STATE: NOT FOUND
+     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div id="notFoundState" class="game-status" style="display:none;">
+  <h1 class="game-status-title">Game <em>not found</em></h1>
+  <p class="game-status-sub">We don't have this game on the schedule. It may have been removed or the link is incorrect.</p>
+  <a href="/live-lines.html" class="game-status-btn">Back to Live Lines</a>
+</div>
+
+<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+     STATE: PAYWALL (anonymous visitor)
+     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div id="paywallState" class="game-paywall" style="display:none;">
+  <div class="game-paywall-inner">
+    <div class="game-paywall-eyebrow">â€” THE BREAKDOWN</div>
+    <h1 class="game-paywall-title">Subscribe to see the <em>full game breakdown</em>.</h1>
+    <p class="game-paywall-sub">Five-model projections, side-by-side stat comparisons, and our editorial take â€” for every FBS game with line capture.</p>
+    <a href="/subscribe.html" class="game-paywall-btn">Subscribe</a>
+    <div class="game-paywall-foot">Already a subscriber? <a href="/login.html">Sign in</a></div>
+  </div>
+</div>
+
+<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+     STATE: GAME CONTENT (subscriber, success)
+     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div id="gameContent" style="display:none;">
+
+  <!-- ZONE 1: HERO (preserved from prior design per brief Â§6) -->
+  <div class="ctx" id="ctxHero">
+    <div class="ctx-bg" id="ctxBg">
+      <div class="ctx-bg-half" id="ctxBgAway"></div>
+      <div class="ctx-bg-half" id="ctxBgHome"></div>
+    </div>
+    <div class="ctx-overlay"></div>
+    <div class="ctx-seam"></div>
+    <div id="ctxRibbon"></div>
+    <div class="ctx-inner">
+      <div class="ctx-breadcrumb" id="ctxBreadcrumb"></div>
+      <div class="ctx-teams">
+        <div class="ctx-side away">
+          <div class="ctx-team-name" id="ctxAwayName"></div>
+          <div class="ctx-team-sub" id="ctxAwaySub"></div>
+        </div>
+        <span class="ctx-at">at</span>
+        <div class="ctx-side home">
+          <div class="ctx-team-name" id="ctxHomeName"></div>
+          <div class="ctx-team-sub" id="ctxHomeSub"></div>
+        </div>
+      </div>
+
+      <!-- Played: show final score. Pre-game: show projected score.
+           Live: show pgLive hero block (below) with broadcast data. -->
+      <div id="pgScore" class="pg-score" style="display:none;">
+        <div class="pg-score-team away">
+          <div class="pg-score-num" id="pgAwayNum"></div>
+        </div>
+        <span class="pg-score-dash">â€”</span>
+        <div class="pg-score-team home">
+          <div class="pg-score-num" id="pgHomeNum"></div>
+        </div>
+      </div>
+      <!-- Final status row (below the score, mirroring the live row) â€”
+           same gold FINAL badge as Upcoming, plus the original projection
+           so the score reads against what we said pregame. -->
+      <div id="pgFinalRow" class="pg-final-row" style="display:none;">
+        <span class="pg-final-badge">Final</span>
+        <span class="pg-final-proj" id="pgFinalProj"></span>
+      </div>
+
+      <!-- Live hero block â€” populated by renderLiveHero() in game.js
+           when game.status === 'in_progress'. ESPN-sourced broadcast
+           data: period, clock, down/distance, possession, last play. -->
+      <div id="pgLive" class="pg-live" style="display:none;">
+        <div class="pg-live-score">
+          <div class="pg-live-team away">
+            <div class="pg-live-team-name" id="pgLiveAwayName"></div>
+            <div class="pg-live-num" id="pgLiveAwayNum">â€”</div>
+          </div>
+          <span class="pg-live-dash">â€”</span>
+          <div class="pg-live-team home">
+            <div class="pg-live-num" id="pgLiveHomeNum">â€”</div>
+            <div class="pg-live-team-name" id="pgLiveHomeName"></div>
+          </div>
+        </div>
+        <!-- One status row: LIVE badge + clock on the left, down & distance
+             on the right â€” the old floating top strip read as misplaced. -->
+        <div class="pg-live-row">
+          <span class="pg-live-badge"><span class="pg-live-dot"></span>LIVE</span>
+          <span class="pg-live-clock" id="pgLiveClock"></span>
+          <span class="pg-live-situation" id="pgLiveSituation"></span>
+        </div>
+        <div class="pg-live-lastplay" id="pgLiveLastPlay"></div>
+      </div>
+
+      <div id="preGameContent">
+        <div class="ctx-projected" id="ctxProjected" style="display:none;">
+          <div class="ctx-projected-eyebrow">Our Projection</div>
+          <div class="ctx-projected-side">
+            <div class="ctx-projected-num" id="ctxProjAway">â€”</div>
+            <div class="ctx-projected-label" id="ctxProjAwayLbl"></div>
+          </div>
+          <div class="ctx-projected-dash">â€”</div>
+          <div class="ctx-projected-side">
+            <div class="ctx-projected-num" id="ctxProjHome">â€”</div>
+            <div class="ctx-projected-label" id="ctxProjHomeLbl"></div>
+          </div>
+        </div>
+        <div class="ctx-meta" id="ctxMeta"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN COLUMN -->
+  <main class="game-main">
+
+    <!-- MATCHUP DNA (beat 0 â€” primes the page) -->
+    <div class="dna-strip" id="dnaStrip" style="display:none;"></div>
+
+    <!-- BEAT 1: WHO WINS (moneyline) -->
+    <section class="game-section" id="beat1Section">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">â€” 1 Â· WHO WINS</div>
+          <h2 class="game-section-title">Straight <em>up</em>.</h2>
+          <p class="game-section-deck">Five win probabilities against the market's own number.</p>
+        </div>
+      </header>
+      <div class="beat-stack" id="beat1Stack"></div>
+    </section>
+
+    <!-- BEAT 2: THE MARGIN (spread) -->
+    <section class="game-section" id="beat2Section">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">â€” 2 Â· THE MARGIN</div>
+          <h2 class="game-section-title">Against the <em>spread</em>.</h2>
+        </div>
+      </header>
+      <div class="beat-stack" id="beat2Stack"></div>
+    </section>
+
+    <!-- BEAT 3: THE SHAPE (total) -->
+    <section class="game-section" id="beat3Section">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">â€” 3 Â· THE SHAPE OF THE GAME</div>
+          <h2 class="game-section-title">The <em>total</em>.</h2>
+        </div>
+      </header>
+      <div class="beat-stack" id="beat3Stack"></div>
+    </section>
+
+    <!-- BEAT 4: THE RECEIPT -->
+    <section class="game-section" id="receiptSection">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">â€” 4 Â· THE RECEIPT</div>
+          <h2 class="game-section-title">Show your <em>work</em>.</h2>
+          <p class="game-section-deck">Form vs our projections, this pick's paper trail, and every signal's live record.</p>
+        </div>
+      </header>
+      <div class="beat-stack" id="receiptStack"></div>
+    </section>
+
+    <!-- ZONE 5: THE NUMBERS (stat comparison) -->
+    <section class="game-section" id="numbersSection">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">â€” THE NUMBERS</div>
+          <h2 class="game-section-title">Side <em>by side</em>.</h2>
+          <p class="game-section-deck">Where they win, where they don't.</p>
+        </div>
+      </header>
+      <div class="numbers-stack" id="numbersStack">
+        <!-- Stat category cards rendered by JS -->
+      </div>
+    </section>
+
+    <!-- ZONE 6: THE SERIES (matchup history) -->
+    <section class="game-section" id="seriesSection" style="display:none;">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">â€” THE SERIES</div>
+          <h2 class="game-section-title">Matchup <em>history</em>.</h2>
+        </div>
+      </header>
+      <div class="game-card series-card" id="seriesCard">
+        <div class="series-summary" id="seriesSummary"></div>
+        <div class="series-list" id="seriesList"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo"><img src="/pressbox-w2a-ink-cropped.png" alt="PressBox Analytics"></div>
+    <div class="footer-meta-links">
+      <a href="/about.html">About</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/results.html">Results</a>
+      <a href="/live-lines.html">Live Lines</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+    </div>
+    <div class="footer-note">
+      Analytics, not advice. Bet responsibly. If gambling is a problem for you, call 1-800-GAMBLER.
+    </div>
+  </div>
+</footer>
+
+<!-- Supabase JS (auth for paywall + nav) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-nav.js" defer></script>
+<script src="/js/game.js?v=20260813b"></script>
+
+
+<!-- Shared site chrome (nav + footer + auth + disclaimer) â€” single source: /js/site-chrome.js -->
+<script src="/js/site-chrome.js" defer></script>
+</body>
+</html>

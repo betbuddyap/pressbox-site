@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Lines â€” PressBox Analytics</title>
+<meta name="description" content="Every active pick across all six tiers, graded live every 30 minutes against the current best market line.">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Tokens FIRST, components AFTER -->
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/components/live-lines.css?v=20260813b">
+
+<style>
+  /* â”€â”€ Minimal nav (logo only) â€” site-chrome.js replaces this at runtime â”€â”€ */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); }
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 80px;
+  }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+  @media (max-width: 960px) {
+    .nav-inner { padding: 0 20px; height: 64px; }
+    .nav-logo img { height: 52px; }
+  }
+</style>
+</head>
+
+<body class="ll-page">
+
+<!-- Minimal nav â€” site-chrome.js injects the canonical nav, mobile menu, and footer -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics">
+    </a>
+  </div>
+</nav>
+
+<main id="ll-app" class="ll-container">
+  <!-- All page content renders here via JS based on state -->
+</main>
+
+<!-- Supabase JS client (loaded BEFORE live-lines.js, which uses it for auth) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/live-lines.js?v=20260813b"></script>
+
+
+<!-- Shared site chrome (nav + footer + auth + disclaimer) â€” single source: /js/site-chrome.js -->
+<script src="/js/site-chrome.js" defer></script>
+</body>
+</html>
