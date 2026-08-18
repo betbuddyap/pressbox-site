@@ -1313,18 +1313,20 @@
 
       const topPts = [];
       const botPts = [];
-      // Power exponent applied to the normalized density. y is already
-      // in 0..1 with peak at 1. Raising to the power leaves the peak at
-      // 1 but drops everything else toward 0 — sharpens the peak and
-      // narrows the lobe visually. Pure visualization tweak; backend
-      // density data unchanged.
-      const POWER = 2.0;
-      // Edge taper: ease the lobe height to 0 at its two ends so it comes to a
-      // smooth point instead of cutting off flat at a non-zero height (the
-      // "flat spots"). Tukey-style window — flat (=1) across the middle, cosine
-      // ease-to-zero over the outer TAPER fraction of each side. Pure visual;
-      // the backend density data is unchanged.
-      const TAPER = 0.35;
+      // The lobe is split gold/blue at the Vegas tick and captioned with a
+      // landed-% — its drawn AREA is a quantitative claim, so heights render
+      // untransformed (POWER 1). The old peak-sharpening (POWER 2) made a
+      // 52/48 split draw as 59/41 whenever the tick sat off the curve's
+      // mode (Austin caught it on Hawai'i–Stanford, 2026-08-18).
+      const POWER = 1.0;
+      // Edge taper: ease the lobe height to 0 at its two ends so it comes to
+      // a smooth point instead of cutting off flat at a non-zero height (the
+      // "flat spots"). Tukey-style window — flat (=1) across the middle,
+      // cosine ease-to-zero over the outer TAPER fraction of each side. Kept
+      // narrow: at 0.35 it ate real area (70% of points shrunk) and skewed
+      // the drawn split; 0.08 closes the tips while drawn area matches the
+      // true mass split to ~0.1%.
+      const TAPER = 0.08;
       const NPTS = densityCurve.length;
       const edgeWindow = (p) => {
         if (p <= TAPER)     return 0.5 * (1 - Math.cos(Math.PI * p / TAPER));
