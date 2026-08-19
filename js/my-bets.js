@@ -259,11 +259,17 @@
   }
   function pbMark(g, market, sideValue) {
     const s = boardSlot(g, market);
-    if (!s || !s.tier_full || !s.side) return '';
+    if (!s || !s.tier_full) return '';
     if (/^(ne|no_edge)$/i.test(String(s.tier_full))) return '';
-    const slotSide = market === 'total'
-      ? String(s.side).toLowerCase()
-      : (s.side === g.home_team ? 'home' : s.side === g.away_team ? 'away' : null);
+    // side_raw (canonical home/away/over/under) shipped 2026-08-19; fall
+    // back to matching the display side against the team names for any
+    // cached payload from before it existed.
+    let slotSide = s.side_raw ? String(s.side_raw).toLowerCase() : null;
+    if (!slotSide && s.side) {
+      slotSide = market === 'total'
+        ? String(s.side).toLowerCase()
+        : (s.side === g.home_team ? 'home' : s.side === g.away_team ? 'away' : null);
+    }
     if (slotSide !== sideValue) return '';
     return ` · PressBox ${s.tier_full}`;
   }

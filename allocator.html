@@ -950,9 +950,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (s) s.innerHTML = summaryHTML(rows);
     if (bw) bw.innerHTML = bookTotalsHTML(rows);
     if (l) l.innerHTML = listHTML(rows);
-    const sm = document.getElementById('alSendMyBets');
-    if (sm) sm.addEventListener('click', sendToMyBets);
   }
+
+  // Delegated: summaryHTML renders from BOTH the full render() template and
+  // the recompute() partial — a per-render binding missed the first paint
+  // and left the button dead until an input changed.
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'alSendMyBets') sendToMyBets();
+  });
 
   function bindInputs() {
     const amt = document.getElementById('al-amount');
