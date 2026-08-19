@@ -110,12 +110,13 @@
 
   // ── Markup builders ──────────────────────────────────────────
   function authLinksDesktop(signedIn) {
-    if (signedIn) return '<li class="pb-auth"><a href="/account.html"' + (isActive('/account.html') ? ' class="active"' : '') + '>Account</a></li>';
+    if (signedIn) return '<li class="pb-auth"><a href="/my-bets.html"' + (isActive('/my-bets.html') ? ' class="active"' : '') + '>My Bets</a></li>' +
+           '<li class="pb-auth"><a href="/account.html"' + (isActive('/account.html') ? ' class="active"' : '') + '>Account</a></li>';
     return '<li class="pb-auth"><a href="/subscribe.html" class="btn-nav">Sign up</a></li>' +
            '<li class="pb-auth"><a href="/login.html"' + (isActive('/login.html') ? ' class="active"' : '') + '>Login</a></li>';
   }
   function authLinksMobile(signedIn) {
-    if (signedIn) return '<a href="/account.html">Account</a>';
+    if (signedIn) return '<a href="/my-bets.html">My Bets</a><a href="/account.html">Account</a>';
     return '<a href="/subscribe.html" class="btn-mobile">Sign up</a>' +
            '<a href="/login.html">Login</a>';
   }

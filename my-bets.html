@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Bets — PressBox Analytics</title>
+<meta name="description" content="Your real tickets, settled against the final — your line, your odds.">
+<meta name="robots" content="noindex">
+
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<!-- Theme color (mobile browser chrome) -->
+<meta name="theme-color" content="#0F0E0A">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tokens FIRST, components AFTER -->
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/components/live-lines.css">
+
+<style>
+  /* ── Minimal nav (logo only) — site-chrome.js replaces this at runtime ── */
+  nav { background: var(--cream); border-bottom: 1px solid var(--border); }
+  .nav-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 80px;
+  }
+  .nav-logo img { height: 68px; width: auto; display: block; }
+  @media (max-width: 960px) {
+    .nav-inner { padding: 0 20px; height: 64px; }
+    .nav-logo img { height: 52px; }
+  }
+
+  /* ── PAGE HEADER (same pattern as Upcoming) ── */
+  .page-header { background: var(--cream); padding: 48px 0 32px; border-bottom: 1px solid var(--border); }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--text); line-height: 1.1; }
+  .page-title em { font-style: italic; color: var(--gold); }
+  .page-sub { font-family: var(--sans); font-size: 14px; font-weight: 300; color: var(--text-mid); margin-top: 8px; line-height: 1.6; }
+
+  .mb-main { max-width: var(--max); margin: 0 auto; padding: 32px; }
+  @media (max-width: 960px) { .mb-main { padding: 20px 16px; } }
+
+  /* ── P&L HERO — the screenshot card ── */
+  .mb-hero { background: var(--ink); border-radius: 6px; padding: 32px 36px 28px; color: var(--cream); }
+  .mb-hero-top { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .mb-hero-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold-light); }
+  .mb-scope { display: flex; gap: 0; border: 1px solid rgba(248,245,238,0.2); border-radius: 4px; overflow: hidden; }
+  .mb-scope button { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(248,245,238,0.55); background: transparent; border: 0; padding: 7px 14px; cursor: pointer; }
+  .mb-scope button.active { background: rgba(248,245,238,0.12); color: var(--cream); }
+  .mb-hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  @media (max-width: 720px) { .mb-hero-stats { grid-template-columns: repeat(2, 1fr); row-gap: 20px; } }
+  .mb-stat-label { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(248,245,238,0.5); margin-bottom: 6px; }
+  .mb-stat-value { font-family: var(--serif); font-size: 34px; font-weight: 700; line-height: 1; color: var(--cream); }
+  .mb-stat-value.pos { color: var(--sage); }
+  .mb-stat-value.neg { color: var(--rust-light, var(--rust)); }
+  .mb-hero-note { font-family: var(--sans); font-size: 11px; color: rgba(248,245,238,0.45); margin-top: 22px; line-height: 1.5; }
+
+  /* ── SECTIONS ── */
+  .mb-section { margin-top: 36px; }
+  .mb-section-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .mb-section-title { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
+  .mb-section-title em { font-style: italic; color: var(--gold); }
+
+  /* ── LOG-A-BET FORM ── */
+  .mb-form { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 22px; }
+  .mb-form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
+  @media (max-width: 960px) { .mb-form-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .mb-form-grid { grid-template-columns: 1fr; } }
+  .mb-field label { display: block; font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); margin-bottom: 6px; }
+  .mb-field select, .mb-field input {
+    width: 100%; font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--text);
+    background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px;
+    appearance: auto; outline: none;
+  }
+  .mb-field select:focus, .mb-field input:focus { border-color: var(--gold); }
+  .mb-field select:disabled, .mb-field input:disabled { background: var(--cream-dark); color: var(--text-light); }
+  .mb-form-actions { display: flex; align-items: center; gap: 16px; margin-top: 18px; flex-wrap: wrap; }
+  .mb-log-btn { font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.5px; color: var(--cream); background: var(--ink); border: 0; border-radius: 4px; padding: 12px 28px; cursor: pointer; }
+  .mb-log-btn:disabled { opacity: 0.45; cursor: default; }
+  .mb-form-msg { font-family: var(--sans); font-size: 12px; color: var(--text-mid); }
+  .mb-form-msg.err { color: var(--rust); }
+  .mb-payout-preview { font-family: var(--sans); font-size: 12px; color: var(--text-mid); }
+  .mb-payout-preview b { font-weight: 700; color: var(--text); }
+
+  /* ── LEDGER ── */
+  .mb-week-group { margin-bottom: 26px; }
+  .mb-week-head { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .mb-row { display: flex; align-items: center; gap: 14px; padding: 13px 14px; background: var(--cream); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 8px; }
+  .mb-row-mark { width: 18px; text-align: center; font-family: var(--sans); font-size: 14px; font-weight: 700; flex: 0 0 auto; }
+  .mb-row-mark.win  { color: var(--sage); }
+  .mb-row-mark.loss { color: var(--rust); }
+  .mb-row-mark.push, .mb-row-mark.pending { color: var(--text-light); font-weight: 400; }
+  .mb-row-body { flex: 1 1 auto; min-width: 0; }
+  .mb-row-pick { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--text); }
+  .mb-row-pick .mb-odds { font-weight: 500; color: var(--text-mid); }
+  .mb-row-sub { font-family: var(--sans); font-size: 11px; color: var(--text-light); margin-top: 2px; }
+  .mb-row-money { text-align: right; flex: 0 0 auto; }
+  .mb-row-net { font-family: var(--sans); font-size: 14px; font-weight: 700; }
+  .mb-row-net.pos { color: var(--sage); }
+  .mb-row-net.neg { color: var(--rust); }
+  .mb-row-net.flat { color: var(--text-light); font-weight: 500; }
+  .mb-row-stake { font-family: var(--sans); font-size: 11px; color: var(--text-light); margin-top: 2px; }
+  .mb-row-del { flex: 0 0 auto; background: none; border: 0; color: var(--text-light); font-size: 14px; cursor: pointer; padding: 4px 6px; line-height: 1; }
+  .mb-row-del:hover { color: var(--rust); }
+  .mb-empty { font-family: var(--sans); font-size: 13px; color: var(--text-light); padding: 26px 0; text-align: center; }
+
+  /* ── AUTH / SUB WALL ── */
+  .mb-wall { max-width: 520px; margin: 64px auto; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 40px 36px; text-align: center; }
+  .mb-wall h2 { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .mb-wall p { font-family: var(--sans); font-size: 14px; font-weight: 300; color: var(--text-mid); line-height: 1.6; margin-bottom: 22px; }
+  .mb-wall-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .mb-wall-btn { font-family: var(--sans); font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 4px; padding: 12px 26px; }
+  .mb-wall-btn.primary { background: var(--ink); color: var(--cream); }
+  .mb-wall-btn.ghost { border: 1px solid var(--border); color: var(--text); }
+
+  .mb-loading { font-family: var(--sans); font-size: 13px; color: var(--text-light); text-align: center; padding: 64px 0; }
+</style>
+</head>
+
+<body>
+
+<!-- Minimal nav — site-chrome.js injects the canonical nav, mobile menu, and footer -->
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics">
+    </a>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">2026 Season</div>
+    <h1 class="page-title">My <em>Bets</em></h1>
+    <p class="page-sub">Your real tickets, settled against the final — your line, your odds, the same lock-at-kickoff rules the board grades itself by.</p>
+  </div>
+</div>
+
+<main class="mb-main" id="mb-app">
+  <div class="mb-loading">Loading your ledger…</div>
+</main>
+
+<!-- Supabase JS client (loaded BEFORE my-bets.js, which uses it for auth + the ledger) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/my-bets.js?v=20260819a"></script>
+
+<!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
+<script src="/js/site-chrome.js" defer></script>
+</body>
+</html>
