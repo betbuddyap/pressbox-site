@@ -88,6 +88,11 @@
   .al-metric-v { font-family: var(--sans); font-weight: var(--weight-semi); font-size: var(--text-sm); color: var(--ink); line-height: 1.3; }
   .al-metric-v.al-pos { color: var(--sage); }
   .al-metric-v.al-neg { color: var(--rust); }
+  /* My Bets handoff button under the summary */
+  .al-mybets { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 14px 0 4px; }
+  .al-mybets-btn { font-family: var(--sans); font-size: 13px; font-weight: var(--weight-semi); color: var(--cream); background: var(--ink); border: 0; border-radius: 4px; padding: 11px 20px; cursor: pointer; }
+  .al-mybets-hint { font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
+
   .al-stake { flex: 0 0 auto; text-align: right; }
   .al-stake-amt { font-family: var(--sans); font-size: var(--text-lg); font-weight: var(--weight-semi); color: var(--ink); line-height: 1.15; }
   .al-stake-lbl { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: var(--weight-semi); text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-mid); margin-top: 2px; white-space: nowrap; }
@@ -647,7 +652,62 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="al-summary-k">If every bet wins</span>
           <span class="al-summary-v">$${fmtMoney(allWinPay)}</span>
         </div>
-      </div>`;
+      </div>
+      ${rows.length ? `
+      <div class="al-mybets">
+        <button type="button" class="al-mybets-btn" id="alSendMyBets">Log this sheet in My Bets →</button>
+        <span class="al-mybets-hint">Opens your ledger with every stake prefilled — edit anything before logging.</span>
+      </div>` : ''}`;
+  }
+
+  // ── My Bets handoff ──────────────────────────────────────────
+  // Stashes the CURRENT sized sheet (filters, preset, and book view all
+  // applied) in localStorage and sends the user to /my-bets.html, where
+  // an editable import panel logs the tickets they actually place.
+  function sendToMyBets() {
+    const rows = computeRows();
+    const out = [];
+    for (const r of rows) {
+      if (!(r.stake >= 0.5)) continue;
+      if (r.is_parlay) {
+        const pl = r.item;
+        const legs = (pl.legs || []).map(l => ({
+          game_id: l.game_id, market: l.market, side: l.side_raw,
+          side_team: l.side, line: (l.market === 'ml' ? null : l.line_raw),
+          odds: l.price_american,
+          side_label: (l.market === 'ml' ? `${l.side} ML` : `${l.side} ${l.line}`),
+          game_label: l.matchup, kickoff: l.kickoff, week: l.week,
+        }));
+        if (legs.length < 2 || legs.some(l => !l.side || l.odds == null || l.game_id == null)) continue;
+        const kicks = legs.map(l => l.kickoff).filter(Boolean).sort();
+        out.push({
+          type: 'parlay', odds: pl.price_american, stake: Math.round(r.stake),
+          book: (pl.book && pl.book.name) || null, legs,
+          week: Math.min(...legs.map(l => l.week).filter(w => w != null)),
+          kickoff: kicks[0] || null,
+        });
+      } else {
+        const l = r.item;
+        if (l.game_id == null || l.price_american == null || !l.side_raw) continue;
+        out.push({
+          type: 'single', game_id: l.game_id, week: l.week, kickoff: l.kickoff,
+          market: l.market, side: l.side_raw, side_team: l.side,
+          line: (l.market === 'ml' ? null : l.line_raw),
+          odds: l.price_american, book: (l.book && l.book.name) || null,
+          stake: Math.round(r.stake),
+          side_label: (l.market === 'ml' ? `${l.side} ML` : `${l.side} ${l.line}`),
+          game_label: l.matchup,
+        });
+      }
+    }
+    if (!out.length) return;
+    try {
+      localStorage.setItem('pb_mybets_import', JSON.stringify({
+        at: Date.now(), amount: Number(state.amount) || 0,
+        book: state.book || null, rows: out,
+      }));
+    } catch (e) { return; }
+    location.href = '/my-bets.html';
   }
 
   // Book allocator: sum every bet's stake by the book its "Bet at X" button
@@ -890,6 +950,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (s) s.innerHTML = summaryHTML(rows);
     if (bw) bw.innerHTML = bookTotalsHTML(rows);
     if (l) l.innerHTML = listHTML(rows);
+    const sm = document.getElementById('alSendMyBets');
+    if (sm) sm.addEventListener('click', sendToMyBets);
   }
 
   function bindInputs() {

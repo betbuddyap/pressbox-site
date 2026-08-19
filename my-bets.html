@@ -94,6 +94,44 @@
   .mb-payout-preview { font-family: var(--sans); font-size: 12px; color: var(--text-mid); }
   .mb-payout-preview b { font-weight: 700; color: var(--text); }
 
+  /* ── MODE TOGGLE (Single / Parlay) ── */
+  .mb-mode { display: inline-flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+  .mb-mode button { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); background: var(--cream); border: 0; padding: 8px 16px; cursor: pointer; }
+  .mb-mode button.active { background: var(--ink); color: var(--cream); }
+
+  /* ── PARLAY BUILDER ── */
+  .mb-add-leg { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 12px 20px; cursor: pointer; }
+  .mb-add-leg:hover { border-color: var(--gold); }
+  #mbParlayPanel { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--border); }
+  .mb-legs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .mb-legs-empty { font-family: var(--sans); font-size: 12px; color: var(--text-light); }
+  .mb-leg-chip { display: inline-flex; align-items: center; gap: 7px; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); background: var(--cream-dark); border: 1px solid var(--border); border-radius: 14px; padding: 6px 11px; }
+  .mb-leg-chip .mb-leg-odds { font-weight: 500; color: var(--text-mid); }
+  .mb-leg-chip button { background: none; border: 0; color: var(--text-light); font-size: 11px; cursor: pointer; padding: 0; line-height: 1; }
+  .mb-leg-chip button:hover { color: var(--rust); }
+  .mb-parlay-meta { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+  .mb-ticket-odds { flex: 0 0 170px; }
+  .mb-parlay-hint { font-family: var(--sans); font-size: 11px; color: var(--text-light); padding-bottom: 10px; }
+
+  /* ── ALLOCATOR IMPORT ── */
+  .mb-import { background: var(--cream); border: 1px solid var(--gold); border-radius: 6px; padding: 20px 22px; }
+  .mb-import-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); }
+  .mb-import-hint { font-family: var(--sans); font-size: 11px; color: var(--text-mid); margin: 4px 0 14px; }
+  .mb-import-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .mb-import-row input[type="checkbox"] { flex: 0 0 auto; accent-color: var(--gold); width: 15px; height: 15px; }
+  .mb-import-body { flex: 1 1 auto; min-width: 0; }
+  .mb-imp-field { display: flex; flex-direction: column; flex: 0 0 84px; }
+  .mb-imp-field label { font-family: var(--sans); font-size: 8px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); margin-bottom: 3px; }
+  .mb-imp-field input { width: 100%; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 7px 8px; }
+  .mb-imp-spacer { visibility: hidden; }
+  .mb-import-dismiss { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); background: none; border: 1px solid var(--border); border-radius: 4px; padding: 11px 18px; cursor: pointer; }
+  @media (max-width: 720px) {
+    .mb-import-row { flex-wrap: wrap; }
+    .mb-import-body { flex-basis: 100%; }
+    .mb-imp-field { flex: 1 1 30%; }
+    .mb-imp-spacer { display: none; }
+  }
+
   /* ── LEDGER ── */
   .mb-week-group { margin-bottom: 26px; }
   .mb-week-head { font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; }
@@ -155,7 +193,7 @@
 
 <!-- Supabase JS client (loaded BEFORE my-bets.js, which uses it for auth + the ledger) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/my-bets.js?v=20260819b"></script>
+<script src="/js/my-bets.js?v=20260819c"></script>
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
 <script src="/js/site-chrome.js" defer></script>

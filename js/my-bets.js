@@ -31,9 +31,13 @@
   let weeks = [];               // sorted distinct week numbers
   let bets = [];                // user_bets rows, newest first
   let quotesCache = {};         // game_id -> book-quotes payload
+  let picksByGame = {};         // /picks/upcoming — game_id -> {slots:{spread,total,ml}}
   let formWeek = null;          // week selected in the form
   let heroScope = 'week';       // 'week' | 'season'
   let ledgerReady = true;       // false when the user_bets table isn't provisioned
+  let mode = 'single';          // 'single' | 'parlay'
+  let parlayLegs = [];          // pending legs while building a parlay ticket
+  let importRows = null;        // allocator-sheet handoff (localStorage), or null
 
   // ── Utils ──────────────────────────────────────────────────────────
   const esc = (s) => String(s == null ? '' : s)
@@ -65,6 +69,15 @@
     const s = Number(stake), o = Math.round(Number(odds));
     if (!(s > 0) || !isFinite(o) || o === 0) return null;
     return o > 0 ? s * (o / 100) : s * (100 / Math.abs(o));
+  }
+  function amToDec(odds) {
+    const o = Math.round(Number(odds));
+    if (!isFinite(o) || o === 0) return null;
+    return o > 0 ? 1 + o / 100 : 1 + 100 / Math.abs(o);
+  }
+  function decToAm(dec) {
+    if (!(dec > 1)) return null;
+    return dec >= 2 ? Math.round((dec - 1) * 100) : Math.round(-100 / (dec - 1));
   }
   function kickoffDate(iso) {
     if (!iso) return null;
@@ -180,6 +193,10 @@
       <div class="mb-section">
         <div class="mb-section-eyebrow">Log a ticket</div>
         <h2 class="mb-section-title">What did you <em>actually</em> bet?</h2>
+        <div class="mb-mode" role="tablist">
+          <button type="button" data-mode="single" class="active">Single</button>
+          <button type="button" data-mode="parlay">Parlay</button>
+        </div>
         <form class="mb-form" id="mbForm" autocomplete="off">
           <div class="mb-form-grid">
             <div class="mb-field">
@@ -219,13 +236,36 @@
               <input id="mbStake" type="number" step="0.01" min="0" placeholder="50">
             </div>
           </div>
+          <div id="mbParlayPanel" style="display:none;"></div>
           <div class="mb-form-actions">
+            <button type="button" class="mb-add-leg" id="mbAddLeg" style="display:none;">+ Add leg</button>
             <button type="submit" class="mb-log-btn" id="mbLogBtn">Log bet</button>
             <span class="mb-payout-preview" id="mbPreview"></span>
             <span class="mb-form-msg" id="mbMsg"></span>
           </div>
         </form>
       </div>`;
+  }
+
+  // ── PressBox board markers ─────────────────────────────────────────
+  // /picks/upcoming ships per-game slots {spread,total,ml} with the
+  // board's tier + side. The side dropdown flags the option the board
+  // is on — informational only; it never auto-picks a side.
+  function boardSlot(g, market) {
+    const entry = picksByGame[g.game_id] || picksByGame[String(gid(g))];
+    const slots = entry && entry.slots;
+    if (!slots) return null;
+    return market === 'ml' ? slots.ml : market === 'total' ? slots.total : slots.spread;
+  }
+  function pbMark(g, market, sideValue) {
+    const s = boardSlot(g, market);
+    if (!s || !s.tier_full || !s.side) return '';
+    if (/^(ne|no_edge)$/i.test(String(s.tier_full))) return '';
+    const slotSide = market === 'total'
+      ? String(s.side).toLowerCase()
+      : (s.side === g.home_team ? 'home' : s.side === g.away_team ? 'away' : null);
+    if (slotSide !== sideValue) return '';
+    return ` · PressBox ${s.tier_full}`;
   }
 
   function currentGame() {
@@ -248,10 +288,11 @@
     const sel = document.getElementById('mbSide');
     if (!sel || !g) return;
     if (market === 'total') {
-      sel.innerHTML = `<option value="over">Over</option><option value="under">Under</option>`;
+      sel.innerHTML = `<option value="over">Over${esc(pbMark(g, 'total', 'over'))}</option>` +
+                      `<option value="under">Under${esc(pbMark(g, 'total', 'under'))}</option>`;
     } else {
-      sel.innerHTML = `<option value="away">${esc(g.away_team)}</option>` +
-                      `<option value="home">${esc(g.home_team)}</option>`;
+      sel.innerHTML = `<option value="away">${esc(g.away_team)}${esc(pbMark(g, market, 'away'))}</option>` +
+                      `<option value="home">${esc(g.home_team)}${esc(pbMark(g, market, 'home'))}</option>`;
     }
     document.getElementById('mbLineField').style.display = market === 'ml' ? 'none' : '';
   }
@@ -317,11 +358,87 @@
     const el = document.getElementById('mbPreview');
     if (!el) return;
     const stake = Number(document.getElementById('mbStake').value);
-    const odds = Number(document.getElementById('mbOdds').value);
+    // Parlay mode previews the TICKET's combined price, not the leg fields.
+    const odds = mode === 'parlay'
+      ? Number(document.getElementById('mbTicketOdds')?.value)
+      : Number(document.getElementById('mbOdds').value);
     const win = winAmount(stake, odds);
     el.innerHTML = (win != null)
-      ? `To win <b>${esc(fmtMoney(win))}</b> · returns <b>${esc(fmtMoney(win + stake))}</b>`
+      ? `Profit if it wins: <b>${esc(fmtMoney(win))}</b> · total back: <b>${esc(fmtMoney(win + stake))}</b>`
       : '';
+  }
+
+  // ── Parlay builder ─────────────────────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll('.mb-mode button').forEach(b =>
+      b.classList.toggle('active', b.getAttribute('data-mode') === m));
+    document.getElementById('mbAddLeg').style.display = m === 'parlay' ? '' : 'none';
+    document.getElementById('mbLogBtn').textContent = m === 'parlay' ? 'Log parlay' : 'Log bet';
+    renderParlayPanel();
+    updatePreview();
+  }
+
+  function renderParlayPanel() {
+    const panel = document.getElementById('mbParlayPanel');
+    if (!panel) return;
+    panel.style.display = mode === 'parlay' ? '' : 'none';
+    if (mode !== 'parlay') return;
+    const chips = parlayLegs.map((l, i) =>
+      `<span class="mb-leg-chip">${esc(l.side_label)} <span class="mb-leg-odds">${esc(fmtOdds(l.odds))}</span>` +
+      `<button type="button" data-legdel="${i}" aria-label="Remove leg">✕</button></span>`).join('');
+    const dec = parlayLegs.reduce((d, l) => {
+      const x = amToDec(l.odds);
+      return (d != null && x != null) ? d * x : null;
+    }, 1);
+    const combined = (parlayLegs.length >= 2 && dec) ? decToAm(dec) : null;
+    panel.innerHTML = `
+      <div class="mb-legs">${chips || '<span class="mb-legs-empty">No legs yet — set the fields above, then “+ Add leg”. Two or more legs make a ticket.</span>'}</div>
+      <div class="mb-parlay-meta">
+        <span class="mb-field mb-ticket-odds"><label for="mbTicketOdds">Ticket odds (American)</label>
+          <input id="mbTicketOdds" type="number" step="1" value="${combined != null ? combined : ''}" placeholder="+594"></span>
+        <span class="mb-parlay-hint">${parlayLegs.length} leg${parlayLegs.length === 1 ? '' : 's'}${combined != null ? ` · legs multiply to ${esc(fmtOdds(combined))} — edit to your book's actual ticket price` : ''}</span>
+      </div>`;
+    panel.querySelectorAll('[data-legdel]').forEach(b => b.addEventListener('click', () => {
+      parlayLegs.splice(Number(b.getAttribute('data-legdel')), 1);
+      renderParlayPanel(); updatePreview();
+    }));
+    const to = panel.querySelector('#mbTicketOdds');
+    if (to) to.addEventListener('input', updatePreview);
+    updatePreview();
+  }
+
+  function addLeg() {
+    const msg = document.getElementById('mbMsg');
+    msg.className = 'mb-form-msg'; msg.textContent = '';
+    const fail = (t) => { msg.className = 'mb-form-msg err'; msg.textContent = t; };
+    const g = currentGame();
+    if (!g) return fail('Pick a game.');
+    const market = document.getElementById('mbMarket').value;
+    const side = document.getElementById('mbSide').value;
+    const odds = Math.round(Number(document.getElementById('mbOdds').value));
+    if (!isFinite(odds) || Math.abs(odds) < 100 || document.getElementById('mbOdds').value === '')
+      return fail('Set the leg’s odds first.');
+    let line = null;
+    if (market !== 'ml') {
+      const lineRaw = document.getElementById('mbLine').value;
+      line = Number(lineRaw);
+      if (!isFinite(line) || lineRaw === '') return fail('Set the leg’s line first.');
+    }
+    const bookSel = document.getElementById('mbBook');
+    const q = quotesCache[gid(g)];
+    const book = (q && q.books && bookSel.value !== '') ? q.books[Number(bookSel.value)] : null;
+    const dupIdx = parlayLegs.findIndex(l => l.game_id === gid(g) && l.market === market);
+    const legObj = {
+      game_id: gid(g), week: g.week, kickoff: g.raw_date || null,
+      market, side, line, odds,
+      side_label: sideLabelFor(g, market, side, line),
+      game_label: `${g.away_team} @ ${g.home_team}`,
+      book: book ? (book.book_display || book.book) : null,
+    };
+    if (dupIdx >= 0) parlayLegs[dupIdx] = legObj;   // re-adding the same market replaces
+    else parlayLegs.push(legObj);
+    renderParlayPanel();
   }
 
   function sideLabelFor(g, market, side, line) {
@@ -337,6 +454,8 @@
     const btn = document.getElementById('mbLogBtn');
     msg.className = 'mb-form-msg';
     msg.textContent = '';
+
+    if (mode === 'parlay') return logParlay(msg, btn);
 
     const g = currentGame();
     const market = document.getElementById('mbMarket').value;
@@ -388,6 +507,54 @@
     renderLedgerAndHero();
   }
 
+  async function logParlay(msg, btn) {
+    const fail = (t) => { msg.className = 'mb-form-msg err'; msg.textContent = t; };
+    if (parlayLegs.length < 2) return fail('A parlay needs at least two legs — add them with “+ Add leg”.');
+    const tOddsEl = document.getElementById('mbTicketOdds');
+    const tOdds = Math.round(Number(tOddsEl && tOddsEl.value));
+    if (!isFinite(tOdds) || Math.abs(tOdds) < 100 || !tOddsEl || tOddsEl.value === '')
+      return fail('Enter the ticket’s combined odds.');
+    const stake = Number(document.getElementById('mbStake').value);
+    if (!(stake > 0)) return fail('Enter an amount.');
+
+    const kicks = parlayLegs.map(l => l.kickoff).filter(Boolean).sort();
+    const legBooks = [...new Set(parlayLegs.map(l => l.book).filter(Boolean))];
+    const payload = {
+      season: SEASON,
+      week: Math.min(...parlayLegs.map(l => l.week)),
+      game_id: null,
+      game_label: `Parlay — ${parlayLegs.length} legs`,
+      kickoff: kicks[0] || null,           // first kick locks the whole ticket
+      market: 'parlay',
+      side: 'parlay',
+      side_label: `${parlayLegs.length}-leg parlay`,
+      line: null,
+      odds: tOdds,
+      stake,
+      book: legBooks.length === 1 ? legBooks[0] : null,
+      legs: parlayLegs.map(l => ({
+        game_id: l.game_id, market: l.market, side: l.side, line: l.line,
+        odds: l.odds, side_label: l.side_label, game_label: l.game_label,
+        kickoff: l.kickoff,
+      })),
+    };
+    btn.disabled = true;
+    const { data, error } = await sb.from('user_bets').insert(payload).select().single();
+    btn.disabled = false;
+    if (error) {
+      console.error('parlay insert failed', error);
+      return fail(/legs|parlay|constraint/i.test(error.message || '')
+        ? 'The parlay migration hasn’t been run yet — paste the second SQL block in Supabase.'
+        : 'Couldn’t save that ticket. Try again.');
+    }
+    bets.unshift(data);
+    parlayLegs = [];
+    renderParlayPanel();
+    msg.textContent = 'Parlay logged.';
+    document.getElementById('mbStake').value = '';
+    renderLedgerAndHero();
+  }
+
   // ── Ledger ─────────────────────────────────────────────────────────
   function markFor(b) {
     if (!b.result) return ['pending', '–'];
@@ -405,7 +572,10 @@
       : b.result === 'V' ? 'Void'
       : fmtMoney(net, { signed: true });
     const canDelete = !settled && isPregame(b.kickoff);
-    const sub = [b.game_label, fmtKick(b.kickoff), b.book].filter(Boolean).join(' · ');
+    const sub = b.market === 'parlay'
+      ? [(b.legs || []).map(l => l.side_label).join('  +  '), b.book,
+         b.kickoff ? `first kick ${fmtKick(b.kickoff)}` : null].filter(Boolean).join(' · ')
+      : [b.game_label, fmtKick(b.kickoff), b.book].filter(Boolean).join(' · ');
     return `
       <div class="mb-row" data-id="${esc(b.id)}">
         <div class="mb-row-mark ${cls}">${glyph}</div>
@@ -495,6 +665,149 @@
     document.getElementById('mbOdds').addEventListener('input', updatePreview);
     document.getElementById('mbStake').addEventListener('input', updatePreview);
     document.getElementById('mbForm').addEventListener('submit', logBet);
+    document.getElementById('mbAddLeg').addEventListener('click', addLeg);
+    document.querySelectorAll('.mb-mode button').forEach(b =>
+      b.addEventListener('click', () => setMode(b.getAttribute('data-mode'))));
+  }
+
+  // ── Allocator import ───────────────────────────────────────────────
+  // allocator.html stashes its sized sheet in localStorage and sends the
+  // user here. Every number stays editable — the sheet is a suggestion,
+  // the ledger records the ticket actually placed.
+  const IMPORT_KEY = 'pb_mybets_import';
+
+  function loadImport() {
+    try {
+      const raw = localStorage.getItem(IMPORT_KEY);
+      if (!raw) return;
+      const stash = JSON.parse(raw);
+      if (stash && Array.isArray(stash.rows) && stash.rows.length) importRows = stash;
+    } catch (e) { importRows = null; }
+  }
+  function clearImport() {
+    importRows = null;
+    try { localStorage.removeItem(IMPORT_KEY); } catch (e) {}
+    const m = document.getElementById('mbImportMount');
+    if (m) m.innerHTML = '';
+  }
+
+  function importRowLabel(r) {
+    if (r.type === 'parlay') {
+      const legTxt = (r.legs || []).map(l => l.side_label).join('  +  ');
+      return `<div class="mb-row-pick">${(r.legs || []).length}-leg parlay <span class="mb-odds">${esc(fmtOdds(r.odds))}</span></div>
+              <div class="mb-row-sub">${esc(legTxt)}</div>`;
+    }
+    return `<div class="mb-row-pick">${esc(r.side_label)} <span class="mb-odds">${esc(fmtOdds(r.odds))}</span></div>
+            <div class="mb-row-sub">${esc([r.game_label, r.book].filter(Boolean).join(' · '))}</div>`;
+  }
+
+  function renderImport() {
+    const mount = document.getElementById('mbImportMount');
+    if (!mount) return;
+    if (!importRows) { mount.innerHTML = ''; return; }
+    const ageMin = Math.max(0, Math.round((Date.now() - (importRows.at || Date.now())) / 60000));
+    const stale = ageMin > 45;
+    const rowsHtml = importRows.rows.map((r, i) => `
+      <div class="mb-import-row" data-idx="${i}">
+        <input type="checkbox" class="mb-imp-on" checked aria-label="Include this ticket">
+        <div class="mb-import-body">${importRowLabel(r)}</div>
+        <span class="mb-imp-field"><label>$</label><input class="mb-imp-stake" type="number" step="1" min="1" value="${Number(r.stake) || ''}"></span>
+        <span class="mb-imp-field"><label>Odds</label><input class="mb-imp-odds" type="number" step="1" value="${r.odds != null ? r.odds : ''}"></span>
+        ${r.type === 'single' && r.market !== 'ml'
+          ? `<span class="mb-imp-field"><label>Line</label><input class="mb-imp-line" type="number" step="0.5" value="${r.line != null ? r.line : ''}"></span>`
+          : `<span class="mb-imp-field mb-imp-spacer"></span>`}
+      </div>`).join('');
+    mount.innerHTML = `
+      <div class="mb-section">
+        <div class="mb-import">
+          <div class="mb-import-head">
+            <div>
+              <div class="mb-section-eyebrow">From the Allocator</div>
+              <div class="mb-import-title">$${esc(fmtMoney(importRows.amount || 0).replace('$', ''))} sheet${importRows.book ? ` at ${esc(importRows.book)}` : ''} · pulled ${ageMin} min ago</div>
+              <div class="mb-import-hint">${stale ? 'The board re-grades every 30 minutes — these numbers may have moved. ' : ''}Stakes, odds, and lines are editable — log the tickets you actually place.</div>
+            </div>
+          </div>
+          ${rowsHtml}
+          <div class="mb-form-actions">
+            <button type="button" class="mb-log-btn" id="mbImportLog">Log selected</button>
+            <button type="button" class="mb-import-dismiss" id="mbImportDismiss">Dismiss</button>
+            <span class="mb-form-msg" id="mbImportMsg"></span>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('mbImportLog').addEventListener('click', logImports);
+    document.getElementById('mbImportDismiss').addEventListener('click', clearImport);
+  }
+
+  function importPayload(r, stake, odds, line) {
+    if (r.type === 'parlay') {
+      const legs = (r.legs || []).map(l => ({
+        game_id: l.game_id, market: l.market, side: l.side, line: l.line,
+        odds: l.odds, side_label: l.side_label, game_label: l.game_label,
+        kickoff: l.kickoff,
+      }));
+      const kicks = legs.map(l => l.kickoff).filter(Boolean).sort();
+      return {
+        season: SEASON, week: r.week, game_id: null,
+        game_label: `Parlay — ${legs.length} legs`, kickoff: kicks[0] || null,
+        market: 'parlay', side: 'parlay', side_label: `${legs.length}-leg parlay`,
+        line: null, odds, stake, book: r.book || null, legs,
+      };
+    }
+    // Rebuild the label when the line was edited, so the ledger reads true.
+    const side_label = r.market === 'ml' ? `${r.side_team} ML`
+      : r.market === 'total' ? `${r.side === 'over' ? 'Over' : 'Under'} ${String(line).replace(/\.0$/, '')}`
+      : `${r.side_team} ${fmtSignedLine(line)}`;
+    return {
+      season: SEASON, week: r.week, game_id: r.game_id,
+      game_label: r.game_label, kickoff: r.kickoff || null,
+      market: r.market, side: r.side, side_label,
+      line: r.market === 'ml' ? null : line,
+      odds, stake, book: r.book || null,
+    };
+  }
+
+  async function logImports() {
+    const msg = document.getElementById('mbImportMsg');
+    const btn = document.getElementById('mbImportLog');
+    msg.className = 'mb-form-msg'; msg.textContent = '';
+    const rows = [...document.querySelectorAll('.mb-import-row')];
+    const jobs = [];
+    for (const el of rows) {
+      if (!el.querySelector('.mb-imp-on').checked) continue;
+      const r = importRows.rows[Number(el.getAttribute('data-idx'))];
+      const stake = Number(el.querySelector('.mb-imp-stake').value);
+      const odds = Math.round(Number(el.querySelector('.mb-imp-odds').value));
+      const lineEl = el.querySelector('.mb-imp-line');
+      const line = lineEl ? Number(lineEl.value) : null;
+      if (!(stake > 0) || !isFinite(odds) || Math.abs(odds) < 100) {
+        msg.className = 'mb-form-msg err';
+        msg.textContent = 'Every selected ticket needs a stake and American odds.';
+        return;
+      }
+      if (lineEl && (lineEl.value === '' || !isFinite(line))) {
+        msg.className = 'mb-form-msg err';
+        msg.textContent = 'A selected spread/total ticket is missing its line.';
+        return;
+      }
+      jobs.push(importPayload(r, stake, odds, line));
+    }
+    if (!jobs.length) { msg.textContent = 'Nothing selected.'; return; }
+    btn.disabled = true;
+    let logged = 0, failed = 0;
+    for (const payload of jobs) {
+      const { data, error } = await sb.from('user_bets').insert(payload).select().single();
+      if (error) { console.error('import insert failed', error, payload); failed++; continue; }
+      bets.unshift(data); logged++;
+    }
+    btn.disabled = false;
+    if (failed) {
+      msg.className = 'mb-form-msg err';
+      msg.textContent = `Logged ${logged}, ${failed} failed — parlay rows need the second migration.`;
+    } else {
+      clearImport();
+    }
+    renderLedgerAndHero();
   }
 
   // ── Init ───────────────────────────────────────────────────────────
@@ -504,11 +817,11 @@
     try { session = (await sb.auth.getSession()).data.session; } catch (e) {}
     if (!session) { renderWall('login'); return; }
 
+    const authHeaders = { 'Authorization': `Bearer ${session.access_token}` };
     let gamesRes = null;
     try {
       const r = await fetch(`${API}/games/upcoming?season=${SEASON}`, {
-        credentials: 'omit',
-        headers: { 'Authorization': `Bearer ${session.access_token}` },
+        credentials: 'omit', headers: authHeaders,
       });
       if (r.status === 402) { renderWall('subscribe'); return; }
       if (r.status === 401) { renderWall('login'); return; }
@@ -517,6 +830,15 @@
       app.innerHTML = `<div class="mb-empty">Couldn’t reach the slate. Refresh to retry.</div>`;
       return;
     }
+
+    // Board picks — powers the "· PressBox A+" markers in the side
+    // dropdown. Purely informational; the page works without it.
+    fetch(`${API}/picks/upcoming?season=${SEASON}`, { credentials: 'omit', headers: authHeaders })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        if (j && j.picks) { picksByGame = j.picks; rebuildSideSelect(); }
+      })
+      .catch(() => {});
     games = (gamesRes && gamesRes.games) || [];
     games.forEach(g => { gamesById[gid(g)] = g; });
     weeks = (gamesRes && Array.isArray(gamesRes.weeks) && gamesRes.weeks.length)
@@ -544,9 +866,11 @@
       bets = [];
     }
 
-    app.innerHTML = `<div id="mbHeroMount"></div>${formHTML()}<div id="mbLedgerMount"></div>`;
+    app.innerHTML = `<div id="mbHeroMount"></div><div id="mbImportMount"></div>${formHTML()}<div id="mbLedgerMount"></div>`;
     wireForm();
     rebuildGameSelect();
+    loadImport();
+    renderImport();
     renderLedgerAndHero();
   }
 
