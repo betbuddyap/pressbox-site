@@ -1579,6 +1579,27 @@
       const rate = (histRange.source === 'rule' || histRange.source === 'bloc')
                    && typeof histRange.cover_rate === 'number'
                      ? histRange.cover_rate : null;
+
+      // A signal's record and THIS bet's price answer different questions, and
+      // on a moneyline they can look like the same one. ML rules fire at any
+      // price and mostly point at favorites, so a 70% lifetime rate printed
+      // under a +215 underdog reads as "70% to win this game" — it isn't.
+      // Anchor the record to what the price actually has to clear. Pure price
+      // arithmetic: no model number, no blend dot. (Austin, 2026-08-19)
+      let priceClause = '';
+      if (ml && rate != null) {
+        const rawLine = (pick && pick.history && pick.history.current
+                          && pick.history.current.line) || (pick && pick.line);
+        const am = parseInt(String(rawLine == null ? '' : rawLine)
+                              .replace(/[−–—]/g, '-').replace(/[^\-+\d]/g, ''), 10);
+        if (isFinite(am) && Math.abs(am) >= 100) {
+          const be = am > 0 ? 100 / (am + 100)
+                            : Math.abs(am) / (Math.abs(am) + 100);
+          priceClause = ` That's its record across every price it fired at; ` +
+            `at <b>${am > 0 ? '+' : '−'}${Math.abs(am)}</b> this one turns a ` +
+            `profit above <b>${(be * 100).toFixed(1)}%</b>.`;
+        }
+      }
       if (rate != null || total > 0) {
         const note = document.createElement('div');
         note.className = 'mlstrip-note';
@@ -1591,12 +1612,12 @@
           note.innerHTML =
             `History check: ${histRange.signal_count} signals back this pick. ` +
             `In 2023–25 the side they pointed to won <b>${Math.round(rate * 100)}%</b> ` +
-            `of the time, counting each signal by how many games it has.`;
+            `of the time, counting each signal by how many games it has.` + priceClause;
         } else if (rate != null) {
           note.innerHTML =
             `History check: one signal backs this pick. In 2023–25 it fired ` +
             `${histRange.sample_size} times and the side it pointed to won ` +
-            `<b>${Math.round(rate * 100)}%</b> of them.`;
+            `<b>${Math.round(rate * 100)}%</b> of them.` + priceClause;
         } else {
           const pctLeft = left / total;
           let sideName, pct;
