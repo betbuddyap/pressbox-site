@@ -429,18 +429,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  // ── Delta sizing (Austin's spec, 2026-08-12) ────────────────────────
-  // baseline = the PRICE's implied probability (1/decimal — what the bet
-  // has to beat to profit, vig included: -110 must beat 52.4%, +400 must
-  // beat 20%). delta = our probability − baseline.
-  //   weight = delta × our probability
-  // The second factor risk-weights the same delta by how often the bet
-  // actually cashes: a 5% delta at 60% sizes 2.4× a 5% delta at 25%.
-  // Bets at/below their price's implied get $0 and drop off the sheet.
+  // ── Edge sizing (Austin's spec, 2026-08-19) ─────────────────────────
+  //   weight = hit rate − the % to clear
+  // The % to clear is the PRICE's implied probability (1/decimal, vig
+  // included: -110 must clear 52.4%, +400 must clear 20%). Bets at or
+  // below their price's implied get $0 and drop off the sheet.
+  //
+  // The hit rate is the bloc's own n-weighted record — the SAME number
+  // the game page's history check prints, so the sheet and the game page
+  // can't quote two different percentages for one bet. It replaced the
+  // tier-anchor probability, which sat only ~2pt above break-even for a C
+  // and ~15pt for an A+; squaring that gap (the old `× our probability`
+  // second factor) put 46% of a bankroll on a single A+.
+  //
+  // Moneylines keep their price-anchored probability: an ML rule's rate is
+  // an all-prices average, so subtracting THIS game's break-even would
+  // compare two different populations (a +190 dog "clears" at 34.5%, and
+  // the rule's 70% was earned mostly at favorite prices).
+  function legHitProb(leg) {
+    return (leg && leg.hit_rate != null) ? leg.hit_rate : (leg ? leg.our_prob : null);
+  }
   function deltaWeight(p, dec) {
     if (!(p > 0) || !(dec > 1)) return 0;
-    const baseline = 1 / dec;
-    return Math.max(0, (p - baseline) * p);
+    return Math.max(0, p - 1 / dec);
   }
 
   // ── Single-book mode ────────────────────────────────────────────────
@@ -495,15 +506,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const amount = Number(state.amount) || 0;
     const beta = currentPreset().beta;
 
-    // weight = delta × our_prob × payout^beta (the preset tilt:
-    // Conservative β=0 is the pure delta sizing; Aggressive leans
-    // toward the bigger payouts among the +delta set).
+    // weight = (hit rate − % to clear) × payout^beta (the preset tilt:
+    // Conservative β=0 is the pure edge sizing; Aggressive leans
+    // toward the bigger payouts among the +edge set).
     const cand = [];
     for (const raw of state.legs) {
       if (!matchesFilters(raw)) continue;
       const leg = bookView(raw);          // single-book re-price, or drop
       if (!leg) continue;
-      const p = leg.our_prob, dec = leg.decimal_odds;
+      const p = legHitProb(leg), dec = leg.decimal_odds;
       if (!(p > 0) || !(dec > 1)) continue;
       const f = deltaWeight(p, dec);
       if (!(f > 0)) continue;             // at/below the price's implied → no stake
@@ -548,9 +559,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         <p class="al-eyebrow">— Bankroll Allocator</p>
         <h1 class="al-headline">Your bet, divvied up.</h1>
         <p class="al-sub">
-          Enter what you want to wager in total and every pick whose win
-          probability beats its price gets a slice — sized by how far past
-          break-even we have it, weighted by how often the bet cashes.
+          Enter what you want to wager in total and every pick whose hit rate
+          beats its price gets a slice — sized by how far the signals' own
+          record sits past the percentage that price has to clear.
           Conservative is the pure sizing, Aggressive tilts toward the bigger
           payouts, Moderate splits the difference — the whole amount always
           gets allocated.
@@ -815,7 +826,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="ll-row-pick">${pickText(leg)}</div>
           </div>
           <div class="al-metrics">
-            <div class="al-metric"><span class="al-metric-k">Win prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
+            <div class="al-metric"><span class="al-metric-k">${leg.hit_rate != null ? 'Hit rate' : 'Win prob'}</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
+            <div class="al-metric"><span class="al-metric-k">Clears at</span><span class="al-metric-v">${(100 / r.dec).toFixed(1)}%</span></div>
             <div class="al-metric"><span class="al-metric-k">Price</span><span class="al-metric-v">${price}</span></div>
             <div class="al-metric"><span class="al-metric-k">Returns if it hits</span><span class="al-metric-v al-pos">$${fmtMoney(r.payout)}</span></div>
           </div>
