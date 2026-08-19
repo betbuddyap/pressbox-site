@@ -158,10 +158,19 @@
   }
 
   // ── Log-a-bet form ─────────────────────────────────────────────────
+  // /games/upcoming reshapes its rows: the id is `game_id` (a STRING),
+  // kickoff is `raw_date`, and `week` is the canonical anchor-Saturday
+  // week. gid() is the ONE place the string becomes the number the
+  // ledger and the quotes endpoint use. (The original build read `id` /
+  // `start_date` — every option's value came out "undefined", so
+  // gamesById["undefined"] pinned to the last game in the date-ordered
+  // payload: the season finale. Army @ Navy, forever.)
+  const gid = (g) => Number(g.game_id);
+
   function weekGames(w) {
     return games
       .filter(g => g.week === w)
-      .sort((a, b) => String(a.start_date || '').localeCompare(String(b.start_date || '')));
+      .sort((a, b) => String(a.raw_date || '').localeCompare(String(b.raw_date || '')));
   }
 
   function formHTML() {
@@ -229,7 +238,7 @@
     if (!sel) return;
     const list = weekGames(formWeek);
     sel.innerHTML = list.map(g =>
-      `<option value="${g.id}">${esc(g.away_team)} @ ${esc(g.home_team)}</option>`).join('');
+      `<option value="${gid(g)}">${esc(g.away_team)} @ ${esc(g.home_team)}${g.date ? ` · ${esc(g.date)}` : ''}</option>`).join('');
     onGameChange();
   }
 
@@ -265,9 +274,9 @@
     const bookSel = document.getElementById('mbBook');
     if (!g || !bookSel) return;
     bookSel.innerHTML = `<option value="">Loading books…</option>`;
-    const quotes = await fetchQuotes(g.id);
+    const quotes = await fetchQuotes(gid(g));
     const cur = currentGame();
-    if (!cur || cur.id !== g.id) return;   // user moved on mid-fetch
+    if (!cur || gid(cur) !== gid(g)) return;   // user moved on mid-fetch
     if (!quotes.books.length) {
       bookSel.innerHTML = `<option value="">No live books — enter manually</option>`;
     } else {
@@ -283,7 +292,7 @@
     const market = document.getElementById('mbMarket').value;
     const side = document.getElementById('mbSide').value;
     const bookSel = document.getElementById('mbBook');
-    const q = quotesCache[g.id];
+    const q = quotesCache[gid(g)];
     const book = (q && q.books && bookSel.value !== '') ? q.books[Number(bookSel.value)] : null;
     const lineEl = document.getElementById('mbLine');
     const oddsEl = document.getElementById('mbOdds');
@@ -333,7 +342,7 @@
     const market = document.getElementById('mbMarket').value;
     const side = document.getElementById('mbSide').value;
     const bookSel = document.getElementById('mbBook');
-    const q = quotesCache[g && g.id];
+    const q = g ? quotesCache[gid(g)] : null;
     const book = (g && q && q.books && bookSel.value !== '') ? q.books[Number(bookSel.value)] : null;
     const lineRaw = document.getElementById('mbLine').value;
     const odds = Math.round(Number(document.getElementById('mbOdds').value));
@@ -352,9 +361,9 @@
     const payload = {
       season: SEASON,
       week: g.week,
-      game_id: g.id,
+      game_id: gid(g),
       game_label: `${g.away_team} @ ${g.home_team}`,
-      kickoff: g.start_date || null,
+      kickoff: g.raw_date || null,
       market,
       side,
       side_label: sideLabelFor(g, market, side, line),
@@ -509,13 +518,15 @@
       return;
     }
     games = (gamesRes && gamesRes.games) || [];
-    games.forEach(g => { gamesById[g.id] = g; });
-    weeks = [...new Set(games.map(g => g.week).filter(w => w != null))].sort((a, b) => a - b);
+    games.forEach(g => { gamesById[gid(g)] = g; });
+    weeks = (gamesRes && Array.isArray(gamesRes.weeks) && gamesRes.weeks.length)
+      ? gamesRes.weeks.slice()
+      : [...new Set(games.map(g => g.week).filter(w => w != null))].sort((a, b) => a - b);
 
     // Default week: the first week that still has an unplayed game.
     const now = Date.now();
     const liveWeek = weeks.find(w => weekGames(w).some(g => {
-      const k = kickoffDate(g.start_date);
+      const k = kickoffDate(g.raw_date);
       return g.status !== 'final' && (!k || k.getTime() > now - 6 * 3600e3);
     }));
     formWeek = liveWeek != null ? liveWeek : (weeks[weeks.length - 1] ?? null);
