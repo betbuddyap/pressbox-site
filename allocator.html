@@ -446,6 +446,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // an all-prices average, so subtracting THIS game's break-even would
   // compare two different populations (a +190 dog "clears" at 34.5%, and
   // the rule's 70% was earned mostly at favorite prices).
+  //
+  // PARLAYS multiply this edge by their own hit probability — see the parlay
+  // branch in computeRows(). Straights all price near even money, so their
+  // edges compare fairly; a parlay's does not.
   function legHitProb(leg) {
     return (leg && leg.hit_rate != null) ? leg.hit_rate : (leg ? leg.our_prob : null);
   }
@@ -524,8 +528,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Parlays: single-slate, and they span markets/tiers — so only in the mix
-    // when no filter is narrowing the board (i.e. "All"). Same formula: the
-    // ticket's combined decimal sets the baseline it has to beat.
+    // when no filter is narrowing the board (i.e. "All"). Same edge term, but
+    // MULTIPLIED BY THE TICKET'S OWN HIT PROBABILITY.
+    //
+    // A probability-point edge doesn't mean the same thing at −110 as it does
+    // at +1275. Straights all sit near even money, so comparing their edges
+    // head-to-head is fair; a parlay wins that comparison twice over — no
+    // penalty for how rarely it cashes, then a much bigger payout^beta tilt.
+    // With the raw edge alone, parlays took the top three slots in Week 0 and
+    // six of six in Week 1 (37% of the bankroll). Weighting by how often the
+    // ticket actually cashes puts them back at ~10-16% and behind the board's
+    // own picks, which is where Austin expects them (2026-08-19).
     if (state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const rawPl of state.parlays) {
         if (state.week != null && rawPl.week !== state.week) continue;
@@ -533,7 +546,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!pl) continue;
         const p = pl.our_prob, dec = pl.decimal_odds;
         if (!(p > 0) || !(dec > 1)) continue;
-        const f = deltaWeight(p, dec);
+        const f = deltaWeight(p, dec) * p;
         if (!(f > 0)) continue;
         cand.push({ item: pl, is_parlay: true, p, dec,
                     weight: f * Math.pow(dec, beta),
