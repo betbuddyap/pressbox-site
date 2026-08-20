@@ -429,33 +429,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     return true;
   }
 
-  // ── Edge sizing (Austin's spec, 2026-08-19) ─────────────────────────
-  //   weight = hit rate − the % to clear
-  // The % to clear is the PRICE's implied probability (1/decimal, vig
-  // included: -110 must clear 52.4%, +400 must clear 20%). Bets at or
-  // below their price's implied get $0 and drop off the sheet.
+  // ── Delta sizing, compressed (Austin's spec, 2026-08-19b) ───────────
+  //   weight = ((p − the % to clear) × p) ^ SIZING_GAMMA
   //
-  // The hit rate is the bloc's own n-weighted record — the SAME number
-  // the game page's history check prints, so the sheet and the game page
-  // can't quote two different percentages for one bet. It replaced the
-  // tier-anchor probability, which sat only ~2pt above break-even for a C
-  // and ~15pt for an A+; squaring that gap (the old `× our probability`
-  // second factor) put 46% of a bankroll on a single A+.
+  // p is the pick's GRADED probability (our_prob): the tier anchor moved by
+  // the shrunk deviation of the WHOLE BLOC that fired — the aggregate of
+  // every supporting signal, not one cell's record. The % to clear is the
+  // PRICE's implied probability (1/decimal, vig included: −110 clears 52.4%,
+  // +400 clears 20%). Bets at or below their price's implied get $0 and drop
+  // off the sheet. The `× p` second factor risk-weights the same edge by how
+  // often the bet actually cashes.
   //
-  // Moneylines keep their price-anchored probability: an ML rule's rate is
-  // an all-prices average, so subtracting THIS game's break-even would
-  // compare two different populations (a +190 dog "clears" at 34.5%, and
-  // the rule's 70% was earned mostly at favorite prices).
+  // NOT the raw bloc hit rate (the rule this replaced): an unshrunk record
+  // doesn't respect the grade ladder. On this board a B spread reads 65.2%
+  // (n=69) against an A+ total's 58.8% (n=220), so sizing on it staked a B
+  // ABOVE an A+ and the sheet contradicted the board's own grades. The graded
+  // number is anchor-led, so A+ > A > B > C holds by construction.
   //
-  // PARLAYS multiply this edge by their own hit probability — see the parlay
-  // branch in computeRows(). Straights all price near even money, so their
-  // edges compare fairly; a parlay's does not.
-  function legHitProb(leg) {
-    return (leg && leg.hit_rate != null) ? leg.hit_rate : (leg ? leg.our_prob : null);
+  // SIZING_GAMMA compresses the spread. Raw delta×p ran 95:1 top-to-bottom on
+  // this 61-leg board (tail legs priced in pennies); at 0.65 it's ~19:1 with
+  // the ordering intact — A+ averages 4.1% of the pot, C averages 1.0%.
+  // Lower gamma = flatter sheet; 1.0 restores the uncompressed rule.
+  const SIZING_GAMMA = 0.65;
+  function sizingProb(leg) {
+    return leg ? leg.our_prob : null;
   }
   function deltaWeight(p, dec) {
     if (!(p > 0) || !(dec > 1)) return 0;
-    return Math.max(0, p - 1 / dec);
+    const edge = p - 1 / dec;
+    if (!(edge > 0)) return 0;
+    return Math.pow(edge * p, SIZING_GAMMA);
   }
 
   // ── Single-book mode ────────────────────────────────────────────────
@@ -510,15 +513,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const amount = Number(state.amount) || 0;
     const beta = currentPreset().beta;
 
-    // weight = (hit rate − % to clear) × payout^beta (the preset tilt:
-    // Conservative β=0 is the pure edge sizing; Aggressive leans
+    // weight = ((p − % to clear) × p)^gamma × payout^beta (the preset tilt:
+    // Conservative β=0 is the pure compressed delta sizing; Aggressive leans
     // toward the bigger payouts among the +edge set).
     const cand = [];
     for (const raw of state.legs) {
       if (!matchesFilters(raw)) continue;
       const leg = bookView(raw);          // single-book re-price, or drop
       if (!leg) continue;
-      const p = legHitProb(leg), dec = leg.decimal_odds;
+      const p = sizingProb(leg), dec = leg.decimal_odds;
       if (!(p > 0) || !(dec > 1)) continue;
       const f = deltaWeight(p, dec);
       if (!(f > 0)) continue;             // at/below the price's implied → no stake
@@ -528,17 +531,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Parlays: single-slate, and they span markets/tiers — so only in the mix
-    // when no filter is narrowing the board (i.e. "All"). Same edge term, but
-    // MULTIPLIED BY THE TICKET'S OWN HIT PROBABILITY.
+    // when no filter is narrowing the board (i.e. "All"). Identical weight to
+    // the straights — no extra factor here.
     //
     // A probability-point edge doesn't mean the same thing at −110 as it does
-    // at +1275. Straights all sit near even money, so comparing their edges
-    // head-to-head is fair; a parlay wins that comparison twice over — no
-    // penalty for how rarely it cashes, then a much bigger payout^beta tilt.
-    // With the raw edge alone, parlays took the top three slots in Week 0 and
-    // six of six in Week 1 (37% of the bankroll). Weighting by how often the
-    // ticket actually cashes puts them back at ~10-16% and behind the board's
-    // own picks, which is where Austin expects them (2026-08-19).
+    // at +1275: straights sit near even money so their edges compare fairly,
+    // and with a RAW edge a parlay wins that comparison twice over (no penalty
+    // for how rarely it cashes, then a much bigger payout^beta tilt) — which
+    // is how parlays took the top three slots in Week 0 and six of six in
+    // Week 1 (37% of the bankroll). The cash-frequency penalty that fixes it
+    // is the `× p` now living INSIDE deltaWeight, so applying it again here
+    // would double-charge the ticket. On this board parlays land at 1.6% of
+    // the pot on Conservative, 3.0% Moderate, 5.8% Aggressive — behind the
+    // board's own picks on every preset, which is where Austin expects them.
     if (state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const rawPl of state.parlays) {
         if (state.week != null && rawPl.week !== state.week) continue;
@@ -546,7 +551,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!pl) continue;
         const p = pl.our_prob, dec = pl.decimal_odds;
         if (!(p > 0) || !(dec > 1)) continue;
-        const f = deltaWeight(p, dec) * p;
+        const f = deltaWeight(p, dec);
         if (!(f > 0)) continue;
         cand.push({ item: pl, is_parlay: true, p, dec,
                     weight: f * Math.pow(dec, beta),
@@ -572,9 +577,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         <p class="al-eyebrow">— Bankroll Allocator</p>
         <h1 class="al-headline">Your bet, divvied up.</h1>
         <p class="al-sub">
-          Enter what you want to wager in total and every pick whose hit rate
-          beats its price gets a slice — sized by how far the signals' own
-          record sits past the percentage that price has to clear.
+          Enter what you want to wager in total and every pick whose win
+          probability beats its price gets a slice — sized by how far past
+          the percentage that price has to clear we have it, weighted by how
+          often the bet cashes.
           Conservative is the pure sizing, Aggressive tilts toward the bigger
           payouts, Moderate splits the difference — the whole amount always
           gets allocated.
@@ -839,7 +845,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="ll-row-pick">${pickText(leg)}</div>
           </div>
           <div class="al-metrics">
-            <div class="al-metric"><span class="al-metric-k">${leg.hit_rate != null ? 'Hit rate' : 'Win prob'}</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
+            <div class="al-metric"><span class="al-metric-k">Win prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
             <div class="al-metric"><span class="al-metric-k">Clears at</span><span class="al-metric-v">${(100 / r.dec).toFixed(1)}%</span></div>
             <div class="al-metric"><span class="al-metric-k">Price</span><span class="al-metric-v">${price}</span></div>
             <div class="al-metric"><span class="al-metric-k">Returns if it hits</span><span class="al-metric-v al-pos">$${fmtMoney(r.payout)}</span></div>
