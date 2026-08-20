@@ -1087,7 +1087,7 @@
         `not the best line on the side actually being bet. The set was sealed the day it ` +
         `was built and nothing has been added or curated since. ` +
         `Verify: <code>sha256 6a116653…d16961</code> (spread/total) · ` +
-        `<code>3abe84a5…1b8ac9</code> (moneyline) · ` +
+        `<code>b17b834d…ff1ad8</code> (moneyline) · ` +
         `<a href="${API_BASE}/canonical/ledger.csv?season=2026">full ledger CSV ↗</a></div>`;
       el.appendChild(box);
       fillSigRecords(box);
