@@ -267,36 +267,77 @@
   // already stopped honouring — two signups an hour apart, same copy,
   // different billing. This hides the line the moment the anchor lapses.
   //
-  // BILLING_ANCHOR must match Render's BILLING_START_DATE. If that env var
-  // moves, move this with it. (Austin, 2026-08-20)
+  // The SERVER is the authority, via the public /api/checkout/config:
+  //   first_charge_delayed_until — null once the 49h lead is gone
+  //   release_window_open        — false once STRIPE_RELEASE_WINDOW_END passes
+  // Reading it means the copy cannot drift from Stripe, which a hardcoded
+  // date always eventually does. The dates below are only a fallback for a
+  // failed fetch, and must track Render's BILLING_START_DATE /
+  // STRIPE_RELEASE_WINDOW_END. (Austin, 2026-08-20)
+  var PB_API = 'https://betbuddy-backend.onrender.com';
   var BILLING_ANCHOR = '2026-08-23T00:00:00-05:00';
+  var RELEASE_END    = '2026-08-22T23:59:59-05:00';
   var ANCHOR_MIN_LEAD_MS = 49 * 60 * 60 * 1000;
+  var offer = null;   // {firstCharge: bool, release: bool} once known
 
-  function anchorInForce() {
-    var t = Date.parse(BILLING_ANCHOR);
-    if (isNaN(t)) return false;
-    return Date.now() <= t - ANCHOR_MIN_LEAD_MS;
+  function offerFallback() {
+    var a = Date.parse(BILLING_ANCHOR), r = Date.parse(RELEASE_END);
+    return {
+      firstCharge: !isNaN(a) && Date.now() <= a - ANCHOR_MIN_LEAD_MS,
+      release:     !isNaN(r) && Date.now() < r
+    };
   }
 
-  function applyFirstCharge(root) {
-    if (anchorInForce()) return;
-    var nodes = (root || document).querySelectorAll('.ll-paywall-first-charge');
-    for (var i = 0; i < nodes.length; i++) nodes[i].style.display = 'none';
+  function applyOffer(root) {
+    if (!offer) return;
+    var el = (root || document);
+    var i, nodes;
+    if (!offer.firstCharge) {
+      nodes = el.querySelectorAll('.ll-paywall-first-charge');
+      for (i = 0; i < nodes.length; i++) nodes[i].style.display = 'none';
+    }
+    if (!offer.release) {
+      // the struck-through "release $3.99" under each plan price
+      nodes = el.querySelectorAll('.ll-paywall-plan-release');
+      for (i = 0; i < nodes.length; i++) nodes[i].style.display = 'none';
+      // "Release pricing through Aug 22." leads a longer sentence — drop the
+      // clause, keep "Locked for as long as you're subscribed." after it
+      nodes = el.querySelectorAll('.ll-paywall-card-subhead, h1, .lede');
+      for (i = 0; i < nodes.length; i++) {
+        var t = nodes[i].innerHTML;
+        if (/Release pricing through/.test(t)) {
+          nodes[i].innerHTML = t.replace(/\s*(<br>)?\s*Release pricing through[^.]*\.\s*/g, ' ').trim();
+        }
+      }
+    }
   }
 
   // Paywalls render at different times: some are inline markup, some are
-  // painted by live-lines.js after an auth round-trip. Run once, then watch.
-  function watchFirstCharge() {
-    applyFirstCharge(document);
-    if (anchorInForce() || typeof MutationObserver === 'undefined') return;
-    var mo = new MutationObserver(function () { applyFirstCharge(document); });
-    mo.observe(document.body, { childList: true, subtree: true });
+  // painted by live-lines.js after an auth round-trip. Resolve the offer
+  // once, apply it, then watch for late-rendered paywalls.
+  function watchOffer() {
+    var done = function () {
+      applyOffer(document);
+      if ((offer.firstCharge && offer.release) ||
+          typeof MutationObserver === 'undefined') return;
+      var mo = new MutationObserver(function () { applyOffer(document); });
+      mo.observe(document.body, { childList: true, subtree: true });
+    };
+    fetch(PB_API + '/api/checkout/config')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        offer = d ? { firstCharge: !!d.first_charge_delayed_until,
+                      release: !!d.release_window_open }
+                  : offerFallback();
+        done();
+      })
+      .catch(function () { offer = offerFallback(); done(); });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { boot(); watchFirstCharge(); });
+    document.addEventListener('DOMContentLoaded', function () { boot(); watchOffer(); });
   } else {
     boot();
-    watchFirstCharge();
+    watchOffer();
   }
 })();
