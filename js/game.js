@@ -1106,7 +1106,7 @@
         const r = last[tr.getAttribute('data-rule')];
         tr.querySelector('.sig-rec').textContent = r
           ? `${r.running_wins}–${r.running_losses} (${r.running_pct != null ? r.running_pct + '%' : '—'})`
-          : '0–0 · frozen Aug 5';
+          : '0–0 · sealed Aug 20';   // matches the receipt line under this table
       });
     } catch (e) { /* records stay as dashes */ }
   }
