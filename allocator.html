@@ -531,19 +531,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Parlays: single-slate, and they span markets/tiers — so only in the mix
-    // when no filter is narrowing the board (i.e. "All"). Identical weight to
-    // the straights — no extra factor here.
+    // when no filter is narrowing the board (i.e. "All"). Same edge term, then
+    // MULTIPLIED BY THE TICKET'S OWN HIT PROBABILITY.
     //
     // A probability-point edge doesn't mean the same thing at −110 as it does
     // at +1275: straights sit near even money so their edges compare fairly,
-    // and with a RAW edge a parlay wins that comparison twice over (no penalty
-    // for how rarely it cashes, then a much bigger payout^beta tilt) — which
-    // is how parlays took the top three slots in Week 0 and six of six in
-    // Week 1 (37% of the bankroll). The cash-frequency penalty that fixes it
-    // is the `× p` now living INSIDE deltaWeight, so applying it again here
-    // would double-charge the ticket. On this board parlays land at 1.6% of
-    // the pot on Conservative, 3.0% Moderate, 5.8% Aggressive — behind the
-    // board's own picks on every preset, which is where Austin expects them.
+    // and a parlay wins that comparison twice over — no penalty for how rarely
+    // it cashes, then a much bigger payout^beta tilt.
+    //
+    // This penalty is applied OUTSIDE deltaWeight even though deltaWeight
+    // already carries a `× p`, because SIZING_GAMMA is concave: it lifts small
+    // weights more than large ones, so the compression that tames the straight
+    // spread also hands the penalty back to the tickets it was charging. With
+    // the compression alone a parlay took the #1 slot on Moderate AND
+    // Aggressive in BOTH weeks (Wk0 18.1%, Wk1 9.0%). Charging cash-frequency
+    // after the compression puts a straight back on top of every preset and
+    // parlays at 1.0–7.3% of the pot.
+    //
+    // Sizing changes MUST be checked on the WEEK view (10 legs), not the
+    // whole-season pool (61) — the per-week sheet is what the page renders,
+    // and it is where parlays surface.
     if (state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const rawPl of state.parlays) {
         if (state.week != null && rawPl.week !== state.week) continue;
@@ -551,7 +558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!pl) continue;
         const p = pl.our_prob, dec = pl.decimal_odds;
         if (!(p > 0) || !(dec > 1)) continue;
-        const f = deltaWeight(p, dec);
+        const f = deltaWeight(p, dec) * p;   // cash-frequency, post-compression
         if (!(f > 0)) continue;
         cand.push({ item: pl, is_parlay: true, p, dec,
                     weight: f * Math.pow(dec, beta),
