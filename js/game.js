@@ -833,10 +833,14 @@
     const det = p.voter_details || [];
     if (!det.length) return null;
     const detAgainst = p.voter_details_against || [];
-    // Counts derive from the chip lists when the against side is known —
-    // one source of truth, so the headline always matches the chips shown.
-    const against = detAgainst.length
-      || Math.max(0, det.length - (p.net_votes != null ? p.net_votes : det.length));
+    // Counts come from the chip lists, full stop. One chip = one vote (the
+    // backend collapses moneyline voters to one per model, because that is
+    // what the ML ladder counts). The old fallback inferred the against
+    // count as `chips − net_votes`, which fabricated opposition the moment
+    // chips stopped equalling votes: a 151-rule ML book let one model fire
+    // 18 slices, and an A built on 3 model votes rendered "18–15" with 15
+    // opposing signals that did not exist. (Austin, 2026-08-20)
+    const against = detAgainst.length;
     const net = det.length - against;
     const wrap = document.createElement('div');
     wrap.className = 'game-card tally-card';
@@ -845,9 +849,19 @@
       return `<span class="vchip vchip--${escape(v.family)}${mod || ''}"${tip}>` +
              `<span class="vsq"></span>${escape(v.label)}</span>`;
     };
-    const chips = det.map(v => chip(v, '', v.family === 'counter'
-      ? 'Counter-signal: one of our own reads leans the other way — in a spot where it has been reliably wrong, so its lean counts FOR this side.'
-      : '')).join('');
+    // A collapsed moneyline chip carries its constituent rules — the vote is
+    // the model's, but the evidence behind it stays one hover away.
+    const chipTip = (v) => {
+      if (v.rules && v.rules.length > 1) {
+        return `${v.model} fired ${v.rules.length} signals on this side — they count as ` +
+               `ONE vote, because within a model every rule is a slice of the same ` +
+               `projection:\n\n• ${v.rules.join('\n• ')}`;
+      }
+      return v.family === 'counter'
+        ? 'Counter-signal: one of our own reads leans the other way — in a spot where it has been reliably wrong, so its lean counts FOR this side.'
+        : '';
+    };
+    const chips = det.map(v => chip(v, '', chipTip(v))).join('');
     // Opposing signals get NAMED, muted chips — they explain the net math
     // (2 for, 1 against = net 1 = C) and they're graded in the ledger like
     // every other fire. Legacy payloads without ids fall back to the count.
