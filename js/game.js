@@ -1073,9 +1073,21 @@
             `<td>${escape(v.family)}</td><td class="sig-rec">—</td></tr>`;
         }).join('') +
         `</tbody></table>` +
-        `<div class="receipt-hash">Every signal above was pre-registered and sealed before the season ` +
-        `— nothing added, nothing curated. Verify: <code>sha256 e4776fd1…3a145e</code> (spread/total) · ` +
-        `<code>fdc3bf0c…c73104</code> (moneyline) · ` +
+        // The old line cited the 2026-08-05 / 08-10 freezes and said "nothing
+        // added, nothing curated". Those hashes still verify the documents
+        // they sealed, but they do NOT seal these signals: the whole set was
+        // re-derived on 2026-08-20 after every earlier backtest was found to
+        // have graded picks against the wrong line. 173 -> 253 spread/total,
+        // 46 -> 151 moneyline. Claiming pre-season pre-registration for a set
+        // rebuilt nine days before Week 0 is untrue, so it says what happened
+        // and seals the literals themselves. (Austin, 2026-08-20: "it's a
+        // complete reset. the first backtest was bunk.")
+        `<div class="receipt-hash">These signals were re-derived on <b>Aug 20, 2026</b>, ` +
+        `after we found every earlier backtest had graded picks against the wrong line — ` +
+        `not the best line on the side actually being bet. The set was sealed the day it ` +
+        `was built and nothing has been added or curated since. ` +
+        `Verify: <code>sha256 6a116653…d16961</code> (spread/total) · ` +
+        `<code>3abe84a5…1b8ac9</code> (moneyline) · ` +
         `<a href="${API_BASE}/canonical/ledger.csv?season=2026">full ledger CSV ↗</a></div>`;
       el.appendChild(box);
       fillSigRecords(box);
