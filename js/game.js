@@ -449,8 +449,30 @@
       if (s === 'away' && homeMargin >= 0) homeMargin = -1;
     }
 
-    const homePts = (effTotal + homeMargin) / 2;
-    const awayPts = (effTotal - homeMargin) / 2;
+    let homePts = (effTotal + homeMargin) / 2;
+    let awayPts = (effTotal - homeMargin) / 2;
+
+    // A PROJECTED SCORE CANNOT BE NEGATIVE. The margin and the total come
+    // from different sources — a graded pick projects its margin from the
+    // fired signal's historical mean, while the total falls back to the
+    // model blend — and nothing forced them to agree. Ball State @ Ohio
+    // State served a 49-point margin against a 44.8-point total and the
+    // hero rendered "Ball State −2" (Austin, 2026-08-20).
+    //
+    // Prefer the BLEND margin when that happens: it is derived from the same
+    // model run as the blend total, so the pair is internally consistent
+    // (here OSU by 40.2 in a 44.8-point game → 42–2, which is what the
+    // models actually say). Only if that still underflows do we floor at
+    // zero and let the winner carry the whole total.
+    if (homePts < 0 || awayPts < 0) {
+      const blendMargin = anchorIsHome ? -blendAnchorSpread : blendAnchorSpread;
+      if (blendMargin != null && isFinite(blendMargin)) {
+        homePts = (effTotal + blendMargin) / 2;
+        awayPts = (effTotal - blendMargin) / 2;
+      }
+    }
+    if (awayPts < 0) { homePts = Math.max(0, effTotal); awayPts = 0; }
+    if (homePts < 0) { awayPts = Math.max(0, effTotal); homePts = 0; }
 
     // Rounding can collapse a small margin into a displayed TIE (22.15 /
     // 21.85 -> 22-22). CFB has no ties — break toward the projected winner
