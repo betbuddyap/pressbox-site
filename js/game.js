@@ -863,7 +863,7 @@
     };
     const chips = det.map(v => chip(v, '', chipTip(v))).join('');
     // Opposing signals get NAMED, muted chips — they explain the net math
-    // (2 for, 1 against = net 1 = C) and they're graded in the ledger like
+    // (4 for, 1 against = net 3 = B) and they're graded in the ledger like
     // every other fire. Legacy payloads without ids fall back to the count.
     const oppChips = detAgainst.length
       ? detAgainst.map(v => chip(v, ' vchip--against',
@@ -1647,8 +1647,21 @@
             ? `History check: in the ${histRange.sample_size} games where this pick's ` +
               `#1 signal fired, ${pctTxt} of finals landed on the ${escape(sideName)} ` +
               `side of today's number.`
-            : `History check: at numbers like today's, ${pctTxt} of finals landed ` +
-              `on the ${escape(sideName)} side (${histRange.sample_size} games, 2023–25).`;
+            // The line band is the MARKET's base rate at this number — it says
+            // nothing about the signals that graded this pick. Under a No Edge
+            // verdict that reads fine. Under a GRADED pick it reads as the
+            // pick's own record, and the two can point opposite ways: Western
+            // Kentucky @ Nevada carried an A (net 5) over "48%", which is a
+            // coin flip on the market's history, not our signals' record.
+            // Rule curves for the 2026-08-20 electorate are still backfilling,
+            // so say plainly which number this is. (Austin, 2026-08-20)
+            : hasPick
+              ? `Signal history for this pick is still backfilling. The number ` +
+                `below it is the market's, not ours: at numbers like today's, ` +
+                `${pctTxt} of finals landed on the ${escape(sideName)} side ` +
+                `(${histRange.sample_size} games, 2023–25).`
+              : `History check: at numbers like today's, ${pctTxt} of finals landed ` +
+                `on the ${escape(sideName)} side (${histRange.sample_size} games, 2023–25).`;
         }
         card.appendChild(note);
       }
