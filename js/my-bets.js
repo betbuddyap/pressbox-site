@@ -562,8 +562,84 @@
   }
 
   // ── Ledger ─────────────────────────────────────────────────────────
+  // ── LIVE STANDING ──────────────────────────────────────────────────
+  // While a game is in progress, say where the ticket stands against YOUR
+  // number — not the board's. Glyphs follow the house convention: ▲/▼ mean
+  // "in progress, ahead/behind", ✓/✕ mean settled. A live bet must never
+  // wear a settled mark. (Austin, 2026-08-20)
+  function liveGame(b) {
+    const g = gamesById[b.game_id];
+    if (!g || g.status !== 'in_progress') return null;
+    if (g.home_points == null || g.away_points == null) return null;
+    return g;
+  }
+  function clockOf(g) {
+    const q = g.current_period ? `Q${g.current_period}` : '';
+    return [q, g.current_clock].filter(Boolean).join(' ');
+  }
+  // → { ahead: true|false|null, text: '…' }.  null = dead even / can't call.
+  function standing(b, g) {
+    const hp = g.home_points, ap = g.away_points;
+    const homeName = g.home_team, awayName = g.away_team;
+    if (b.market === 'total') {
+      const tot = hp + ap, line = Number(b.line);
+      const diff = +(tot - line).toFixed(1);
+      if (diff === 0) return { ahead: null, text: `total sitting on ${line}` };
+      const under = diff < 0;
+      return { ahead: (b.side === 'under') === under,
+               text: `total ${Math.abs(diff)} ${under ? 'under' : 'over'} the number` };
+    }
+    const weHome = b.side === 'home';
+    const ourPts = weHome ? hp : ap, theirPts = weHome ? ap : hp;
+    const ourName = weHome ? homeName : awayName;
+    const margin = ourPts - theirPts;                    // + = we lead
+    if (b.market === 'ml') {
+      if (margin === 0) return { ahead: null, text: 'tied' };
+      return { ahead: margin > 0,
+               text: `${ourName} ${margin > 0 ? 'up' : 'down'} ${Math.abs(margin)}` };
+    }
+    // spread: our line is picked-side POV (+6.5 = getting 6.5)
+    const cushion = +(margin + Number(b.line)).toFixed(1);
+    if (cushion === 0) return { ahead: null, text: 'sitting exactly on the number' };
+    const state = margin === 0 ? 'tied'
+      : `${ourName} ${margin > 0 ? 'up' : 'down'} ${Math.abs(margin)}`;
+    return { ahead: cushion > 0,
+             text: `${state}, ${cushion > 0 ? 'covering by' : 'short by'} ${Math.abs(cushion)}` };
+  }
+  // A parlay is only alive while every leg is; one dead leg kills the ticket.
+  function parlayStanding(b) {
+    const legs = b.legs || [];
+    let live = 0, ahead = 0, done = 0;
+    for (const l of legs) {
+      const g = gamesById[l.game_id];
+      if (!g) continue;
+      if (g.status === 'in_progress' && g.home_points != null) {
+        live++;
+        const s = standing(l, g);
+        if (s.ahead === true) ahead++;
+      } else if (g.status === 'final') { done++; }
+    }
+    if (!live) return null;
+    return { ahead: ahead === live ? true : null,
+             text: `${ahead} of ${legs.length} legs ahead${done ? `, ${done} final` : ''}` };
+  }
+
   function markFor(b) {
-    if (!b.result) return ['pending', '–'];
+    if (!b.result) {
+      if (b.market === 'parlay') {
+        const s = parlayStanding(b);
+        if (s) return [s.ahead ? 'live-ahead' : 'live-behind', s.ahead ? '▲' : '▼'];
+      } else {
+        const g = liveGame(b);
+        if (g) {
+          const s = standing(b, g);
+          if (s.ahead === true)  return ['live-ahead', '▲'];
+          if (s.ahead === false) return ['live-behind', '▼'];
+          return ['pending', '–'];
+        }
+      }
+      return ['pending', '–'];
+    }
     if (b.result === 'W') return ['win', '✓'];
     if (b.result === 'L') return ['loss', '✕'];
     return ['push', '–'];
@@ -578,16 +654,31 @@
       : b.result === 'V' ? 'Void'
       : fmtMoney(net, { signed: true });
     const canDelete = !settled && isPregame(b.kickoff);
-    const sub = b.market === 'parlay'
-      ? [(b.legs || []).map(l => l.side_label).join('  +  '), b.book,
-         b.kickoff ? `first kick ${fmtKick(b.kickoff)}` : null].filter(Boolean).join(' · ')
-      : [b.game_label, fmtKick(b.kickoff), b.book].filter(Boolean).join(' · ');
+    // Once the ball is in the air the kickoff time is dead weight — the clock
+    // and where the ticket stands are what you want at a glance on a phone.
+    let live = null;
+    if (!settled) {
+      if (b.market === 'parlay') {
+        const s = parlayStanding(b);
+        if (s) live = s.text;
+      } else {
+        const g = liveGame(b);
+        if (g) live = [clockOf(g), standing(b, g).text].filter(Boolean).join(' · ');
+      }
+    }
+    const sub = live
+      ? `<span class="mb-live">${esc(live)}</span>` +
+        (b.book ? ` · ${esc(b.book)}` : '')
+      : esc(b.market === 'parlay'
+          ? [(b.legs || []).map(l => l.side_label).join('  +  '), b.book,
+             b.kickoff ? `first kick ${fmtKick(b.kickoff)}` : null].filter(Boolean).join(' · ')
+          : [b.game_label, fmtKick(b.kickoff), b.book].filter(Boolean).join(' · '));
     return `
       <div class="mb-row" data-id="${esc(b.id)}">
         <div class="mb-row-mark ${cls}">${glyph}</div>
         <div class="mb-row-body">
           <div class="mb-row-pick">${esc(b.side_label)} <span class="mb-odds">${esc(fmtOdds(b.odds))}</span></div>
-          <div class="mb-row-sub">${esc(sub)}</div>
+          <div class="mb-row-sub">${sub}</div>
         </div>
         <div class="mb-row-money">
           <div class="mb-row-net ${netCls}">${esc(netTxt)}</div>
@@ -816,6 +907,67 @@
     renderLedgerAndHero();
   }
 
+  // ── Live refresh ───────────────────────────────────────────────────
+  // Poll only while a game with money on it is actually running, and stop
+  // the moment none are. Nothing here writes: the settler still owns
+  // results, this only re-reads the scoreboard.
+  let liveTimer = null;
+  function anyLive() {
+    return bets.some(b => !b.result && (
+      b.market === 'parlay'
+        ? (b.legs || []).some(l => (gamesById[l.game_id] || {}).status === 'in_progress')
+        : (gamesById[b.game_id] || {}).status === 'in_progress'));
+  }
+  async function refreshScores() {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return;
+      const r = await fetch(`${API}/games/upcoming?season=${SEASON}`, {
+        credentials: 'omit',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      if (!r.ok) return;
+      const j = await r.json();
+      (j.games || []).forEach(g => { gamesById[gid(g)] = g; });
+      renderLedgerAndHero();
+    } catch (e) { /* a dropped poll is not worth a visible error */ }
+  }
+  function startLiveLoop() {
+    if (liveTimer) clearInterval(liveTimer);
+    liveTimer = setInterval(() => {
+      if (!anyLive()) return;             // idle cheaply between game days
+      refreshScores();
+    }, 30000);
+  }
+
+  // ?demo=live — fabricate in-progress states CLIENT-SIDE so the live view
+  // can be checked before any real game kicks. Writes nothing, and the
+  // banner makes clear the scores are invented. Same pattern the game page
+  // and Upcoming already use.
+  function applyDemoLive() {
+    const targets = bets.filter(b => !b.result).slice(0, 6);
+    let i = 0;
+    for (const b of targets) {
+      const ids = b.market === 'parlay'
+        ? (b.legs || []).map(l => l.game_id) : [b.game_id];
+      for (const id of ids) {
+        const g = gamesById[id];
+        if (!g || g.status === 'in_progress') continue;
+        const scripts = [[24, 17], [10, 20], [31, 28], [13, 13], [7, 24], [35, 14]];
+        const [hp, ap] = scripts[i++ % scripts.length];
+        Object.assign(g, { status: 'in_progress', home_points: hp, away_points: ap,
+                           current_period: (i % 4) + 1, current_clock: '7:2' + (i % 10) });
+      }
+    }
+    const el = document.getElementById('mb-app');
+    if (el) {
+      const w = document.createElement('div');
+      w.className = 'mb-demo-banner';
+      w.textContent = 'DEMO — scores below are fabricated in your browser to preview the live view. Nothing is saved.';
+      el.prepend(w);
+    }
+  }
+
   // ── Init ───────────────────────────────────────────────────────────
   async function init() {
     if (!sb) { renderWall('login'); return; }
@@ -877,7 +1029,9 @@
     rebuildGameSelect();
     loadImport();
     renderImport();
+    if (new URLSearchParams(location.search).get('demo') === 'live') applyDemoLive();
     renderLedgerAndHero();
+    startLiveLoop();
   }
 
   init();
