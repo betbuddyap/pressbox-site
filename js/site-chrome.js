@@ -256,9 +256,47 @@
     sb.auth.onAuthStateChange(function (_evt, session) { refreshAuth(!!session); });
   }
 
+  // ── First-charge line: never outlive the behaviour ──────────────
+  // checkout_endpoint._billing_start_timestamp() sends Stripe a trial_end
+  // ONLY while the anchor is at least 49h away (Stripe's floor is 48h; the
+  // code keeps an hour of margin). Inside that window it returns None, no
+  // trial_end is sent, and the card is charged AT CHECKOUT.
+  //
+  // The paywall's "First charge is anchored to Aug 23." was static, so from
+  // 11pm Central on Aug 20 it would have promised a date the backend had
+  // already stopped honouring — two signups an hour apart, same copy,
+  // different billing. This hides the line the moment the anchor lapses.
+  //
+  // BILLING_ANCHOR must match Render's BILLING_START_DATE. If that env var
+  // moves, move this with it. (Austin, 2026-08-20)
+  var BILLING_ANCHOR = '2026-08-23T00:00:00-05:00';
+  var ANCHOR_MIN_LEAD_MS = 49 * 60 * 60 * 1000;
+
+  function anchorInForce() {
+    var t = Date.parse(BILLING_ANCHOR);
+    if (isNaN(t)) return false;
+    return Date.now() <= t - ANCHOR_MIN_LEAD_MS;
+  }
+
+  function applyFirstCharge(root) {
+    if (anchorInForce()) return;
+    var nodes = (root || document).querySelectorAll('.ll-paywall-first-charge');
+    for (var i = 0; i < nodes.length; i++) nodes[i].style.display = 'none';
+  }
+
+  // Paywalls render at different times: some are inline markup, some are
+  // painted by live-lines.js after an auth round-trip. Run once, then watch.
+  function watchFirstCharge() {
+    applyFirstCharge(document);
+    if (anchorInForce() || typeof MutationObserver === 'undefined') return;
+    var mo = new MutationObserver(function () { applyFirstCharge(document); });
+    mo.observe(document.body, { childList: true, subtree: true });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
+    document.addEventListener('DOMContentLoaded', function () { boot(); watchFirstCharge(); });
   } else {
     boot();
+    watchFirstCharge();
   }
 })();
