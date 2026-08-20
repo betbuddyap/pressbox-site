@@ -447,10 +447,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // number is anchor-led, so A+ > A > B > C holds by construction.
   //
   // SIZING_GAMMA compresses the spread. Raw delta×p ran 95:1 top-to-bottom on
-  // this 61-leg board (tail legs priced in pennies); at 0.65 it's ~19:1 with
-  // the ordering intact — A+ averages 4.1% of the pot, C averages 1.0%.
-  // Lower gamma = flatter sheet; 1.0 restores the uncompressed rule.
-  const SIZING_GAMMA = 0.65;
+  // a 61-leg board (tail legs priced in pennies). Lower gamma = flatter
+  // sheet; 1.0 restores the uncompressed rule.
+  //
+  // 0.65 -> 0.50 (Austin, 2026-08-20). 0.65 was tuned BEFORE the tier anchors
+  // were re-derived for the 253-rule electorate; raising A to .661 and B to
+  // .616 re-widened the sheet to 5.0:1 with a single leg taking $72 of every
+  // $1,000. At 0.50 that is 3.5:1 and $63, and an A still draws 2.1x a C —
+  // the ladder stays visible, which stops being true much below 0.40.
+  // Measured on the 2026-08-20 board (28 legs): A $62.53 · B $45.30 ·
+  // C $29.50 · ML $30.97 per leg.
+  const SIZING_GAMMA = 0.50;
   function sizingProb(leg) {
     return leg ? leg.our_prob : null;
   }
