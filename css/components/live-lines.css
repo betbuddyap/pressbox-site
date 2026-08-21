@@ -325,7 +325,11 @@
    My Bets swaps the two — see .mb-row-move. (Austin, 2026-08-21) */
 .ll-row-move {
   font-family: var(--sans);
-  font-size: var(--text-micro);
+  /* 12px, not the 11px micro size. Austin has flagged small type three times
+     now (form labels, the import strip, and this marker) — the marker is a
+     thing you READ, not metadata you glance past, so it sits with the pick
+     line rather than below it. */
+  font-size: var(--text-sm);
   font-weight: var(--weight-semi);
   letter-spacing: 0.03em;
   margin-top: 3px;
@@ -1133,7 +1137,7 @@
 }
 .ll-chg-when {
   font-family: var(--sans);
-  font-size: var(--text-micro);
+  font-size: var(--text-sm);
   color: var(--text-light);
   flex: 0 0 78px;
   white-space: nowrap;
@@ -1153,7 +1157,7 @@
 .ll-chg-pick {
   display: block;
   font-family: var(--sans);
-  font-size: var(--text-micro);
+  font-size: var(--text-sm);
   color: var(--text-mid);
 }
 .ll-chg-move {
@@ -1165,7 +1169,7 @@
 .ll-chg-chip { display: inline-flex; }
 .ll-chg-chip--none {
   font-family: var(--sans);
-  font-size: var(--text-micro);
+  font-size: var(--text-sm);
   color: var(--text-light);
   padding: 0 4px;
 }
@@ -1180,7 +1184,7 @@
   border: 0;
   border-top: 1px solid var(--cream-mid);
   font-family: var(--sans);
-  font-size: var(--text-micro);
+  font-size: var(--text-sm);
   font-weight: var(--weight-semi);
   letter-spacing: 0.03em;
   color: var(--gold);

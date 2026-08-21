@@ -1199,6 +1199,23 @@
         setTimeout(() => row.classList.remove('ll-row--updated'), 600);
       }
     });
+
+    // Refresh the grade-change card on the same tick, so someone sitting on
+    // the board watches the count climb instead of finding out on reload.
+    // AFTER the board renders, never before — the board is the product and
+    // must not wait on this.
+    //
+    // Deliberately not a popup mid-session: an interstitial appearing over
+    // the board while you are reading it is hostile. The popup is for
+    // arrival. (Austin, 2026-08-21)
+    //
+    // If a change lands while the card is already OPEN, the watermark moves
+    // with it — you are looking straight at the list, so it has been seen.
+    const wasOpen = state.changesOpen;
+    loadChanges().then(() => {
+      if (wasOpen && (state.changes || []).length) markSeen(state.changes[0].at);
+      render();
+    }).catch(() => {});
   }
 
   function startPolling() {
