@@ -1077,3 +1077,118 @@
   font-weight: var(--weight-semi);
   text-decoration: none;
 }
+
+/* ── GRADE CHANGE CARD ─────────────────────────────────────────────────
+   Sits above the week tabs. Collapsed it shows the three most recent
+   movements; opening it shows every one, because a pick that flapped
+   C -> No Edge -> C has three entries and someone may be holding any of
+   them (Austin, 2026-08-21).
+
+   NO GREEN/RED ON THE DIRECTION, deliberately. A pick sliding to No Edge
+   usually means the line moved TOWARD it, and anyone holding our released
+   number got in before the market took it — we grade at the number we
+   published, so their bet is untouched. Colouring a downgrade as bad news
+   would be exactly backwards and would contradict .ll-row-move on the row
+   itself. Two neutral badges and an arrow; the transition is the message. */
+.ll-chg-card {
+  border: 0.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--cream);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+/* Unseen movement gets the gold edge the site already uses for "look here",
+   not a colour that implies good or bad. */
+.ll-chg-card--new { border-color: var(--gold); }
+
+.ll-chg-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.ll-chg-title {
+  font-family: var(--sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+.ll-chg-chev { font-size: 10px; color: var(--text-light); }
+
+.ll-chg-body-wrap { padding: 0 16px 12px; }
+
+.ll-chg-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--cream-mid);
+}
+.ll-chg-when {
+  font-family: var(--sans);
+  font-size: var(--text-micro);
+  color: var(--text-light);
+  flex: 0 0 78px;
+  white-space: nowrap;
+}
+.ll-chg-body { flex: 1 1 auto; min-width: 0; }
+.ll-chg-matchup {
+  display: block;
+  font-family: var(--sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semi);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Small inline numbers -> sans, never serif. */
+.ll-chg-pick {
+  display: block;
+  font-family: var(--sans);
+  font-size: var(--text-micro);
+  color: var(--text-mid);
+}
+.ll-chg-move {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.ll-chg-chip { display: inline-flex; }
+.ll-chg-chip--none {
+  font-family: var(--sans);
+  font-size: var(--text-micro);
+  color: var(--text-light);
+  padding: 0 4px;
+}
+.ll-chg-arrow { color: var(--text-light); font-size: 12px; }
+
+.ll-chg-more {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 0 2px;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--cream-mid);
+  font-family: var(--sans);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semi);
+  letter-spacing: 0.03em;
+  color: var(--gold);
+  cursor: pointer;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .ll-chg-when { flex-basis: 60px; }
+  .ll-chg-row { gap: 8px; }
+}

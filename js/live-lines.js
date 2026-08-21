@@ -53,6 +53,8 @@
     pollTimer:   null,
     expandedPickId: null,         // currently expanded row, if any
     historyCache:  {},            // pick_id → history payload
+    changes:     null,            // grade-change feed; null = not loaded yet
+    changesOpen: false,           // is the changes card expanded
   };
 
   // ── Authentication ──────────────────────────────────────────
@@ -207,6 +209,9 @@
     if (!tier) return '—';
     return TIER_DISPLAY[tier] || tier;
   }
+
+  const MARKET_DISPLAY = { spread: 'Spread', total: 'Total', ml: 'ML' };
+  function marketLabel(m) { return MARKET_DISPLAY[m] || (m || ''); }
 
   // ── Utility: HTML escape ─────────────────────────────────────
   function esc(s) {
@@ -469,6 +474,8 @@
         </div>
       </header>
 
+      ${renderChangesCard()}
+
       ${renderWeekTabs()}
 
       ${renderFilters()}
@@ -480,6 +487,103 @@
     `;
 
     attachFeedHandlers();
+  }
+
+  // ── Grade changes ────────────────────────────────────────────
+  // Every movement, never collapsed: someone could be holding any one of a
+  // pick's variations and want to adjust, so hiding the middle of a
+  // C -> No Edge -> C hides the one they're actually on. (Austin)
+  //
+  // NO GREEN/RED ON THE DIRECTION. A pick sliding to No Edge usually means
+  // the line moved TOWARD it, and anyone holding our released number got in
+  // before the market took it — we grade at the number we published, so their
+  // bet is untouched. Colouring a downgrade as bad news would be exactly
+  // backwards, and would contradict the line-move marker on the row itself.
+  // Two neutral chips and an arrow. The transition IS the information.
+  const CHANGES_SEEN_KEY = 'pb_changes_seen_at';
+
+  function seenAt() {
+    try { return localStorage.getItem(CHANGES_SEEN_KEY) || null; } catch (e) { return null; }
+  }
+  function markSeen(iso) {
+    try { localStorage.setItem(CHANGES_SEEN_KEY, iso || new Date().toISOString()); }
+    catch (e) { /* private mode — the card just keeps showing */ }
+  }
+
+  function unseenChanges() {
+    const since = seenAt();
+    const all = state.changes || [];
+    if (!since) return [];        // first ever visit: nothing is "new" yet
+    return all.filter(c => c.at && c.at > since);
+  }
+
+  // Reuse the real badge so a tier looks identical wherever it appears.
+  // A null 'from' is a pick appearing for the first time, drawn as a dash
+  // rather than a fake tier.
+  function tierChip(t) {
+    if (!t) return '<span class="ll-chg-chip ll-chg-chip--none">—</span>';
+    return `<span class="ll-chg-chip">${renderBadge(t, false)}</span>`;
+  }
+
+  function renderChangeRow(c) {
+    return `
+      <div class="ll-chg-row">
+        <span class="ll-chg-when">${esc(relativeTimeFrom(c.at))}</span>
+        <span class="ll-chg-body">
+          <span class="ll-chg-matchup">${esc(c.matchup || '—')}</span>
+          <span class="ll-chg-pick">${esc(marketLabel(c.market))}
+            ${c.side ? esc(c.side) : ''} ${c.line ? `<b>${esc(c.line)}</b>` : ''}</span>
+        </span>
+        <span class="ll-chg-move">
+          ${tierChip(c.from_tier)}<span class="ll-chg-arrow">→</span>${tierChip(c.to_tier)}
+        </span>
+      </div>`;
+  }
+
+  function renderChangesCard() {
+    const all = state.changes;
+    if (all === null) return '';                 // still loading — no flicker
+    const scoped = state.week === null ? all : all.filter(c => c.week === state.week);
+    if (!scoped.length) return '';
+    const unseen = unseenChanges().filter(c => state.week === null || c.week === state.week);
+    const open = state.changesOpen;
+    const shown = open ? scoped : scoped.slice(0, 3);
+    const more = scoped.length - shown.length;
+    const label = unseen.length
+      ? `${unseen.length} change${unseen.length === 1 ? '' : 's'} since you were last here`
+      : `${scoped.length} grade change${scoped.length === 1 ? '' : 's'} this week`;
+    return `
+      <section class="ll-chg-card${unseen.length ? ' ll-chg-card--new' : ''}">
+        <button type="button" class="ll-chg-head" data-action="toggle-changes"
+                aria-expanded="${open ? 'true' : 'false'}">
+          <span class="ll-chg-title">${esc(label)}</span>
+          <span class="ll-chg-chev">${open ? '▲' : '▼'}</span>
+        </button>
+        <div class="ll-chg-body-wrap">
+          ${shown.map(renderChangeRow).join('')}
+          ${more > 0 ? `<button type="button" class="ll-chg-more"
+                data-action="toggle-changes">and ${more} more →</button>` : ''}
+        </div>
+      </section>`;
+  }
+
+  async function loadChanges() {
+    try {
+      const headers = {};
+      const token = await getAccessToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const r = await fetch(`${FEED_URL.replace('/feed', '/changes')}?season=${SEASON}`,
+                            { credentials: 'omit', headers });
+      if (!r.ok) { state.changes = []; return; }
+      const j = await r.json();
+      state.changes = Array.isArray(j.changes) ? j.changes : [];
+      // A brand-new subscriber has no watermark. Diffing against nothing would
+      // hand them the entire history as "new", so set it silently on the first
+      // visit and let them see movement from here on.
+      if (!seenAt() && state.changes.length) markSeen(state.changes[0].at);
+    } catch (e) {
+      state.changes = [];
+    }
   }
 
   function applyFilters(picks) {
@@ -958,6 +1062,19 @@
 
   // ── Event handlers ──────────────────────────────────────────
   function attachFeedHandlers() {
+    // Grade-change card. Opening it IS the acknowledgement — the watermark
+    // advances to the newest entry, so the "since you were last here" count
+    // clears without a separate dismiss control.
+    $app().querySelectorAll('[data-action="toggle-changes"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.changesOpen = !state.changesOpen;
+        if (state.changesOpen && (state.changes || []).length) {
+          markSeen(state.changes[0].at);
+        }
+        render();
+      });
+    });
+
     // Week tabs
     $app().querySelectorAll('.ll-week-tab').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1130,6 +1247,9 @@
       state.lastFetchedAt = new Date().toISOString();
       render();
       startPolling();
+      // Grade changes load after the board — the board is the product, and
+      // this must never delay it or break it if the endpoint is unavailable.
+      loadChanges().then(render).catch(() => {});
     } catch (e) {
       if (e instanceof PaywallError) {
         // Signed in but no active sub (or token rejected). Show paywall.

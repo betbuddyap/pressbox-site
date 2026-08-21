@@ -662,6 +662,9 @@
   // fetches rather than one per historical ticket.
   const MB_MOVE_GLYPH = { up: '↑', down: '↓', left: '←', right: '→' };
   let moveByBet = {};
+  // Silence is ambiguous — it could mean "nothing moved" or "this is
+  // broken". Track the scan so the ledger can say which. (2026-08-21)
+  let moveScan = { ran: false, open: 0, quoted: 0, found: 0 };
 
   const _dec = (o) => (o == null ? null : (o > 0 ? 1 + o / 100 : 1 + 100 / -o));
 
@@ -719,17 +722,31 @@
   async function enrichLineMoves() {
     const open = bets.filter(b => !b.result && b.market !== 'parlay'
                                   && b.game_id && isPregame(b.kickoff));
-    if (!open.length) return;
+    moveScan = { ran: true, open: open.length, quoted: 0, found: 0 };
+    if (!open.length) { renderLedgerAndHero(); return; }
     const games = [...new Set(open.map(b => b.game_id))];
     await Promise.all(games.map(g => fetchQuotes(g).catch(() => null)));
-    let any = false;
     for (const b of open) {
       const q = quotesCache[b.game_id];
-      if (!q) continue;
+      if (!q || !(q.books || []).length) continue;
+      moveScan.quoted += 1;
       const mv = computeMove(b, q);
-      if (mv) { moveByBet[b.id] = mv; any = true; }
+      if (mv) { moveByBet[b.id] = mv; moveScan.found += 1; }
     }
-    if (any) renderLedgerAndHero();
+    renderLedgerAndHero();
+  }
+
+  // Say WHY there is no marker, instead of leaving the reader to guess
+  // whether the feature is broken. Only speaks when there is something to
+  // explain: open pregame tickets, quotes fetched, and nothing moved.
+  function moveNote() {
+    if (!moveScan.ran || !moveScan.open || moveScan.found) return '';
+    if (!moveScan.quoted) {
+      return '<div class="mb-move-note">No live book quotes for your open ' +
+             'games right now, so line movement can’t be checked.</div>';
+    }
+    return '<div class="mb-move-note">No line movement on your open tickets ' +
+           '— you’re still on the best number posted.</div>';
   }
 
   function renderMyBetsMove(b) {
@@ -816,6 +833,7 @@
       <div class="mb-section-eyebrow">The ledger</div>
       <h2 class="mb-section-title">Every ticket, <em>on the record</em></h2>
       ${groups}
+      ${moveNote()}
     </div>`;
   }
 
