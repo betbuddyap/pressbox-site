@@ -376,6 +376,16 @@
   .sf-final { font-family: var(--serif); font-size: 12px; font-weight: 700; font-style: italic; color: var(--gold); }
   .sf-mkt { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); flex-shrink: 0; width: 42px; }
   .sf-goto { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--cream-mid); font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--gold); }
+  /* My Bets mock — the live standing under each row, and the season figure.
+     Marks reuse sage/rust (data-viz only, which a win/loss mark is). */
+  .sf-mark--up { color: var(--sage); }
+  .sf-mark--dn { color: var(--rust); }
+  .sf-why { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-mid); margin-top: 2px; }
+  .sf-mb-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--cream-mid); }
+  .sf-mb-lbl { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); }
+  /* Season total is a SUMMARY value -> serif. Row stakes stay sans. */
+  .sf-mb-pnl { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--sage); }
+  .sf-live { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--rust); }
 
   @media (max-width: 900px) {
     .surf-grid { grid-template-columns: 1fr; gap: 40px; }
@@ -542,8 +552,8 @@
 <section class="surfaces" id="what-you-get">
   <div class="container">
     <div class="section-eyebrow">What You Get</div>
-    <h2 class="section-title">Seven surfaces. <em>One discipline.</em></h2>
-    <p class="section-sub">Same picks, same grades, same numbers everywhere — each surface is a different job you'd hire them for.</p>
+    <h2 class="section-title">Eight surfaces. <em>One discipline.</em></h2>
+    <p class="section-sub">Same picks, same grades, same numbers everywhere — each surface is a different job you'd hire them for. The last one is the only page here that tracks <em>your</em> money instead of our record.</p>
 
     <div class="surf-grid">
       <div class="surf">
@@ -692,6 +702,43 @@
           <div class="sf-pick" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--cream-mid);">History check: <b>4 signals</b> back this pick — the side they pointed to covered <b>61.4%</b> of their games in 2023–25.</div>
         </div>
         <p class="surf-cap"><b>Every pick opens into its game page</b> — each model's number on each market against the live line, the history behind the grade, the full journal, the team stats, and live scoring through the final whistle. The "under the hood" view.</p>
+      </div>
+
+      <div class="surf surf--wide">
+        <div class="section-eyebrow" style="color:var(--gold);">08 — My Bets <span style="color:var(--text-light);font-weight:500;">(yours, not ours)</span></div>
+        <div class="surf-mock" aria-hidden="true">
+          <div class="sf-mb-head">
+            <span class="sf-mb-lbl">Week 1 · <span class="sf-live">● Live</span></span>
+            <span class="sf-mb-pnl">+$214.50</span>
+          </div>
+          <div class="sf-row">
+            <span class="sf-mark sf-mark--up">▲</span>
+            <span class="sf-mkt">Spread</span>
+            <div class="sf-main">
+              <div class="sf-pick">Oklahoma <b>+3.5</b> <span class="sf-px">(−105)</span> · $100</div>
+              <div class="sf-why">Oklahoma up 7 — covering by 10.5</div>
+            </div>
+          </div>
+          <div class="sf-row">
+            <span class="sf-mark sf-mark--dn">▼</span>
+            <span class="sf-mkt">ML</span>
+            <div class="sf-main">
+              <div class="sf-pick">USC <b>−140</b> · $70</div>
+              <div class="sf-why">USC down 10</div>
+            </div>
+          </div>
+          <div class="sf-row">
+            <span class="sf-mark sf-mark--w">✓</span>
+            <span class="sf-mkt">Total</span>
+            <div class="sf-main">
+              <div class="sf-pick">Under <b>51.5</b> <span class="sf-px">(−110)</span> · $50</div>
+              <div class="sf-why">Final 24–20 — 7.5 under the line</div>
+            </div>
+            <div class="sf-stake"><div class="sf-stake-amt">+$45.45</div><div class="sf-stake-lbl">Settled</div></div>
+          </div>
+          <div class="sf-goto">Log a bet →</div>
+        </div>
+        <p class="surf-cap"><b>Your own bets, on your own numbers</b> — log a side, a book, a price and an amount in a few taps, singles or parlays, or send the whole Allocator sheet over at once. Private to your login. It runs live during games so every ticket carries its standing at a glance, and settles at <em>the line you got</em>, not the one we published. The "how am I actually doing" view.</p>
       </div>
     </div>
   </div>

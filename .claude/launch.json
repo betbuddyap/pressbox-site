@@ -2,14 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "site",
+      "name": "static",
       "runtimeExecutable": "py",
-      "runtimeArgs": [
-        "-m",
-        "http.server",
-        "8000"
-      ],
-      "port": 8000
+      "runtimeArgs": ["-m", "http.server", "8011"],
+      "port": 8011
     }
   ]
 }

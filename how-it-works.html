@@ -443,7 +443,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <div class="page-header-inner">
     <div class="page-eyebrow">How It Works</div>
     <h1 class="page-title">You're in.<br><em>Here's how to use it.</em></h1>
-    <p class="page-sub">Start with the grades — they're the whole product in one letter. Then the two boards that carry them, the game page underneath, and every tool built on top: the full journey from released pick to settled number.</p>
+    <p class="page-sub">Start with the grades — they're the whole product in one letter. Then the four surfaces that carry them, the game page underneath, and the ledger where your own bets land: the full journey from released pick to settled number.</p>
   </div>
 </div>
 
@@ -481,19 +481,39 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
     <div class="tier-group-label">Moneyline</div>
     <div class="section-body">
-      <p>The moneyline runs on its <em>own</em> signal set — rebuilt from scratch for 2026. Instead of borrowing spread signals, we searched the same three seasons for patterns that predict who <em>wins</em> — a different question than who covers — and only the survivors made the book. The grades count independent agreement here too, with one guard: moneyline signals that come from the same model share a single vote, so the count can't be padded by one model repeating itself. <strong>C</strong> is one vote, <strong>B</strong> two, <strong>A</strong> three, <strong>A+</strong> all four.</p>
-      <p><strong>Moneylines are graded on their own scale, and that's on purpose.</strong> A spread grade counts agreement across 253 signals; a moneyline grade counts agreement across four models. An A+ moneyline means every model agreed — it does not mean the same thing as an A+ spread, and we'd rather tell you that than quietly re-letter one to match the other. The two also answer different questions: a spread asks who covers, a moneyline asks who <em>wins</em>. And we only publish a moneyline priced between <strong>−300 and +300</strong> — outside that band, the payout math stops being worth your money.</p>
+      <p>The moneyline runs on its <em>own</em> signal set — rebuilt from scratch for 2026. Instead of borrowing spread signals, we searched the same three seasons for patterns that predict who <em>wins</em> — a different question than who covers — and only the survivors made the book. The grades count independent agreement here too, with one guard: moneyline signals that come from the same model share a single vote, so the count can't be padded by one model repeating itself.</p>
     </div>
+
+    <div class="tier-grid">
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-aplus">A+</span><span class="tier-card-name">All four models</span></div>
+        <div class="tier-card-desc">Every model in the book landed on the same team to win outright, with nothing pulling the other way.</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-a">A</span><span class="tier-card-name">Gold — three models</span></div>
+        <div class="tier-card-desc">Three of the four on the same side after disagreements net out.</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-b">B</span><span class="tier-card-name">Silver — two models</span></div>
+        <div class="tier-card-desc">Two clear votes for the same winner.</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-card-head"><span class="tier-chip tier-chip-c">C</span><span class="tier-card-name">Bronze — one model</span></div>
+        <div class="tier-card-desc">A single model's vote, unopposed. It clears the bar here — unlike on the spread, where one lone signal grades No Edge.</div>
+      </div>
+    </div>
+
+    <p class="tier-note"><strong>Same letters, different arithmetic — and that's deliberate.</strong> A spread grade counts agreement across 253 signals, so it takes eight to reach A+. A moneyline grade counts agreement across four models, so four <em>is</em> A+. An A+ moneyline means every model agreed; it does not mean the same thing as an A+ spread, and we'd rather say so than quietly re-letter one to match the other. The two answer different questions — a spread asks who covers, a moneyline asks who <em>wins</em>. And we only publish a moneyline priced between <strong>−300 and +300</strong>; outside that band the payout math stops being worth your money.</p>
 
     <p class="tier-note"><strong><span class="bolt-inline" aria-label="streak bolt"><svg viewBox="0 0 24 24"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span> The bolt.</strong> Some picks carry a small bolt on the badge — our streak marker. It fires when a team's recent form sits in a band the market has historically mispriced <em>and</em> our pick already points the same way. It never changes a grade and never fires a pick on its own; the game page explains each one in plain words.</p>
   </div>
 
   <!-- 2 · LIVE LINES & UPCOMING (the two boards, one section) -->
   <div class="section" id="the-row">
-    <div class="section-num">02 — Live Lines &amp; Upcoming</div>
-    <h2 class="section-title">The board, and the slate.</h2>
+    <div class="section-num">02 — Four ways in</div>
+    <h2 class="section-title">Four doors. <em>One board behind them.</em></h2>
     <div class="section-body">
-      <p>Same picks, same grades — two doors in. Go straight at the bets on Live Lines, or walk the slate game by game on Upcoming; move between them whenever you want.</p>
+      <p>Same picks, same grades, same numbers — four different jobs you'd hire them for. Go straight at the bets, walk the slate game by game, stack legs into a ticket, or hand over a bankroll and let it size everything. Move between them whenever you want; nothing you do on one changes what another shows.</p>
     </div>
     <div class="fork">
       <a href="/live-lines.html" class="fork-card">
@@ -505,8 +525,20 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       <a href="/upcoming.html" class="fork-card">
         <div class="fork-eyebrow">Upcoming</div>
         <div class="fork-name">Start with <em>the games.</em></div>
-        <div class="fork-desc">The full FBS-vs-FBS slate, matchup by matchup, with a grade badge on any game that has a live bet. Stays on through kickoff with live scores and updates.</div>
+        <div class="fork-desc">The full slate, matchup by matchup, with a grade badge on any game that has a live bet. Stays on through kickoff with live scores and updates.</div>
         <span class="fork-go">Go to Upcoming →</span>
+      </a>
+      <a href="/parlay.html" class="fork-card">
+        <div class="fork-eyebrow">Parlay</div>
+        <div class="fork-name">Start with <em>the ticket.</em></div>
+        <div class="fork-desc">Stack graded legs into one card, priced at the live market, with our combined hit probability set against what the ticket's own price requires.</div>
+        <span class="fork-go">Go to Parlay →</span>
+      </a>
+      <a href="/allocator.html" class="fork-card">
+        <div class="fork-eyebrow">Allocator</div>
+        <div class="fork-name">Start with <em>the bankroll.</em></div>
+        <div class="fork-desc">Name an amount and it splits the whole board for you — heavier where the edge is bigger, nothing at all where the price already ate it.</div>
+        <span class="fork-go">Go to Allocator →</span>
       </a>
     </div>
 
@@ -697,12 +729,25 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="section-body">
       <p>Tell the <a href="/allocator.html">Allocator</a> how much you're putting in play. It sizes every bet on the board by how far our win probability sits above what the price requires, weighted by how often the bet actually cashes — so a strong edge at a fair price gets the biggest slice, a thin edge gets a sliver, and anything at or below its price gets nothing at all. Bets that don't earn a stake simply drop off the sheet.</p>
       <p><strong>Conservative, Moderate, Aggressive</strong> tilt the same math toward steadier bets or bigger payouts. Toggle in a parlay or two if you want them in the mix. And if you only use one sportsbook, pick it at the top — every stake re-sizes at <em>that book's</em> lines and juice, picks it doesn't post disappear, and every bet button points where you actually bet. The sheet ends with the total to have at each book.</p>
+      <p><strong>When the sheet is how you want it, send it to <a href="/my-bets.html">My Bets</a>.</strong> The whole allocation lands in your ledger as editable rows — every side, book, price, and stake already filled in. Correct anything the book gave you differently, drop what you didn't place, and it's logged. That's the handoff: the Allocator decides <em>how much</em>, My Bets records <em>what you actually did</em>.</p>
     </div>
   </div>
 
-  <!-- 8 · RESULTS & RANKINGS -->
+  <!-- 8 · MY BETS -->
+  <div class="section" id="my-bets">
+    <div class="section-num">07 — My Bets</div>
+    <h2 class="section-title">Your money, <em>your ledger.</em></h2>
+    <div class="section-body">
+      <p><a href="/my-bets.html">My Bets</a> is the one page on this site that isn't about our picks — it's about yours. Log a bet in a few taps: week, game, spread or total or moneyline, which side, which book, the price you got, the amount. Multi-leg parlays too. It's private to your login and nobody else sees it, including us in any form that's tied to you.</p>
+      <p><strong>You're graded on your number, not ours.</strong> If we published Oklahoma +3 and you got +3.5, your ledger settles at +3.5 — the line you actually bet, from the side you actually took. That's the same rule we hold ourselves to on <a href="/results.html">Results</a>, pointed at your slip instead of our board. Where we have a pick on a game you've logged, the row shows which side we're on, so you can see when you're with us and when you're on your own.</p>
+      <p><strong>It goes live when the games do.</strong> Leave it open on your phone during the slate and every ticket carries its current standing — a mark and a plain-words reason, like a red ✕ with "USC down 10" on a moneyline, or a green ✓ with "total 15 under the line" on an under. Parlays roll up to the ticket: one leg gone is the ticket gone. When a game goes final the mark settles, the profit and loss lands, and the season total moves.</p>
+      <p>You can delete a bet right up until its game kicks off. After that it's part of the record — which is the point of keeping one.</p>
+    </div>
+  </div>
+
+  <!-- 9 · RESULTS & RANKINGS -->
   <div class="section" id="results">
-    <div class="section-num">07 — Results &amp; Rankings</div>
+    <div class="section-num">08 — Results &amp; Rankings</div>
     <h2 class="section-title">The record, and the map.</h2>
     <div class="section-body">
       <p><a href="/results.html">Results</a> is Live Lines for games that are over. When a game kicks off its picks leave the board; when it goes final they land there — the <strong>released</strong> grade on the badge, the pick at the number it was graded on, a ✓, ✕, or – next to each, and the final score up top. Every card links back to the game page's final state. Graded no-edge verdicts appear too, dimmed — published, but never counted in the record, because they were never bets.</p>
@@ -712,7 +757,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
   <!-- 9 · GRADED ON OUR NUMBER -->
   <div class="section" id="scoring">
-    <div class="section-num">08 — After the game</div>
+    <div class="section-num">09 — After the game</div>
     <h2 class="section-title">We're graded on the number <em>we gave you.</em></h2>
     <div class="section-body">
       <p>When a bet releases, we freeze the line and tier we published. It re-grades against the live market every 30 minutes and can slip to No Edge as the line moves. At kickoff it locks as released. When the game ends, win or loss is scored against the number we released — not a friendlier closing line. Every result lands on <a href="/results.html">Results</a>, win or lose, next to the games we passed on.</p>
