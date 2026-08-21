@@ -673,7 +673,11 @@
       let v = null;
       if (market === 'spread') v = side === 'home' ? bk.spread_home : bk.spread_away;
       else if (market === 'total') v = bk.total;
-      else if (market === 'ml') v = side === 'home' ? bk.moneyline_home : bk.moneyline_away;
+      // book-quotes renames the moneyline columns on the way out: the payload
+      // says ml_home / ml_away, NOT the live_odds column names. prefill()
+      // above already reads them correctly; this read did not, so every
+      // moneyline ticket silently produced no marker. (2026-08-21)
+      else if (market === 'ml') v = side === 'home' ? bk.ml_home : bk.ml_away;
       if (v != null && !Number.isNaN(Number(v))) vals.push(Number(v));
     }
     if (!vals.length) return null;
