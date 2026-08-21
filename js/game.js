@@ -1885,6 +1885,23 @@
     return TIER_DISPLAY[tier] || tier;
   }
 
+  // Mirror live-lines.js renderLineMove. Arrow = the market's move, colour =
+  // what it means for you. Rust when the market came TOWARD our pick, because
+  // that means the number we published is gone and you're buying worse than
+  // we graded. Sage when it drifted away — you get a better number than the
+  // one on our record. My Bets swaps them: there the bet is already placed.
+  const MOVE_GLYPH = { up: '↑', down: '↓', left: '←', right: '→' };
+
+  function renderLineMove(mv) {
+    if (!mv || !mv.direction) return '';
+    const toward = mv.direction === 'toward';
+    const glyph = MOVE_GLYPH[mv.arrow] || '';
+    return `<div class="ll-row-move ll-row-move--${toward ? 'toward' : 'away'}">` +
+           `<span class="ll-row-move-arrow" aria-hidden="true">${glyph}</span>` +
+           `${escape(mv.text)} <span class="ll-row-move-nums">` +
+           `${escape(mv.released_line)} &rarr; ${escape(mv.current_line)}</span></div>`;
+  }
+
   function llPickLine(p) {
     // Mirror live-lines.js renderPickLine. If no side, just em-dash.
     if (!p.side_display && !p.line && !p.history?.current?.side) {
@@ -1998,6 +2015,7 @@
           <div class="ll-row-content">
             <div class="ll-row-matchup">${matchupLabel}</div>
             <div class="ll-row-pick">${pickLineHtml}</div>
+            ${renderLineMove(p.history?.line_move)}
           </div>
           ${outcomeChipHtml}
           <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">

@@ -270,6 +270,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     return `${esc(leg.side)} <span class="ll-row-pick-num">${esc(leg.line)}</span>${bookName}`;
   }
 
+  // Mirror live-lines.js renderLineMove. Arrow = the market's move, colour =
+  // what it means for you. Rust when the market came TOWARD our pick: the
+  // number we published is gone, so you'd be buying worse than we graded.
+  // Sage when it drifted away. (My Bets swaps them \u2014 the bet is already down.)
+  //
+  // Only on straight legs. A parlay card is several legs at once and one
+  // arrow cannot speak for all of them; the per-leg rows inside carry it.
+  const MOVE_GLYPH = { up: '\u2191', down: '\u2193', left: '\u2190', right: '\u2192' };
+
+  function renderLineMove(mv) {
+    if (!mv || !mv.direction) return '';
+    const toward = mv.direction === 'toward';
+    return `<div class="ll-row-move ll-row-move--${toward ? 'toward' : 'away'}">` +
+           `<span class="ll-row-move-arrow" aria-hidden="true">${MOVE_GLYPH[mv.arrow] || ''}</span>` +
+           `${esc(mv.text)} <span class="ll-row-move-nums">` +
+           `${esc(mv.released_line)} &rarr; ${esc(mv.current_line)}</span></div>`;
+  }
+
   // ── Auth (mirrored from parlay — localStorage fast-path, 4s cap) ──
   async function getAccessToken() {
     try {
@@ -857,6 +875,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
             <div class="ll-row-pick">${pickText(leg)}</div>
+            ${renderLineMove(leg.line_move)}
           </div>
           <div class="al-metrics">
             <div class="al-metric"><span class="al-metric-k">Win prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
