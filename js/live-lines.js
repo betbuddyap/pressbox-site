@@ -623,10 +623,18 @@
   // My Bets renders the same field with the colours swapped, because there
   // the bet is already placed and a market that came to you is a win.
   // (Austin, 2026-08-21)
+  // Arrow is the market's move; colour is what it means for you.
+  //   spread / ml   left = closer to our pick, right = further from it
+  //   total         up / down = literally which way the number went, so an
+  //                 Over pick with a rising total draws a RUST UP arrow
+  const MOVE_GLYPH = { up: '↑', down: '↓', left: '←', right: '→' };
+
   function renderLineMove(mv) {
     if (!mv || !mv.direction) return '';
     const toward = mv.direction === 'toward';
+    const glyph = MOVE_GLYPH[mv.arrow] || '';
     return `<div class="ll-row-move ll-row-move--${toward ? 'toward' : 'away'}">` +
+           `<span class="ll-row-move-arrow" aria-hidden="true">${glyph}</span>` +
            `${esc(mv.text)} <span class="ll-row-move-nums">` +
            `${esc(mv.released_line)} &rarr; ${esc(mv.current_line)}</span></div>`;
   }

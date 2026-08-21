@@ -333,6 +333,16 @@
 }
 .ll-row-move--toward { color: var(--rust); }
 .ll-row-move--away   { color: var(--sage); }
+/* The arrow carries the market's actual move: left/right = closer to or
+   further from our pick on a spread or moneyline, up/down = which way a
+   total went. Slightly larger than the label so it reads at a glance,
+   and nudged to sit on the text baseline. */
+.ll-row-move-arrow {
+  font-size: 1.15em;
+  line-height: 1;
+  margin-right: 4px;
+  vertical-align: -0.05em;
+}
 /* The two numbers are small inline values -> sans, regular, muted. */
 .ll-row-move-nums {
   font-family: var(--sans);
