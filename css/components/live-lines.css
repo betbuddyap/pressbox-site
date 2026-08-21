@@ -315,6 +315,31 @@
   font-weight: var(--weight-bold);
 }
 
+/* Line movement since release. sage/rust are legitimate here — this is a
+   delta, which is exactly what those tokens are scoped to.
+
+   Toward our pick is RUST and away is SAGE, which looks inverted until you
+   read it as value-to-a-new-bettor: toward means the market agreed with us
+   and the number we published is gone, so you're buying worse than we
+   graded. Away means you get a better number than the one on our record.
+   My Bets swaps the two — see .mb-row-move. (Austin, 2026-08-21) */
+.ll-row-move {
+  font-family: var(--sans);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semi);
+  letter-spacing: 0.03em;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+.ll-row-move--toward { color: var(--rust); }
+.ll-row-move--away   { color: var(--sage); }
+/* The two numbers are small inline values -> sans, regular, muted. */
+.ll-row-move-nums {
+  font-family: var(--sans);
+  font-weight: var(--weight-regular);
+  color: var(--text-light);
+}
+
 /* The juice on a spread/total row — secondary to the number it prices,
    so it stays regular weight in the muted ink. Sans per the number rule
    (small inline numbers are never serif). */

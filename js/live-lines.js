@@ -575,6 +575,7 @@
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(p.matchup || '—')}</div>
             <div class="ll-row-pick">${pickLine}</div>
+            ${renderLineMove(p.line_move)}
             ${p.pending_data ? '<div class="ll-row-pending" style="color:#c9a227;font-style:italic;font-size:0.78em;margin-top:2px;">Pending 2026 data</div>' : ''}
           </div>
           <svg class="ll-row-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -611,6 +612,23 @@
       : '';
     const aria = bolt ? `${m.aria} — streak-aligned` : m.aria;
     return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}</span>`;
+  }
+
+  // Did the market come toward the side we picked, or drift away from it?
+  //
+  // COLOUR IS DELIBERATELY "BACKWARDS" HERE AND IT IS NOT A BUG.
+  // Toward = the market agrees with us = the number available NOW is worse
+  // than the one we published. On the board you are about to bet, so that is
+  // the bad news: RED. Away = you get a better number than we graded: GREEN.
+  // My Bets renders the same field with the colours swapped, because there
+  // the bet is already placed and a market that came to you is a win.
+  // (Austin, 2026-08-21)
+  function renderLineMove(mv) {
+    if (!mv || !mv.direction) return '';
+    const toward = mv.direction === 'toward';
+    return `<div class="ll-row-move ll-row-move--${toward ? 'toward' : 'away'}">` +
+           `${esc(mv.text)} <span class="ll-row-move-nums">` +
+           `${esc(mv.released_line)} &rarr; ${esc(mv.current_line)}</span></div>`;
   }
 
   function renderPickLine(p) {
