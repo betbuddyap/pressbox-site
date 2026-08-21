@@ -1196,3 +1196,92 @@
   .ll-chg-when { flex-basis: 60px; }
   .ll-chg-row { gap: 8px; }
 }
+
+/* ── ARRIVAL POPUP ─────────────────────────────────────────────────────
+   Shown once on load when there's unseen grade movement, never on the
+   poll. Bounded: a count, the three newest, and a hand-off to the card —
+   so it's the same size whether five things moved or eighty and can never
+   become a wall someone learns to click through. */
+.ll-pop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 14, 10, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.ll-pop {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  /* Explicit: this file can't assume a global border-box reset, and without
+     it the padding rendered the dialog 50px wider than its own max-width. */
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: var(--space-6);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+}
+.ll-pop-title {
+  font-family: var(--serif);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.ll-pop-sub {
+  font-family: var(--sans);
+  font-size: var(--text-sm);
+  color: var(--text-mid);
+  margin: 0 0 var(--space-3);
+}
+/* Rows reuse .ll-chg-row wholesale, so a transition looks identical here
+   and in the card. First row loses its divider inside the dialog. */
+.ll-pop-rows .ll-chg-row:first-child { border-top: 0; }
+
+.ll-pop-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--cream-mid);
+}
+.ll-pop-all {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  letter-spacing: 0.03em;
+  color: var(--gold);
+  cursor: pointer;
+}
+.ll-pop-ok {
+  font-family: var(--sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semi);
+  letter-spacing: 0.03em;
+  color: var(--cream);
+  background: var(--ink);
+  border: 0;
+  border-radius: 4px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.ll-pop-ok:focus { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  .ll-pop { padding: var(--space-4); max-height: 86vh; }
+  /* column, not column-reverse: the primary action belongs at the BOTTOM on a
+     phone, where the thumb already is. */
+  .ll-pop-actions { flex-direction: column; align-items: stretch; }
+  .ll-pop-ok { width: 100%; }
+  .ll-pop-all { text-align: left; padding: 6px 0; }
+}

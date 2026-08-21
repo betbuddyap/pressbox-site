@@ -567,6 +567,68 @@
       </section>`;
   }
 
+  // ── Arrival popup ────────────────────────────────────────────
+  // Fires ONCE per page load, and only when there is something you haven't
+  // seen. Never on the poll: an interstitial appearing over the board while
+  // you're reading it is how you train someone to dismiss without looking.
+  //
+  // BOUNDED ON PURPOSE. It shows a count and the three newest, then hands off
+  // to the card for the rest. That way it's the same modal whether five things
+  // moved or eighty — the popup never tries to BE the feed, so it can't become
+  // a wall. (Austin, 2026-08-21)
+  //
+  // Not a trap: Esc, the backdrop, and the button all dismiss it.
+  let popupShown = false;
+
+  function maybeShowChangesPopup() {
+    if (popupShown || document.getElementById('ll-chg-popup')) return;
+    const unseen = unseenChanges();
+    if (!unseen.length) return;
+    popupShown = true;
+
+    const fresh = unseen.filter(c => c.kind === 'graded' || c.kind === 'released').length;
+    const sub = [
+      `${unseen.length} change${unseen.length === 1 ? '' : 's'}`,
+      fresh ? `${fresh} new grade${fresh === 1 ? '' : 's'}` : null,
+    ].filter(Boolean).join(' · ');
+    const top = unseen.slice(0, 3);
+    const rest = unseen.length - top.length;
+
+    const el = document.createElement('div');
+    el.id = 'll-chg-popup';
+    el.className = 'll-pop-backdrop';
+    el.innerHTML = `
+      <div class="ll-pop" role="dialog" aria-modal="true"
+           aria-labelledby="ll-pop-title">
+        <h2 class="ll-pop-title" id="ll-pop-title">Since you were last here</h2>
+        <p class="ll-pop-sub">${esc(sub)}</p>
+        <div class="ll-pop-rows">${top.map(renderChangeRow).join('')}</div>
+        <div class="ll-pop-actions">
+          ${rest > 0 ? `<button type="button" class="ll-pop-all" data-pop="all">See all ${unseen.length} changes →</button>` : '<span></span>'}
+          <button type="button" class="ll-pop-ok" data-pop="ok">Got it</button>
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+
+    const close = (openCard) => {
+      if ((state.changes || []).length) markSeen(state.changes[0].at);
+      document.removeEventListener('keydown', onKey);
+      el.remove();
+      if (openCard) state.changesOpen = true;
+      render();
+    };
+    const onKey = (e) => { if (e.key === 'Escape') close(false); };
+
+    el.addEventListener('click', (e) => {
+      if (e.target === el) return close(false);            // backdrop
+      const act = e.target.closest('[data-pop]');
+      if (act) close(act.getAttribute('data-pop') === 'all');
+    });
+    document.addEventListener('keydown', onKey);
+    const ok = el.querySelector('.ll-pop-ok');
+    if (ok) ok.focus();
+  }
+
   async function loadChanges() {
     try {
       const headers = {};
@@ -1266,7 +1328,8 @@
       startPolling();
       // Grade changes load after the board — the board is the product, and
       // this must never delay it or break it if the endpoint is unavailable.
-      loadChanges().then(render).catch(() => {});
+      loadChanges().then(() => { render(); maybeShowChangesPopup(); })
+                   .catch(() => {});
     } catch (e) {
       if (e instanceof PaywallError) {
         // Signed in but no active sub (or token rejected). Show paywall.
