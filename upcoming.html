@@ -855,11 +855,17 @@
      out of 253; the moneyline counts MODELS out of four, one vote each. The
      old single row printed the spread cuts over both and was simply wrong
      about the moneyline. (Austin, 2026-08-21) */
-  .legend { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 20px; background: var(--cream-dark); border-radius: 4px; margin-bottom: 24px; font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
-  .legend-row { display: flex; align-items: center; justify-content: center; gap: 10px 18px; flex-wrap: wrap; }
-  .legend-scope { font-size: 9px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); }
-  .legend-foot { font-size: 10px; color: var(--text-light); text-align: center; }
+  /* ONE grid, not two rows — separate flex rows size their own columns, so
+     "SPREAD & TOTAL" being wider than "MONEYLINE" pushed the second row's
+     chips out of line with the first. Shared columns align both. */
+  .legend { display: grid; grid-template-columns: auto repeat(4, auto); justify-content: center; align-items: center; gap: 9px 18px; padding: 14px 20px; background: var(--cream-dark); border-radius: 4px; margin-bottom: 24px; font-family: var(--sans); font-size: 11px; color: var(--text-mid); }
+  .legend-scope { font-size: 9px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); white-space: nowrap; }
+  .legend-foot { grid-column: 1 / -1; justify-self: center; font-size: 10px; color: var(--text-light); text-align: center; padding-top: 2px; }
   .legend-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  @media (max-width: 700px) {
+    .legend { grid-template-columns: auto auto; gap: 8px 14px; }
+    .legend-scope { grid-column: 1 / -1; justify-self: center; padding-top: 4px; }
+  }
   .legend-tag { font-family: var(--sans); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; min-width: 28px; padding: 3px 6px; border: 1px solid var(--ink); border-radius: 3px; box-sizing: border-box; text-align: center; display: inline-block; }
   .legend-tag.tier-a { background: var(--gold);   color: var(--ink); }
   .legend-tag.tier-b { background: var(--silver); color: var(--ink); }
@@ -1043,20 +1049,18 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
            Printing the spread cuts over both was wrong about every ML
            badge on the page. (Austin, 2026-08-21) -->
       <div class="legend">
-        <div class="legend-row">
-          <span class="legend-scope">Spread &amp; Total</span>
-          <div class="legend-item"><span class="legend-tag tier-aplus">A+</span> <span class="legend-desc">Net 8+ signals</span></div>
-          <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Net 5–7</span></div>
-          <div class="legend-item"><span class="legend-tag tier-b">B</span> <span class="legend-desc">Net 3–4</span></div>
-          <div class="legend-item"><span class="legend-tag tier-c">C</span> <span class="legend-desc">Net 2</span></div>
-        </div>
-        <div class="legend-row">
-          <span class="legend-scope">Moneyline</span>
-          <div class="legend-item"><span class="legend-tag tier-aplus">A+</span> <span class="legend-desc">All 4 models</span></div>
-          <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">3 models</span></div>
-          <div class="legend-item"><span class="legend-tag tier-b">B</span> <span class="legend-desc">2 models</span></div>
-          <div class="legend-item"><span class="legend-tag tier-c">C</span> <span class="legend-desc">1 model</span></div>
-        </div>
+        <span class="legend-scope">Spread &amp; Total</span>
+        <div class="legend-item"><span class="legend-tag tier-aplus">A+</span> <span class="legend-desc">Net 8+ signals</span></div>
+        <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">Net 5–7</span></div>
+        <div class="legend-item"><span class="legend-tag tier-b">B</span> <span class="legend-desc">Net 3–4</span></div>
+        <div class="legend-item"><span class="legend-tag tier-c">C</span> <span class="legend-desc">Net 2</span></div>
+
+        <span class="legend-scope">Moneyline</span>
+        <div class="legend-item"><span class="legend-tag tier-aplus">A+</span> <span class="legend-desc">All 4 models</span></div>
+        <div class="legend-item"><span class="legend-tag tier-a">A</span> <span class="legend-desc">3 models</span></div>
+        <div class="legend-item"><span class="legend-tag tier-b">B</span> <span class="legend-desc">2 models</span></div>
+        <div class="legend-item"><span class="legend-tag tier-c">C</span> <span class="legend-desc">1 model</span></div>
+
         <div class="legend-foot">
           <span class="legend-tag tier-ne">NE</span> No edge on either scale · moneylines published only between −300 and +300
         </div>
