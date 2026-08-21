@@ -644,6 +644,101 @@
     if (b.result === 'L') return ['loss', '✕'];
     return ['push', '–'];
   }
+  // ── Did the market come to you after you bet? ──────────────────────────
+  //
+  // Live Lines asks "released number vs now" — our record. This asks YOUR
+  // number vs now, which is your closing-line value, and the colours are the
+  // OPPOSITE of every other surface ON PURPOSE (Austin, 2026-08-21):
+  //
+  //   board / game page / allocator   you are about to bet, so a market that
+  //                                   moved toward the pick means the good
+  //                                   number is gone. Rust.
+  //   here                            the bet is already down. A market that
+  //                                   moved toward you means you got the
+  //                                   number before it went. Sage.
+  //
+  // Only pregame and unsettled: once a game kicks, the row's job is the
+  // result, not what the line did. That also keeps this to a couple of quote
+  // fetches rather than one per historical ticket.
+  const MB_MOVE_GLYPH = { up: '↑', down: '↓', left: '←', right: '→' };
+  let moveByBet = {};
+
+  const _dec = (o) => (o == null ? null : (o > 0 ? 1 + o / 100 : 1 + 100 / -o));
+
+  // Best number CURRENTLY available for the side this ticket is on. Best, not
+  // consensus — it is the like-for-like comparison, since a bettor shops.
+  function bestNow(quotes, market, side) {
+    const vals = [];
+    for (const bk of (quotes.books || [])) {
+      let v = null;
+      if (market === 'spread') v = side === 'home' ? bk.spread_home : bk.spread_away;
+      else if (market === 'total') v = bk.total;
+      else if (market === 'ml') v = side === 'home' ? bk.moneyline_home : bk.moneyline_away;
+      if (v != null && !Number.isNaN(Number(v))) vals.push(Number(v));
+    }
+    if (!vals.length) return null;
+    if (market === 'ml') return vals.sort((a, c) => _dec(c) - _dec(a))[0];  // pays most
+    if (market === 'spread') return Math.max(...vals);                      // most points
+    return side === 'over' ? Math.min(...vals) : Math.max(...vals);         // best total
+  }
+
+  function computeMove(b, quotes) {
+    const market = b.market, side = b.side;
+    if (!market || market === 'parlay') return null;
+    const now = bestNow(quotes, market, side);
+    if (now == null) return null;
+    const mine = Number(market === 'ml' ? b.odds : b.line);
+    if (!Number.isFinite(mine) || Math.abs(now - mine) < 0.01) return null;
+
+    let toward;
+    if (market === 'ml')          toward = _dec(now) < _dec(mine);   // shorter price
+    else if (market === 'spread') toward = now < mine;               // fewer points
+    else                          toward = side === 'over' ? now > mine : now < mine;
+
+    const arrow = market === 'total' ? (now > mine ? 'up' : 'down')
+                                     : (toward ? 'left' : 'right');
+    const fmt = (v) => market === 'spread' ? (v > 0 ? `+${v}` : `${v}`)
+                     : market === 'ml'     ? (v > 0 ? `+${v}` : `${v}`)
+                     : `${v}`;
+    let text;
+    if (market === 'ml') {
+      text = `Market moved ${toward ? 'toward' : 'away from'} your bet`;
+    } else {
+      const pts = Math.abs(+(now - mine).toFixed(1));
+      text = `Market moved ${pts} ${pts === 1 ? 'pt' : 'pts'} ` +
+             `${toward ? 'toward' : 'away from'} your bet`;
+    }
+    return { direction: toward ? 'toward' : 'away', arrow, text,
+             yours: fmt(mine), now: fmt(now) };
+  }
+
+  async function enrichLineMoves() {
+    const open = bets.filter(b => !b.result && b.market !== 'parlay'
+                                  && b.game_id && isPregame(b.kickoff));
+    if (!open.length) return;
+    const games = [...new Set(open.map(b => b.game_id))];
+    await Promise.all(games.map(g => fetchQuotes(g).catch(() => null)));
+    let any = false;
+    for (const b of open) {
+      const q = quotesCache[b.game_id];
+      if (!q) continue;
+      const mv = computeMove(b, q);
+      if (mv) { moveByBet[b.id] = mv; any = true; }
+    }
+    if (any) renderLedgerAndHero();
+  }
+
+  function renderMyBetsMove(b) {
+    const mv = moveByBet[b.id];
+    if (!mv) return '';
+    // Inverted against every other surface — see the block comment above.
+    const good = mv.direction === 'toward';
+    return `<div class="mb-row-move mb-row-move--${good ? 'good' : 'bad'}">` +
+           `<span class="mb-row-move-arrow" aria-hidden="true">${MB_MOVE_GLYPH[mv.arrow] || ''}</span>` +
+           `${esc(mv.text)} <span class="mb-row-move-nums">` +
+           `${esc(mv.yours)} &rarr; ${esc(mv.now)}</span></div>`;
+  }
+
   function rowHTML(b) {
     const [cls, glyph] = markFor(b);
     const settled = !!b.result;
@@ -679,6 +774,7 @@
         <div class="mb-row-body">
           <div class="mb-row-pick">${esc(b.side_label)} <span class="mb-odds">${esc(fmtOdds(b.odds))}</span></div>
           <div class="mb-row-sub">${sub}</div>
+          ${renderMyBetsMove(b)}
         </div>
         <div class="mb-row-money">
           <div class="mb-row-net ${netCls}">${esc(netTxt)}</div>
@@ -1032,6 +1128,7 @@
     if (new URLSearchParams(location.search).get('demo') === 'live') applyDemoLive();
     renderLedgerAndHero();
     startLiveLoop();
+    enrichLineMoves();
   }
 
   init();
