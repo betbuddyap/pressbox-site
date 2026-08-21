@@ -586,7 +586,10 @@
     if (!unseen.length) return;
     popupShown = true;
 
-    const fresh = unseen.filter(c => c.kind === 'graded' || c.kind === 'released').length;
+    // 'released' is gone — the feed no longer reports a pick being published
+    // as a change, only a pick moving. 'graded' is No Edge -> a real grade,
+    // which is the "a new bet appeared" case worth counting separately.
+    const fresh = unseen.filter(c => c.kind === 'graded').length;
     const sub = [
       `${unseen.length} change${unseen.length === 1 ? '' : 's'}`,
       fresh ? `${fresh} new grade${fresh === 1 ? '' : 's'}` : null,
