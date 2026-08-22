@@ -851,7 +851,7 @@
     const cached = state.historyCache[p.pick_id];
     if (cached) {
       return `<div data-history-for="${esc(p.pick_id)}">` +
-             buildHistoryHtml(cached, p) + `</div>`;
+             buildHistoryHtml(p.pick_id, cached, p) + `</div>`;
     }
     return `
       <div data-history-for="${esc(p.pick_id)}">
@@ -868,10 +868,32 @@
   function renderHistoryInto(pickId, history, pick) {
     const target = document.querySelector(`[data-history-for="${CSS.escape(String(pickId))}"]`);
     if (!target) return;
-    target.innerHTML = buildHistoryHtml(history, pick);
+    target.innerHTML = buildHistoryHtml(pickId, history, pick);
+    wireOtherBooks(target);
   }
 
-  function buildHistoryHtml(history, pick) {
+  // The Other Books expander's click handler. Split out of the old
+  // renderHistoryInto because history HTML now lands in the DOM by two
+  // routes — the async fetch (renderHistoryInto) and a cached re-render
+  // (renderAccordionBody via render()) — and both need the wiring. Every
+  // innerHTML rebuild wipes listeners, so each route wiring its own paint
+  // can never double-bind.
+  function wireOtherBooks(scope) {
+    scope.querySelectorAll('[data-action="toggle-books"]').forEach(obToggle => {
+      obToggle.addEventListener('click', () => {
+        const wrap = obToggle.closest('.ll-other-books');
+        const rows = wrap?.querySelector('.ll-other-books-rows');
+        if (!rows) return;
+        const isOpen = obToggle.getAttribute('aria-expanded') === 'true';
+        obToggle.setAttribute('aria-expanded', String(!isOpen));
+        rows.style.display = isOpen ? 'none' : 'block';
+        const chev = obToggle.querySelector('.ll-other-books-chevron');
+        if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+      });
+    });
+  }
+
+  function buildHistoryHtml(pickId, history, pick) {
     const released = history.released;
     const events = history.transitions || [];
 
@@ -1005,21 +1027,6 @@
       </a>
     `;
 
-    // Attach Other Books toggle handler
-    const obToggle = target.querySelector('[data-action="toggle-books"]');
-    if (obToggle) {
-      obToggle.addEventListener('click', () => {
-        const wrap = obToggle.closest('.ll-other-books');
-        const rows = wrap?.querySelector('.ll-other-books-rows');
-        if (!rows) return;
-        const isOpen = obToggle.getAttribute('aria-expanded') === 'true';
-        obToggle.setAttribute('aria-expanded', String(!isOpen));
-        rows.style.display = isOpen ? 'none' : 'block';
-        // Rotate chevron
-        const chev = obToggle.querySelector('.ll-other-books-chevron');
-        if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
-      });
-    }
   }
 
   function formatHistoryTime(iso) {
@@ -1144,6 +1151,12 @@
 
   // ── Event handlers ──────────────────────────────────────────
   function attachFeedHandlers() {
+    // An accordion rebuilt from cache (renderAccordionBody) arrives with its
+    // Other Books expander unwired — the async path wires its own paint in
+    // renderHistoryInto, but a cached paint lands here. innerHTML rebuilds
+    // wipe listeners, so this can't double-bind with that path.
+    wireOtherBooks($app());
+
     // Grade-change card. Opening it IS the acknowledgement — the watermark
     // advances to the newest entry, so the "since you were last here" count
     // clears without a separate dismiss control.
