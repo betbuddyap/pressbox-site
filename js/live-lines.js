@@ -841,7 +841,18 @@
   // Renders a SKELETON only. After fetchHistory resolves,
   // renderHistoryInto replaces this with the real timeline + books +
   // bet button + game link.
+  // Render from cache when we have it. This used to ALWAYS return the
+  // skeleton, with the real history injected into the DOM afterwards by
+  // renderHistoryInto — so any later render() wiped an open accordion back to
+  // a shimmer and nothing re-fetched, because toggleRow never fired again.
+  // You got a permanent loading fade. Building from cache makes render()
+  // idempotent for an open row. (Austin, 2026-08-21)
   function renderAccordionBody(p) {
+    const cached = state.historyCache[p.pick_id];
+    if (cached) {
+      return `<div data-history-for="${esc(p.pick_id)}">` +
+             buildHistoryHtml(cached, p) + `</div>`;
+    }
     return `
       <div data-history-for="${esc(p.pick_id)}">
         <div class="ll-accordion-section-label">History</div>
@@ -851,10 +862,16 @@
     `;
   }
 
+  // Writes the built HTML into the open accordion. Kept separate from
+  // buildHistoryHtml so a re-render can produce the SAME markup without
+  // needing the DOM to already be there.
   function renderHistoryInto(pickId, history, pick) {
     const target = document.querySelector(`[data-history-for="${CSS.escape(String(pickId))}"]`);
     if (!target) return;
+    target.innerHTML = buildHistoryHtml(history, pick);
+  }
 
+  function buildHistoryHtml(history, pick) {
     const released = history.released;
     const events = history.transitions || [];
 
@@ -934,7 +951,7 @@
       `;
     }).join('') : '';
 
-    target.innerHTML = `
+    return `
       <div class="ll-accordion-section-label">History</div>
       <div class="ll-history">
         <div class="ll-event">
@@ -1256,6 +1273,17 @@
     state.lastFetchedAt = new Date().toISOString();
     state.historyCache = {};   // invalidate so dropdown re-fetches
     render();
+    // Clearing the cache above sends an OPEN accordion back to its skeleton.
+    // Nothing re-fetched it, because toggleRow only runs on a click — so a
+    // poll left an expanded row shimmering forever. Re-fetch it here.
+    if (state.expandedPickId != null) {
+      const openId = state.expandedPickId;
+      fetchHistory(openId).then(h => {
+        if (state.expandedPickId === openId) {
+          renderHistoryInto(openId, h, state.picks.find(p => p.pick_id === openId));
+        }
+      }).catch(() => {});
+    }
     // Apply flash to changed rows
     changedIds.forEach(id => {
       const row = document.querySelector(`.ll-row[data-pick-id="${id}"]`);
