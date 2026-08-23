@@ -60,18 +60,32 @@
   .al-frac { display: flex; gap: var(--space-2); }
   .al-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: var(--space-2) 0 0; }
   /* Book exclusion chips. On = in the shopping pool; .off = excluded (dim +
-     struck). Same pill language as the filter row, sized to the label rule. */
-  .al-books-excl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: var(--space-3); }
+     struck). Full-width row spanning both control columns — inside the 240px
+     left column ten books wrapped into a ragged pile (Austin, 2026-08-22:
+     "one row probably for desktop and some form of organized stack for
+     mobile"). grid-auto-flow:column gives exactly ONE row of equal cells
+     for any book count; breakpoints fold it to a tidy 5x2 then 2-across. */
+  .al-books-excl { grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: var(--space-4); }
+  /* Five equal columns, two tidy rows. A literal single row of ten was
+     measured and clips "Hard Rock Bet" / "theScore Bet" inside the 920px
+     container even before page padding — ellipsized button labels lose to
+     one clean 5x2 at full type size. Phones fold to 2-across. */
+  .al-books-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  @media (max-width: 560px) {
+    .al-books-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
   .al-book-chip {
     font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi);
-    letter-spacing: 0.03em; color: var(--ink); background: transparent;
+    letter-spacing: 0.02em; color: var(--ink); background: #fff;
     border: 1px solid var(--border); border-radius: var(--radius-md);
-    padding: 4px 10px; cursor: pointer; line-height: 1.4;
+    padding: 7px 6px; cursor: pointer; line-height: 1.3;
+    text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    min-width: 0;
   }
   .al-book-chip:hover { border-color: var(--gold); }
   .al-book-chip.off {
     color: var(--text-light); text-decoration: line-through;
-    background: var(--cream-dark); border-color: var(--border);
+    background: var(--cream-dark);
   }
 
   /* Summary bar */
@@ -712,23 +726,26 @@ document.addEventListener('DOMContentLoaded', async () => {
               `<option value="${esc(n)}"${state.book === n ? ' selected' : ''}>${esc(n)}</option>`).join('')}
           </select>
           ${state.book ? `<p class="al-hint" style="margin-top:var(--space-2);">Every stake sized at ${esc(state.book)}’s lines and juice. Picks ${esc(state.book)} doesn’t post are hidden.</p>` : ''}
-          ${state.book ? '' : `
-          <div class="al-books-excl">
-            <span class="al-field-label" style="margin:0;">Books</span>
-            ${allBookNames().map(n => `
-              <button type="button" class="al-book-chip${state.excluded.has(n) ? ' off' : ''}"
-                      data-excl="${esc(n)}" aria-pressed="${state.excluded.has(n) ? 'true' : 'false'}"
-                      aria-label="${state.excluded.has(n) ? 'Include' : 'Exclude'} ${esc(n)}">${esc(n)}</button>`).join('')}
-          </div>
-          <p class="al-hint" style="margin-top:var(--space-1);">${state.excluded.size
-            ? `Skipping ${esc([...state.excluded].join(', '))} — every stake re-shopped across the rest.`
-            : 'Tap any book you can’t bet — restricted state, no account — and the sheet re-shops without it.'}</p>`}
         </div>
         <div class="al-controls-right">
           <label class="al-field-label">Weighting</label>
           <div class="al-frac">${presetPills}</div>
           <p class="al-hint">${esc(currentPreset().blurb)}</p>
         </div>
+        ${state.book ? '' : `
+        <div class="al-books-excl">
+          <span class="al-field-label" style="margin:0 0 var(--space-2);">Books</span>
+          <div class="al-books-grid">
+            ${allBookNames().map(n => `
+              <button type="button" class="al-book-chip${state.excluded.has(n) ? ' off' : ''}"
+                      data-excl="${esc(n)}" title="${esc(n)}"
+                      aria-pressed="${state.excluded.has(n) ? 'true' : 'false'}"
+                      aria-label="${state.excluded.has(n) ? 'Include' : 'Exclude'} ${esc(n)}">${esc(n)}</button>`).join('')}
+          </div>
+          <p class="al-hint" style="margin-top:var(--space-2);">${state.excluded.size
+            ? `Skipping ${esc([...state.excluded].join(', '))} — every stake re-shopped across the rest.`
+            : 'Tap any book you can’t bet — restricted state, no account — and the sheet re-shops without it.'}</p>
+        </div>`}
       </div>`;
   }
 
