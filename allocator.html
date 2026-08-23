@@ -59,6 +59,20 @@
   .al-input.al-money { padding-left: 26px; }
   .al-frac { display: flex; gap: var(--space-2); }
   .al-hint { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin: var(--space-2) 0 0; }
+  /* Book exclusion chips. On = in the shopping pool; .off = excluded (dim +
+     struck). Same pill language as the filter row, sized to the label rule. */
+  .al-books-excl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: var(--space-3); }
+  .al-book-chip {
+    font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi);
+    letter-spacing: 0.03em; color: var(--ink); background: transparent;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 4px 10px; cursor: pointer; line-height: 1.4;
+  }
+  .al-book-chip:hover { border-color: var(--gold); }
+  .al-book-chip.off {
+    color: var(--text-light); text-decoration: line-through;
+    background: var(--cream-dark); border-color: var(--border);
+  }
 
   /* Summary bar */
   .al-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-6); padding: var(--space-4) 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: var(--space-4); }
@@ -220,6 +234,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // A name = every bet re-priced at THAT book's line and juice; picks the
     // book doesn't post drop off the sheet. Persisted across visits.
     book: (() => { try { return localStorage.getItem('al_book') || null; } catch (e) { return null; } })(),
+    // Books the user CAN'T bet (restricted state, no account). Excluded books
+    // drop out of the shopping pool and every stake re-shops across the rest.
+    // Persisted — a restriction doesn't change week to week. (Austin,
+    // 2026-08-22: couldn't sign up for Bovada in a restricted state.)
+    excluded: (() => {
+      try { return new Set(JSON.parse(localStorage.getItem('al_excluded_books') || '[]')); }
+      catch (e) { return new Set(); }
+    })(),
     // Same filter model as Live Lines / Parlay: market and tier are each
     // single-select and mutually exclusive; null/null = all picks.
     filters: { market: null, tier: null },
@@ -522,16 +544,58 @@ document.addEventListener('DOMContentLoaded', async () => {
               note: (e.book && e.book.note) || null },
       other_books: [] };
   }
+  // Best remaining book for a leg once exclusions apply. Ranks the allowed
+  // entries itself rather than trusting payload order: spread and under want
+  // the most points / highest number, over wants the lowest, moneyline wants
+  // the best payout; ties break on price. Returns null when no allowed book
+  // posts the pick — the leg drops from the sheet, same as single-book mode.
+  function bestAllowedLeg(leg) {
+    const entries = (leg.other_books || []).filter(b =>
+      b.book && b.book.name && !state.excluded.has(b.book.name));
+    if (!entries.length) return null;
+    const px = (e) => (e.price != null) ? e.price
+                    : (leg.market === 'ml' ? e.line_raw : -110);
+    const better = (a, b) => {
+      if (leg.market === 'ml') {
+        const d = (amToDec(a.line_raw) || 0) - (amToDec(b.line_raw) || 0);
+        if (d) return d > 0;
+      } else {
+        const overWantsLow = leg.market === 'total'
+          && String(leg.side_raw || leg.side || '').toLowerCase().startsWith('over');
+        const d = (a.line_raw || 0) - (b.line_raw || 0);
+        if (d) return overWantsLow ? d < 0 : d > 0;
+      }
+      return (amToDec(px(a)) || 0) > (amToDec(px(b)) || 0);
+    };
+    let best = entries[0];
+    for (const e of entries.slice(1)) if (better(e, best)) best = e;
+    if (leg.book && leg.book.name === best.book.name) return leg;
+    return legAtBook(leg, best.book.name);
+  }
   function bookView(leg) {
-    if (!state.book) return leg;
-    return legAtBook(leg, state.book);
+    if (state.book) return legAtBook(leg, state.book);
+    if (state.excluded.size) return bestAllowedLeg(leg);
+    return leg;
   }
   function parlayView(pl) {
-    if (!state.book) return pl;
-    const e = (pl.book_breakdown || []).find(b => b.book === state.book);
-    if (!e || !(e.decimal_odds > 1)) return null;
-    return { ...pl, decimal_odds: e.decimal_odds, price_american: e.american_odds,
-             book: { name: state.book, url: e.url || null } };
+    if (state.book) {
+      const e = (pl.book_breakdown || []).find(b => b.book === state.book);
+      if (!e || !(e.decimal_odds > 1)) return null;
+      return { ...pl, decimal_odds: e.decimal_odds, price_american: e.american_odds,
+               book: { name: state.book, url: e.url || null } };
+    }
+    if (state.excluded.size) {
+      // Best remaining ticket price among allowed books; no allowed book
+      // posting every leg -> the parlay drops, same rule as a single leg.
+      const ok = (pl.book_breakdown || []).filter(b =>
+        b.book && !state.excluded.has(b.book) && b.decimal_odds > 1);
+      if (!ok.length) return null;
+      const e = ok.reduce((a, b) => (b.decimal_odds > a.decimal_odds ? b : a));
+      if (pl.book && pl.book.name === e.book) return pl;
+      return { ...pl, decimal_odds: e.decimal_odds, price_american: e.american_odds,
+               book: { name: e.book, url: e.url || null } };
+    }
+    return pl;
   }
 
   function computeRows() {
@@ -644,10 +708,21 @@ document.addEventListener('DOMContentLoaded', async () => {
           <label class="al-field-label" for="al-book" style="margin-top:var(--space-4);">Your sportsbook</label>
           <select class="al-input" id="al-book" aria-label="Size every bet at one sportsbook's lines">
             <option value="">All books — best line</option>
-            ${allBookNames().map(n =>
+            ${allBookNames().filter(n => !state.excluded.has(n)).map(n =>
               `<option value="${esc(n)}"${state.book === n ? ' selected' : ''}>${esc(n)}</option>`).join('')}
           </select>
           ${state.book ? `<p class="al-hint" style="margin-top:var(--space-2);">Every stake sized at ${esc(state.book)}’s lines and juice. Picks ${esc(state.book)} doesn’t post are hidden.</p>` : ''}
+          ${state.book ? '' : `
+          <div class="al-books-excl">
+            <span class="al-field-label" style="margin:0;">Books</span>
+            ${allBookNames().map(n => `
+              <button type="button" class="al-book-chip${state.excluded.has(n) ? ' off' : ''}"
+                      data-excl="${esc(n)}" aria-pressed="${state.excluded.has(n) ? 'true' : 'false'}"
+                      aria-label="${state.excluded.has(n) ? 'Include' : 'Exclude'} ${esc(n)}">${esc(n)}</button>`).join('')}
+          </div>
+          <p class="al-hint" style="margin-top:var(--space-1);">${state.excluded.size
+            ? `Skipping ${esc([...state.excluded].join(', '))} — every stake re-shopped across the rest.`
+            : 'Tap any book you can’t bet — restricted state, no account — and the sheet re-shops without it.'}</p>`}
         </div>
         <div class="al-controls-right">
           <label class="al-field-label">Weighting</label>
@@ -1123,6 +1198,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (state.includeParlays && !state.parlays.length) {
         fetchParlays().then(render).catch(() => {});
       }
+      return;
+    }
+
+    const excl = e.target.closest('.al-book-chip[data-excl]');
+    if (excl) {
+      const name = excl.dataset.excl;
+      if (state.excluded.has(name)) state.excluded.delete(name);
+      else state.excluded.add(name);
+      // A book you can't bet can't be your single book either.
+      if (state.book && state.excluded.has(state.book)) {
+        state.book = null;
+        try { localStorage.removeItem('al_book'); } catch (err) {}
+      }
+      try { localStorage.setItem('al_excluded_books',
+                                 JSON.stringify([...state.excluded])); }
+      catch (err) { /* private mode — the exclusion just won't persist */ }
+      render();   // chips, hint, dropdown options and every stake change
       return;
     }
 
