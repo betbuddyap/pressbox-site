@@ -155,10 +155,6 @@
       <div class="mb-hero">
         <div class="mb-hero-top">
           <div class="mb-hero-eyebrow">My Bets · ${esc(scopeLabel)}${ledgerBook ? ' · ' + esc(ledgerBook) : ''}</div>
-          <div class="mb-scope" role="tablist">
-            <button type="button" data-scope="week" class="${heroScope === 'week' ? 'active' : ''}">Week</button>
-            <button type="button" data-scope="season" class="${heroScope === 'season' ? 'active' : ''}">Season</button>
-          </div>
         </div>
         <div class="mb-hero-stats">
           <div class="mb-stat">
@@ -945,7 +941,10 @@
         <div class="mb-empty">Nothing logged yet. Your first ticket starts the record.</div>
       </div>`;
     }
-    const visible = ledgerBook ? bets.filter(b => b.book === ledgerBook) : bets;
+    const scoped = heroScope === 'week'
+      ? bets.filter(b => b.week === formWeek)
+      : bets;
+    const visible = ledgerBook ? scoped.filter(b => b.book === ledgerBook) : scoped;
     const byWeek = {};
     visible.forEach(b => { (byWeek[b.week] = byWeek[b.week] || []).push(b); });
     const weeksDesc = Object.keys(byWeek).map(Number).sort((a, b) => b - a);
@@ -960,7 +959,10 @@
           ${rows.map(rowHTML).join('')}
         </div>`;
     }).join('');
-    const body = groups || `<div class="mb-empty">No tickets at ${esc(ledgerBook)} yet.</div>`;
+    const emptyMsg = ledgerBook
+      ? `No tickets at ${esc(ledgerBook)}${heroScope === 'week' ? ` in Week ${esc(formWeek)}` : ''} yet.`
+      : `Nothing logged for Week ${esc(formWeek)} yet.`;
+    const body = groups || `<div class="mb-empty">${emptyMsg}</div>`;
     return `<div class="mb-section">
       <div class="mb-section-eyebrow">The ledger</div>
       <h2 class="mb-section-title">Every ticket, <em>on the record</em></h2>
@@ -981,16 +983,52 @@
   }
 
   // ── Render / wire ──────────────────────────────────────────────────
+  // The same week-tab bar Live Lines and Upcoming wear (the .ll-week-bar
+  // CSS is already on this page), plus the one tab those boards don't
+  // need: Full Season. It replaces the hero's little Week/Season pills —
+  // one selector drives the hero, the ledger, AND the log form's week, so
+  // "where am I" is a single answer. (Austin, 2026-08-22)
+  function weekTabsHTML() {
+    const wks = [...new Set([...bets.map(b => b.week), formWeek]
+      .filter(w => w != null))].sort((a, c) => a - c);
+    return `
+      <div class="ll-week-bar" style="margin-bottom:var(--space-4);">
+        <div class="ll-week-bar-inner" role="tablist" aria-label="Ledger week">
+          ${wks.map(w => `
+            <button class="ll-week-tab ${heroScope === 'week' && w === formWeek ? 'active' : ''}"
+                    data-mbweek="${w}" role="tab"
+                    aria-selected="${heroScope === 'week' && w === formWeek ? 'true' : 'false'}">Week ${w}</button>`).join('')}
+          <button class="ll-week-tab ${heroScope === 'season' ? 'active' : ''}"
+                  data-mbweek="season" role="tab"
+                  aria-selected="${heroScope === 'season' ? 'true' : 'false'}">Full Season</button>
+        </div>
+      </div>`;
+  }
+
   function renderLedgerAndHero() {
+    const tabs = document.getElementById('mbTabsMount');
+    if (tabs) tabs.innerHTML = weekTabsHTML();
     document.getElementById('mbHeroMount').innerHTML = heroHTML();
     document.getElementById('mbLedgerMount').innerHTML = ledgerHTML();
     wireHero();
     wireLedger();
   }
   function wireHero() {
-    document.querySelectorAll('.mb-scope button').forEach(btn => {
+    document.querySelectorAll('[data-mbweek]').forEach(btn => {
       btn.addEventListener('click', () => {
-        heroScope = btn.getAttribute('data-scope');
+        const v = btn.getAttribute('data-mbweek');
+        if (v === 'season') {
+          heroScope = 'season';
+        } else {
+          heroScope = 'week';
+          const w = Number(v);
+          if (w !== formWeek) {
+            formWeek = w;
+            const sel = document.getElementById('mbWeek');
+            if (sel) sel.value = String(w);
+            rebuildGameSelect();
+          }
+        }
         renderLedgerAndHero();
       });
     });
@@ -1293,7 +1331,7 @@
       bets = [];
     }
 
-    app.innerHTML = `<div id="mbHeroMount"></div><div id="mbImportMount"></div>${formHTML()}<div id="mbLedgerMount"></div>`;
+    app.innerHTML = `<div id="mbTabsMount"></div><div id="mbHeroMount"></div><div id="mbImportMount"></div>${formHTML()}<div id="mbLedgerMount"></div>`;
     wireForm();
     rebuildGameSelect();
     loadImport();
