@@ -38,11 +38,20 @@
   let mode = 'single';          // 'single' | 'parlay'
   let parlayLegs = [];          // pending legs while building a parlay ticket
   let importRows = null;        // allocator-sheet handoff (localStorage), or null
+  let editingId = null;           // bet id with the inline editor open
 
   // ── Utils ──────────────────────────────────────────────────────────
   const esc = (s) => String(s == null ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  // The product's book roster (mirrors the backend BOOKMAKERS display names)
+  // plus bet365 — a main book people bet at that our odds provider cannot
+  // quote (bet365 doesn't license US odds to The Odds API). Order here is
+  // irrelevant; the dropdown sorts quoted-books-first per game.
+  const MAIN_BOOKS = ['DraftKings', 'FanDuel', 'BetMGM', 'Caesars', 'bet365',
+                      'Hard Rock Bet', 'Bally Bet', 'Fanatics', 'BetRivers',
+                      'theScore Bet', 'Bovada'];
 
   const MINUS = '−';
   function fmtOdds(o) {
@@ -324,13 +333,31 @@
     const quotes = await fetchQuotes(gid(g));
     const cur = currentGame();
     if (!cur || gid(cur) !== gid(g)) return;   // user moved on mid-fetch
-    if (!quotes.books.length) {
-      bookSel.innerHTML = `<option value="">No live books — enter manually</option>`;
-    } else {
-      bookSel.innerHTML = quotes.books.map((b, i) =>
-        `<option value="${i}">${esc(b.book_display || b.book)}</option>`).join('');
-    }
+    bookSel.innerHTML = bookOptionsHTML(quotes);
     prefill();
+  }
+
+  // name -> quote row for the selected game. Keyed by display name because
+  // the option values are display names — the same string logged on the bet.
+  function quoteByName(q) {
+    const m = {};
+    for (const b of (q && q.books) || []) m[b.book_display || b.book] = b;
+    return m;
+  }
+  // Every main book is offered whether or not it has posted this game — you
+  // bet where you bet; a missing quote only means nothing prefills. (Austin,
+  // 2026-08-22: "just don't exclude books.") Quoted books sort first so the
+  // default selection still auto-fills; the rest say so in the label.
+  function bookOptionsHTML(quotes) {
+    const byName = quoteByName(quotes);
+    const names = [...new Set([...Object.keys(byName), ...MAIN_BOOKS])];
+    names.sort((a, c) => {
+      const qa = a in byName, qc = c in byName;
+      if (qa !== qc) return qa ? -1 : 1;
+      return a.localeCompare(c);
+    });
+    return names.map(n =>
+      `<option value="${esc(n)}">${esc(n)}${n in byName ? '' : ' — no live line'}</option>`).join('');
   }
 
   function prefill() {
@@ -340,7 +367,7 @@
     const side = document.getElementById('mbSide').value;
     const bookSel = document.getElementById('mbBook');
     const q = quotesCache[gid(g)];
-    const book = (q && q.books && bookSel.value !== '') ? q.books[Number(bookSel.value)] : null;
+    const book = q ? (quoteByName(q)[bookSel.value] || null) : null;
     const lineEl = document.getElementById('mbLine');
     const oddsEl = document.getElementById('mbOdds');
     if (!book) { updatePreview(); return; }
@@ -433,14 +460,14 @@
     }
     const bookSel = document.getElementById('mbBook');
     const q = quotesCache[gid(g)];
-    const book = (q && q.books && bookSel.value !== '') ? q.books[Number(bookSel.value)] : null;
+    const book = q ? (quoteByName(q)[bookSel.value] || null) : null;
     const dupIdx = parlayLegs.findIndex(l => l.game_id === gid(g) && l.market === market);
     const legObj = {
       game_id: gid(g), week: g.week, kickoff: g.raw_date || null,
       market, side, line, odds,
       side_label: sideLabelFor(g, market, side, line),
       game_label: `${g.away_team} @ ${g.home_team}`,
-      book: book ? (book.book_display || book.book) : null,
+      book: bookSel.value || null,
     };
     if (dupIdx >= 0) parlayLegs[dupIdx] = legObj;   // re-adding the same market replaces
     else parlayLegs.push(legObj);
@@ -468,7 +495,7 @@
     const side = document.getElementById('mbSide').value;
     const bookSel = document.getElementById('mbBook');
     const q = g ? quotesCache[gid(g)] : null;
-    const book = (g && q && q.books && bookSel.value !== '') ? q.books[Number(bookSel.value)] : null;
+    // The option value IS the display name — no quote row needed here.
     const lineRaw = document.getElementById('mbLine').value;
     const odds = Math.round(Number(document.getElementById('mbOdds').value));
     const stake = Number(document.getElementById('mbStake').value);
@@ -495,7 +522,7 @@
       line,
       odds,
       stake,
-      book: book ? (book.book_display || book.book) : null,
+      book: bookSel.value || null,
     };
 
     btn.disabled = true;
@@ -801,8 +828,78 @@
           <div class="mb-row-net ${netCls}">${esc(netTxt)}</div>
           <div class="mb-row-stake">${esc(fmtMoney(b.stake))} stake</div>
         </div>
-        ${canDelete ? `<button type="button" class="mb-row-del" data-del="${esc(b.id)}" aria-label="Delete ticket">✕</button>` : ''}
+        ${canDelete ? `<button type="button" class="mb-row-editbtn" data-edit="${esc(b.id)}" aria-label="Edit ticket">✎</button><button type="button" class="mb-row-del" data-del="${esc(b.id)}" aria-label="Delete ticket">✕</button>` : ''}
+      </div>
+      ${String(editingId) === String(b.id) ? editRowHTML(b) : ''}`;
+  }
+
+  // Pregame and unsettled only — the same gate as delete, enforced again
+  // by RLS server-side. Numbers and book only: the game, market and side
+  // ARE the bet; if those are wrong it's a different ticket — delete and
+  // re-log.
+  function editRowHTML(b) {
+    const isParlay = b.market === 'parlay';
+    const isMl = b.market === 'ml';
+    const books = [...new Set([b.book, ...MAIN_BOOKS].filter(Boolean))];
+    return `
+      <div class="mb-edit">
+        <div class="mb-edit-grid">
+          <label class="mb-edit-field">Book
+            <select id="mbe-book">${books.map(n =>
+              `<option value="${esc(n)}"${n === b.book ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>
+          </label>
+          ${(isParlay || isMl) ? '' : `
+          <label class="mb-edit-field">Line (your side)
+            <input id="mbe-line" type="number" step="0.5" value="${esc(b.line ?? '')}">
+          </label>`}
+          <label class="mb-edit-field">Odds
+            <input id="mbe-odds" type="number" step="1" value="${esc(b.odds ?? '')}">
+          </label>
+          <label class="mb-edit-field">Amount
+            <input id="mbe-stake" type="number" step="0.01" min="0" value="${esc(b.stake ?? '')}">
+          </label>
+        </div>
+        <div class="mb-edit-actions">
+          <button type="button" class="mb-edit-save" data-editsave="${esc(b.id)}">Save</button>
+          <button type="button" class="mb-edit-cancel" data-editcancel>Cancel</button>
+          <span class="mb-edit-msg" id="mbe-msg"></span>
+        </div>
       </div>`;
+  }
+
+  async function saveEdit(id) {
+    const b = bets.find(x => String(x.id) === String(id));
+    const msgEl = document.getElementById('mbe-msg');
+    const fail = (t) => { if (msgEl) msgEl.textContent = t; };
+    if (!b) return;
+    const book = (document.getElementById('mbe-book') || {}).value || null;
+    const odds = Math.round(Number((document.getElementById('mbe-odds') || {}).value));
+    const stake = Number((document.getElementById('mbe-stake') || {}).value);
+    if (!isFinite(odds) || Math.abs(odds) < 100) return fail('Odds must be American (±100 or beyond).');
+    if (!(stake > 0)) return fail('Enter an amount.');
+    const patch = { book, odds, stake };
+    if (b.market !== 'ml' && b.market !== 'parlay') {
+      const lineEl = document.getElementById('mbe-line');
+      const line = Number(lineEl && lineEl.value);
+      if (!lineEl || lineEl.value === '' || !isFinite(line)) return fail('Enter the line on your side.');
+      patch.line = line;
+      // side_label embeds the line ("Memphis +6.5"), so it must follow it.
+      const g = gamesById[b.game_id];
+      if (g) patch.side_label = sideLabelFor(g, b.market, b.side, line);
+    }
+    try {
+      const { data, error } = await sb.from('user_bets')
+        .update(patch).eq('id', b.id).select();
+      if (error) throw error;
+      if (!data || !data.length) return fail("Couldn't save — edits are pregame only.");
+      Object.assign(b, data[0]);
+      editingId = null;
+      delete moveByBet[b.id];          // the marker is stale vs the new numbers
+      renderLedgerAndHero();
+      enrichLineMoves();
+    } catch (e) {
+      fail((e && e.message) || 'Save failed.');
+    }
   }
   function ledgerHTML() {
     if (!ledgerReady) {
@@ -865,6 +962,19 @@
   function wireLedger() {
     document.querySelectorAll('[data-del]').forEach(btn => {
       btn.addEventListener('click', () => deleteBet(btn.getAttribute('data-del')));
+    });
+    document.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-edit');
+        editingId = String(editingId) === String(id) ? null : id;
+        renderLedgerAndHero();
+      });
+    });
+    document.querySelectorAll('[data-editcancel]').forEach(btn => {
+      btn.addEventListener('click', () => { editingId = null; renderLedgerAndHero(); });
+    });
+    document.querySelectorAll('[data-editsave]').forEach(btn => {
+      btn.addEventListener('click', () => saveEdit(btn.getAttribute('data-editsave')));
     });
   }
   function wireForm() {

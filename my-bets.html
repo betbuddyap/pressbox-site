@@ -181,6 +181,19 @@
   .mb-row-stake { font-family: var(--sans); font-size: 11px; color: var(--text-light); margin-top: 2px; }
   .mb-row-del { flex: 0 0 auto; background: none; border: 0; color: var(--text-light); font-size: 14px; cursor: pointer; padding: 4px 6px; line-height: 1; }
   .mb-row-del:hover { color: var(--rust); }
+  .mb-row-editbtn { flex: 0 0 auto; background: none; border: 0; color: var(--text-light); font-size: 13px; cursor: pointer; padding: 4px 6px; line-height: 1; }
+  .mb-row-editbtn:hover { color: var(--gold); }
+  /* Inline ticket editor — pregame only; numbers and book only (the game,
+     market and side ARE the bet). */
+  .mb-edit { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin: 4px 0 12px; }
+  .mb-edit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 12px; }
+  @media (max-width: 640px) { .mb-edit-grid { grid-template-columns: repeat(2, 1fr); } }
+  .mb-edit-field { display: block; font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-mid); }
+  .mb-edit-field select, .mb-edit-field input { width: 100%; margin-top: 5px; font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--text); background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 8px 10px; }
+  .mb-edit-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .mb-edit-save { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.03em; color: var(--cream); background: var(--ink); border: 0; border-radius: 4px; padding: 8px 18px; cursor: pointer; }
+  .mb-edit-cancel { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-mid); background: none; border: 0; cursor: pointer; }
+  .mb-edit-msg { font-family: var(--sans); font-size: 12px; color: var(--rust); }
   .mb-empty { font-family: var(--sans); font-size: 13px; color: var(--text-light); padding: 26px 0; text-align: center; }
 
   /* ── AUTH / SUB WALL ── */
