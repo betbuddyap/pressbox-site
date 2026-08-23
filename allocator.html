@@ -563,6 +563,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // the most points / highest number, over wants the lowest, moneyline wants
   // the best payout; ties break on price. Returns null when no allowed book
   // posts the pick — the leg drops from the sheet, same as single-book mode.
+  // The settled tiebreak when line AND price match, by display name —
+  // mirrors backend helpers/constants.BOOK_TIEBREAK (keep in sync when the
+  // roster changes): regulated by recognizability, offshore last, so the
+  // client re-shop lands on the same book the journal would credit.
+  const BOOK_TIEBREAK = ['DraftKings', 'FanDuel', 'BetMGM', 'Caesars',
+                         'Fanatics', 'Hard Rock Bet', 'BetRivers',
+                         'theScore Bet', 'Bally Bet', 'Bovada'];
+  const bookRank = (n) => {
+    const i = BOOK_TIEBREAK.indexOf(n);
+    return i < 0 ? 99 : i;
+  };
   function bestAllowedLeg(leg) {
     const entries = (leg.other_books || []).filter(b =>
       b.book && b.book.name && !state.excluded.has(b.book.name));
@@ -579,7 +590,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const d = (a.line_raw || 0) - (b.line_raw || 0);
         if (d) return overWantsLow ? d < 0 : d > 0;
       }
-      return (amToDec(px(a)) || 0) > (amToDec(px(b)) || 0);
+      const dp = (amToDec(px(a)) || 0) - (amToDec(px(b)) || 0);
+      if (dp) return dp > 0;
+      return bookRank(a.book.name) < bookRank(b.book.name);
     };
     let best = entries[0];
     for (const e of entries.slice(1)) if (better(e, best)) best = e;
