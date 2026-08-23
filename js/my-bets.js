@@ -904,6 +904,23 @@
       fail((e && e.message) || 'Save failed.');
     }
   }
+  // Austin's standard order (2026-08-22): "nearest to kickoff first,
+  // finished games at the bottom, and then once they're all done they go
+  // back to chronological order." One key does all three:
+  //     (settled ? 1 : 0, kickoff ascending)
+  // Pregame: soonest kick on top. During the slate: LIVE tickets (earliest
+  // kickoffs, unsettled) float above upcoming, finished sink. All settled:
+  // kickoff-ascending IS chronological. Numeric epoch compare — no locale
+  // ordering traps. Missing kickoff sorts to the bottom of its half.
+  function ledgerOrder(rows) {
+    const t = (b) => {
+      const d = kickoffDate(b.kickoff);
+      return d ? d.getTime() : 8.64e15;          // no kickoff -> far future
+    };
+    return [...rows].sort((a, b) =>
+      ((a.result ? 1 : 0) - (b.result ? 1 : 0)) || (t(a) - t(b)));
+  }
+
   function ledgerToolsHTML() {
     const books = [...new Set(bets.map(b => b.book).filter(Boolean))].sort();
     return `
@@ -933,7 +950,7 @@
     visible.forEach(b => { (byWeek[b.week] = byWeek[b.week] || []).push(b); });
     const weeksDesc = Object.keys(byWeek).map(Number).sort((a, b) => b - a);
     const groups = weeksDesc.map(w => {
-      const rows = byWeek[w];
+      const rows = ledgerOrder(byWeek[w]);
       const settled = rows.filter(b => b.result);
       const net = settled.reduce((a, b) => a + (Number(b.profit) || 0), 0);
       const netTxt = settled.length ? fmtMoney(net, { signed: true }) : '';
