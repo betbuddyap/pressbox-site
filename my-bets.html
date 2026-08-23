@@ -181,6 +181,13 @@
   .mb-row-stake { font-family: var(--sans); font-size: 11px; color: var(--text-light); margin-top: 2px; }
   .mb-row-del { flex: 0 0 auto; background: none; border: 0; color: var(--text-light); font-size: 14px; cursor: pointer; padding: 4px 6px; line-height: 1; }
   .mb-row-del:hover { color: var(--rust); }
+  /* Ledger toolbar — book filter only (sort was built and cut: at ~10 rows
+     a week under week headers there is nothing for it to do that a glance
+     does not). The filter flows into the hero, so filtered-to-FanDuel the
+     P&L card IS the FanDuel P&L — the eyebrow names the book. */
+  .mb-ledger-tools { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+  .mb-ledger-tools label { display: flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-mid); }
+  .mb-ledger-tools select { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 6px 9px; }
   .mb-row-editbtn { flex: 0 0 auto; background: none; border: 0; color: var(--text-light); font-size: 13px; cursor: pointer; padding: 4px 6px; line-height: 1; }
   .mb-row-editbtn:hover { color: var(--gold); }
   /* Inline ticket editor — pregame only; numbers and book only (the game,

@@ -39,6 +39,7 @@
   let parlayLegs = [];          // pending legs while building a parlay ticket
   let importRows = null;        // allocator-sheet handoff (localStorage), or null
   let editingId = null;           // bet id with the inline editor open
+  let ledgerBook = null;          // ledger + hero filtered to one book
 
   // ── Utils ──────────────────────────────────────────────────────────
   const esc = (s) => String(s == null ? '' : s)
@@ -130,8 +131,10 @@
 
   // ── Hero (the screenshot card) ─────────────────────────────────────
   function scopeBets() {
-    if (heroScope === 'season') return bets;
-    return bets.filter(b => b.week === formWeek);
+    const base = heroScope === 'season' ? bets : bets.filter(b => b.week === formWeek);
+    // The book filter flows into the hero on purpose: filtered to FanDuel,
+    // the P&L card IS your FanDuel P&L.
+    return ledgerBook ? base.filter(b => b.book === ledgerBook) : base;
   }
   function heroHTML() {
     const rows = scopeBets();
@@ -151,7 +154,7 @@
     return `
       <div class="mb-hero">
         <div class="mb-hero-top">
-          <div class="mb-hero-eyebrow">My Bets · ${esc(scopeLabel)}</div>
+          <div class="mb-hero-eyebrow">My Bets · ${esc(scopeLabel)}${ledgerBook ? ' · ' + esc(ledgerBook) : ''}</div>
           <div class="mb-scope" role="tablist">
             <button type="button" data-scope="week" class="${heroScope === 'week' ? 'active' : ''}">Week</button>
             <button type="button" data-scope="season" class="${heroScope === 'season' ? 'active' : ''}">Season</button>
@@ -901,6 +904,19 @@
       fail((e && e.message) || 'Save failed.');
     }
   }
+  function ledgerToolsHTML() {
+    const books = [...new Set(bets.map(b => b.book).filter(Boolean))].sort();
+    return `
+      <div class="mb-ledger-tools">
+        <label>Book
+          <select id="mbLedgerBook">
+            <option value="">All books</option>
+            ${books.map(n => `<option value="${esc(n)}"${ledgerBook === n ? ' selected' : ''}>${esc(n)}</option>`).join('')}
+          </select>
+        </label>
+      </div>`;
+  }
+
   function ledgerHTML() {
     if (!ledgerReady) {
       return `<div class="mb-section"><div class="mb-empty">The ledger backend isn’t provisioned yet — check back shortly.</div></div>`;
@@ -912,8 +928,9 @@
         <div class="mb-empty">Nothing logged yet. Your first ticket starts the record.</div>
       </div>`;
     }
+    const visible = ledgerBook ? bets.filter(b => b.book === ledgerBook) : bets;
     const byWeek = {};
-    bets.forEach(b => { (byWeek[b.week] = byWeek[b.week] || []).push(b); });
+    visible.forEach(b => { (byWeek[b.week] = byWeek[b.week] || []).push(b); });
     const weeksDesc = Object.keys(byWeek).map(Number).sort((a, b) => b - a);
     const groups = weeksDesc.map(w => {
       const rows = byWeek[w];
@@ -926,10 +943,12 @@
           ${rows.map(rowHTML).join('')}
         </div>`;
     }).join('');
+    const body = groups || `<div class="mb-empty">No tickets at ${esc(ledgerBook)} yet.</div>`;
     return `<div class="mb-section">
       <div class="mb-section-eyebrow">The ledger</div>
       <h2 class="mb-section-title">Every ticket, <em>on the record</em></h2>
-      ${groups}
+      ${ledgerToolsHTML()}
+      ${body}
       ${moveNote()}
     </div>`;
   }
@@ -975,6 +994,11 @@
     });
     document.querySelectorAll('[data-editsave]').forEach(btn => {
       btn.addEventListener('click', () => saveEdit(btn.getAttribute('data-editsave')));
+    });
+    const fb = document.getElementById('mbLedgerBook');
+    if (fb) fb.addEventListener('change', () => {
+      ledgerBook = fb.value || null;
+      renderLedgerAndHero();
     });
   }
   function wireForm() {
