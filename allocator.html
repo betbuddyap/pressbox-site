@@ -556,6 +556,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       decimal_odds: dec,
       book: { name: bookName, url: (e.book && e.book.url) || null,
               note: (e.book && e.book.note) || null },
+      // The journal marker describes the JOURNAL book's line. Beside a
+      // re-priced line it would render a pair that never existed
+      // ("moved to -300" next to a -298 row) — so it doesn't travel.
+      line_move: null,
       other_books: [] };
   }
   // Best remaining book for a leg once exclusions apply. Ranks the allowed
@@ -597,7 +601,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     let best = entries[0];
     for (const e of entries.slice(1)) if (better(e, best)) best = e;
     if (leg.book && leg.book.name === best.book.name) return leg;
-    return legAtBook(leg, best.book.name);
+    const reshopped = legAtBook(leg, best.book.name);
+    if (!reshopped) return null;
+    // Rebuild the dropdown from the REMAINING allowed books. The payload's
+    // is_best/delta point at the original best — which may be the excluded
+    // book — so both are recomputed against the new best before display.
+    const overWantsLow = leg.market === 'total'
+      && String(leg.side_raw || leg.side || '').toLowerCase().startsWith('over');
+    const q = (e) => {
+      const d = (e.line_raw || 0) - (best.line_raw || 0);
+      if (leg.market === 'ml') return d;
+      return overWantsLow ? -d : d;
+    };
+    const fmtDelta = (v) => {
+      const r = Math.round(v * 10) / 10;
+      return r === 0 ? 'match' : (r > 0 ? `+${r}` : `${r}`);
+    };
+    reshopped.other_books = entries
+      .map(e => ({ ...e, is_best: q(e) === 0, delta: fmtDelta(q(e)) }))
+      .sort((a, c) => (q(c) - q(a))
+        || ((amToDec(px(c)) || 0) - (amToDec(px(a)) || 0))
+        || (bookRank(a.book.name) - bookRank(c.book.name)));
+    return reshopped;
   }
   function bookView(leg) {
     if (state.book) return legAtBook(leg, state.book);
