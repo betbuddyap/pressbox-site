@@ -1653,7 +1653,8 @@ function renderWeek(week) {
     document.getElementById('gotwMeta').textContent =
       gotw.status === 'live'  ? 'Live now' :
       gotw.status === 'final' ? 'Final' :
-      formatDate(gotw.date) + (gotw.time && gotw.time !== 'TBD' ? ' · ' + gotw.time : '');
+      formatDate(gotw.date) + (gotw.time && gotw.time !== 'TBD' ? ' · ' + gotw.time : '')
+      + (gotw.tv ? ' · ' + gotw.tv : '');
   } else {
     document.getElementById('gotwSection').style.display = 'none';
   }
@@ -1872,7 +1873,8 @@ function renderSlateCard(g) {
 
   // ── Status strip for non-live states ──────────────────────────
   let statusHTML = '';
-  const timeText = g.time && g.time !== 'TBD' ? g.time : 'Kickoff TBD';
+  const timeText = (g.time && g.time !== 'TBD' ? g.time : 'Kickoff TBD')
+    + (g.tv ? ' · ' + g.tv : '');
   if (status === 'final') {
     const awayShort = g.away_team.substring(0,4).toUpperCase();
     const homeShort = g.home_team.substring(0,4).toUpperCase();
@@ -2198,7 +2200,8 @@ function renderGotW(g) {
   const awayColor = colorFor(g.away_team);
   const homeRank = powerRankings[g.home_team];
   const awayRank = powerRankings[g.away_team];
-  const time = g.time && g.time !== 'TBD' ? formatDate(g.date) + ' · ' + g.time : formatDate(g.date);
+  const time = (g.time && g.time !== 'TBD' ? formatDate(g.date) + ' · ' + g.time : formatDate(g.date))
+    + (g.tv ? ' · ' + g.tv : '');
 
   // Lifecycle-aware meta: the featured hero must never advertise a future
   // kickoff while the same game is LIVE or final in the slate below it.
