@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Fixed-width share graphic — desktop screenshot target, not a responsive page. -->
+<meta name="viewport" content="width=1160">
+<title>Week 0 Picks — PressBox Analytics</title>
+<meta name="description" content="The PressBox graded board as a shareable card.">
+<meta name="robots" content="noindex">
+
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<meta name="theme-color" content="#0F0E0A">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tokens FIRST, components AFTER -->
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/components/live-lines.css">
+
+<style>
+  /* ── Share-card page. No site chrome on purpose: the card IS the
+     deliverable and a screenshot should contain nothing else. ── */
+  body {
+    background: var(--cream-dark);
+    font-family: var(--sans);
+    color: var(--ink);
+    margin: 0;
+    padding: var(--space-8) 0 var(--space-16);
+  }
+
+  .wz-hint {
+    width: 1080px;
+    margin: 0 auto var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--text-light);
+  }
+  .wz-hint a { color: var(--gold-deep); }
+
+  /* ── The card ── */
+  .wz-card {
+    width: 1080px;
+    margin: 0 auto;
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .wz-inner { padding: var(--space-10) var(--space-10) var(--space-8); }
+
+  /* Header */
+  .wz-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+  .wz-logo img { height: 84px; width: auto; display: block; }
+  .wz-head-meta { text-align: right; padding-top: var(--space-2); }
+  .wz-eyebrow {
+    font-size: var(--text-eyebrow);
+    font-weight: var(--weight-semi);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+  }
+  .wz-date {
+    margin-top: var(--space-1);
+    font-size: var(--text-base);
+    color: var(--text-light);
+  }
+
+  .wz-title {
+    font-family: var(--serif);
+    font-weight: var(--weight-bold);
+    font-size: 64px;
+    line-height: 1.05;
+    margin: var(--space-6) 0 var(--space-2);
+  }
+  .wz-sub {
+    font-size: var(--text-md);
+    color: var(--text-mid);
+    margin-bottom: var(--space-6);
+  }
+  .wz-sub strong {
+    font-family: var(--serif);
+    font-weight: var(--weight-bold);
+    color: var(--ink);
+  }
+  .wz-rule {
+    height: 3px;
+    background: var(--gold);
+    border: none;
+    margin: 0 0 var(--space-6);
+  }
+
+  /* Picks — canonical .ll-row shells, static (no chevron, no hover affordance) */
+  .wz-grid { display: block; }
+  .wz-grid--two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 var(--space-4);
+    align-items: start;
+  }
+  .wz-grid .ll-row-header { cursor: default; }
+
+  .wz-row-meta {
+    margin-left: auto;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .wz-market {
+    display: inline-block;
+    font-size: var(--text-eyebrow);
+    font-weight: var(--weight-semi);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    background: var(--cream);
+  }
+  .wz-kick {
+    margin-top: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--text-light);
+  }
+
+  /* Message states (signed-out / empty) share the row surface */
+  .wz-note {
+    background: #FFFFFF;
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: var(--space-8);
+    text-align: center;
+    color: var(--text-mid);
+    font-size: var(--text-md);
+  }
+  .wz-note a { color: var(--gold-deep); font-weight: var(--weight-semi); }
+
+  /* Demo watermark — must be unmistakable in any screenshot of fixture data */
+  .wz-demo {
+    display: inline-block;
+    margin-left: var(--space-3);
+    font-size: var(--text-eyebrow);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    border: 1px dashed var(--text-light);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    vertical-align: middle;
+  }
+
+  /* Ink footer band — the ticket stub */
+  .wz-foot {
+    background: var(--ink);
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5) var(--space-10);
+  }
+  .wz-foot-brand {
+    font-size: var(--text-eyebrow);
+    font-weight: var(--weight-semi);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--cream);
+  }
+  .wz-foot-note {
+    font-size: var(--text-sm);
+    color: var(--text-light);
+  }
+  .wz-foot-url {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semi);
+    color: var(--gold-light);
+  }
+</style>
+</head>
+<body>
+
+<div class="wz-hint">
+  Screenshot the card below. <a href="/week0.html?week=1">?week=N</a> switches weeks ·
+  <a href="/week0.html?demo=1">?demo=1</a> shows sample layout.
+</div>
+
+<div class="wz-card">
+  <div class="wz-inner">
+    <div class="wz-head">
+      <div class="wz-logo"><img src="/pressbox-w2a-ink-cropped.png" alt="PressBox Analytics"></div>
+      <div class="wz-head-meta">
+        <div class="wz-eyebrow">College Football · 2026<span id="wz-demo-chip"></span></div>
+        <div class="wz-date" id="wz-date"></div>
+      </div>
+    </div>
+    <h1 class="wz-title" id="wz-title">Week Zero</h1>
+    <p class="wz-sub" id="wz-sub"><span class="ll-skeleton ll-skeleton--meta"></span></p>
+    <hr class="wz-rule">
+    <div class="wz-grid" id="wz-picks"></div>
+  </div>
+  <div class="wz-foot">
+    <div class="wz-foot-brand">PressBox Analytics</div>
+    <div class="wz-foot-note">Lines move — every number shown as released.</div>
+    <div class="wz-foot-url">pressboxanalytics.com</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var API_BASE = 'https://betbuddy-backend.onrender.com';
+  var SEASON = 2026;
+
+  var params = new URLSearchParams(location.search);
+  var WEEK = parseInt(params.get('week') || '0', 10);
+  if (isNaN(WEEK)) WEEK = 0;
+  var DEMO = parseInt(params.get('demo') || '0', 10) || 0;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // Same tier ranking Live Lines uses to order a time bucket.
+  var TIER_SORT = { 'A+': 8, 'A': 7, 'B': 5, 'C': 4, 'ml_pickem': 8 };
+
+  var BADGE = {
+    'A+':        { label: 'A+', key: 'aplus' },
+    'A':         { label: 'A',  key: 'A' },
+    'B':         { label: 'B',  key: 'B' },
+    'C':         { label: 'C',  key: 'C' },
+    'ml_pickem': { label: 'ML', key: 'aplus' }
+  };
+
+  var MARKET_LABEL = { spread: 'Spread', total: 'Total', ml: 'Moneyline' };
+
+  // ── Session token, straight from localStorage (the live-lines pattern:
+  // synchronous, no SDK, no network — getSession can stall 30s+). ──
+  function tokenFromStorage() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('sb-') === 0 && k.slice(-11) === '-auth-token') {
+          var v = JSON.parse(localStorage.getItem(k) || 'null');
+          var tok = v && (v.access_token
+                      || (v.currentSession && v.currentSession.access_token)
+                      || (Array.isArray(v) && v[0]));
+          if (tok) return tok;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function kickoffParts(iso) {
+    if (!iso) return null;
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    var day = d.toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/New_York'
+    });
+    var dayShort = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
+    var time = d.toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: 'America/New_York'
+    }).replace(' EDT', ' ET').replace(' EST', ' ET');
+    var dateKey = d.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+    return { day: day, dayShort: dayShort, time: time, dateKey: dateKey };
+  }
+
+  function weekTitle(w) { return w === 0 ? 'Week Zero' : 'Week ' + w; }
+
+  // ── Row renderers — the pick line mirrors renderPickLine on Live Lines ──
+  function renderBadge(tier, bolt) {
+    var m = BADGE[tier];
+    if (!m) return '';
+    var boltKey = { aplus: 'aplus', A: 'A', B: 'B', C: 'C' }[m.key];
+    var boltHtml = (bolt && boltKey)
+      ? '<span class="ll-bolt ll-bolt--' + boltKey + '" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>'
+      : '';
+    return '<span class="ll-badge ll-badge--' + m.key + '">' + m.label + boltHtml + '</span>';
+  }
+
+  function pickLine(p) {
+    var bookName = esc((p.book && p.book.name) || '');
+    var tied = Number(p.tied_books_count || 0);
+    var bookText = bookName;
+    if (tied === 1) bookText = bookName + ' + 1 other';
+    else if (tied > 1) bookText = bookName + ' + ' + tied + ' others';
+    if (p.market === 'ml') {
+      return esc(p.side) + ' ML <span class="ll-row-pick-num">' + esc(p.line) + '</span> · ' + bookText;
+    }
+    var px = p.price
+      ? ' <span class="ll-row-pick-px">(' + esc(p.price) + ')</span>' : '';
+    return esc(p.side) + ' <span class="ll-row-pick-num">' + esc(p.line) + '</span>' + px + ' · ' + bookText;
+  }
+
+  function renderRow(p, oneDay) {
+    var kk = kickoffParts(p.kickoff);
+    var kickText = kk ? (oneDay ? kk.time : kk.dayShort + ' · ' + kk.time) : '';
+    return '' +
+      '<article class="ll-row">' +
+        '<div class="ll-row-header">' +
+          renderBadge(p.tier, p.bolt) +
+          '<div class="ll-row-content">' +
+            '<div class="ll-row-matchup">' + esc(p.matchup || '—') + '</div>' +
+            '<div class="ll-row-pick">' + pickLine(p) + '</div>' +
+          '</div>' +
+          '<div class="wz-row-meta">' +
+            '<span class="wz-market">' + esc(MARKET_LABEL[p.market] || p.market) + '</span>' +
+            (kickText ? '<div class="wz-kick">' + esc(kickText) + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+      '</article>';
+  }
+
+  function skeleton() {
+    var row = '<div class="ll-row-skeleton">' +
+      '<span class="ll-skeleton ll-skeleton--badge"></span>' +
+      '<div style="flex:1"><span class="ll-skeleton ll-skeleton--line-a"></span>' +
+      '<span class="ll-skeleton ll-skeleton--line-b"></span></div></div>';
+    return row + row + row + row + row + row;
+  }
+
+  function setSub(html) { document.getElementById('wz-sub').innerHTML = html; }
+  function setPicks(html) { document.getElementById('wz-picks').innerHTML = html; }
+
+  function render(picks) {
+    document.getElementById('wz-title').textContent = weekTitle(WEEK);
+    document.title = 'Week ' + WEEK + ' Picks — PressBox Analytics';
+
+    var graded = picks.filter(function (p) {
+      return p.week === WEEK && p.side && p.side !== '?' && BADGE[p.tier];
+    });
+    graded.sort(function (a, b) {
+      var t = (TIER_SORT[b.tier] || 0) - (TIER_SORT[a.tier] || 0);
+      if (t) return t;
+      var k = String(a.kickoff || '').localeCompare(String(b.kickoff || ''));
+      if (k) return k;
+      return String(a.matchup || '').localeCompare(String(b.matchup || ''));
+    });
+
+    if (!graded.length) {
+      setSub('No graded picks on the board yet.');
+      setPicks('<div class="wz-note">The Week ' + WEEK + ' board hasn’t released yet — check ' +
+               '<a href="/live-lines.html">Live Lines</a>.</div>');
+      return;
+    }
+
+    // One game day (the usual Week 0 shape) → the date lives in the header
+    // and rows carry time only. Multi-day weeks put "Sat · 7:30 PM ET" per row.
+    var dateKeys = {};
+    var dayNames = {};
+    graded.forEach(function (p) {
+      var kk = kickoffParts(p.kickoff);
+      if (kk) { dateKeys[kk.dateKey] = true; dayNames[kk.dateKey] = kk.day; }
+    });
+    var keys = Object.keys(dateKeys);
+    var oneDay = keys.length === 1;
+    document.getElementById('wz-date').textContent = oneDay ? dayNames[keys[0]] : '';
+
+    var counts = {};
+    graded.forEach(function (p) {
+      var label = p.tier === 'ml_pickem' ? 'A+' : p.tier;
+      counts[label] = (counts[label] || 0) + 1;
+    });
+    var countText = ['A+', 'A', 'B', 'C'].filter(function (t) { return counts[t]; })
+      .map(function (t) { return counts[t] + ' ' + t; }).join(' · ');
+    setSub('<strong>' + graded.length + '</strong> graded pick' +
+           (graded.length === 1 ? '' : 's') + ' on the board' +
+           (countText ? ' — ' + countText : ''));
+
+    var grid = document.getElementById('wz-picks');
+    grid.className = 'wz-grid' + (graded.length > 10 ? ' wz-grid--two' : '');
+    setPicks(graded.map(function (p) { return renderRow(p, oneDay); }).join(''));
+  }
+
+  // ── Demo fixtures — fictional numbers for layout checks only ──
+  function demoPicks(n) {
+    var base = [
+      { week: WEEK, tier: 'A+', bolt: true,  market: 'spread', matchup: 'Kansas State vs Iowa State', side: 'Kansas State', line: '-2.5', price: '-105', book: { name: 'DraftKings' }, tied_books_count: 2, kickoff: '2026-08-29T16:00:00Z' },
+      { week: WEEK, tier: 'ml_pickem', bolt: false, market: 'ml', matchup: 'Navy vs VMI', side: 'Navy', line: '-112', book: { name: 'Hard Rock Bet' }, tied_books_count: 0, kickoff: '2026-08-29T19:30:00Z' },
+      { week: WEEK, tier: 'A',  bolt: false, market: 'total',  matchup: 'Sam Houston vs Western Kentucky', side: 'Under', line: '48.5', price: '-110', book: { name: 'FanDuel' }, tied_books_count: 1, kickoff: '2026-08-29T23:00:00Z' },
+      { week: WEEK, tier: 'A',  bolt: true,  market: 'ml',     matchup: 'Stanford vs Hawaiʻi', side: 'Stanford', line: '-146', book: { name: 'BetMGM' }, tied_books_count: 0, kickoff: '2026-08-30T03:00:00Z' },
+      { week: WEEK, tier: 'B',  bolt: false, market: 'spread', matchup: 'Fresno State vs Kansas', side: 'Fresno State', line: '+7', price: '-108', book: { name: 'Caesars' }, tied_books_count: 0, kickoff: '2026-08-30T00:30:00Z' },
+      { week: WEEK, tier: 'B',  bolt: false, market: 'total',  matchup: 'FIU vs Bethune-Cookman', side: 'Over', line: '61.5', price: '-112', book: { name: 'Bovada' }, tied_books_count: 3, kickoff: '2026-08-29T20:00:00Z' },
+      { week: WEEK, tier: 'C',  bolt: false, market: 'spread', matchup: 'UTEP vs Utah State', side: 'UTEP', line: '+10.5', price: '-110', book: { name: 'ESPN BET' }, tied_books_count: 0, kickoff: '2026-08-30T02:00:00Z' },
+      { week: WEEK, tier: 'C',  bolt: false, market: 'ml',     matchup: 'Idaho State vs UNLV', side: 'Idaho State', line: '+138', book: { name: 'BetRivers' }, tied_books_count: 0, kickoff: '2026-08-29T02:00:00Z' }
+    ];
+    var out = [];
+    for (var i = 0; i < n; i++) out = out.concat(base);
+    return out;
+  }
+
+  function boot() {
+    setPicks(skeleton());
+
+    if (DEMO) {
+      document.getElementById('wz-demo-chip').innerHTML =
+        '<span class="wz-demo">Sample layout — not picks</span>';
+      render(demoPicks(DEMO));
+      return;
+    }
+
+    var token = tokenFromStorage();
+    var headers = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    fetch(API_BASE + '/canonical/live-lines/feed?season=' + SEASON,
+          { credentials: 'omit', headers: headers })
+      .then(function (res) {
+        if (res.status === 401 || res.status === 402) throw new Error('auth');
+        if (!res.ok) throw new Error('feed HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (payload) {
+        if (payload.error) throw new Error(payload.error);
+        render(payload.picks || []);
+      })
+      .catch(function (e) {
+        var authy = String(e && e.message) === 'auth' || !token;
+        setSub(authy ? 'Sign in to load the board.' : 'The board didn’t load.');
+        setPicks('<div class="wz-note">' +
+          (authy
+            ? 'This card renders your live board. <a href="/live-lines.html">Sign in on Live Lines</a>, then reload this page.'
+            : 'Feed error: ' + esc(e && e.message) + ' — reload to retry.') +
+          '</div>');
+      });
+  }
+
+  boot();
+})();
+</script>
+
+</body>
+</html>

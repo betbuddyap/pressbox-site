@@ -4,7 +4,8 @@
     {
       "name": "static",
       "runtimeExecutable": "py",
-      "runtimeArgs": ["-m", "http.server", "8011"],
+      "runtimeArgs": ["-c", "import http.server, os; http.server.test(HandlerClass=http.server.SimpleHTTPRequestHandler, port=int(os.environ.get('PORT', '8011')))"],
+      "autoPort": true,
       "port": 8011
     }
   ]
