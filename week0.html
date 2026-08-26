@@ -19,17 +19,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- Tokens FIRST, components AFTER -->
 <link rel="stylesheet" href="/css/tokens.css">
-<link rel="stylesheet" href="/css/components/live-lines.css">
 
 <style>
-  /* ── Share-card page. No site chrome on purpose: the card IS the
-     deliverable and a screenshot should contain nothing else. ── */
+  /* ── Social share card, the site's DARK language: ink card, cream type,
+     gold accents, serif display numbers. 1080px wide, ~4:5 for the feed.
+     The card IS the deliverable — no site chrome. ── */
   body {
     background: var(--cream-dark);
     font-family: var(--sans);
-    color: var(--ink);
     margin: 0;
     padding: var(--space-8) 0 var(--space-16);
   }
@@ -42,147 +40,189 @@
   }
   .wz-hint a { color: var(--gold-deep); }
 
-  /* ── The card ── */
   .wz-card {
     width: 1080px;
+    min-height: 1350px;
     margin: 0 auto;
-    background: var(--cream);
-    border: 2px solid var(--ink);
-    border-radius: var(--radius-lg);
+    background: var(--ink);
+    color: var(--cream);
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
   }
-  .wz-inner { padding: var(--space-10) var(--space-10) var(--space-8); }
 
-  /* Header */
+  /* ── Header ── */
   .wz-head {
+    padding: 56px 72px 0;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: var(--space-6);
   }
-  .wz-logo img { height: 84px; width: auto; display: block; }
-  .wz-head-meta { text-align: right; padding-top: var(--space-2); }
-  .wz-eyebrow {
-    font-size: var(--text-eyebrow);
+  .wz-logo img { height: 64px; width: auto; display: block; }
+  .wz-head-right {
+    text-align: right;
+    font-size: 15px;
     font-weight: var(--weight-semi);
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--text-mid);
-  }
-  .wz-date {
-    margin-top: var(--space-1);
-    font-size: var(--text-base);
     color: var(--text-light);
   }
-
+  .wz-title-block { padding: 40px 72px 8px; }
+  .wz-eyebrow {
+    font-size: 17px;
+    font-weight: var(--weight-semi);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 6px;
+  }
   .wz-title {
     font-family: var(--serif);
     font-weight: var(--weight-bold);
-    font-size: 64px;
-    line-height: 1.05;
-    margin: var(--space-6) 0 var(--space-2);
+    font-size: 96px;
+    line-height: 1.0;
+    color: var(--cream);
+    margin: 0;
   }
   .wz-sub {
-    font-size: var(--text-md);
-    color: var(--text-mid);
-    margin-bottom: var(--space-6);
+    margin-top: 14px;
+    font-size: 19px;
+    color: var(--text-light);
   }
-  .wz-sub strong {
-    font-family: var(--serif);
-    font-weight: var(--weight-bold);
-    color: var(--ink);
-  }
+  .wz-sub strong { color: var(--cream); font-weight: var(--weight-semi); }
   .wz-rule {
     height: 3px;
     background: var(--gold);
     border: none;
-    margin: 0 0 var(--space-6);
+    margin: 34px 72px 0;
   }
 
-  /* Picks — canonical .ll-row shells, static (no chevron, no hover affordance) */
-  .wz-grid { display: block; }
-  .wz-grid--two {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0 var(--space-4);
-    align-items: start;
+  /* ── Picks ── */
+  .wz-picks {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 8px 72px;
   }
-  .wz-grid .ll-row-header { cursor: default; }
+  .wz-row {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding: 26px 0;
+  }
+  .wz-row + .wz-row { border-top: 1px solid rgba(248, 245, 238, 0.14); }
 
-  .wz-row-meta {
-    margin-left: auto;
+  .wz-badge {
+    flex-shrink: 0;
+    width: 64px;
+    height: 58px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: var(--weight-bold);
+    border-radius: var(--radius-md);
+    border: 2px solid transparent;
+  }
+  .wz-badge--aplus { background: transparent; color: var(--gold-light); border-color: var(--gold); }
+  .wz-badge--A     { background: var(--gold);   color: var(--ink); }
+  .wz-badge--B     { background: var(--silver); color: var(--ink); }
+  .wz-badge--C     { background: var(--bronze); color: var(--cream); }
+
+  .wz-row-main { flex: 1; min-width: 0; }
+  .wz-matchup {
+    font-size: 17px;
+    font-weight: var(--weight-semi);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  .wz-pick {
+    font-family: var(--serif);
+    font-weight: var(--weight-bold);
+    font-size: 40px;
+    line-height: 1.05;
+    color: var(--cream);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .wz-pick .wz-num { color: var(--gold-light); }
+  .wz-meta {
+    margin-top: 8px;
+    font-size: 17px;
+    color: var(--text-light);
+  }
+  .wz-meta b { color: var(--cream); font-weight: var(--weight-semi); }
+
+  .wz-row-side {
     text-align: right;
     flex-shrink: 0;
   }
   .wz-market {
     display: inline-block;
-    font-size: var(--text-eyebrow);
+    font-size: 14px;
     font-weight: var(--weight-semi);
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--text-mid);
-    border: 1px solid var(--border);
+    color: var(--cream);
+    border: 1px solid rgba(248, 245, 238, 0.35);
     border-radius: var(--radius-sm);
-    padding: 2px 8px;
-    background: var(--cream);
+    padding: 5px 12px;
   }
   .wz-kick {
-    margin-top: var(--space-1);
-    font-size: var(--text-sm);
+    margin-top: 10px;
+    font-size: 15px;
     color: var(--text-light);
   }
 
-  /* Message states (signed-out / empty) share the row surface */
+  /* Message states */
   .wz-note {
-    background: #FFFFFF;
-    border: 0.5px solid var(--border);
-    border-radius: 12px;
-    padding: var(--space-8);
+    margin: 60px 72px;
+    padding: 48px;
+    border: 1px solid rgba(248, 245, 238, 0.2);
+    border-radius: var(--radius-md);
     text-align: center;
-    color: var(--text-mid);
-    font-size: var(--text-md);
+    font-size: 20px;
+    color: var(--text-light);
   }
-  .wz-note a { color: var(--gold-deep); font-weight: var(--weight-semi); }
+  .wz-note a { color: var(--gold-light); font-weight: var(--weight-semi); }
 
-  /* Demo watermark — must be unmistakable in any screenshot of fixture data */
   .wz-demo {
     display: inline-block;
-    margin-left: var(--space-3);
-    font-size: var(--text-eyebrow);
+    margin-left: 14px;
+    font-size: 13px;
     font-weight: var(--weight-bold);
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: var(--text-light);
-    border: 1px dashed var(--text-light);
+    color: var(--ink);
+    background: var(--gold-light);
     border-radius: var(--radius-sm);
-    padding: 2px 8px;
+    padding: 3px 10px;
     vertical-align: middle;
   }
 
-  /* Ink footer band — the ticket stub */
+  /* ── Footer ── */
   .wz-foot {
-    background: var(--ink);
-    color: var(--cream);
+    padding: 30px 72px 44px;
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
-    padding: var(--space-5) var(--space-10);
-  }
-  .wz-foot-brand {
-    font-size: var(--text-eyebrow);
-    font-weight: var(--weight-semi);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: var(--cream);
-  }
-  .wz-foot-note {
-    font-size: var(--text-sm);
-    color: var(--text-light);
+    border-top: 1px solid rgba(248, 245, 238, 0.14);
   }
   .wz-foot-url {
-    font-size: var(--text-base);
-    font-weight: var(--weight-semi);
+    font-family: var(--serif);
+    font-weight: var(--weight-bold);
+    font-size: 24px;
     color: var(--gold-light);
+  }
+  .wz-foot-note {
+    font-size: 15px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-light);
   }
 </style>
 </head>
@@ -194,23 +234,20 @@
 </div>
 
 <div class="wz-card">
-  <div class="wz-inner">
-    <div class="wz-head">
-      <div class="wz-logo"><img src="/pressbox-w2a-ink-cropped.png" alt="PressBox Analytics"></div>
-      <div class="wz-head-meta">
-        <div class="wz-eyebrow">College Football · 2026<span id="wz-demo-chip"></span></div>
-        <div class="wz-date" id="wz-date"></div>
-      </div>
-    </div>
-    <h1 class="wz-title" id="wz-title">Week Zero</h1>
-    <p class="wz-sub" id="wz-sub"><span class="ll-skeleton ll-skeleton--meta"></span></p>
-    <hr class="wz-rule">
-    <div class="wz-grid" id="wz-picks"></div>
+  <div class="wz-head">
+    <div class="wz-logo"><img src="/pressbox-w2a-cream-cropped.png" alt="PressBox Analytics"></div>
+    <div class="wz-head-right">College Football · 2026<span id="wz-demo-chip"></span></div>
   </div>
+  <div class="wz-title-block">
+    <div class="wz-eyebrow" id="wz-date">The Graded Board</div>
+    <h1 class="wz-title" id="wz-title">Week 0</h1>
+    <p class="wz-sub" id="wz-sub">&nbsp;</p>
+  </div>
+  <hr class="wz-rule">
+  <div class="wz-picks" id="wz-picks"></div>
   <div class="wz-foot">
-    <div class="wz-foot-brand">PressBox Analytics</div>
-    <div class="wz-foot-note">Lines move — every number shown as released.</div>
     <div class="wz-foot-url">pressboxanalytics.com</div>
+    <div class="wz-foot-note">Board as of post time · lines move</div>
   </div>
 </div>
 
@@ -232,9 +269,7 @@
     });
   }
 
-  // Same tier ranking Live Lines uses to order a time bucket.
-  var TIER_SORT = { 'A+': 8, 'A': 7, 'B': 5, 'C': 4, 'ml_pickem': 8 };
-
+  var TIER_SORT = { 'A+': 8, 'ml_pickem': 8, 'A': 7, 'B': 5, 'C': 4 };
   var BADGE = {
     'A+':        { label: 'A+', key: 'aplus' },
     'A':         { label: 'A',  key: 'A' },
@@ -242,11 +277,9 @@
     'C':         { label: 'C',  key: 'C' },
     'ml_pickem': { label: 'ML', key: 'aplus' }
   };
-
   var MARKET_LABEL = { spread: 'Spread', total: 'Total', ml: 'Moneyline' };
 
-  // ── Session token, straight from localStorage (the live-lines pattern:
-  // synchronous, no SDK, no network — getSession can stall 30s+). ──
+  // Session token straight from localStorage (the live-lines pattern).
   function tokenFromStorage() {
     try {
       for (var i = 0; i < localStorage.length; i++) {
@@ -267,77 +300,53 @@
     if (!iso) return null;
     var d = new Date(iso);
     if (isNaN(d.getTime())) return null;
-    var day = d.toLocaleDateString('en-US', {
-      weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/New_York'
-    });
-    var dayShort = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
-    var time = d.toLocaleTimeString('en-US', {
-      hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: 'America/New_York'
-    }).replace(' EDT', ' ET').replace(' EST', ' ET');
-    var dateKey = d.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
-    return { day: day, dayShort: dayShort, time: time, dateKey: dateKey };
+    return {
+      day: d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/New_York' }),
+      dayShort: d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/New_York' }),
+      time: d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short', timeZone: 'America/New_York' })
+        .replace(' EDT', ' ET').replace(' EST', ' ET'),
+      dateKey: d.toLocaleDateString('en-US', { timeZone: 'America/New_York' })
+    };
   }
 
-  function weekTitle(w) { return w === 0 ? 'Week Zero' : 'Week ' + w; }
-
-  // ── Row renderers — the pick line mirrors renderPickLine on Live Lines ──
-  function renderBadge(tier, bolt) {
-    var m = BADGE[tier];
-    if (!m) return '';
-    var boltKey = { aplus: 'aplus', A: 'A', B: 'B', C: 'C' }[m.key];
-    var boltHtml = (bolt && boltKey)
-      ? '<span class="ll-bolt ll-bolt--' + boltKey + '" aria-hidden="true">' +
-        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>'
-      : '';
-    return '<span class="ll-badge ll-badge--' + m.key + '">' + m.label + boltHtml + '</span>';
-  }
-
-  function pickLine(p) {
-    var bookName = esc((p.book && p.book.name) || '');
-    var tied = Number(p.tied_books_count || 0);
-    var bookText = bookName;
-    if (tied === 1) bookText = bookName + ' + 1 other';
-    else if (tied > 1) bookText = bookName + ' + ' + tied + ' others';
+  function pickText(p) {
+    // The bet is the hero: "San José State +38.5" / "Under 48.5" / "Navy ML −112".
+    var line = esc(p.line);
     if (p.market === 'ml') {
-      return esc(p.side) + ' ML <span class="ll-row-pick-num">' + esc(p.line) + '</span> · ' + bookText;
+      return esc(p.side) + ' ML <span class="wz-num">' + line + '</span>';
     }
-    var px = p.price
-      ? ' <span class="ll-row-pick-px">(' + esc(p.price) + ')</span>' : '';
-    return esc(p.side) + ' <span class="ll-row-pick-num">' + esc(p.line) + '</span>' + px + ' · ' + bookText;
+    return esc(p.side) + ' <span class="wz-num">' + line + '</span>';
   }
 
   function renderRow(p, oneDay) {
+    var m = BADGE[p.tier];
     var kk = kickoffParts(p.kickoff);
-    var kickText = kk ? (oneDay ? kk.time : kk.dayShort + ' · ' + kk.time) : '';
+    var kick = kk ? (oneDay ? kk.time : kk.dayShort + ' · ' + kk.time) : '';
+    var bookName = esc((p.book && p.book.name) || '');
+    var px = (p.market !== 'ml' && p.price) ? esc(p.price) + ' at ' : '';
+    var meta = (px || bookName)
+      ? '<div class="wz-meta">' + (p.market !== 'ml' && p.price ? '<b>' + esc(p.price) + '</b> at ' : '') + bookName + '</div>'
+      : '';
     return '' +
-      '<article class="ll-row">' +
-        '<div class="ll-row-header">' +
-          renderBadge(p.tier, p.bolt) +
-          '<div class="ll-row-content">' +
-            '<div class="ll-row-matchup">' + esc(p.matchup || '—') + '</div>' +
-            '<div class="ll-row-pick">' + pickLine(p) + '</div>' +
-          '</div>' +
-          '<div class="wz-row-meta">' +
-            '<span class="wz-market">' + esc(MARKET_LABEL[p.market] || p.market) + '</span>' +
-            (kickText ? '<div class="wz-kick">' + esc(kickText) + '</div>' : '') +
-          '</div>' +
+      '<div class="wz-row">' +
+        '<span class="wz-badge wz-badge--' + m.key + '">' + m.label + '</span>' +
+        '<div class="wz-row-main">' +
+          '<div class="wz-matchup">' + esc(p.matchup || '') + '</div>' +
+          '<div class="wz-pick">' + pickText(p) + '</div>' +
+          meta +
         '</div>' +
-      '</article>';
+        '<div class="wz-row-side">' +
+          '<span class="wz-market">' + esc(MARKET_LABEL[p.market] || p.market) + '</span>' +
+          (kick ? '<div class="wz-kick">' + esc(kick) + '</div>' : '') +
+        '</div>' +
+      '</div>';
   }
 
-  function skeleton() {
-    var row = '<div class="ll-row-skeleton">' +
-      '<span class="ll-skeleton ll-skeleton--badge"></span>' +
-      '<div style="flex:1"><span class="ll-skeleton ll-skeleton--line-a"></span>' +
-      '<span class="ll-skeleton ll-skeleton--line-b"></span></div></div>';
-    return row + row + row + row + row + row;
-  }
-
-  function setSub(html) { document.getElementById('wz-sub').innerHTML = html; }
-  function setPicks(html) { document.getElementById('wz-picks').innerHTML = html; }
+  function setSub(t) { document.getElementById('wz-sub').innerHTML = t; }
+  function setPicks(h) { document.getElementById('wz-picks').innerHTML = h; }
 
   function render(picks) {
-    document.getElementById('wz-title').textContent = weekTitle(WEEK);
+    document.getElementById('wz-title').textContent = 'Week ' + WEEK;
     document.title = 'Week ' + WEEK + ' Picks — PressBox Analytics';
 
     var graded = picks.filter(function (p) {
@@ -353,22 +362,20 @@
 
     if (!graded.length) {
       setSub('No graded picks on the board yet.');
-      setPicks('<div class="wz-note">The Week ' + WEEK + ' board hasn’t released yet — check ' +
-               '<a href="/live-lines.html">Live Lines</a>.</div>');
+      setPicks('<div class="wz-note">The Week ' + WEEK + ' board hasn’t released — ' +
+               '<a href="/live-lines.html">Live Lines</a> has the latest.</div>');
       return;
     }
 
-    // One game day (the usual Week 0 shape) → the date lives in the header
-    // and rows carry time only. Multi-day weeks put "Sat · 7:30 PM ET" per row.
-    var dateKeys = {};
-    var dayNames = {};
+    var dateKeys = {}, dayNames = {};
     graded.forEach(function (p) {
       var kk = kickoffParts(p.kickoff);
       if (kk) { dateKeys[kk.dateKey] = true; dayNames[kk.dateKey] = kk.day; }
     });
     var keys = Object.keys(dateKeys);
     var oneDay = keys.length === 1;
-    document.getElementById('wz-date').textContent = oneDay ? dayNames[keys[0]] : '';
+    document.getElementById('wz-date').textContent =
+      oneDay ? dayNames[keys[0]] : 'The Graded Board';
 
     var counts = {};
     graded.forEach(function (p) {
@@ -378,45 +385,41 @@
     var countText = ['A+', 'A', 'B', 'C'].filter(function (t) { return counts[t]; })
       .map(function (t) { return counts[t] + ' ' + t; }).join(' · ');
     setSub('<strong>' + graded.length + '</strong> graded pick' +
-           (graded.length === 1 ? '' : 's') + ' on the board' +
-           (countText ? ' — ' + countText : ''));
+           (graded.length === 1 ? '' : 's') + (countText ? ' — ' + countText : ''));
 
-    var grid = document.getElementById('wz-picks');
-    grid.className = 'wz-grid' + (graded.length > 10 ? ' wz-grid--two' : '');
-    setPicks(graded.map(function (p) { return renderRow(p, oneDay); }).join(''));
+    // The card is designed for up to ~7 rows; past that, keep the best.
+    var MAXROWS = 7;
+    var shown = graded.slice(0, MAXROWS);
+    var extra = graded.length - shown.length;
+    var html = shown.map(function (p) { return renderRow(p, oneDay); }).join('');
+    if (extra > 0) {
+      html += '<div class="wz-meta" style="text-align:center;padding:10px 0 4px;">+ ' +
+              extra + ' more on the board</div>';
+    }
+    setPicks(html);
   }
 
   // ── Demo fixtures — fictional numbers for layout checks only ──
-  function demoPicks(n) {
-    var base = [
-      { week: WEEK, tier: 'A+', bolt: true,  market: 'spread', matchup: 'Kansas State vs Iowa State', side: 'Kansas State', line: '-2.5', price: '-105', book: { name: 'DraftKings' }, tied_books_count: 2, kickoff: '2026-08-29T16:00:00Z' },
-      { week: WEEK, tier: 'ml_pickem', bolt: false, market: 'ml', matchup: 'Navy vs VMI', side: 'Navy', line: '-112', book: { name: 'Hard Rock Bet' }, tied_books_count: 0, kickoff: '2026-08-29T19:30:00Z' },
-      { week: WEEK, tier: 'A',  bolt: false, market: 'total',  matchup: 'Sam Houston vs Western Kentucky', side: 'Under', line: '48.5', price: '-110', book: { name: 'FanDuel' }, tied_books_count: 1, kickoff: '2026-08-29T23:00:00Z' },
-      { week: WEEK, tier: 'A',  bolt: true,  market: 'ml',     matchup: 'Stanford vs Hawaiʻi', side: 'Stanford', line: '-146', book: { name: 'BetMGM' }, tied_books_count: 0, kickoff: '2026-08-30T03:00:00Z' },
-      { week: WEEK, tier: 'B',  bolt: false, market: 'spread', matchup: 'Fresno State vs Kansas', side: 'Fresno State', line: '+7', price: '-108', book: { name: 'Caesars' }, tied_books_count: 0, kickoff: '2026-08-30T00:30:00Z' },
-      { week: WEEK, tier: 'B',  bolt: false, market: 'total',  matchup: 'FIU vs Bethune-Cookman', side: 'Over', line: '61.5', price: '-112', book: { name: 'Bovada' }, tied_books_count: 3, kickoff: '2026-08-29T20:00:00Z' },
-      { week: WEEK, tier: 'C',  bolt: false, market: 'spread', matchup: 'UTEP vs Utah State', side: 'UTEP', line: '+10.5', price: '-110', book: { name: 'ESPN BET' }, tied_books_count: 0, kickoff: '2026-08-30T02:00:00Z' },
-      { week: WEEK, tier: 'C',  bolt: false, market: 'ml',     matchup: 'Idaho State vs UNLV', side: 'Idaho State', line: '+138', book: { name: 'BetRivers' }, tied_books_count: 0, kickoff: '2026-08-29T02:00:00Z' }
+  function demoPicks() {
+    return [
+      { week: WEEK, tier: 'A+', market: 'spread', matchup: 'Kansas State vs Iowa State', side: 'Kansas State', line: '-2.5', price: '-105', book: { name: 'DraftKings' }, kickoff: '2026-08-29T16:00:00Z' },
+      { week: WEEK, tier: 'A',  market: 'total',  matchup: 'Sam Houston vs Western Kentucky', side: 'Under', line: '48.5', price: '-110', book: { name: 'FanDuel' }, kickoff: '2026-08-29T23:00:00Z' },
+      { week: WEEK, tier: 'B',  market: 'ml',     matchup: 'Stanford vs Hawaiʻi', side: 'Stanford', line: '-146', book: { name: 'BetMGM' }, kickoff: '2026-08-30T03:00:00Z' },
+      { week: WEEK, tier: 'C',  market: 'spread', matchup: 'Fresno State vs Kansas', side: 'Fresno State', line: '+7', price: '-108', book: { name: 'Caesars' }, kickoff: '2026-08-30T00:30:00Z' },
+      { week: WEEK, tier: 'C',  market: 'total',  matchup: 'FIU vs Bethune-Cookman', side: 'Over', line: '61.5', price: '-112', book: { name: 'Bovada' }, kickoff: '2026-08-29T20:00:00Z' }
     ];
-    var out = [];
-    for (var i = 0; i < n; i++) out = out.concat(base);
-    return out;
   }
 
   function boot() {
-    setPicks(skeleton());
-
     if (DEMO) {
       document.getElementById('wz-demo-chip').innerHTML =
-        '<span class="wz-demo">Sample layout — not picks</span>';
-      render(demoPicks(DEMO));
+        '<span class="wz-demo">Sample</span>';
+      render(demoPicks());
       return;
     }
-
     var token = tokenFromStorage();
     var headers = {};
     if (token) headers['Authorization'] = 'Bearer ' + token;
-
     fetch(API_BASE + '/canonical/live-lines/feed?season=' + SEASON,
           { credentials: 'omit', headers: headers })
       .then(function (res) {
