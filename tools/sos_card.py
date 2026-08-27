@@ -135,8 +135,9 @@ def main():
             right = x0 + lcol_w
             dr.text((right - val_w, base - 2 * S), val, font=f_val, fill=CREAM)
             if ctx:
+                # Gray, as the gloss promises — gold here fought the rank column.
                 dr.text((right - val_w - 24 * S - ctx_w, base + 2 * S),
-                        ctx, font=f_ctx, fill=GOLD_LIGHT)
+                        ctx, font=f_ctx, fill=TEXT_LIGHT)
             team_x = x0 + 62 * S
             team_max = right - val_w - (24 * S + ctx_w if ctx else 0) - 16 * S - team_x
             dr.text((team_x, base - 2 * S),
