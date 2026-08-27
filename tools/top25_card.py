@@ -160,24 +160,22 @@ def main():
         yy = y
         for i, r in enumerate(chunk):
             rank = str((j * 13) + i + 1)
-            base = yy + 10 * S
-            dr.text((x0 + 46 * S - dr.textlength(rank, font=f_rank), base - 4 * S),
-                    rank, font=f_rank, fill=GOLD_LIGHT)
+            by = yy + 33 * S      # one shared text baseline per row
+            dr.text((x0 + 46 * S, by), rank, font=f_rank, fill=GOLD_LIGHT, anchor="rs")
             mv = float(r.get("offseason_delta") or 0.0)
             mv_txt = f"{mv:+.1f}" if abs(mv) >= 0.05 else "0.0"
             mv_col = SAGE_LIGHT if mv >= 0.05 else (RUST_LIGHT if mv <= -0.05 else TEXT_LIGHT)
-            mv_w = dr.textlength(mv_txt, font=f_move)
             rating = f"{float(r.get('rating') or 0):.1f}"
             rat_w = dr.textlength(rating, font=f_rating)
             right = x0 + lcol_w
-            dr.text((right - mv_w, base + 2 * S), mv_txt, font=f_move, fill=mv_col)
-            dr.text((right - 64 * S - rat_w, base + 2 * S), rating,
-                    font=f_rating, fill=TEXT_LIGHT)
+            dr.text((right, by), mv_txt, font=f_move, fill=mv_col, anchor="rs")
+            dr.text((right - 64 * S, by), rating,
+                    font=f_rating, fill=TEXT_LIGHT, anchor="rs")
             team_x = x0 + 62 * S
             team_max = right - 64 * S - rat_w - 16 * S - team_x
-            dr.text((team_x, base - 2 * S),
+            dr.text((team_x, by),
                     ellipsize(dr, str(r.get("team") or ""), f_team, team_max),
-                    font=f_team, fill=CREAM)
+                    font=f_team, fill=CREAM, anchor="ls")
             yy += row_h
             if i < len(chunk) - 1:
                 dr.line([x0, yy, x0 + lcol_w, yy], fill=DIVIDER, width=1 * S)

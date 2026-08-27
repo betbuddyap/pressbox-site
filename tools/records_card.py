@@ -121,21 +121,20 @@ def main():
         yy = y
         for i, r in enumerate(chunk):
             rank = str((j * 13) + i + 1)
-            base = yy + 10 * S
-            dr.text((x0 + 46 * S - dr.textlength(rank, font=f_rank), base - 4 * S),
-                    rank, font=f_rank, fill=GOLD_LIGHT)
+            by = yy + 33 * S      # one shared text baseline per row
+            dr.text((x0 + 46 * S, by), rank, font=f_rank, fill=GOLD_LIGHT, anchor="rs")
             ew = float(r.get("expected_wins") or 0.0)
             gc = int(r.get("games_counted") or 0)
             wns = int(round(ew))
             rec = f"{wns}–{max(0, gc - wns)}"
             rec_w = dr.textlength(rec, font=f_rec)
             right = x0 + lcol_w
-            dr.text((right - rec_w, base - 3 * S), rec, font=f_rec, fill=GOLD_LIGHT)
+            dr.text((right, by), rec, font=f_rec, fill=GOLD_LIGHT, anchor="rs")
             team_x = x0 + 62 * S
             team_max = right - rec_w - 20 * S - team_x
-            dr.text((team_x, base - 2 * S),
+            dr.text((team_x, by),
                     ellipsize(dr, str(r.get("team") or ""), f_team, team_max),
-                    font=f_team, fill=CREAM)
+                    font=f_team, fill=CREAM, anchor="ls")
             yy += row_h
             if i < len(chunk) - 1:
                 dr.line([x0, yy, x0 + lcol_w, yy], fill=DIVIDER, width=1 * S)

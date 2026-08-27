@@ -124,25 +124,26 @@ def main():
         yy = y
         for i, r in enumerate(chunk):
             rank = str((j * 13) + i + 1)
-            base = yy + 10 * S
-            dr.text((x0 + 46 * S - dr.textlength(rank, font=f_rank), base - 4 * S),
-                    rank, font=f_rank, fill=GOLD_LIGHT)
+            # One shared TEXT BASELINE per row (anchor "ls"/"rs") — hand-tuned
+            # per-size offsets drifted ("the rankings don't look centered").
+            by = yy + 33 * S
+            dr.text((x0 + 46 * S, by), rank, font=f_rank, fill=GOLD_LIGHT, anchor="rs")
             val = f"{float(r['sos']):.1f}"
             val_w = dr.textlength(val, font=f_val)
             pr = power_rank.get(r["team"])
             ctx = f"No. {pr}" if pr and pr <= 25 else ""
             ctx_w = dr.textlength(ctx, font=f_ctx) if ctx else 0
             right = x0 + lcol_w
-            dr.text((right - val_w, base - 2 * S), val, font=f_val, fill=CREAM)
+            dr.text((right, by), val, font=f_val, fill=CREAM, anchor="rs")
             if ctx:
                 # Gray, as the gloss promises — gold here fought the rank column.
-                dr.text((right - val_w - 24 * S - ctx_w, base + 2 * S),
-                        ctx, font=f_ctx, fill=TEXT_LIGHT)
+                dr.text((right - val_w - 24 * S, by), ctx, font=f_ctx,
+                        fill=TEXT_LIGHT, anchor="rs")
             team_x = x0 + 62 * S
             team_max = right - val_w - (24 * S + ctx_w if ctx else 0) - 16 * S - team_x
-            dr.text((team_x, base - 2 * S),
+            dr.text((team_x, by),
                     ellipsize(dr, str(r.get("team") or ""), f_team, team_max),
-                    font=f_team, fill=CREAM)
+                    font=f_team, fill=CREAM, anchor="ls")
             yy += row_h
             if i < len(chunk) - 1:
                 dr.line([x0, yy, x0 + lcol_w, yy], fill=DIVIDER, width=1 * S)
