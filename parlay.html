@@ -292,10 +292,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // A leg as the TICKET's book posts it — one slip, one book. Legs inside a
   // parlay card never name their own best book (that read as three books on
-  // a one-book bet); the ticket's book lives on the Bet button. Falls back
-  // to the board line, name stripped, if that book has no entry for a leg.
-  function legAtTicketBook(p, bookName) {
+  // a one-book bet); the ticket's book lives on the Bet button. The exact
+  // source is best_book.per_leg — the very rows the payout multiplication
+  // used, keyed by leg_id — with the name-matched other_books entry as the
+  // fallback (older payloads), then the board line, name stripped.
+  function legAtTicketBook(p, bestBook) {
+    const bookName = bestBook && bestBook.book;
     if (!bookName) return p;
+    const pl = (bestBook.per_leg || []).find(
+      x => x.leg_id != null && (x.leg_id === p.leg_id || x.leg_id === p.pick_id));
+    if (pl && pl.line != null) {
+      return { ...p, line: pl.line, book: null, tied_books_count: 0 };
+    }
     const e = (p.other_books || []).find(b => b.book && b.book.name === bookName);
     if (!e) return { ...p, book: null, tied_books_count: 0 };
     return { ...p, line: e.line, book: null, tied_books_count: 0 };
@@ -564,7 +572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Legs use the board's own .ll-row markup so they read identically to Live
     // Lines \u2014 but priced at the TICKET's book, names suppressed (one slip,
     // one book; the book is on the Bet button below).
-    const tb = (pre.best_book && pre.best_book.book) || null;
+    const tb = pre.best_book || null;
     const legs = (pre.legs || []).map(leg => `
       <article class="ll-row">
         <div class="ll-row-header" style="cursor:default;">
@@ -753,7 +761,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Once a ticket is graded, its legs re-price at the ticket's book so the
     // slip and the Bet button tell one story. Ungraded slips keep each leg's
     // own best book — that's still the board context while building.
-    const slipBook = (state.grade && state.grade.best_book && state.grade.best_book.book) || null;
+    const slipBook = (state.grade && state.grade.best_book) || null;
     const legsHtml = legs.map(p => {
       const flagged = missing.has(p.pick_id);
       return `
