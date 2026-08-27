@@ -228,6 +228,10 @@
   var params = new URLSearchParams(location.search);
   var WEEK = parseInt(params.get('week') || '0', 10);
   if (isNaN(WEEK)) WEEK = 0;
+  // ?page=N -> 8 rows per page for a multi-image set; no param -> the whole
+  // board on one tall card. ?per=N overrides the page size.
+  var PAGE = parseInt(params.get('page') || '0', 10) || 0;
+  var PER = parseInt(params.get('per') || '8', 10) || 8;
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -346,8 +350,18 @@
     setSub('<strong>' + graded.length + '</strong> graded pick' +
            (graded.length === 1 ? '' : 's') + (countText ? ' — ' + countText : ''));
 
-    // The whole board, always (Austin, 2026-08-27: "i want all of them").
-    setPicks(graded.map(function (l) { return renderRow(l, oneDay); }).join(''));
+    // The whole board on one card by default; ?page=N slices it into a
+    // multi-image set (Austin, 2026-08-27: "i want all of them... or multiple").
+    var shown = graded;
+    if (PAGE > 0) {
+      var pages = Math.max(1, Math.ceil(graded.length / PER));
+      shown = graded.slice((PAGE - 1) * PER, PAGE * PER);
+      if (pages > 1) {
+        document.getElementById('wz-sub').innerHTML +=
+          ' <span style="color:var(--text-light)">&middot; ' + PAGE + ' of ' + pages + '</span>';
+      }
+    }
+    setPicks(shown.map(function (l) { return renderRow(l, oneDay); }).join(''));
   }
 
   fetch(API_BASE + '/parlay/board?season=' + SEASON + '&week=' + WEEK,
