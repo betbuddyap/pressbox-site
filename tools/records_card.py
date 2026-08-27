@@ -37,14 +37,16 @@ f_headright = font("seguisb.ttf", 15)
 f_rank      = font("georgiab.ttf", 27)
 f_team      = font("georgiab.ttf", 24)
 f_rec       = font("georgiab.ttf", 26)
+f_var       = font("segoeui.ttf", 16)
 f_footurl   = font("georgiab.ttf", 26)
 f_footnote  = font("seguisb.ttf", 14)
 
 GLOSS = ("Projected record = every game's win probability, summed across the "
          "schedule and rounded to the nearest whole game. Being favored in all "
          "twelve doesn't make you 12–0 — twelve games you're 85% to win add up "
-         "to about ten, and that's what a season actually does. Teams listed in "
-         "PressBox Top 25 order.")
+         "to about ten, and that's what a season actually does. The gray ± is "
+         "one standard deviation of season wins — the realistic swing around "
+         "the number. Teams listed in PressBox Top 25 order.")
 
 
 def wrap(draw, text, fnt, width):
@@ -116,6 +118,20 @@ def main():
 
     lcol_w = (W - 2 * PAD - 56 * S) // 2
     row_h = 50 * S
+    # FIXED columns (Georgia digits are proportional — the SOS lesson):
+    # record column sized to the card's widest W–L, variance column to the
+    # widest ±sd, so both sit at one x on every row.
+    def _rec_of(r):
+        ew = float(r.get("expected_wins") or 0.0)
+        gc = int(r.get("games_counted") or 0)
+        wns = int(round(ew))
+        return f"{wns}–{max(0, gc - wns)}"
+    def _var_of(r):
+        sd = r.get("proj_band")
+        return f"±{float(sd):.1f}" if sd is not None else ""
+    rec_col = max(dr.textlength(_rec_of(r), font=f_rec) for r in rows)
+    var_col = max((dr.textlength(_var_of(r), font=f_var) for r in rows if _var_of(r)),
+                  default=0)
     for j, chunk in enumerate((rows[:13], rows[13:])):
         x0 = PAD + j * (lcol_w + 56 * S)
         yy = y
@@ -123,15 +139,15 @@ def main():
             rank = str((j * 13) + i + 1)
             by = yy + 33 * S      # one shared text baseline per row
             dr.text((x0 + 46 * S, by), rank, font=f_rank, fill=GOLD_LIGHT, anchor="rs")
-            ew = float(r.get("expected_wins") or 0.0)
-            gc = int(r.get("games_counted") or 0)
-            wns = int(round(ew))
-            rec = f"{wns}–{max(0, gc - wns)}"
-            rec_w = dr.textlength(rec, font=f_rec)
+            rec = _rec_of(r)
+            var = _var_of(r)
             right = x0 + lcol_w
             dr.text((right, by), rec, font=f_rec, fill=CREAM, anchor="rs")
+            if var:
+                dr.text((right - rec_col - 24 * S, by), var, font=f_var,
+                        fill=TEXT_LIGHT, anchor="rs")
             team_x = x0 + 62 * S
-            team_max = right - rec_w - 20 * S - team_x
+            team_max = right - rec_col - 24 * S - var_col - 16 * S - team_x
             dr.text((team_x, by),
                     ellipsize(dr, str(r.get("team") or ""), f_team, team_max),
                     font=f_team, fill=CREAM, anchor="ls")
