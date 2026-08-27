@@ -244,7 +244,6 @@
     'ml_pickem': { label: 'ML', key: 'aplus' }
   };
   var MARKET_LABEL = { spread: 'Spread', total: 'Total', ml: 'Moneyline' };
-  var MAXROWS = 8;
 
   function kickoffParts(iso) {
     if (!iso) return null;
@@ -347,13 +346,8 @@
     setSub('<strong>' + graded.length + '</strong> graded pick' +
            (graded.length === 1 ? '' : 's') + (countText ? ' — ' + countText : ''));
 
-    var shown = graded.slice(0, MAXROWS);
-    var extra = graded.length - shown.length;
-    var html = shown.map(function (l) { return renderRow(l, oneDay); }).join('');
-    if (extra > 0) {
-      html += '<div class="wz-more">+ ' + extra + ' more on the board</div>';
-    }
-    setPicks(html);
+    // The whole board, always (Austin, 2026-08-27: "i want all of them").
+    setPicks(graded.map(function (l) { return renderRow(l, oneDay); }).join(''));
   }
 
   fetch(API_BASE + '/parlay/board?season=' + SEASON + '&week=' + WEEK,
