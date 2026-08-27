@@ -82,20 +82,13 @@ def ellipsize(draw, text, fnt, width):
 
 
 def pick_logo():
-    """The brighter mark reads on ink."""
-    best, best_lum = None, -1.0
+    """The SAME mark the dark HTML cards use (week0.html / top25.html):
+    pressbox-w2a-ink-cropped.png — the for-ink variant. A brightness
+    heuristic here once picked the boxed cream-background mark instead
+    ("the logo got flipped to white again") — never guess the brand."""
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    for name in ("pressbox-w2a-ink-cropped.png", "pressbox-w2a-cream-cropped.png"):
-        p = os.path.join(here, name)
-        if not os.path.exists(p):
-            continue
-        im = Image.open(p).convert("RGBA")
-        px = im.getdata()
-        vals = [(r + g + b) / 3 for r, g, b, a in px if a > 40]
-        lum = sum(vals) / len(vals) if vals else 0
-        if lum > best_lum:
-            best, best_lum = im, lum
-    return best
+    p = os.path.join(here, "pressbox-w2a-ink-cropped.png")
+    return Image.open(p).convert("RGBA") if os.path.exists(p) else None
 
 
 def main():
