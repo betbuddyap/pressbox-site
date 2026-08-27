@@ -129,7 +129,7 @@ def main():
             rec = f"{wns}–{max(0, gc - wns)}"
             rec_w = dr.textlength(rec, font=f_rec)
             right = x0 + lcol_w
-            dr.text((right, by), rec, font=f_rec, fill=GOLD_LIGHT, anchor="rs")
+            dr.text((right, by), rec, font=f_rec, fill=CREAM, anchor="rs")
             team_x = x0 + 62 * S
             team_max = right - rec_w - 20 * S - team_x
             dr.text((team_x, by),

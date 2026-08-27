@@ -119,6 +119,17 @@ def main():
 
     lcol_w = (W - 2 * PAD - 56 * S) // 2
     row_h = 50 * S
+    # FIXED columns: Georgia's digits are proportional, so per-row value
+    # widths drift ("No. 14 and No. 17 ... clearly the same number of
+    # characters and not aligned"). Size the value column to the card's
+    # widest value and the context column to its widest "No. X" — every
+    # row's gray number then sits at one x.
+    val_col = max(dr.textlength(f"{float(r['sos']):.1f}", font=f_val) for r in rows)
+    ctx_col = 0
+    for r in rows:
+        pr = power_rank.get(r["team"])
+        if pr and pr <= 25:
+            ctx_col = max(ctx_col, dr.textlength(f"No. {pr}", font=f_ctx))
     for j, chunk in enumerate((rows[:13], rows[13:])):
         x0 = PAD + j * (lcol_w + 56 * S)
         yy = y
@@ -129,18 +140,16 @@ def main():
             by = yy + 33 * S
             dr.text((x0 + 46 * S, by), rank, font=f_rank, fill=GOLD_LIGHT, anchor="rs")
             val = f"{float(r['sos']):.1f}"
-            val_w = dr.textlength(val, font=f_val)
             pr = power_rank.get(r["team"])
             ctx = f"No. {pr}" if pr and pr <= 25 else ""
-            ctx_w = dr.textlength(ctx, font=f_ctx) if ctx else 0
             right = x0 + lcol_w
             dr.text((right, by), val, font=f_val, fill=CREAM, anchor="rs")
             if ctx:
                 # Gray, as the gloss promises — gold here fought the rank column.
-                dr.text((right - val_w - 24 * S, by), ctx, font=f_ctx,
+                dr.text((right - val_col - 24 * S, by), ctx, font=f_ctx,
                         fill=TEXT_LIGHT, anchor="rs")
             team_x = x0 + 62 * S
-            team_max = right - val_w - (24 * S + ctx_w if ctx else 0) - 16 * S - team_x
+            team_max = right - val_col - 24 * S - ctx_col - 16 * S - team_x
             dr.text((team_x, by),
                     ellipsize(dr, str(r.get("team") or ""), f_team, team_max),
                     font=f_team, fill=CREAM, anchor="ls")
