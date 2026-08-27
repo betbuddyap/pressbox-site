@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Fixed-width share graphic — desktop screenshot target, not a responsive page. -->
+<meta name="viewport" content="width=1160">
+<title>Top 25 — PressBox Analytics</title>
+<meta name="description" content="The PressBox power ratings as a shareable card.">
+<meta name="robots" content="noindex">
+
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0F0E0A">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400;1,700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/tokens.css">
+
+<style>
+  /* ── Social share card, same dark language as week0.html. Data comes from
+     the public rankings endpoint — no sign-in. ── */
+  body {
+    background: var(--cream-dark);
+    font-family: var(--sans);
+    margin: 0;
+    padding: var(--space-8) 0 var(--space-16);
+  }
+
+  .t25-hint {
+    width: 1080px;
+    margin: 0 auto var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--text-light);
+  }
+
+  .t25-card {
+    width: 1080px;
+    margin: 0 auto;
+    background: var(--ink);
+    color: var(--cream);
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  .t25-head {
+    padding: 48px 64px 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .t25-logo img { height: 104px; width: auto; display: block; }
+  .t25-head-right {
+    text-align: right;
+    padding-bottom: 10px;
+    font-size: 15px;
+    font-weight: var(--weight-semi);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  .t25-title-block { padding: 26px 64px 0; }
+  .t25-eyebrow {
+    font-size: 17px;
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+  }
+  .t25-title {
+    font-family: var(--serif);
+    font-weight: var(--weight-bold);
+    font-size: 84px;
+    line-height: 1.02;
+    color: var(--cream);
+    margin: 2px 0 0;
+  }
+  .t25-sub {
+    margin-top: 12px;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--text-light);
+    max-width: 860px;
+  }
+  .t25-sub strong { color: var(--gold-light); font-weight: var(--weight-semi); }
+  .t25-rule {
+    height: 4px;
+    background: var(--gold);
+    border: none;
+    margin: 26px 64px 8px;
+  }
+
+  /* ── The list: two columns, 13 + 12 ── */
+  .t25-grid {
+    padding: 10px 64px 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 56px;
+  }
+  .t25-row {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(248, 245, 238, 0.13);
+  }
+  .t25-row:nth-last-child(1) { border-bottom: none; }
+  .t25-rank {
+    flex-shrink: 0;
+    width: 46px;
+    font-family: var(--serif);
+    font-weight: var(--weight-bold);
+    font-size: 27px;
+    color: var(--gold-light);
+    text-align: right;
+  }
+  .t25-team {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--serif);
+    font-weight: var(--weight-bold);
+    font-size: 24px;
+    color: var(--cream);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .t25-rating {
+    flex-shrink: 0;
+    font-size: 17px;
+    color: var(--text-light);
+  }
+  /* Offseason move = a delta, so the data-viz colors apply (sage/rust). */
+  .t25-move {
+    flex-shrink: 0;
+    width: 64px;
+    text-align: right;
+    font-size: 16px;
+    font-weight: var(--weight-semi);
+  }
+  .t25-move--up   { color: var(--sage-light); }
+  .t25-move--down { color: var(--rust-light); }
+  .t25-move--flat { color: var(--text-light); }
+
+  .t25-note {
+    margin: 54px 64px;
+    padding: 44px;
+    border: 1px solid rgba(248, 245, 238, 0.2);
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-size: 20px;
+    color: var(--text-light);
+  }
+
+  /* ── Footer ── */
+  .t25-foot {
+    margin-top: 10px;
+    padding: 24px 64px 38px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-top: 4px solid var(--gold);
+  }
+  .t25-foot-url {
+    font-family: var(--serif);
+    font-weight: var(--weight-bold);
+    font-size: 26px;
+    color: var(--gold-light);
+  }
+  .t25-foot-note {
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+</style>
+</head>
+<body>
+
+<div class="t25-hint">Screenshot the card below.</div>
+
+<div class="t25-card">
+  <div class="t25-head">
+    <div class="t25-logo"><img src="/pressbox-w2a-ink-cropped.png" alt="PressBox Analytics"></div>
+    <div class="t25-head-right">College Football · 2026</div>
+  </div>
+  <div class="t25-title-block">
+    <div class="t25-eyebrow">PressBox Power Ratings</div>
+    <h1 class="t25-title">Preseason Top 25</h1>
+    <p class="t25-sub">One fitted formula, same for all 136 teams:
+      <strong>what you proved</strong> ·
+      <strong>what's on your roster</strong> (offense &amp; defense, wherever it played last year) ·
+      <strong>what you've stacked</strong> ·
+      <strong>what you signed</strong>.
+      The <span style="color:var(--sage-light)">+</span>/<span style="color:var(--rust-light)">−</span> is each team's offseason move.</p>
+  </div>
+  <hr class="t25-rule">
+  <div class="t25-grid" id="t25-grid"></div>
+  <div class="t25-foot">
+    <div class="t25-foot-url">pressboxanalytics.com</div>
+    <div class="t25-foot-note">Fit on 2022–25 · frozen for 2026 · the season grades it</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var API_BASE = 'https://betbuddy-backend.onrender.com';
+  var SEASON = 2026;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function row(rank, r) {
+    var mv = Number(r.offseason_delta);
+    var cls = !isFinite(mv) || Math.abs(mv) < 0.05 ? 'flat' : (mv > 0 ? 'up' : 'down');
+    var mvText = isFinite(mv)
+      ? (mv > 0 ? '+' : '') + mv.toFixed(1)
+      : '';
+    return '<div class="t25-row">' +
+      '<span class="t25-rank">' + rank + '</span>' +
+      '<span class="t25-team">' + esc(r.team) + '</span>' +
+      '<span class="t25-rating">' + esc(Number(r.rating).toFixed(1)) + '</span>' +
+      '<span class="t25-move t25-move--' + cls + '">' + esc(mvText) + '</span>' +
+      '</div>';
+  }
+
+  fetch(API_BASE + '/rankings/teams?season=' + SEASON + '&offseason=1',
+        { credentials: 'omit' })
+    .then(function (res) {
+      if (!res.ok) throw new Error('rankings HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function (d) {
+      var rows = (d.teams || []).slice().sort(function (a, b) {
+        return (b.rating || -99) - (a.rating || -99);
+      }).slice(0, 25);
+      if (!rows.length) throw new Error('empty board');
+      var left = rows.slice(0, 13).map(function (r, i) { return row(i + 1, r); }).join('');
+      var right = rows.slice(13).map(function (r, i) { return row(i + 14, r); }).join('');
+      document.getElementById('t25-grid').innerHTML =
+        '<div>' + left + '</div><div>' + right + '</div>';
+    })
+    .catch(function (e) {
+      document.getElementById('t25-grid').innerHTML =
+        '<div class="t25-note" style="grid-column:1/-1">The board didn’t load (' +
+        esc(e && e.message) + ') — reload to retry.</div>';
+    });
+})();
+</script>
+
+</body>
+</html>
