@@ -76,14 +76,32 @@
     color: var(--cream);
     margin: 2px 0 0;
   }
-  .t25-sub {
-    margin-top: 12px;
-    font-size: 18px;
-    line-height: 1.5;
-    color: var(--text-light);
-    max-width: 860px;
+  .t25-form {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 44px;
+    max-width: 920px;
   }
-  .t25-sub strong { color: var(--gold-light); font-weight: var(--weight-semi); }
+  .t25-form-item {
+    font-size: 16px;
+    line-height: 1.45;
+    color: var(--text-light);
+  }
+  .t25-form-item b {
+    display: block;
+    font-size: 15px;
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 2px;
+  }
+  .t25-movekey {
+    margin-top: 14px;
+    font-size: 15px;
+    color: var(--text-light);
+  }
   .t25-rule {
     height: 4px;
     background: var(--gold);
@@ -188,11 +206,17 @@
   <div class="t25-title-block">
     <div class="t25-eyebrow">PressBox Power Ratings</div>
     <h1 class="t25-title">Preseason Top 25</h1>
-    <p class="t25-sub">One fitted formula, same for all 136 teams:
-      <strong>what you proved</strong> ·
-      <strong>what's on your roster</strong> (offense &amp; defense, wherever it played last year) ·
-      <strong>what you've stacked</strong> ·
-      <strong>what you signed</strong>.
+    <div class="t25-form">
+      <div class="t25-form-item"><b>What You Proved</b>
+        Last season's rating, carried at about half strength — history says nobody stays exactly who they were.</div>
+      <div class="t25-form-item"><b>Production on Your Roster</b>
+        What your players actually did last year — offense and defense, wherever they played. Transfers bring it with them.</div>
+      <div class="t25-form-item"><b>Talent Held</b>
+        The recruiting classes already on campus, stacked over the last three years.</div>
+      <div class="t25-form-item"><b>Talent Acquired</b>
+        The class you just signed.</div>
+    </div>
+    <p class="t25-movekey">One fitted formula, same for all 136 teams.
       The <span style="color:var(--sage-light)">+</span>/<span style="color:var(--rust-light)">−</span> is each team's offseason move.</p>
   </div>
   <hr class="t25-rule">
