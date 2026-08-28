@@ -1444,6 +1444,10 @@
         : histRange.source === 'rule'
           ? `Outcome density for the signal behind this pick (n=${histRange.sample_size}). ` +
             `Found in the 2023–25 seasons this record comes from — 2026 is the live test.`
+        : histRange.source === 'blend'
+          ? `Historical outcome density for games at this Vegas line where our models ` +
+            `read the game like they read this one (≈${histRange.sample_size} games' ` +
+            `worth, weighted, 2023–25).`
           : `Historical outcome density for games at this Vegas line (n=${histRange.sample_size})`;
       if (tip) svg.setAttribute('aria-label', tip);
       axisEl.appendChild(svg);
@@ -1681,6 +1685,16 @@
             ? `History check: in the ${histRange.sample_size} games where this pick's ` +
               `#1 signal fired, ${pctTxt} of finals landed on the ${escape(sideName)} ` +
               `side of today's number.`
+            : histRange.source === 'blend'
+              ? (hasPick
+                ? `Signal history for this pick is still backfilling. Below is the ` +
+                  `market conditioned on our read: at numbers like today's, where the ` +
+                  `models leaned like they do here, ${pctTxt} of finals landed on the ` +
+                  `${escape(sideName)} side (≈${histRange.sample_size} games' worth, 2023–25).`
+                : `History check: at numbers like today's, where our models read the ` +
+                  `game like they read this one, ${pctTxt} of finals landed on the ` +
+                  `${escape(sideName)} side (≈${histRange.sample_size} games' worth, ` +
+                  `weighted, 2023–25).`)
             // The line band is the MARKET's base rate at this number — it says
             // nothing about the signals that graded this pick. Under a No Edge
             // verdict that reads fine. Under a GRADED pick it reads as the
