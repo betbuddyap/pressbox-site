@@ -165,6 +165,8 @@ def draw_card(gid, matchup, kick_txt, picks, out_path):
 
         for tk in ticks:
             dr.line([X(tk), y, X(tk), y + CH], fill=DIVIDER, width=1)
+        _labels = []
+        _flips = []
 
         ext = segs + [(now, segs[-1][1], segs[-1][2], segs[-1][3],
                        segs[-1][4])]
@@ -192,23 +194,51 @@ def draw_card(gid, matchup, kick_txt, picks, out_path):
                         dr.line([X(t1_), yy_, X(t1_), min(yy_ + 5 * S, yb)],
                                 fill=DIM, width=1 * S)
                         yy_ += 10 * S
-                    cx, cy = X(t1_), (Y(v0) + Y(nxt[2])) / 2
-                    r = 7 * S
-                    dr.polygon([(cx, cy - r), (cx + r, cy), (cx, cy + r),
-                                (cx - r, cy)], fill=GOLD_LIGHT)
-                    dr.text((cx + 12 * S, cy + 5 * S),
-                            f"→ {nxt[1]} {nxt[3]}", font=f_day,
-                            fill=GOLD_LIGHT, anchor="ls")
+                    _flips.append((X(t1_), (Y(v0) + Y(nxt[2])) / 2,
+                                   f"→ {nxt[1]} {nxt[3]}"))
                 else:
                     dr.line([X(t1_), Y(v0), X(t1_), Y(nxt[2])],
                             fill=TIER_COL.get(nxt[4], DIM), width=2 * S)
 
         rel = segs[0]
         last = segs[-1]
-        dr.text((gx0 + 4 * S, y + 12 * S),
-                f"Released · {rel[1]} {rel[3]} · "
-                f"{TIER_LABEL.get(rel[4], '')}",
-                font=f_day, fill=TEXT_LIGHT, anchor="ls")
+        _rel_txt = (f"Released · {rel[1]} {rel[3]} · "
+                    f"{TIER_LABEL.get(rel[4], '')}")
+        _rel_y = (y + CH - 8 * S) if (rel[2] is not None and
+                                      Y(rel[2]) < y + CH / 2) else (y + 12 * S)
+        dr.text((gx0 + 4 * S, _rel_y), _rel_txt, font=f_day,
+                fill=TEXT_LIGHT, anchor="ls")
+        _labels.append((gx0 + 4 * S, _rel_y - 22 * S,
+                        gx0 + 4 * S + dr.textlength(_rel_txt, font=f_day),
+                        _rel_y + 6 * S))
+
+        # diamonds first — every one a no-go box for text
+        for cx, cy, _txt in _flips:
+            r = 7 * S
+            dr.polygon([(cx, cy - r), (cx + r, cy), (cx, cy + r),
+                        (cx - r, cy)], fill=GOLD_LIGHT)
+            _labels.append((cx - 11 * S, cy - 11 * S, cx + 11 * S,
+                            cy + 11 * S))
+        # labels only where a flip has room (a crowded cluster keeps its
+        # diamonds; Released tag + the Now gutter carry the endpoints)
+        for cx, cy, _txt in _flips:
+            if any(abs(cx - ox) < 80 * S and (ox, oy) != (cx, cy)
+                   for ox, oy, _ in _flips):
+                continue
+            _tw = dr.textlength(_txt, font=f_day)
+            for _lx, _ly, _anch in ((cx + 14 * S, cy + 5 * S, "ls"),
+                                    (cx + 14 * S, cy - 16 * S, "ls"),
+                                    (cx - 14 * S, cy + 5 * S, "rs")):
+                _x0 = _lx if _anch == "ls" else _lx - _tw
+                if _x0 + _tw > gx1 - 4 * S or _x0 < gx0:
+                    continue
+                _box = (_x0, _ly - 22 * S, _x0 + _tw, _ly + 6 * S)
+                if all(_box[2] < b[0] or _box[0] > b[2] or
+                       _box[3] < b[1] or _box[1] > b[3] for b in _labels):
+                    dr.text((_lx, _ly), _txt, font=f_day,
+                            fill=GOLD_LIGHT, anchor=_anch)
+                    _labels.append(_box)
+                    break
 
         tier_now = (p or {}).get("tier")
         end_y = Y(last[2]) + 5 * S if last[2] is not None else y + CH // 2
