@@ -170,13 +170,22 @@ def draw_card(gid, matchup, kick_txt, picks, out_path):
 
         ext = segs + [(now, segs[-1][1], segs[-1][2], segs[-1][3],
                        segs[-1][4])]
+        _cur_tier = None
         for i in range(len(segs)):
             t0_, side0, v0, _, tier0 = ext[i]
             t1_ = ext[i + 1][0]
             if v0 is None:
                 continue
-            col = TIER_COL.get(tier0, DIM)
-            if tier0 == "A+":
+            # Color changes only when the NUMBER does (Austin, 2026-08-28:
+            # "the line color change happens before the line moves. have it
+            # change once it reaches the new line"): a grade change at an
+            # unchanged number keeps the run's color; the new level wears
+            # the grade in effect when it got there.
+            if (i == 0 or ext[i - 1][2] is None
+                    or v0 != ext[i - 1][2] or side0 != ext[i - 1][1]):
+                _cur_tier = tier0
+            col = TIER_COL.get(_cur_tier, DIM)
+            if _cur_tier == "A+":
                 # hollow gold track — the ink-core-with-gold-border badge,
                 # as a line ("a and a+ are virtually the same color")
                 dr.line([X(t0_), Y(v0), X(t1_), Y(v0)], fill=GOLD_LIGHT,
