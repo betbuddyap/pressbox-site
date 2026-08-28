@@ -118,7 +118,7 @@ def draw_card(gid, matchup, kick_txt, picks, out_path):
     dr.rectangle([PAD, y, W - PAD, y + 4 * S], fill=GOLD)
     y += 16 * S
 
-    gx0, gx1 = PAD + 8 * S, W - PAD - 165 * S
+    gx0, gx1 = PAD + 8 * S, W - PAD - 235 * S
 
     def X(dt):
         return gx0 + (gx1 - gx0) * ((dt - t_min).total_seconds() / span)
@@ -174,7 +174,15 @@ def draw_card(gid, matchup, kick_txt, picks, out_path):
             if v0 is None:
                 continue
             col = TIER_COL.get(tier0, DIM)
-            dr.line([X(t0_), Y(v0), X(t1_), Y(v0)], fill=col, width=4 * S)
+            if tier0 == "A+":
+                # hollow gold track — the ink-core-with-gold-border badge,
+                # as a line ("a and a+ are virtually the same color")
+                dr.line([X(t0_), Y(v0), X(t1_), Y(v0)], fill=GOLD_LIGHT,
+                        width=8 * S)
+                dr.line([X(t0_), Y(v0), X(t1_), Y(v0)], fill=INK,
+                        width=3 * S)
+            else:
+                dr.line([X(t0_), Y(v0), X(t1_), Y(v0)], fill=col, width=4 * S)
             nxt = ext[i + 1]
             if i + 1 < len(segs) and nxt[2] is not None:
                 if nxt[1] != side0:
@@ -188,21 +196,24 @@ def draw_card(gid, matchup, kick_txt, picks, out_path):
                     r = 7 * S
                     dr.polygon([(cx, cy - r), (cx + r, cy), (cx, cy + r),
                                 (cx - r, cy)], fill=GOLD_LIGHT)
+                    dr.text((cx + 12 * S, cy + 5 * S),
+                            f"→ {nxt[1]} {nxt[3]}", font=f_day,
+                            fill=GOLD_LIGHT, anchor="ls")
                 else:
                     dr.line([X(t1_), Y(v0), X(t1_), Y(nxt[2])],
                             fill=TIER_COL.get(nxt[4], DIM), width=2 * S)
 
         rel = segs[0]
         last = segs[-1]
-        if rel[2] is not None:
-            dr.text((gx0 - 6 * S, Y(rel[2]) + 5 * S),
-                    f"{(rel[1] or '')[:1]} {rel[3]}", font=f_end,
-                    fill=TEXT_LIGHT, anchor="rs")
+        dr.text((gx0 + 4 * S, y + 12 * S),
+                f"Released · {rel[1]} {rel[3]} · "
+                f"{TIER_LABEL.get(rel[4], '')}",
+                font=f_day, fill=TEXT_LIGHT, anchor="ls")
+
         tier_now = (p or {}).get("tier")
         end_y = Y(last[2]) + 5 * S if last[2] is not None else y + CH // 2
         dr.text((gx1 + 12 * S, end_y),
-                f"{(last[1] or '')[:1]} {last[3]} · "
-                f"{TIER_LABEL.get(tier_now, '')}",
+                f"{last[1]} {last[3]} · {TIER_LABEL.get(tier_now, '')}",
                 font=f_end, fill=CREAM, anchor="ls")
 
         y += CH + 14 * S
@@ -211,8 +222,14 @@ def draw_card(gid, matchup, kick_txt, picks, out_path):
 
     lx = PAD
     for tier in ("A+", "A", "B", "C", "no_edge"):
-        dr.rectangle([lx, y + 6 * S, lx + 26 * S, y + 12 * S],
-                     fill=TIER_COL[tier])
+        if tier == "A+":
+            dr.rectangle([lx, y + 4 * S, lx + 26 * S, y + 14 * S],
+                         fill=GOLD_LIGHT)
+            dr.rectangle([lx + 2 * S, y + 7 * S, lx + 24 * S, y + 11 * S],
+                         fill=INK)
+        else:
+            dr.rectangle([lx, y + 6 * S, lx + 26 * S, y + 12 * S],
+                         fill=TIER_COL[tier])
         lbl = TIER_LABEL[tier]
         dr.text((lx + 32 * S, y + 14 * S), lbl, font=f_day, fill=TEXT_LIGHT,
                 anchor="ls")
