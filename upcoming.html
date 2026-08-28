@@ -772,6 +772,9 @@
   .gc.slate .gc-pick-tier.tier-ls, .gc.gotw-card .gc-pick-tier.tier-ls { background: var(--lottery); color: #fff; }
   .gc.slate .gc-pick-tier.tier-gl, .gc.gotw-card .gc-pick-tier.tier-gl { background: var(--sage-mid); color: var(--ink); }
   .gc.slate .gc-pick-tier.tier-ne, .gc.gotw-card .gc-pick-tier.tier-ne { background: transparent; color: rgba(248,245,238,0.6); border-color: rgba(248,245,238,0.35); }
+  /* Your own bet on this game+market (My Bets) — the card grades YOUR
+     number, not the board's. Gold-outlined $ so it can't be read as a tier. */
+  .gc.slate .gc-pick-tier.tier-bet, .gc.gotw-card .gc-pick-tier.tier-bet { background: transparent; color: var(--gold-light); border: 1px solid var(--gold); }
   /* A+ = corroborated top tier: ink fill, gold lettering (inverse of A). */
   /* A+ everywhere = the canonical live-lines badge: ink fill, gold-light
      lettering, GOLD keyline. */
@@ -1281,8 +1284,8 @@ const CONF_SHORT = {
 };
 
 const TIER_LABEL = { aplus: 'A+', a: 'A', b: 'B', c: 'C', sm: 'Smart $', gl: 'Goldilocks', ls: 'Lottery' };
-const TIER_LABEL_SHORT = { aplus: 'A+', a: 'A', b: 'B', c: 'C', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE' };
-const TIER_KEY = { 'A+': 'aplus', 'A': 'a', 'B': 'b', 'C': 'c', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'ml_pickem': 'aplus', 'no_edge': 'ne' };
+const TIER_LABEL_SHORT = { aplus: 'A+', a: 'A', b: 'B', c: 'C', sm: 'SM', gl: 'GL', ls: 'LT', ne: 'NE', bet: '$' };
+const TIER_KEY = { 'A+': 'aplus', 'A': 'a', 'B': 'b', 'C': 'c', 'smart_money': 'sm', 'goldilocks': 'gl', 'lottery': 'ls', 'ml_pickem': 'aplus', 'no_edge': 'ne', '__bet': 'bet' };
 const BOLT_KEYS = { aplus: 1, a: 1, b: 1, c: 1 };
 function gcBolt(slotData, tierKey) {
   if (!(slotData && slotData.bolt && BOLT_KEYS[tierKey])) return '';
@@ -1350,6 +1353,10 @@ async function init() {
   // Same board as the Rankings page — the 2026 blend with the SP+ offseason
   // delta (?offseason=1) — so the rank chips here can never disagree with it.
   // Rank is derived by rating order, same as the rankings page's default tab.
+  loadMyBets().then((any) => {
+    if (any && boardRendered) { try { renderWeek(currentWeek); } catch (e) {} }
+  }).catch(() => {});
+
   fetch(`${API}/rankings/teams?season=2026&offseason=1`)
     .then(r => r.json()).catch(() => null)
     .then((rankRes) => {
@@ -1844,6 +1851,67 @@ function binSaturdayByTime(games) {
 // blank when no pick exists on that type. Currently the API only returns the
 // game's headline pick (the highest-tier across types), so we can only fill
 // one slot per card today. Future API change: return all three picks per game.
+// ── My Bets on the slate ────────────────────────────────────────────
+// Your own bets replace the released picks on their game+market (largest
+// stake wins when several exist), and the card grades YOUR line — the same
+// settle-on-your-own-number rule My Bets uses. Everything rides the existing
+// slot pipeline as pseudo-tier '__bet' ($ chip): computeLivePerf reads
+// side/best_line, resultMark reads result. (Austin, 2026-08-27)
+let myBetsByGame = {};   // game_id (string) -> market -> best user_bets row
+
+async function loadMyBets() {
+  try {
+    if (!sb) return false;
+    const { data, error } = await sb.from('user_bets')
+      .select('game_id, market, side, line, stake, book, result')
+      .eq('season', SEASON);
+    if (error) throw error;
+    const map = {};
+    (data || []).forEach(b => {
+      const gid = String(b.game_id);
+      const m = b.market;
+      if (!gid || !m) return;
+      const cur = (map[gid] = map[gid] || {})[m];
+      if (!cur || Number(b.stake || 0) > Number(cur.stake || 0)) map[gid][m] = b;
+    });
+    myBetsByGame = map;
+    return Object.keys(map).length > 0;
+  } catch (e) {
+    myBetsByGame = {};
+    return false;
+  }
+}
+
+const BET_RESULT = { W: 'win', L: 'loss', P: 'push', V: 'void' };
+
+function betSlotData(g, market) {
+  const byMarket = myBetsByGame[String(g.game_id)];
+  const b = byMarket && byMarket[market];
+  if (!b) return null;
+  let side = b.side;
+  if (market === 'total') {
+    side = (String(b.side).toLowerCase() === 'over') ? 'Over' : 'Under';
+  } else {
+    side = (b.side === 'home') ? g.home_team
+         : (b.side === 'away') ? g.away_team : b.side;
+  }
+  return {
+    tier_full: '__bet',
+    side,
+    best_line: (b.line != null ? Number(b.line) : null),
+    result: BET_RESULT[b.result] || null,
+    bolt: false,
+  };
+}
+
+function effSlots(g, slots) {
+  return {
+    spread: betSlotData(g, 'spread') || (slots && slots.spread) || null,
+    total:  betSlotData(g, 'total')  || (slots && slots.total)  || null,
+    ml:     betSlotData(g, 'ml')     || (slots && slots.ml)     || null,
+  };
+}
+
 function renderSlateCard(g) {
   const pick = pickFor(g);
   const homeColor = colorFor(g.home_team);
@@ -1852,7 +1920,7 @@ function renderSlateCard(g) {
   const awayRank = powerRankings[g.away_team];
 
   const status = g.status || (g.has_score ? 'final' : 'scheduled');
-  const slots = (pick && pick.slots) || {};
+  const slots = effSlots(g, (pick && pick.slots) || {});
   const awayPts = g.away_points;
   const homePts = g.home_points;
   const hasScores = (awayPts !== null && awayPts !== undefined &&
@@ -2195,7 +2263,7 @@ function bgHTML(awayColor, homeColor) {
 
 function renderGotW(g) {
   const pick = picksByGameId[g.game_id];
-  const slots = (pick && pick.slots) || {};
+  const slots = effSlots(g, (pick && pick.slots) || {});
   const homeColor = colorFor(g.home_team);
   const awayColor = colorFor(g.away_team);
   const homeRank = powerRankings[g.home_team];
