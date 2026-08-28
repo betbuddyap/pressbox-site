@@ -497,12 +497,12 @@ function render() {
 
     let metricMain, metricSub = '';
     if (isRecord) {
-      const sv = swingVariance(t);
+      const wr = winRange95(t);
       const wpr = winProbRecord(t);
       metricMain = `<span class="rk-rec-lbl">Favored</span> ${escapeHtml(t.proj_record || '—')}`
                  + ` <span class="rk-rec-sep">/</span> `
                  + `<span class="rk-rec-lbl">Win prob.</span> ${wpr || '—'}`;
-      metricSub = sv != null ? 'Win var ' + sv.toFixed(1) : '';
+      metricSub = wr ? `95% of seasons: ${wr.lo}–${wr.hi} wins` : '';
     } else {
       metricMain = fmtSigned(v);
     }
@@ -575,13 +575,13 @@ function buildPanel(t) {
   // like an adjustment and isn't meaningful on its own, so we show the rank.
   const sosRank = state.sosRank ? state.sosRank[t.team] : null;
   const sosTotal = state.payload ? (state.payload.teams || []).length : 0;
-  const svDetail = swingVariance(t);
+  const wrDetail = winRange95(t);
 
   const ctx = `
     <div class="rk-kv"><span class="rk-kv-k">Rating variance</span><span class="rk-kv-v">${variance == null ? '—' : variance.toFixed(1) + ' pts'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">W/L Favored</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">W/L Probability</span><span class="rk-kv-v">${winProbRecord(t) || '—'}</span></div>
-    <div class="rk-kv"><span class="rk-kv-k">Win variance</span><span class="rk-kv-v">${svDetail != null ? svDetail.toFixed(1) + ' <span style="color:var(--text-light);font-weight:500;">/ 10</span>' : '—'}</span></div>
+    <div class="rk-kv"><span class="rk-kv-k">95% win range</span><span class="rk-kv-v">${wrDetail ? wrDetail.lo + '–' + wrDetail.hi + ' <span style="color:var(--text-light);font-weight:500;">wins</span>' : '—'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">Strength of schedule</span><span class="rk-kv-v">${sosRank ? '#' + sosRank + ' <span style="color:var(--text-light);font-weight:500;">of ' + sosTotal + '</span>' : '—'}</span></div>`;
 
   return `
@@ -601,16 +601,36 @@ function buildPanel(t) {
 
 // Swing variance — how many of a team's games are genuine coin-flips. Each game
 // is weighted by a closeness kernel (1.0 at 50/50, ~0.3 at 70/30, ~0 by 80/20),
-// summed and normalized to a 0–10 scale: near 0 when every game is settled (locks
-// OR blowout losses), climbing as more land near 50/50. It is a closeness index,
-// NOT the win-total standard deviation — that SD is bounded and barely moves.
-function swingVariance(t) {
+// 95% win range — the span of season win totals that covers 95% of seasons if
+// the schedule is replayed against our per-game win probabilities. EXACT
+// (Poisson-binomial by dynamic programming, equal 2.5% tails), in real units
+// (games). Replaced the 0–10 swing index — Austin: an arbitrary scale doesn't
+// tell the average person the noise; "8–12 wins" does.
+function winRange95(t) {
   const games = Array.isArray(t.season) ? t.season : [];
   const ps = games.map(g => Number(g.win_prob)).filter(p => isFinite(p));
   if (!ps.length) return null;
-  const sigma = 0.18;
-  const raw = ps.reduce((s, p) => s + Math.exp(-Math.pow((p - 0.5) / sigma, 2)), 0);
-  return raw / ps.length * 10;
+  let dist = [1];
+  for (const p of ps) {
+    const next = new Array(dist.length + 1).fill(0);
+    for (let k = 0; k < dist.length; k++) {
+      next[k] += dist[k] * (1 - p);
+      next[k + 1] += dist[k] * p;
+    }
+    dist = next;
+  }
+  let cum = 0, lo = 0;
+  for (let k = 0; k < dist.length; k++) {
+    cum += dist[k];
+    if (cum > 0.025) { lo = k; break; }
+  }
+  cum = 0;
+  let hi = ps.length;
+  for (let k = 0; k < dist.length; k++) {
+    cum += dist[k];
+    if (cum >= 0.975) { hi = k; break; }
+  }
+  return { lo, hi };
 }
 
 // Win-probability record — round(expected wins)-(games - that). Expected wins

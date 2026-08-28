@@ -44,10 +44,9 @@ f_footnote  = font("seguisb.ttf", 14)
 GLOSS = ("Projected record = every game's win probability, summed across the "
          "schedule and rounded to the nearest whole game. Being favored in all "
          "twelve doesn't make you 12–0 — twelve games you're 85% to win add up "
-         "to about ten, and that's what a season actually does. Win var is the "
-         "same 0–10 number the site shows: how coin-flippy the season is — "
-         "near 0 when every game is basically decided, higher when the slate "
-         "is full of toss-ups. Teams listed in PressBox Top 25 order.")
+         "to about ten, and that's what a season actually does. The gray range "
+         "is where 95 of 100 seasons land, in wins, if the schedule is replayed "
+         "against our probabilities. Teams listed in PressBox Top 25 order.")
 
 
 def wrap(draw, text, fnt, width):
@@ -128,17 +127,35 @@ def main():
         wns = int(round(ew))
         return f"{wns}–{max(0, gc - wns)}"
     def _var_of(r):
-        # The SITE's win-variance index (rankings.html swingVariance), not the
-        # win-total SD — that SD is bounded and barely moves (±1.3–1.6 across
-        # the whole top 25; Austin: "they're all within like a decimal or
-        # two"). 0–10 closeness index: each game scored by how near 50/50.
-        import math
+        # 95% win range — EXACT Poisson-binomial (DP, equal 2.5% tails) over
+        # the per-game win probabilities; identical to rankings.html
+        # winRange95 so card and site say one thing. Real units (games) —
+        # Austin: "i just want to know what we expect like 95 or 99 percent
+        # of outcomes to fall between."
         games = r.get("season") or []
         ps = [float(g["win_prob"]) for g in games if g.get("win_prob") is not None]
         if not ps:
             return ""
-        raw = sum(math.exp(-(((pp - 0.5) / 0.18) ** 2)) for pp in ps)
-        return f"var {raw / len(ps) * 10:.1f}"
+        dist = [1.0]
+        for pp in ps:
+            nxt = [0.0] * (len(dist) + 1)
+            for k, dk in enumerate(dist):
+                nxt[k] += dk * (1.0 - pp)
+                nxt[k + 1] += dk * pp
+            dist = nxt
+        cum, lo = 0.0, 0
+        for k, dk in enumerate(dist):
+            cum += dk
+            if cum > 0.025:
+                lo = k
+                break
+        cum, hi = 0.0, len(ps)
+        for k, dk in enumerate(dist):
+            cum += dk
+            if cum >= 0.975:
+                hi = k
+                break
+        return f"95%: {lo}–{hi} W"
     rec_col = max(dr.textlength(_rec_of(r), font=f_rec) for r in rows)
     var_col = max((dr.textlength(_var_of(r), font=f_var) for r in rows if _var_of(r)),
                   default=0)
