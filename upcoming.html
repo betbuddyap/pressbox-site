@@ -2023,9 +2023,14 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
   const awayLoserCls = (homeWinning) ? ' loser' : '';
   const homeLoserCls = (awayWinning) ? ' loser' : '';
 
-  // Period label
+  // Period label. The feed writes "Halftime" into the clock during the
+  // break (ESPN freezes period=2/clock=0:00) — show it alone.
   let periodLabel = '';
-  if (period) {
+  let clockText = clock;
+  if (/^half/i.test(clock || '')) {
+    periodLabel = 'Halftime';
+    clockText = null;
+  } else if (period) {
     if (period <= 4) periodLabel = `Q${period}`;
     else periodLabel = `OT${period - 4}`;
   }
@@ -2084,7 +2089,7 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
         <div class="gc-content">
           <div class="gc-live-strip">
             <span class="gc-live-badge"><span class="gc-live-dot"></span>LIVE</span>
-            ${periodLabel || clock ? `<span class="gc-live-clock">${periodLabel}${clock ? ' · ' + clock : ''}</span>` : ''}
+            ${periodLabel || clockText ? `<span class="gc-live-clock">${periodLabel}${clockText ? ' · ' + clockText : ''}</span>` : ''}
           </div>
           <div class="gc-live-score">
             <div class="gc-live-team away${awayLoserCls}">

@@ -192,17 +192,22 @@
       `<span class="ctx-breadcrumb-sep">›</span>` +
       `<span>${escape(g.away?.name)} @ ${escape(g.home?.name)}</span>`;
 
-    // Grade strip — one current-look badge per market (replaces the old
-    // single-tier corner ribbon). Beat order: moneyline, spread, total.
+    // Grade strip — one badge per market (replaces the old single-tier
+    // corner ribbon). Beat order: moneyline, spread, total. Pre-kick the
+    // badge tracks the current look; once the game is live/final it wears
+    // the RELEASED grade — the tier we're graded on — so the hero can
+    // never contradict the locked pick cards below (2026-08-29).
     const gradePicks = {};
     (data.picks || []).forEach(p => { if (!gradePicks[p.market]) gradePicks[p.market] = p; });
+    const stripLocked = g.status === 'in_progress' || g.status === 'final';
     const gradesHtml = ['moneyline', 'spread', 'total']
       .filter(mk => gradePicks[mk])
       .map(mk => {
         const p = gradePicks[mk];
+        const rel = stripLocked ? (p.history?.released || null) : null;
         return `<div class="ctx-grade">` +
                `<span class="ctx-grade-mkt">${escape(MARKET_DISPLAY[mk] || mk)}</span>` +
-               llBadge(p.tier, p.bolt) + `</div>`;
+               llBadge((rel && rel.tier) || p.tier, p.bolt) + `</div>`;
       }).join('');
     els.ribbon.outerHTML = gradesHtml
       ? `<div class="ctx-grades" id="ctxRibbon">${gradesHtml}</div>`
@@ -303,7 +308,11 @@
     const clock  = g.current_clock;
     let periodLabel = '';
     if (period) periodLabel = period <= 4 ? `Q${period}` : `OT${period - 4}`;
-    const clockLine = [periodLabel, clock].filter(Boolean).join(' · ');
+    // ESPN freezes period=2/clock=0:00 through the break; the feed writes
+    // "Halftime" into the clock field — show it alone.
+    const clockLine = /^half/i.test(clock || '')
+      ? 'Halftime'
+      : [periodLabel, clock].filter(Boolean).join(' · ');
     els.pgLiveClock.textContent = clockLine || '';
 
     const awayName = g.away?.name || '';
@@ -1985,31 +1994,41 @@
       const gameStatus = g?.status;
       const locked = gameStatus === 'in_progress' || gameStatus === 'final';
       const releasedEvt = p.history?.released || null;
-      const outcomeCls = (!isNoEdge && p.outcome)
+      // Locked cards are the RELEASED board, verdicts included — badge,
+      // label, and line all come from the release, tagged with one phrase.
+      // (The ML said "as released" while the no-edge spread/total said
+      // "market closed" on the same game, 2026-08-29.)
+      const effNoEdge = (locked && releasedEvt)
+        ? (releasedEvt.tier === 'no_edge' || !releasedEvt.side)
+        : isNoEdge;
+      const outcomeCls = (!effNoEdge && p.outcome)
         ? ({ W: 'win', L: 'loss', P: 'push', V: 'void' })[p.outcome] || null
         : null;
       const article = document.createElement('article');
-      article.className = isNoEdge ? 'll-row ll-row--no-edge' : 'll-row';
+      article.className = effNoEdge ? 'll-row ll-row--no-edge' : 'll-row';
       article.setAttribute('data-pick-id', String(p.pick_id || ''));
       article.setAttribute('aria-expanded', 'false');
 
       // Build the row header — same shape as live-lines.js renderPickRow
       const market = (p.market_display || MARKET_DISPLAY[p.market] || '');
-      const matchupLabel = isNoEdge
+      const matchupLabel = effNoEdge
         ? `${escape(market)} — No Edge`
         : escape(market);
 
-      // Once the game kicks off, rows stop tracking the market. Real picks
-      // print the RELEASED bet — the exact side/line/book we grade against
-      // (grading is vs the release, never the closing line) — tagged
-      // "as released". No-edge verdicts aren't bets; they just note the
-      // market closed.
+      // Once the game kicks off, rows stop tracking the market: EVERY card
+      // prints the RELEASED state — the exact side/line/book we grade
+      // against (grading is vs the release, never the closing line) —
+      // tagged "as released", no-edge verdicts included. "Market closed"
+      // survives only as the fallback when a pick has no release history.
       const relPx = releasedEvt?.price
         ? ` <span class="ll-row-pick-px">(${escape(releasedEvt.price)})</span>` : '';
-      const pickLineHtml = (locked && releasedEvt && !isNoEdge)
-        ? `${escape(releasedEvt.side || '—')} ${escape(releasedEvt.line || '')}${relPx}` +
-          `${releasedEvt.book?.name ? ' at ' + escape(releasedEvt.book.name) : ''}` +
-          `<span class="ll-row-locknote"> · as released</span>`
+      const lockNote = `<span class="ll-row-locknote"> · as released</span>`;
+      const pickLineHtml = (locked && releasedEvt)
+        ? (releasedEvt.side
+            ? `${escape(releasedEvt.side)} ${escape(releasedEvt.line ?? '')}${relPx}` +
+              `${releasedEvt.book?.name ? ' at ' + escape(releasedEvt.book.name) : ''}` +
+              lockNote
+            : `<span class="ll-row-pick-num">Signals tied — no lean</span>${lockNote}`)
         : llPickLine(p) + (locked
             ? `<span class="ll-row-locknote"> · market closed</span>` : '');
       const outcomeChipHtml = outcomeCls
@@ -2019,7 +2038,7 @@
 
       // Locked cards wear the RELEASED grade too — the tier we published
       // is the tier we're graded on, not the last regrade before kickoff.
-      const headerTier = (locked && releasedEvt && !isNoEdge && releasedEvt.tier)
+      const headerTier = (locked && releasedEvt && releasedEvt.tier)
         ? releasedEvt.tier : p.tier;
 
       const headerHtml = `

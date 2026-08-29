@@ -605,6 +605,8 @@
     return g;
   }
   function clockOf(g) {
+    // Feed writes "Halftime" into the clock during the break.
+    if (/^half/i.test(g.current_clock || '')) return 'Halftime';
     const q = g.current_period ? `Q${g.current_period}` : '';
     return [q, g.current_clock].filter(Boolean).join(' ');
   }
