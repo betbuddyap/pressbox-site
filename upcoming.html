@@ -1658,7 +1658,7 @@ function renderWeek(week) {
     document.getElementById('gotwSection').style.display = 'block';
     document.getElementById('gotwContent').innerHTML = renderGotW(gotw);
     document.getElementById('gotwMeta').textContent =
-      gotw.status === 'live'  ? 'Live now' :
+      gotw.status === 'live'  ? 'Live now' + (gotw.tv ? ' · ' + gotw.tv : '') :
       gotw.status === 'final' ? 'Final' :
       formatDate(gotw.date) + (gotw.time && gotw.time !== 'TBD' ? ' · ' + gotw.time : '')
       + (gotw.tv ? ' · ' + gotw.tv : '');
@@ -2089,7 +2089,8 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
         <div class="gc-content">
           <div class="gc-live-strip">
             <span class="gc-live-badge"><span class="gc-live-dot"></span>LIVE</span>
-            ${periodLabel || clockText ? `<span class="gc-live-clock">${periodLabel}${clockText ? ' · ' + clockText : ''}</span>` : ''}
+            ${(() => { const m = [periodLabel, clockText, g.tv].filter(Boolean).join(' · ');
+                       return m ? `<span class="gc-live-clock">${m}</span>` : ''; })()}
           </div>
           <div class="gc-live-score">
             <div class="gc-live-team away${awayLoserCls}">
