@@ -652,7 +652,17 @@
         if (s.ahead === true) ahead++;
       } else if (g.status === 'final') { done++; }
     }
-    if (!live) return null;
+    if (!live) {
+      // No leg running, some finished, ticket unsettled — say where it
+      // stands instead of going silent ("dropped the one final / two
+      // final portion", 2026-08-29).
+      if (done) {
+        return { ahead: null,
+                 text: `${done} of ${legs.length} legs final` +
+                       (done === legs.length ? ' — settling' : '') };
+      }
+      return null;
+    }
     return { ahead: ahead === live ? true : null,
              text: `${ahead} of ${legs.length} legs ahead${done ? `, ${done} final` : ''}` };
   }
@@ -661,7 +671,11 @@
     if (!b.result) {
       if (b.market === 'parlay') {
         const s = parlayStanding(b);
-        if (s) return [s.ahead ? 'live-ahead' : 'live-behind', s.ahead ? '▲' : '▼'];
+        if (s) {
+          if (s.ahead === true)  return ['live-ahead', '▲'];
+          if (s.ahead === false) return ['live-behind', '▼'];
+          return ['pending', '–'];   // mixed / all-final-awaiting-settle
+        }
       } else {
         const g = liveGame(b);
         if (g) {
