@@ -349,8 +349,9 @@
     const distance = g.current_distance;
     const yardLine = g.current_yard_line;
     let situation = '';
-    if (down && distance != null) {
-      const ord = ({1:'1st', 2:'2nd', 3:'3rd', 4:'4th'})[down] || `${down}th`;
+    // down/distance of -1 is ESPN's between-plays sentinel — hide it.
+    if (down >= 1 && down <= 4 && distance != null && distance >= 0) {
+      const ord = ({1:'1st', 2:'2nd', 3:'3rd', 4:'4th'})[down];
       const distText = distance === 0 ? 'goal' : distance;
       situation = `${ord} & ${distText}`;
       if (yardLine) situation += ` · ${yardLine}`;
