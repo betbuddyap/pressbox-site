@@ -861,9 +861,17 @@
                                 ends: [`${away} wins`, `${home} wins`] } });
   }
 
-  function buildTally(p) {
+  function buildTally(p, g) {
     const det = p.voter_details || [];
     if (!det.length) return null;
+    // Locked games label the tally with the RELEASED tier — the backend
+    // serves the released electorate once a game kicks, so the chips, the
+    // net, and the letter all describe the same (graded) board.
+    const tLocked = g && (g.status === 'in_progress' || g.status === 'final');
+    const relTier = tLocked ? p.history?.released?.tier : null;
+    const tierLabel = relTier
+      ? (TIER_DISPLAY[relTier] || relTier)
+      : (p.tier_display || p.tier || '');
     const detAgainst = p.voter_details_against || [];
     // Counts come from the chip lists, full stop. One chip = one vote (the
     // backend collapses moneyline voters to one per model, because that is
@@ -907,7 +915,7 @@
       `<div class="tally-grid">` +
       `<div class="vchips">${chips}</div>` +
       `<div class="tally-net"><div class="n">${det.length}–${against}</div>` +
-      `<div class="k">net ${net} · ${escape(p.tier_display || p.tier || '')}</div></div>` +
+      `<div class="k">net ${net} · ${escape(tierLabel)}</div></div>` +
       `<div class="vchips vchips--right">${oppChips}</div>` +
       `</div>`;
     return wrap;
@@ -970,19 +978,19 @@
         buildMLChart(data, proj.moneyline, proj.spread, anchor, byMkt.moneyline));
       // ML expressions ride the A+ spread's voters — show the tally here too
       // so a banded ML pick names the signals behind it.
-      if (byMkt.moneyline) { const t = buildTally(byMkt.moneyline); if (t) els.beat1Stack.appendChild(t); }
+      if (byMkt.moneyline) { const t = buildTally(byMkt.moneyline, data.game); if (t) els.beat1Stack.appendChild(t); }
     }
     if (els.beat2Stack) {
       els.beat2Stack.innerHTML = '';
       if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread, data.game));
       if (proj.spread)  els.beat2Stack.appendChild(buildDotPlot('Spread', proj.spread, 'anchor_spread', anchor, null, byMkt.spread, { ends: [awayN, homeN] }));
-      if (byMkt.spread) { const t = buildTally(byMkt.spread); if (t) els.beat2Stack.appendChild(t); }
+      if (byMkt.spread) { const t = buildTally(byMkt.spread, data.game); if (t) els.beat2Stack.appendChild(t); }
     }
     if (els.beat3Stack) {
       els.beat3Stack.innerHTML = '';
       if (byMkt.total) els.beat3Stack.appendChild(buildPickArticle(byMkt.total, data.game));
       if (proj.total)  els.beat3Stack.appendChild(buildDotPlot('Total', proj.total, 'total', anchor, null, byMkt.total, { ends: ['Under', 'Over'] }));
-      if (byMkt.total) { const t = buildTally(byMkt.total); if (t) els.beat3Stack.appendChild(t); }
+      if (byMkt.total) { const t = buildTally(byMkt.total, data.game); if (t) els.beat3Stack.appendChild(t); }
     }
 
     // Live/final game marker on every chart just built
