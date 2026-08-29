@@ -593,9 +593,14 @@
   // number — not the board's. Glyphs follow the house convention: ▲/▼ mean
   // "in progress, ahead/behind", ✓/✕ mean settled. A live bet must never
   // wear a settled mark. (Austin, 2026-08-20)
+  // /games/upcoming serves the games table's raw status ('live'), while the
+  // game-page endpoint remaps it to 'in_progress' — accept both. Checking
+  // only 'in_progress' left the whole ledger on the pending dash through
+  // the first live game (2026-08-29).
+  const isLiveStatus = (s) => s === 'live' || s === 'in_progress';
   function liveGame(b) {
     const g = gamesById[b.game_id];
-    if (!g || g.status !== 'in_progress') return null;
+    if (!g || !isLiveStatus(g.status)) return null;
     if (g.home_points == null || g.away_points == null) return null;
     return g;
   }
@@ -639,7 +644,7 @@
     for (const l of legs) {
       const g = gamesById[l.game_id];
       if (!g) continue;
-      if (g.status === 'in_progress' && g.home_points != null) {
+      if (isLiveStatus(g.status) && g.home_points != null) {
         live++;
         const s = standing(l, g);
         if (s.ahead === true) ahead++;
@@ -1222,8 +1227,8 @@
   function anyLive() {
     return bets.some(b => !b.result && (
       b.market === 'parlay'
-        ? (b.legs || []).some(l => (gamesById[l.game_id] || {}).status === 'in_progress')
-        : (gamesById[b.game_id] || {}).status === 'in_progress'));
+        ? (b.legs || []).some(l => isLiveStatus((gamesById[l.game_id] || {}).status))
+        : isLiveStatus((gamesById[b.game_id] || {}).status)));
   }
   async function refreshScores() {
     try {
@@ -1259,7 +1264,7 @@
         ? (b.legs || []).map(l => l.game_id) : [b.game_id];
       for (const id of ids) {
         const g = gamesById[id];
-        if (!g || g.status === 'in_progress') continue;
+        if (!g || isLiveStatus(g.status)) continue;
         const scripts = [[24, 17], [10, 20], [31, 28], [13, 13], [7, 24], [35, 14]];
         const [hp, ap] = scripts[i++ % scripts.length];
         Object.assign(g, { status: 'in_progress', home_points: hp, away_points: ap,

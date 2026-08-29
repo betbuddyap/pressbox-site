@@ -2207,17 +2207,18 @@ function computeLivePerf(market, slotData, awayPts, homePts, homeTeam, awayTeam)
     if (line == null || side == null) return null;
     const sum = homePts + awayPts;
     const isOver = (side || '').toLowerCase() === 'over';
-    if (isOver) {
-      // Points never come off the board — once past the line, Over IS won.
-      if (sum > line) return { cls: 'win', label: 'OVER hit' };
-      const remaining = (line - sum).toFixed(1);
-      return { cls: 'pending', label: `Need ${remaining}` };
-    } else {
-      // Under can only LOSE early, never win early — cushion, not victory.
-      if (sum > line) return { cls: 'loss', label: 'OVER hit' };
-      const cushion = (line - sum).toFixed(1);
-      return { cls: 'pending', label: `Cushion ${cushion}` };
+    // Past the number the Over is a locked fact — points never come off.
+    if (sum > line) {
+      return isOver ? { cls: 'win', label: 'OVER hit' }
+                    : { cls: 'loss', label: 'OVER hit' };
     }
+    if (sum === line) return { cls: 'push', label: 'On the number' };
+    // Below the number, read it as it stands — same present-tense
+    // if-it-ended-now framing the spread uses (a dash read as "not
+    // grading" on game day 1, 2026-08-29).
+    const gap = (line - sum).toFixed(1);
+    return isOver ? { cls: 'loss', label: `Need ${gap}` }
+                  : { cls: 'win', label: `Cushion ${gap}` };
   }
 
   if (market === 'ml') {
