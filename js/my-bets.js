@@ -1241,10 +1241,14 @@
   // results, this only re-reads the scoreboard.
   let liveTimer = null;
   function anyLive() {
+    // Keep polling while money is on a LIVE game — and while an unsettled
+    // bet sits on a FINAL one, so the W/L appears within 30s of the
+    // settler writing it instead of waiting for a manual reload.
+    const watchable = (g) => g && (isLiveStatus(g.status) || g.status === 'final');
     return bets.some(b => !b.result && (
       b.market === 'parlay'
-        ? (b.legs || []).some(l => isLiveStatus((gamesById[l.game_id] || {}).status))
-        : isLiveStatus((gamesById[b.game_id] || {}).status)));
+        ? (b.legs || []).some(l => watchable(gamesById[l.game_id]))
+        : watchable(gamesById[b.game_id])));
   }
   async function refreshScores() {
     try {
@@ -1257,6 +1261,21 @@
       if (!r.ok) return;
       const j = await r.json();
       (j.games || []).forEach(g => { gamesById[gid(g)] = g; });
+      // Re-pull the ledger while a settle is pending — the backend writes
+      // W/L into user_bets moments after a final, and the scoreboard fetch
+      // alone would never show it.
+      const settlePending = bets.some(b => !b.result && (
+        b.market === 'parlay'
+          ? (b.legs || []).some(l => (gamesById[l.game_id] || {}).status === 'final')
+          : (gamesById[b.game_id] || {}).status === 'final'));
+      if (settlePending) {
+        try {
+          const { data } = await sb.from('user_bets').select('*')
+            .eq('season', SEASON)
+            .order('created_at', { ascending: false });
+          if (data) bets = data;
+        } catch (e) { /* keep the stale ledger over an error */ }
+      }
       renderLedgerAndHero();
     } catch (e) { /* a dropped poll is not worth a visible error */ }
   }
