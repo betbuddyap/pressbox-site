@@ -978,7 +978,21 @@
     const awayN = data.game?.away?.name || 'Away';
     const homeN = data.game?.home?.name || 'Home';
     const byMkt = {};
-    (data.picks || []).forEach(p => { byMkt[p.market] = p; });
+    // Locked board = released board, stamped once for the chart layer: the
+    // gold zone, pick gating, and price clause read these effective fields
+    // so a pick that flipped sides pre-kick (NCSU@UVA total: Under 53.5 →
+    // Over 49.5) can't paint gold on the closing side after kickoff.
+    const boardLocked = data.game?.status === 'in_progress'
+                     || data.game?.status === 'final';
+    (data.picks || []).forEach(p => {
+      const rel = p.history?.released;
+      p._locked = boardLocked;
+      p._effTier = (boardLocked && rel) ? rel.tier : p.tier;
+      p._effSideRaw = (boardLocked && rel)
+        ? (rel.side_raw ?? null)
+        : (p.history?.current?.side_raw ?? null);
+      byMkt[p.market] = p;
+    });
 
     if (els.beat1Stack) {
       els.beat1Stack.innerHTML = '';
@@ -1173,7 +1187,8 @@
     // When a graded pick exists, suppress the aggregate blend dot — the pick
     // came from the ladder's votes, not the blend; the gold zone marks the
     // side instead, so the chart and verdict tell one story.
-    const hasPick      = !!(pick && pick.tier && pick.tier !== 'no_edge');
+    const pickTierEff  = pick ? (pick._effTier !== undefined ? pick._effTier : pick.tier) : null;
+    const hasPick      = !!(pick && pickTierEff && pickTierEff !== 'no_edge');
     const blendRaw     = (firingModel || hasPick) ? null : section.pressbox_blend;
     const blendPos     = key === 'anchor_spread' ? hv(blendRaw) : blendRaw;
     const blendDisplay = section.pressbox_display;
@@ -1218,7 +1233,11 @@
     // on a -1 game) doesn't stretch the entire chart. Out-of-range
     // dots will sit at the axis edge; the chart stays readable.
     const histRange = section.historical_range || null;
-    const pickSideRaw = hasPick ? (pick.history?.current?.side_raw || null) : null;
+    const pickSideRaw = hasPick
+      ? ((pick._effSideRaw !== undefined
+          ? pick._effSideRaw
+          : pick.history?.current?.side_raw) || null)
+      : null;
     let histLow   = histRange?.low ?? null;
     let histHigh  = histRange?.high ?? null;
     if (heroFlip && histLow != null && histHigh != null) {
@@ -1667,8 +1686,10 @@
       // arithmetic: no model number, no blend dot. (Austin, 2026-08-19)
       let priceClause = '';
       if (ml && rate != null) {
-        const rawLine = (pick && pick.history && pick.history.current
-                          && pick.history.current.line) || (pick && pick.line);
+        const rawLine = (pick && pick._locked && pick.history?.released?.line_raw != null)
+          ? pick.history.released.line_raw
+          : ((pick && pick.history && pick.history.current
+              && pick.history.current.line) || (pick && pick.line));
         const am = parseInt(String(rawLine == null ? '' : rawLine)
                               .replace(/[−–—]/g, '-').replace(/[^\-+\d]/g, ''), 10);
         if (isFinite(am) && Math.abs(am) >= 100) {
