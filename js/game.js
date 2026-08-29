@@ -452,9 +452,18 @@
     // A graded ML pick NAMES a winner — the hero must never contradict it
     // (Austin's rule). Clamp the margin to a minimal win when the blend
     // leans the other way.
+    // Locked games project from the RELEASED board — the same lock the
+    // cards, strip, and charts follow (a released-No-Edge that closed A
+    // must not steer the hero).
+    const projLocked = data.game?.status === 'in_progress'
+                    || data.game?.status === 'final';
+    const effTier = (pk) => (projLocked && pk?.history?.released)
+      ? pk.history.released.tier : pk?.tier;
+    const effSideRaw = (pk) => (projLocked && pk?.history?.released)
+      ? pk.history.released.side_raw : pk?.history?.current?.side_raw;
     const mlPk = pkByMkt.moneyline;
-    if (mlPk && mlPk.tier && mlPk.tier !== 'no_edge') {
-      const s = mlPk.history?.current?.side_raw;
+    if (mlPk && effTier(mlPk) && effTier(mlPk) !== 'no_edge') {
+      const s = effSideRaw(mlPk);
       if (s === 'home' && homeMargin <= 0) homeMargin = 1;
       if (s === 'away' && homeMargin >= 0) homeMargin = -1;
     }
@@ -490,8 +499,8 @@
     let rHome = Math.round(homePts);
     let rAway = Math.round(awayPts);
     if (rHome === rAway) {
-      const mlSide = (mlPk && mlPk.tier && mlPk.tier !== 'no_edge')
-        ? mlPk.history?.current?.side_raw : null;
+      const mlSide = (mlPk && effTier(mlPk) && effTier(mlPk) !== 'no_edge')
+        ? effSideRaw(mlPk) : null;
       const homeWins = mlSide ? mlSide === 'home' : homeMargin >= 0;
       if (homeWins) rHome += 1; else rAway += 1;
     }
@@ -506,15 +515,15 @@
     const usedSignal = spreadRuleMean != null || totalRuleMean != null;
     const conflicts = [];
     const tPick = pkByMkt.total, vTot = p.total?.vegas_line;
-    if (tPick && tPick.tier !== 'no_edge' && vTot != null) {
-      const s = tPick.history?.current?.side_raw;
+    if (tPick && effTier(tPick) !== 'no_edge' && vTot != null) {
+      const s = effSideRaw(tPick);
       if ((s === 'under' && effTotal > vTot) || (s === 'over' && effTotal < vTot)) {
         conflicts.push(`the graded ${s === 'under' ? 'Under' : 'Over'} ${vTot} fades this total`);
       }
     }
     const sPick = pkByMkt.spread, vAnch = p.spread?.vegas_anchor_spread;
-    if (sPick && sPick.tier !== 'no_edge' && vAnch != null) {
-      const s = sPick.history?.current?.side_raw;   // 'home' | 'away'
+    if (sPick && effTier(sPick) !== 'no_edge' && vAnch != null) {
+      const s = effSideRaw(sPick);   // 'home' | 'away'
       const vegasHomeMargin = anchorIsHome ? -vAnch : vAnch;
       const agrees = s === 'home' ? homeMargin > vegasHomeMargin
                    : s === 'away' ? homeMargin < vegasHomeMargin : true;
