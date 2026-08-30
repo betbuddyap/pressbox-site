@@ -93,6 +93,8 @@ def fetch_rows(start, end):
                     rp=rel.get("price"),
                     ct=ct, cs=p.get("side_display"), cl=p.get("line"),
                     cprice=cur.get("price"), voters=p.get("voters"),
+                    vlabels=[v.get("label") for v in (p.get("voter_details") or [])
+                             if v.get("label")],
                     trans=h.get("transitions") or [])
                 # Sizing pool = everything the allocator stakes RIGHT NOW
                 # (currently graded), including picks that released No Edge
@@ -150,18 +152,36 @@ def allocator_units(pool, pot=10.0, beta=0.5, gamma=0.5):
 
 
 def why_line(r):
-    """Factual reason the grade moved: what changed in the market."""
+    """Factual reason the grade moved. Two real mechanisms:
+    (1) the market moved — the line/price crossed a rule's band (band
+        MEMBERSHIP decides, so a move 'against' the pick can still fire
+        rules — e.g. a total dropping to 52 enters the under-52 band);
+    (2) the PROJECTIONS moved against the same number — Sunday's data
+        update put Week 0 into the model chains, shifting every edge.
+    For upgrades, quote the rule(s) actually firing now."""
     bits = []
     rs, cs = r.get("rs") or "", r.get("cs") or ""
     if rs and cs and rs.split()[0] != cs.split()[0]:
         bits.append(f"pick flipped {rs} → {cs}")
     rl, cl = r.get("rl"), r.get("cl")
-    if rl is not None and cl is not None and str(rl) != str(cl):
-        if (r.get("market") or "").startswith("m"):
-            bits.append(f"price moved {rl} → {cl}")
-        else:
-            bits.append(f"line moved {rl} → {cl}")
-    # ML picks re-tier off the SPREAD anchor — surface the annotated move
+
+    def _num(v):
+        try:
+            return float(str(v).replace("−", "-").replace("+", ""))
+        except (TypeError, ValueError):
+            return None
+    a, b = _num(rl), _num(cl)
+    # Numeric compare — "+24.5" vs "24.5" is the SAME number, and calling
+    # it a move buried the real reason (the model re-projection).
+    moved = (rl is not None and cl is not None
+             and ((a is None or b is None) and str(rl) != str(cl)
+                  or (a is not None and b is not None and abs(a - b) > 1e-9)))
+    if moved:
+        word = "price" if (r.get("market") or "").startswith("m") else "line"
+        bits.append(f"{word} moved {rl} → {cl}")
+    else:
+        bits.append("same number — the models re-projected once Week 0 "
+                    "results landed (Sunday data update)")
     for t in reversed(r.get("trans") or []):
         for k in ("anchor_note", "note"):
             if t.get(k):
@@ -170,11 +190,16 @@ def why_line(r):
         else:
             continue
         break
-    if not bits:
-        bits.append("same number — the electorate itself re-tallied")
-    verb = ("regraded up" if TIER_ORDER(r["ct"]) > TIER_ORDER(r["rt"])
-            else "regraded down")
-    return f"{verb}: " + "; ".join(bits) + " — grades track the live number until kickoff"
+    up = TIER_ORDER(r["ct"]) > TIER_ORDER(r["rt"])
+    if up and r.get("vlabels"):
+        vl = r["vlabels"]
+        shown = vl[0] if len(vl[0]) < 70 else vl[0][:67] + "…"
+        extra = f" (+{len(vl) - 1} more)" if len(vl) > 1 else ""
+        bits.append(f"now firing: {shown}{extra}")
+    if not up:
+        bits.append("the released vote no longer clears")
+    verb = "regraded up" if up else "regraded down"
+    return f"{verb}: " + "; ".join(bits)
 
 
 def TIER_ORDER(t):
@@ -182,12 +207,31 @@ def TIER_ORDER(t):
 
 
 def badge(dr, x, base, tier):
-    lbl = TIER_LBL.get(tier, tier)
-    col = TIER_COL.get(tier, DIM)
-    w = dr.textlength(lbl, font=f_badge) + 16 * S
-    dr.rounded_rectangle([x, base - 21 * S, x + w, base + 5 * S],
-                         radius=5 * S, outline=col, width=2 * S)
-    dr.text((x + w / 2, base), lbl, font=f_badge, fill=col, anchor="ms")
+    """The site's .ll-badge, faithfully: 36x32 filled chip, radius 2.
+    A gold/cream · B silver/ink · C bronze/cream · A+ ink chip with gold
+    border and gold-light letter · No Edge transparent with dim border."""
+    w, h, rad = 36 * S, 32 * S, 2 * S
+    top = base - 23 * S
+    lbl = {"A+": "A+", "A": "A", "B": "B", "C": "C"}.get(tier, "NE")
+    if tier == "A+":
+        dr.rounded_rectangle([x, top, x + w, top + h], radius=rad,
+                             fill=INK, outline=GOLD, width=2 * S)
+        txt = GOLD_LIGHT
+    elif tier == "A":
+        dr.rounded_rectangle([x, top, x + w, top + h], radius=rad, fill=GOLD)
+        txt = CREAM
+    elif tier == "B":
+        dr.rounded_rectangle([x, top, x + w, top + h], radius=rad, fill=SILVER)
+        txt = INK
+    elif tier == "C":
+        dr.rounded_rectangle([x, top, x + w, top + h], radius=rad, fill=BRONZE)
+        txt = CREAM
+    else:
+        dr.rounded_rectangle([x, top, x + w, top + h], radius=rad,
+                             outline=DIM, width=1 * S)
+        txt = TEXT_LIGHT
+    dr.text((x + w / 2, top + h / 2 + 1 * S), lbl, font=f_badge,
+            fill=txt, anchor="mm")
     return w
 
 
