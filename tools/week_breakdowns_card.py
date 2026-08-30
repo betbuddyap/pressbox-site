@@ -179,19 +179,14 @@ def main():
                 dr.text((PAD + 16 * S, y + 14 * S), rec, font=f_sub,
                         fill=TEXT_LIGHT, anchor="ls")
                 y += 20 * S
-            # held / why
+            # why-line only when the grade actually moved — a held pick
+            # says everything by having one badge.
             if moved:
                 for line in wrap(dr, why_line(r), f_sub,
                                  W - 2 * PAD - 20 * S)[:3]:
                     dr.text((PAD + 16 * S, y + 14 * S), line, font=f_sub,
                             fill=GOLD_LIGHT, anchor="ls")
                     y += 20 * S
-            else:
-                rel_day = (r.get("rat") or "")[:10]
-                dr.text((PAD + 16 * S, y + 14 * S),
-                        f"released {rel_day} — held since", font=f_sub,
-                        fill=TEXT_LIGHT, anchor="ls")
-                y += 20 * S
             y += 12 * S
 
         dr.line([PAD, y, W - PAD, y], fill=DIVIDER, width=1 * S)
