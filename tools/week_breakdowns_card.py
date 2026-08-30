@@ -172,10 +172,10 @@ def draw_header(img, dr, page, pages, gloss_lines):
     dr.text((W - PAD, y + 70 * S), "COLLEGE FOOTBALL · 2026", font=f_gmeta,
             fill=TEXT_LIGHT, anchor="rs")
     y += 96 * S + 22 * S
-    dr.text((PAD, y), f"WEEK 1 · THE BREAKDOWNS · {page} OF {pages}",
+    dr.text((PAD, y), f"WEEK 1 · EVERY GRADED PICK · {page} OF {pages}",
             font=f_eyebrow, fill=GOLD_LIGHT)
     y += 30 * S
-    dr.text((PAD, y), "Biggest Bets First", font=f_title, fill=CREAM)
+    dr.text((PAD, y), "Week 1 Pick Detail", font=f_title, fill=CREAM)
     y += 86 * S
     if page == 1:
         for line in gloss_lines:
