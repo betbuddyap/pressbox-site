@@ -4,13 +4,18 @@
     py -X utf8 tools/week0_allocator_card.py [out.png]
 
 Recreates the Week 0 allocator sheet exactly as the site computes it
-(Moderate preset beta=0.5, SIZING_GAMMA=0.50, $1,000 pot, parlay tickets =
+(Moderate preset beta=0.5, SIZING_GAMMA=0.50, 10-unit pot, parlay tickets =
 the presets the allocator pulls: Best 3-leg then next distinct type), on the
 RELEASED picks at RELEASED prices — the numbers grading settles against.
-Sizing probabilities are the same ones the product used: the released
-bloc's weighted hit rate for spread/total, the blend's win probability for
-ML. Inputs embedded below (pulled from the public game breakdowns,
-2026-08-30); the math runs fresh each render.
+
+Sizing probabilities are the PRODUCT'S OWN: spread/total legs price at
+ladder_leg_probability(tier, released voters) — the tier anchor (C .554 /
+B .616) plus the bloc's shrunk deviation from the electorate rate — and ML
+legs at (1 + ML_TIER_ROI_LB)/decimal = 1.08/dec. The p values below were
+computed by importing pipeline/cell_probabilities.py against each pick's
+released voter ids (2026-08-30). Verified against the sheet as bet at
+release: biggest stakes UVA Under then SJSU +38.5; Longshot ticket =
+Memphis ML x Hawai'i ML x UVA Under.
 """
 import os
 import sys
@@ -56,22 +61,28 @@ f_footnote = font("seguisb.ttf", 13)
 def am_to_dec(a):
     return 1 + a / 100 if a > 0 else 1 + 100 / (-a)
 
+ML_ROI_LB = 0.08   # ML_TIER_ROI_LB — all tiers 0.08; p = (1 + roi) / dec
+
 LEGS = [
-    # key, matchup, bet, tier, p_sizing, american, won
-    ("sjsu",  "San José State @ USC",           "San José State +38.5", "C", 0.7037,   -110, True),
-    ("uvau",  "NC State @ Virginia",            "Under 53.5",           "B", 0.5839,   -110, True),
-    ("fsusp", "New Mexico State @ Florida St.", "Florida State −30.5",  "C", 0.5754,   -115, False),
-    ("fsuu",  "New Mexico State @ Florida St.", "Under 53.5",           "C", 0.5934,   -105, True),
-    ("hawml", "Hawai'i @ Stanford",             "Hawai'i ML",           "C", 0.52005,   190, False),
-    ("memsp", "Memphis @ UNLV",                 "Memphis +6.5",         "C", 0.6231,   -115, True),
-    ("memml", "Memphis @ UNLV",                 "Memphis ML",           "C", 0.487525,  195, True),
+    # key, matchup, bet, tier, market, p_sizing (None for ML), american, won
+    ("sjsu",  "San José State @ USC",           "San José State +38.5", "C", "spread", 0.5918, -110, True),
+    ("uvau",  "NC State @ Virginia",            "Under 53.5",           "B", "total",  0.6160, -110, True),
+    ("fsusp", "New Mexico State @ Florida St.", "Florida State −30.5",  "C", "spread", 0.5505, -115, False),
+    ("fsuu",  "New Mexico State @ Florida St.", "Under 53.5",           "C", "total",  0.5597, -105, True),
+    ("hawml", "Hawai'i @ Stanford",             "Hawai'i ML",           "C", "ml",     None,    190, False),
+    ("memsp", "Memphis @ UNLV",                 "Memphis +6.5",         "C", "spread", 0.5711, -115, True),
+    ("memml", "Memphis @ UNLV",                 "Memphis ML",           "C", "ml",     None,    195, True),
 ]
 GAME = {"sjsu": "usc", "uvau": "uva", "fsusp": "fsu", "fsuu": "fsu",
         "hawml": "stan", "memsp": "unlv", "memml": "unlv"}
-GAMMA, BETA, POT = 0.50, 0.5, 1000.0
+GAMMA, BETA, POT = 0.50, 0.5, 10.0   # ten units, split 100%
 
-L = [dict(key=k, matchup=m, bet=b, tier=t, p=p, am=am, dec=am_to_dec(am), won=w)
-     for (k, m, b, t, p, am, w) in LEGS]
+L = []
+for (k, m, b, t, mk, p, am, w) in LEGS:
+    dec = am_to_dec(am)
+    if p is None:
+        p = (1.0 + ML_ROI_LB) / dec
+    L.append(dict(key=k, matchup=m, bet=b, tier=t, p=p, am=am, dec=dec, won=w))
 
 def delta_w(p, dec):
     edge = p - 1 / dec
@@ -179,8 +190,8 @@ def main():
     y += 88 * S
     gloss = ("Every pick below released before kickoff and is graded on the "
              "released line — never the close. Stakes are the site's own "
-             "allocator splitting a $1,000 pot (Moderate), exactly as the "
-             "page sized it.")
+             "allocator splitting a ten-unit pot (Moderate preset), exactly "
+             "as the sheet sized it at release.")
     words, line_, gy = gloss.split(), "", y
     for w_ in words:
         t_ = (line_ + " " + w_).strip()
@@ -228,10 +239,10 @@ def main():
         dr.text((PAD + sq + 10 * S, base + 19 * S), l["matchup"],
                 font=f_rowsub, fill=TEXT_LIGHT, anchor="ls")
         dr.text((col_px, base), fmt_am(l["am"]), font=f_num, fill=CREAM, anchor="rs")
-        dr.text((col_st, base), f"${c['stake']:.0f}", font=f_num, fill=CREAM, anchor="rs")
+        dr.text((col_st, base), f"{c['stake']:.1f}u", font=f_num, fill=CREAM, anchor="rs")
         draw_result(dr, col_rs, base - 8 * S, c["won"])
         pcol = GOLD_LIGHT if c["pnl"] > 0 else RUST
-        dr.text((col_pl, base), f"{c['pnl']:+.0f}", font=f_num, fill=pcol, anchor="rs")
+        dr.text((col_pl, base), f"{c['pnl']:+.2f}u", font=f_num, fill=pcol, anchor="rs")
         y += 56 * S
         dr.line([PAD, y, W - PAD, y], fill=DIVIDER, width=1 * S)
         y += 4 * S
@@ -248,14 +259,22 @@ def main():
         nw = dr.textlength(t["name"], font=f_row)
         dr.text((PAD + nw + 12 * S, base), f"+{(t['dec']-1)*100:.0f}",
                 font=f_num, fill=GOLD, anchor="ls")
-        legs_txt = "  ·  ".join(x["bet"] for x in t["legs"])
+        # Totals don't name a team — tag them with the game so two
+        # "Under 53.5" legs stay distinguishable.
+        HOME_SHORT = {"usc": "USC", "uva": "Virginia", "fsu": "Florida St.",
+                      "stan": "Stanford", "unlv": "UNLV"}
+        def leg_txt(x):
+            if x["bet"].startswith(("Under", "Over")):
+                return f"{x['bet']} ({HOME_SHORT[GAME[x['key']]]})"
+            return x["bet"]
+        legs_txt = "  ·  ".join(leg_txt(x) for x in t["legs"])
         dr.text((PAD, base + 20 * S), legs_txt, font=f_rowsub, fill=TEXT_LIGHT,
                 anchor="ls")
-        dr.text((col_st, base), f"${c['stake']:.0f}", font=f_num, fill=CREAM,
+        dr.text((col_st, base), f"{c['stake']:.1f}u", font=f_num, fill=CREAM,
                 anchor="rs")
         draw_result(dr, col_rs, base - 8 * S, c["won"])
         pcol = GOLD_LIGHT if c["pnl"] > 0 else RUST
-        dr.text((col_pl, base), f"{c['pnl']:+.0f}", font=f_num, fill=pcol,
+        dr.text((col_pl, base), f"{c['pnl']:+.2f}u", font=f_num, fill=pcol,
                 anchor="rs")
         y += 58 * S
         dr.line([PAD, y, W - PAD, y], fill=DIVIDER, width=1 * S)
@@ -264,12 +283,12 @@ def main():
     # ── Summary tiles ────────────────────────────────────────────────
     y += 26 * S
     tiles = [
-        ("FLAT · ONE UNIT EACH", f"{wins}–{losses}",
-         f"{flat_pnl:+.2f}u on {len(L)}u · {flat_pnl/len(L)*100:+.1f}%"),
-        ("ALLOCATOR · STRAIGHTS", f"${1000+net_no:,.0f}",
-         f"$1,000 in · {net_no/10:+.1f}%"),
-        ("ALLOCATOR · WITH PARLAYS", f"${1000+net_yes:,.0f}",
-         f"$1,000 in · {net_yes/10:+.1f}%"),
+        ("FLAT · ONE UNIT EACH", f"{flat_pnl/len(L)*100:+.1f}%",
+         f"{wins}–{losses} · {flat_pnl:+.2f}u on {len(L)}u"),
+        ("ALLOCATOR · STRAIGHTS", f"{net_no/POT*100:+.1f}%",
+         f"10u in · {net_no:+.2f}u net"),
+        ("ALLOCATOR · WITH PARLAYS", f"{net_yes/POT*100:+.1f}%",
+         f"10u in · {net_yes:+.2f}u net"),
     ]
     tw = (W - 2 * PAD - 2 * 24 * S) / 3
     tx = PAD
@@ -294,7 +313,10 @@ def main():
 
     img.crop((0, 0, W, total_h)).save(out_path, "PNG")
     print(f"wrote {out_path} ({W}x{total_h})")
-    print(f"no-parlay net {net_no:+.2f} | with-parlay net {net_yes:+.2f} | flat {wins}-{losses} {flat_pnl:+.2f}u")
+    print(f"straights {net_no:+.2f}u ({net_no/POT*100:+.1f}%) | with parlays "
+          f"{net_yes:+.2f}u ({net_yes/POT*100:+.1f}%) | flat {wins}-{losses} {flat_pnl:+.2f}u")
+    print("tickets:", [(t['name'], ' + '.join(x['bet'] for x in t['legs']),
+                        'W' if t['won'] else 'L') for t in TICKETS])
 
 
 if __name__ == "__main__":
