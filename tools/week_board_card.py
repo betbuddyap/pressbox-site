@@ -59,6 +59,15 @@ ANON = "sb_publishable_yUSCp6-m1gda0eMcGWuinw_LMLGP_uE"
 API = "https://betbuddy-backend.onrender.com"
 
 
+def _hist(proj, market, field):
+    """Rule/bloc record off the game's own chart payload — only when the
+    curve IS the signals' (never the broad line band)."""
+    hr = ((proj.get(market) or {}).get("historical_range") or {})
+    if hr.get("source") in ("rule", "bloc"):
+        return hr.get(field)
+    return None
+
+
 def fetch_rows(start, end):
     req = urllib.request.Request(
         "https://brwalcuodwxsynrpiqjc.supabase.co/rest/v1/games?season=eq.2026"
@@ -79,6 +88,7 @@ def fetch_rows(start, end):
         for g, d in ex.map(one, games):
             if not d:
                 continue
+            proj = d.get("projections") or {}
             for p in d.get("picks") or []:
                 h = p.get("history") or {}
                 rel = h.get("released") or {}
@@ -95,6 +105,13 @@ def fetch_rows(start, end):
                     cprice=cur.get("price"), voters=p.get("voters"),
                     vlabels=[v.get("label") for v in (p.get("voter_details") or [])
                              if v.get("label")],
+                    rbook=((rel.get("book") or {}).get("name")
+                           if isinstance(rel.get("book"), dict)
+                           else rel.get("book")),
+                    rat=rel.get("at"),
+                    hist_rate=_hist(proj, p.get("market"), "cover_rate"),
+                    hist_n=(_hist(proj, p.get("market"), "sample_size")
+                            or _hist(proj, p.get("market"), "signal_count")),
                     trans=h.get("transitions") or [])
                 # Sizing pool = everything the allocator stakes RIGHT NOW
                 # (currently graded), including picks that released No Edge
@@ -235,9 +252,8 @@ def why_line(r):
             word = "price" if is_ml else "line"
             bits.append(f"{word} moved {rl} → {cl}")
     else:
-        bits.append("same number — Week 0 stats finished landing and the "
-                    "opponent-adjusted (SoS) solve moved every input; "
-                    "re-tallied once on the complete graph")
+        bits.append("same number — Week 0 stats landed and the "
+                    "opponent-adjusted (SoS) solve moved every input")
     for t in reversed(r.get("trans") or []):
         for k in ("anchor_note", "note"):
             if t.get(k):
@@ -383,10 +399,25 @@ def main():
                 dr.text((ax, base), "→", font=f_row, fill=TEXT_LIGHT, anchor="ls")
                 badge(dr, ax + dr.textlength("→", font=f_row) + 10 * S,
                       base, r["ct"])
+                # WRAP the why — a long reason sailed off the right edge
+                # when drawn as one line (Austin, 2026-08-30).
                 wy = base + 42 * S
-                dr.text((PAD + 14 * S, wy), why_line(r), font=f_why,
-                        fill=GOLD_LIGHT, anchor="ls")
-                y += 84 * S
+                words, line_ = why_line(r).split(), ""
+                lines = []
+                for w_ in words:
+                    t_ = (line_ + " " + w_).strip()
+                    if dr.textlength(t_, font=f_why) <= W - 2 * PAD - 28 * S:
+                        line_ = t_
+                    else:
+                        lines.append(line_)
+                        line_ = w_
+                if line_:
+                    lines.append(line_)
+                for ln in lines[:3]:
+                    dr.text((PAD + 14 * S, wy), ln, font=f_why,
+                            fill=GOLD_LIGHT, anchor="ls")
+                    wy += 20 * S
+                y += 64 * S + 20 * S * min(len(lines), 3)
             else:
                 y += 62 * S
             dr.line([PAD, y, W - PAD, y], fill=DIVIDER, width=1 * S)
