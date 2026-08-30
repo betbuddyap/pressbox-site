@@ -91,10 +91,12 @@ def main():
     dr.text((PAD, y), "The Breakdowns", font=f_title, fill=CREAM)
     y += 86 * S
     gloss = (f"Every game carrying a graded pick — {len(rows)} picks across "
-             f"{len(order)} games. Each pick shows the bet as released, the "
-             "rules firing now by name, the signals' 2023–25 record, and "
-             "the allocator's current stake (Moderate, average bet = one "
-             "unit). Grading always settles on the release.")
+             f"{len(order)} games. “Prices at” is the allocator's "
+             "own number: the grade's anchor tilted by its bloc (ML: the "
+             "tier's ROI floor at this price). The raw record is each "
+             "rule's full 2023–25 history pooled — in-sample, a ceiling. "
+             "Stakes: Moderate, average bet = one unit. Grading always "
+             "settles on the release.")
     for line in wrap(dr, gloss, f_gloss, W - 2 * PAD):
         dr.text((PAD, y), line, font=f_gloss, fill=TEXT_LIGHT)
         y += 23 * S
@@ -163,12 +165,9 @@ def main():
             # pooled across all games — and for ML, ALL prices.
             p, dec = sizing_prob_dec(r)
             if p and dec and dec > 1:
-                lbl = ("tier ROI anchor at this price"
-                       if (r["market"] or "").startswith("m")
-                       else "grade anchor + bloc tilt")
                 dr.text((PAD + 16 * S, y + 14 * S),
                         f"prices at {p * 100:.1f}% vs {100 / dec:.1f}% "
-                        f"break-even ({lbl})",
+                        f"break-even",
                         font=f_sub, fill=CREAM, anchor="ls")
                 y += 20 * S
             if r.get("hist_rate") is not None:
@@ -176,9 +175,7 @@ def main():
                 ml_tag = (", all prices"
                           if (r["market"] or "").startswith("m") else "")
                 rec = (f"raw signal record {round(r['hist_rate'] * 100)}% "
-                       f"in 2023–25"
-                       + (f" ({n} fires{ml_tag})" if n else "")
-                       + " — pooled per rule, in-sample")
+                       f"in 2023–25" + (f" ({n} fires{ml_tag})" if n else ""))
                 dr.text((PAD + 16 * S, y + 14 * S), rec, font=f_sub,
                         fill=TEXT_LIGHT, anchor="ls")
                 y += 20 * S
