@@ -221,12 +221,23 @@ def why_line(r):
     moved = (rl is not None and cl is not None
              and ((a is None or b is None) and str(rl) != str(cl)
                   or (a is not None and b is not None and abs(a - b) > 1e-9)))
+    is_ml = (r.get("market") or "").startswith("m")
     if moved:
-        word = "price" if (r.get("market") or "").startswith("m") else "line"
-        bits.append(f"{word} moved {rl} → {cl}")
+        if (is_ml and a is not None and b is not None
+                and (a < 0) != (b < 0)):
+            # ML rules anchor to favorite/dog context — the price crossing
+            # even money means the MARKET flipped the favorite (the pick
+            # side never changed), and fav-conditioned rules (un)fired.
+            bits.append(f"the market flipped the favorite ({rl} → {cl}); "
+                        f"our side never changed — fav/dog-anchored rules "
+                        f"{'now fire' if TIER_ORDER(r['ct']) > TIER_ORDER(r['rt']) else 'unfired'}")
+        else:
+            word = "price" if is_ml else "line"
+            bits.append(f"{word} moved {rl} → {cl}")
     else:
-        bits.append("same number — the models re-projected once Week 0 "
-                    "results landed (Sunday data update)")
+        bits.append("same number — Week 0 stats finished landing and the "
+                    "opponent-adjusted (SoS) solve moved every input; "
+                    "re-tallied once on the complete graph")
     for t in reversed(r.get("trans") or []):
         for k in ("anchor_note", "note"):
             if t.get(k):
