@@ -19,7 +19,8 @@ from zoneinfo import ZoneInfo
 from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from week_board_card import (fetch_rows, allocator_units, badge, why_line,
+from week_board_card import (fetch_rows, allocator_units, sizing_prob_dec,
+                             badge, why_line,
                              TIER_LBL, MKT, INK, CREAM, GOLD, GOLD_LIGHT,
                              TEXT_LIGHT, DIVIDER, DIM, S, W, PAD, font)
 
@@ -155,11 +156,29 @@ def main():
                     dr.text((PAD + 16 * S, y + 14 * S), line, font=f_sub,
                             fill=TEXT_LIGHT, anchor="ls")
                     y += 20 * S
-            # record
+            # THE PRICED NUMBER first — grade anchor + bloc tilt, the same
+            # probability the allocator stakes on (Austin, 2026-08-30:
+            # "weight to the grade like we do on the allocator"). The raw
+            # pooled record stays as labeled context: per-rule fires
+            # pooled across all games — and for ML, ALL prices.
+            p, dec = sizing_prob_dec(r)
+            if p and dec and dec > 1:
+                lbl = ("tier ROI anchor at this price"
+                       if (r["market"] or "").startswith("m")
+                       else "grade anchor + bloc tilt")
+                dr.text((PAD + 16 * S, y + 14 * S),
+                        f"prices at {p * 100:.1f}% vs {100 / dec:.1f}% "
+                        f"break-even ({lbl})",
+                        font=f_sub, fill=CREAM, anchor="ls")
+                y += 20 * S
             if r.get("hist_rate") is not None:
                 n = r.get("hist_n")
-                rec = (f"the signals behind it won {round(r['hist_rate'] * 100)}% "
-                       f"in 2023–25" + (f" ({n} fires)" if n else ""))
+                ml_tag = (", all prices"
+                          if (r["market"] or "").startswith("m") else "")
+                rec = (f"raw signal record {round(r['hist_rate'] * 100)}% "
+                       f"in 2023–25"
+                       + (f" ({n} fires{ml_tag})" if n else "")
+                       + " — pooled per rule, in-sample")
                 dr.text((PAD + 16 * S, y + 14 * S), rec, font=f_sub,
                         fill=TEXT_LIGHT, anchor="ls")
                 y += 20 * S

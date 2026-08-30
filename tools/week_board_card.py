@@ -127,17 +127,17 @@ def fetch_rows(start, end):
     return rows, pool
 
 
-def allocator_units(pool, beta=0.5, gamma=0.5):
-    """Stakes in UNITS on the CURRENT sheet, the site's exact math
-    (Moderate preset) with one presentation change: the pot is scaled so
-    the AVERAGE stake is exactly 1u (pot = number of staked bets).
-    Straights: p from ladder_leg_probability(current tier, voters) for
-    spread/total, (1.08 / decimal) for ML. Tickets: the sheet's Best and
-    Longshot 3-legs (rank p·dec / p·dec², one leg per game), weighted
-    with the cash-frequency penalty (× p), same as the page."""
+def sizing_prob_dec(r):
+    """(p, dec) the allocator PRICES this leg at — the grade-anchored
+    number, not the raw pooled record: tier anchor + shrunk bloc tilt for
+    spread/total (ladder_leg_probability), (1 + tier ROI-LB)/decimal for
+    ML. The raw bloc rate is per-rule fires pooled across ALL its games
+    and (for ML) all prices — context, never the staking number."""
     import sys as _sys
     _here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    _sys.path.insert(0, os.path.join(os.path.dirname(_here), "betbuddy-backend"))
+    _bb = os.path.join(os.path.dirname(_here), "betbuddy-backend")
+    if _bb not in _sys.path:
+        _sys.path.insert(0, _bb)
     from pipeline.cell_probabilities import ladder_leg_probability
 
     def am_to_dec(a):
@@ -149,14 +149,26 @@ def allocator_units(pool, beta=0.5, gamma=0.5):
             return None
         return 1 + a / 100 if a > 0 else 1 + 100 / (-a)
 
+    if (r["market"] or "").startswith("m"):
+        dec = am_to_dec(r.get("cl"))
+        return ((1.08 / dec) if dec else None), dec
+    dec = am_to_dec(r.get("cprice") or -110)
+    if (r.get("ct") or "no_edge") == "no_edge":
+        return None, dec
+    return ladder_leg_probability(r["ct"], voters=r.get("voters")), dec
+
+
+def allocator_units(pool, beta=0.5, gamma=0.5):
+    """Stakes in UNITS on the CURRENT sheet, the site's exact math
+    (Moderate preset) with one presentation change: the pot is scaled so
+    the AVERAGE stake is exactly 1u (pot = number of staked bets).
+    Straights: p from ladder_leg_probability(current tier, voters) for
+    spread/total, (1.08 / decimal) for ML. Tickets: the sheet's Best and
+    Longshot 3-legs (rank p·dec / p·dec², one leg per game), weighted
+    with the cash-frequency penalty (× p), same as the page."""
     legs = []
     for r in pool:
-        if (r["market"] or "").startswith("m"):
-            dec = am_to_dec(r.get("cl"))
-            p = (1.08 / dec) if dec else None
-        else:
-            dec = am_to_dec(r.get("cprice") or -110)
-            p = ladder_leg_probability(r["ct"], voters=r.get("voters"))
+        p, dec = sizing_prob_dec(r)
         if not p or not dec or dec <= 1:
             continue
         legs.append((r, p, dec))
