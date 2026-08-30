@@ -110,11 +110,14 @@ def fetch_rows(start, end):
     return rows, pool
 
 
-def allocator_units(pool, pot=10.0, beta=0.5, gamma=0.5):
-    """Per-pick stake in UNITS on the CURRENT sheet — the site's exact math
-    (Moderate preset): p from ladder_leg_probability(current tier, current
-    voters) for spread/total, (1.08 / decimal) for ML; weight =
-    ((p − 1/dec) × p)^gamma × dec^beta, normalized over the whole pot."""
+def allocator_units(pool, beta=0.5, gamma=0.5):
+    """Stakes in UNITS on the CURRENT sheet, the site's exact math
+    (Moderate preset) with one presentation change: the pot is scaled so
+    the AVERAGE stake is exactly 1u (pot = number of staked bets).
+    Straights: p from ladder_leg_probability(current tier, voters) for
+    spread/total, (1.08 / decimal) for ML. Tickets: the sheet's Best and
+    Longshot 3-legs (rank p·dec / p·dec², one leg per game), weighted
+    with the cash-frequency penalty (× p), same as the page."""
     import sys as _sys
     _here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     _sys.path.insert(0, os.path.join(os.path.dirname(_here), "betbuddy-backend"))
@@ -129,7 +132,7 @@ def allocator_units(pool, pot=10.0, beta=0.5, gamma=0.5):
             return None
         return 1 + a / 100 if a > 0 else 1 + 100 / (-a)
 
-    cand = []
+    legs = []
     for r in pool:
         if (r["market"] or "").startswith("m"):
             dec = am_to_dec(r.get("cl"))
@@ -139,16 +142,58 @@ def allocator_units(pool, pot=10.0, beta=0.5, gamma=0.5):
             p = ladder_leg_probability(r["ct"], voters=r.get("voters"))
         if not p or not dec or dec <= 1:
             continue
+        legs.append((r, p, dec))
+
+    def pick3(ranked):
+        out, used = [], set()
+        for r, p, dec in ranked:
+            if r["gid"] in used:
+                continue
+            used.add(r["gid"])
+            out.append((r, p, dec))
+            if len(out) == 3:
+                break
+        return out
+
+    best3 = pick3(sorted(legs, key=lambda t: -(t[1] * t[2])))
+    long3 = pick3(sorted(legs, key=lambda t: -(t[1] * t[2] ** 2)))
+    tickets = []
+    seen = set()
+    for name, t in (("Best 3-leg", best3), ("Longshot 3-leg", long3)):
+        sig = tuple(sorted((r["gid"], r["market"]) for r, _, _ in t))
+        if len(t) < 3 or sig in seen:
+            continue
+        seen.add(sig)
+        p = dec = 1.0
+        for _, lp, ld in t:
+            p *= lp
+            dec *= ld
+        tickets.append(dict(name=name, legs=[r for r, _, _ in t],
+                            p=p, dec=dec))
+
+    cand = []
+    for r, p, dec in legs:
         edge = p - 1 / dec
         if edge <= 0:
             continue
         w = (edge * p) ** gamma * dec ** beta
-        cand.append((r, w, dec))
-    tot = sum(w for _, w, _ in cand)
+        cand.append(dict(key=(r["gid"], r["market"]), w=w))
+    for t in tickets:
+        edge = t["p"] - 1 / t["dec"]
+        if edge <= 0:
+            t["stake"] = 0.0
+            continue
+        t["w"] = (edge * t["p"]) ** gamma * t["p"] * t["dec"] ** beta
+
+    staked_t = [t for t in tickets if t.get("w")]
+    tot = sum(c["w"] for c in cand) + sum(t["w"] for t in staked_t)
+    pot = float(len(cand) + len(staked_t))   # average stake = 1u exactly
     out = {}
-    for r, w, dec in cand:
-        out[(r["gid"], r["market"])] = pot * w / tot if tot > 0 else 0.0
-    return out
+    for c in cand:
+        out[c["key"]] = pot * c["w"] / tot if tot > 0 else 0.0
+    for t in staked_t:
+        t["stake"] = pot * t["w"] / tot if tot > 0 else 0.0
+    return out, tickets
 
 
 def why_line(r):
@@ -240,7 +285,7 @@ def main():
     start = sys.argv[2] if len(sys.argv) > 2 else "2026-09-01"
     end = sys.argv[3] if len(sys.argv) > 3 else "2026-09-09"
     rows, pool = fetch_rows(start, end)
-    stakes = allocator_units(pool)
+    stakes, tickets = allocator_units(pool)
     changed = [r for r in rows if r["ct"] != r["rt"]]
     same = [r for r in rows if r["ct"] == r["rt"]]
 
@@ -275,8 +320,9 @@ def main():
              "grade, or released No Edge and graded since. One line = held "
              "as released. Two badges = the grade moved with the market, "
              "and the line under it says exactly why. Units are the "
-             "allocator's CURRENT sheet (Moderate, ten-unit pot). Grading "
-             "always settles on the release.")
+             "allocator's CURRENT sheet (Moderate), scaled so the average "
+             "bet is one unit — tickets included. Grading always settles "
+             "on the release.")
     words, line_, gy = gloss.split(), "", y
     for w_ in words:
         t_ = (line_ + " " + w_).strip()
@@ -346,6 +392,44 @@ def main():
             fill=GOLD_LIGHT, anchor="ls")
     y += 26 * S
     draw_rows(same, with_why=False)
+
+    if tickets:
+        y += 18 * S
+        dr.text((PAD, y + 12 * S), "THE PARLAYS ON THE SHEET",
+                font=f_sect, fill=GOLD_LIGHT, anchor="ls")
+        y += 30 * S
+        for t in tickets:
+            base = y + 26 * S
+            dr.text((PAD, base), t["name"], font=f_row, fill=CREAM,
+                    anchor="ls")
+            nw = dr.textlength(t["name"], font=f_row)
+            dr.text((PAD + nw + 12 * S, base),
+                    f"+{(t['dec'] - 1) * 100:.0f}", font=f_row,
+                    fill=GOLD, anchor="ls")
+
+            def leg_txt(r):
+                cl = r["cl"]
+                is_total = (r.get("cs") or "").split(" ")[0] in ("Over", "Under")
+                if cl is not None and not is_total:
+                    try:
+                        if float(str(cl).replace("−", "-")) > 0:
+                            cl = f"+{cl}"
+                    except (TypeError, ValueError):
+                        pass
+                bet = f"{r['cs']} {cl}" if cl is not None else f"{r['cs']}"
+                if is_total:
+                    home = r["matchup"].split(" @ ")[-1]
+                    return f"{bet} ({home})"
+                return bet
+            dr.text((PAD, base + 20 * S),
+                    "  ·  ".join(leg_txt(r) for r in t["legs"]),
+                    font=f_rowsub, fill=TEXT_LIGHT, anchor="ls")
+            st = t.get("stake") or 0.0
+            dr.text((W - PAD, base), f"{st:.1f}u" if st else "—",
+                    font=f_row, fill=GOLD_LIGHT if st else DIM, anchor="rs")
+            y += 62 * S
+            dr.line([PAD, y, W - PAD, y], fill=DIVIDER, width=1 * S)
+            y += 6 * S
 
     y += 20 * S
     dr.rectangle([0, y, W, y + 4 * S], fill=GOLD)
