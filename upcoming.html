@@ -1568,19 +1568,38 @@ function buildWeekTabs(data) {
   if (!data || !data.weeks || !data.weeks.length) return;
   // Include all weeks. Sort numerically ascending; Week 0 stays first if present.
   weeksList = [...data.weeks].sort((a, b) => a - b);
-  // Land on the CURRENT week: the earliest week that isn't fully played —
-  // latest kickoff + 12h grace, so Saturday's slate keeps its tab through
-  // Sunday morning, then the page advances on its own. (The old default,
-  // weeksList[0], opened on week 0 every visit all season.)
+  // Land on the CURRENT week — and move on FAST (Austin, 2026-08-30:
+  // "usable surfaces moving as fast as possible"): a week holds the
+  // default tab while any of its shown games is still unplayed/live,
+  // then hands off ONE HOUR after its last game goes final
+  // (live_data_updated_at ≈ the final whistle; kickoff+5h fallback).
+  // Backstop: a row stuck un-final can't pin the tab past kickoff+12h
+  // (the old grace). Postponed/canceled never hold a week.
   let defaultWeek = weeksList[weeksList.length - 1];
   const nowMs = Date.now();
   for (const w of weeksList) {
-    const kicks = allGames
-      .filter(g => g.week === w && g.raw_date)
-      .map(g => Date.parse(g.raw_date))
+    const games = allGames.filter(g => g.week === w && g.is_fbs_matchup);
+    if (!games.length) continue;
+    const stillGoing = games.some(g => {
+      if (g.status === 'final' || g.status === 'canceled'
+          || g.status === 'postponed') return false;
+      const k = Date.parse(g.raw_date || '');
+      return isNaN(k) || k + 12 * 3600 * 1000 > nowMs;   // backstop
+    });
+    if (stillGoing) { defaultWeek = w; break; }
+    const ends = games
+      .filter(g => g.status === 'final')
+      .map(g => {
+        const t = Date.parse(g.live_data_updated_at || '');
+        if (!isNaN(t)) return t;
+        const k = Date.parse(g.raw_date || '');
+        return isNaN(k) ? NaN : k + 5 * 3600 * 1000;
+      })
       .filter(t => !isNaN(t));
-    const latest = kicks.length ? Math.max(...kicks) : NaN;
-    if (isNaN(latest) || latest + 12 * 3600 * 1000 > nowMs) { defaultWeek = w; break; }
+    const lastFinal = ends.length ? Math.max(...ends) : NaN;
+    if (isNaN(lastFinal) || lastFinal + 3600 * 1000 > nowMs) {
+      defaultWeek = w; break;
+    }
   }
   firstAvailableWeek = defaultWeek;
   currentWeek = defaultWeek;
