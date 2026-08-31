@@ -620,6 +620,14 @@
   text-shadow: 0 0 4px rgba(248,217,107,0.6);
   margin: 0 4px;
 }
+/* Timeout pips beside each live team (● remaining of 3) */
+.pg-live-tos {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: rgba(248,245,238,0.6);
+  margin: 0 4px;
+  vertical-align: middle;
+}
 
 .pg-live-situation {
   font-family: var(--sans);

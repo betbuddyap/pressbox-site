@@ -333,10 +333,14 @@
     const ballHTML = '<span class="pg-live-ball" title="Possession">●</span>';
 
     // The serif hero names above already say who's who — repeating them
-    // in sans here doubled the names (Austin). The name slots now carry
-    // ONLY the possession dot, floating over the possessing side's score.
-    els.pgLiveAwayName.innerHTML = awayHasBall ? ballHTML : '';
-    els.pgLiveHomeName.innerHTML = homeHasBall ? ballHTML : '';
+    // in sans here doubled the names (Austin). The name slots carry the
+    // possession dot plus each side's remaining timeouts (●●○ of 3).
+    const pips = (n) => (n == null) ? '' :
+      `<span class="pg-live-tos" title="Timeouts">` +
+      `${'●'.repeat(Math.max(0, Math.min(3, n)))}` +
+      `${'○'.repeat(Math.max(0, 3 - Math.min(3, n)))}</span>`;
+    els.pgLiveAwayName.innerHTML = (awayHasBall ? ballHTML : '') + pips(g.away_timeouts);
+    els.pgLiveHomeName.innerHTML = (homeHasBall ? ballHTML : '') + pips(g.home_timeouts);
 
     const awayPts = g.away_points;
     const homePts = g.home_points;

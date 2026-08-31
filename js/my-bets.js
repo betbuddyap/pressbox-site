@@ -610,17 +610,32 @@
     const q = g.current_period ? `Q${g.current_period}` : '';
     return [q, g.current_clock].filter(Boolean).join(' ');
   }
+  // Elapsed fraction of regulation — null when a projection can't be
+  // meaningful (pregame, OT, or the game is over).
+  function paceFrac(g) {
+    const p = g.current_period;
+    if (!p || p > 4) return null;
+    const parts = String(g.current_clock || '0:00').split(':');
+    const rem = (parseInt(parts[0], 10) || 0) + ((parseInt(parts[1], 10) || 0) / 60);
+    const f = Math.max(0.02, Math.min(1, ((p - 1) * 15 + (15 - rem)) / 60));
+    return (f >= 0.10 && f < 0.999) ? f : null;
+  }
+
   // → { ahead: true|false|null, text: '…' }.  null = dead even / can't call.
+  // Text carries a PROJECTION alongside the as-it-stands read: so-far plus
+  // the market's rate for the rest (damped — never raw pace).
   function standing(b, g) {
     const hp = g.home_points, ap = g.away_points;
     const homeName = g.home_team, awayName = g.away_team;
     if (b.market === 'total') {
       const tot = hp + ap, line = Number(b.line);
       const diff = +(tot - line).toFixed(1);
-      if (diff === 0) return { ahead: null, text: `total sitting on ${line}` };
+      const f = paceFrac(g);
+      const proj = f != null ? ` · projects ${Math.round(tot + (1 - f) * line)}` : '';
+      if (diff === 0) return { ahead: null, text: `total sitting on ${line}${proj}` };
       const under = diff < 0;
       return { ahead: (b.side === 'under') === under,
-               text: `total ${Math.abs(diff)} ${under ? 'under' : 'over'} the number` };
+               text: `total ${Math.abs(diff)} ${under ? 'under' : 'over'} the number${proj}` };
     }
     const weHome = b.side === 'home';
     const ourPts = weHome ? hp : ap, theirPts = weHome ? ap : hp;
@@ -633,11 +648,14 @@
     }
     // spread: our line is picked-side POV (+6.5 = getting 6.5)
     const cushion = +(margin + Number(b.line)).toFixed(1);
-    if (cushion === 0) return { ahead: null, text: 'sitting exactly on the number' };
+    const fSp = paceFrac(g);
+    const pj = fSp != null ? Math.round(margin + (1 - fSp) * (-Number(b.line))) : null;
+    const projTxt = pj != null ? ` · projects ${pj >= 0 ? '+' : ''}${pj}` : '';
+    if (cushion === 0) return { ahead: null, text: `sitting exactly on the number${projTxt}` };
     const state = margin === 0 ? 'tied'
       : `${ourName} ${margin > 0 ? 'up' : 'down'} ${Math.abs(margin)}`;
     return { ahead: cushion > 0,
-             text: `${state}, ${cushion > 0 ? 'covering by' : 'short by'} ${Math.abs(cushion)}` };
+             text: `${state}, ${cushion > 0 ? 'covering by' : 'short by'} ${Math.abs(cushion)}${projTxt}` };
   }
   // A parlay is only alive while every leg is; one dead leg kills the ticket.
   function parlayStanding(b) {
