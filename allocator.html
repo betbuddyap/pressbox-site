@@ -702,13 +702,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (state.week != null && rawPl.week !== state.week) continue;
         const pl = parlayView(rawPl);     // single-book ticket price, or drop
         if (!pl) {
-          // Say WHY instead of vanishing (a book that doesn't post every
-          // leg can't build the ticket — name the legs it's missing).
+          // Say WHY instead of vanishing. Membership is MARKET-level, not
+          // line-level — every surface re-prices at the chosen book's own
+          // number, so a ticket only drops when the book isn't posting a
+          // leg's market at ALL (verified live: DK had zero WKU-Nevada
+          // rows while nine books quoted it, 2026-08-31).
           if (state.book) {
+            const MKT_WORD = { spread: 'spread', total: 'total', ml: 'moneyline' };
             const missing = (rawPl.legs || [])
               .filter(l => !(l.other_books || []).some(
                 b => b.book && b.book.name === state.book))
-              .map(l => `${l.side || l.market || 'leg'} ${l.line != null ? l.line : ''}`.trim());
+              .map(l => l.market === 'total'
+                ? `the ${l.matchup || ''} total`.replace('  ', ' ').trim()
+                : `the ${l.side || ''} ${MKT_WORD[l.market] || 'market'}`.trim());
             state._droppedParlays.push({
               name: rawPl.name || 'Parlay', missing });
           }
@@ -1093,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="al-dropped-note">${dropped.map(d =>
         `<b>${esc(d.name)}</b> can't be built at ${esc(state.book)} — ` +
         (d.missing.length
-          ? `it doesn't post ${esc(d.missing.join(', '))}`
+          ? `it isn't posting ${esc(d.missing.join(' or '))} right now (any line would do)`
           : `no full-ticket price there`)
       ).join('<br>')}</div>` : '';
     if (!rows.length) {
