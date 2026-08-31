@@ -154,6 +154,10 @@
   .al-pl-leg-match { font-family: var(--sans); font-size: var(--text-sm); font-weight: var(--weight-semi); color: var(--ink); }
   .al-pl-leg-pick { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); margin-top: 1px; }
   .al-empty { padding: var(--space-6) 0; font-family: var(--sans); font-size: var(--text-base); color: var(--text-mid); }
+  /* Single-book mode: a ticket the chosen book can't build says WHY instead
+     of silently vanishing. */
+  .al-dropped-note { margin-top: var(--space-3); padding: var(--space-3) var(--space-4); border: 1px dashed var(--border); border-radius: var(--radius-md); font-family: var(--sans); font-size: var(--text-sm); color: var(--text-mid); }
+  .al-dropped-note b { color: var(--ink); font-weight: var(--weight-semi); }
   .al-page-pad { height: 48px; }
 </style>
 </head>
@@ -692,11 +696,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Sizing changes MUST be checked on the WEEK view (10 legs), not the
     // whole-season pool (61) — the per-week sheet is what the page renders,
     // and it is where parlays surface.
+    state._droppedParlays = [];
     if (state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const rawPl of state.parlays) {
         if (state.week != null && rawPl.week !== state.week) continue;
         const pl = parlayView(rawPl);     // single-book ticket price, or drop
-        if (!pl) continue;
+        if (!pl) {
+          // Say WHY instead of vanishing (a book that doesn't post every
+          // leg can't build the ticket — name the legs it's missing).
+          if (state.book) {
+            const missing = (rawPl.legs || [])
+              .filter(l => !(l.other_books || []).some(
+                b => b.book && b.book.name === state.book))
+              .map(l => `${l.side || l.market || 'leg'} ${l.line != null ? l.line : ''}`.trim());
+            state._droppedParlays.push({
+              name: rawPl.name || 'Parlay', missing });
+          }
+          continue;
+        }
         const p = pl.our_prob, dec = pl.decimal_odds;
         if (!(p > 0) || !(dec > 1)) continue;
         const f = deltaWeight(p, dec) * p;   // cash-frequency, post-compression
@@ -1071,12 +1088,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function listHTML(rows) {
+    const dropped = (state._droppedParlays || []);
+    const droppedNote = dropped.length ? `
+      <div class="al-dropped-note">${dropped.map(d =>
+        `<b>${esc(d.name)}</b> can't be built at ${esc(state.book)} — ` +
+        (d.missing.length
+          ? `it doesn't post ${esc(d.missing.join(', '))}`
+          : `no full-ticket price there`)
+      ).join('<br>')}</div>` : '';
     if (!rows.length) {
       const amount = Number(state.amount) || 0;
-      if (!(amount > 0)) return `<div class="al-empty">Enter an amount above to split across the board.</div>`;
-      return `<div class="al-empty">Nothing beats its price under these filters right now. Try clearing a filter or switching weeks.</div>`;
+      if (!(amount > 0)) return `<div class="al-empty">Enter an amount above to split across the board.</div>` + droppedNote;
+      return `<div class="al-empty">Nothing beats its price under these filters right now. Try clearing a filter or switching weeks.</div>` + droppedNote;
     }
-    return rows.map(rowHTML).join('');
+    return rows.map(rowHTML).join('') + droppedNote;
   }
 
   // ── Loading skeleton (matches parlay's .ll-skeleton shimmer) ──
