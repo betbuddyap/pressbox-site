@@ -2079,6 +2079,7 @@ footer {
   flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;   /* mock centers each icon+text pair in its cell */
   gap: 12px;
   padding: 12px 16px;
   min-width: 0;
