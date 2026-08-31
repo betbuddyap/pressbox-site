@@ -506,8 +506,12 @@
       const f = _tickFrac(t);
       if (f == null || t.home_pts == null) return;
       if (spLine != null && !isNaN(spLine)) {
-        const diff = spSideHome ? (t.home_pts - t.away_pts) : (t.away_pts - t.home_pts);
-        const z = (diff + f * spLine) / (SIG_M * Math.sqrt(Math.max(1e-4, 1 - f)));
+        // Plot P(HOME covers) so the spread chart shares the win-prob
+        // chart's orientation (home top / away bottom — congruent poles).
+        // The header still reads out the PICKED side's number.
+        const homeLine = spSideHome ? spLine : -spLine;
+        const diff = t.home_pts - t.away_pts;
+        const z = (diff + f * homeLine) / (SIG_M * Math.sqrt(Math.max(1e-4, 1 - f)));
         coverPts.push([x(i), _phi(z)]);
       }
       if (toLine != null && !isNaN(toLine)) {
@@ -600,9 +604,9 @@
     const betsEl = document.getElementById('pgWpBets');
     if (betsEl) {
       const BH = 240;   // same viewBox as the main chart — all three frames identical
-      const band = (title, topLbl, botLbl, topCol, botCol, pts, gradId) => {
+      const band = (title, topLbl, botLbl, topCol, botCol, pts, gradId, nowOverride) => {
         if (!pts || pts.length < 2) return '';
-        const nowP = Math.round(pts[pts.length - 1][1] * 100);
+        const nowP = Math.round((nowOverride != null ? nowOverride : pts[pts.length - 1][1]) * 100);
         return `<div class="pg-wp-block">
           <div class="pg-wp-head">
             <span class="pg-wp-title">${escape(title)}</span>
@@ -618,12 +622,14 @@
           </div>
         </div>`;
       };
-      const spPickName = spSideHome ? home : away;
-      const spOppName  = spSideHome ? away : home;
+      // Header % = the PICKED side's live number, whatever the plot pole.
+      const spHomeNow = coverPts.length ? coverPts[coverPts.length - 1][1] : null;
+      const spPickNow = spHomeNow == null ? null
+                      : (spSideHome ? spHomeNow : 1 - spHomeNow);
       betsEl.innerHTML =
         band(spRel ? `Spread — ${spRel.side || ''} ${spRel.line || ''}` : '',
-             `${spPickName} covers 100%`, `${spOppName} covers 100%`,
-             WASH, WASH, coverPts, 'wpGradSp') +
+             `${home} covers 100%`, `${away} covers 100%`,
+             WASH, WASH, coverPts, 'wpGradSp', spPickNow) +
         band(toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '',
              `${toUnder ? 'Under' : 'Over'} 100%`, `${toUnder ? 'Over' : 'Under'} 100%`,
              WASH, WASH, totPts, 'wpGradTot');
