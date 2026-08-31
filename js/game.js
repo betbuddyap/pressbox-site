@@ -479,8 +479,6 @@
 
     const home = data.game?.home?.name || 'Home';
     const away = data.game?.away?.name || 'Away';
-    const homeCol = data.game?.home?.primary_color || '#2E4057';
-    const awayCol = data.game?.away?.primary_color || '#6B2737';
 
     // Released picks drive the bet bands (locked board = released board);
     // demo mode may force lines so every band can be styled.
@@ -558,8 +556,13 @@
       <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" vector-effect="non-scaling-stroke"
             stroke="rgba(248,245,238,0.3)" stroke-width="1" stroke-dasharray="4 5"/>
       ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none" vector-effect="non-scaling-stroke"
-            stroke="#E7BE4D" stroke-width="2" stroke-linejoin="round"/>` : ''}`;
+            class="pg-wp-line" stroke="#E7BE4D" stroke-width="2" stroke-linejoin="round"/>` : ''}`;
     };
+
+    // Washes are CREAM on both sides — "gap shading", not team paint. Team
+    // colors rendered unevenly (a red wash disappears over the red hero half
+    // but shouts over the navy one) and a gold wash fought the gold line.
+    const WASH = '#F8F5EE';
 
     // Quarter labels + the gold now-dot are HTML so the stretched SVG can't
     // distort them; both position in % of the frame.
@@ -573,7 +576,7 @@
       return qs + dot;
     };
 
-    svg.innerHTML = frame('wpGrad', homeCol, awayCol, wpPts, H);
+    svg.innerHTML = frame('wpGrad', WASH, WASH, wpPts, H);
     const mainFrame = svg.parentElement;
     if (mainFrame) {
       mainFrame.querySelectorAll('.pg-wp-q, .pg-wp-dot').forEach(e => e.remove());
@@ -617,15 +620,13 @@
       };
       const spPickName = spSideHome ? home : away;
       const spOppName  = spSideHome ? away : home;
-      const spPickCol  = spSideHome ? homeCol : awayCol;
-      const spOppCol   = spSideHome ? awayCol : homeCol;
       betsEl.innerHTML =
         band(spRel ? `Spread — ${spRel.side || ''} ${spRel.line || ''}` : '',
              `${spPickName} covers 100%`, `${spOppName} covers 100%`,
-             spPickCol, spOppCol, coverPts, 'wpGradSp') +
+             WASH, WASH, coverPts, 'wpGradSp') +
         band(toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '',
              `${toUnder ? 'Under' : 'Over'} 100%`, `${toUnder ? 'Over' : 'Under'} 100%`,
-             '#E7BE4D', '#F8F5EE', totPts, 'wpGradTot');
+             WASH, WASH, totPts, 'wpGradTot');
     }
   }
 

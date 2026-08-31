@@ -706,6 +706,9 @@
   transform: translateY(-50%);
   pointer-events: none;
 }
+/* Faint depth under the line — insurance for gold-heavy team halves
+   (GT, maize) where gold-on-darkened-gold runs thin. Not an outline. */
+.pg-wp-line { filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45)); }
 .pg-wp-bets { display: flex; flex-direction: column; gap: 10px; }
 @media (max-width: 600px) {
   .pg-wp-section { margin-top: 14px; }
