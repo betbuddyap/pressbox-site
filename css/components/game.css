@@ -678,15 +678,19 @@
 .pg-wp-inner { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
 .pg-wp-block { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px 14px; text-align: left; }
 .pg-wp-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-.pg-wp-title { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); }
+.pg-wp-title { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--ink); }
 .pg-wp-now { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--gold); }
 .pg-wp-frame { position: relative; }
 .pg-wp-frame svg { width: 100%; display: block; border-radius: 4px; background: var(--cream-dark); }
+/* Pole labels ride the strongest part of the gradient — cream chips keep
+   them legible over any team color and echo the cards-on-hero language. */
 .pg-wp-teamlbl {
   position: absolute; left: 8px; z-index: 2;
   font-family: var(--sans); font-size: 10px; font-weight: 700;
   letter-spacing: 0.03em; text-transform: uppercase;
-  color: rgba(15,14,10,0.7);
+  color: var(--ink);
+  background: rgba(248,245,238,0.88);
+  padding: 2px 7px; border-radius: 3px;
 }
 .pg-wp-teamlbl.top { top: 6px; }
 .pg-wp-teamlbl.bot { bottom: 6px; }

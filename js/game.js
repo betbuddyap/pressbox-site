@@ -535,20 +535,20 @@
       return `
       <defs>
         <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0"    stop-color="${topCol}" stop-opacity="0.55"/>
-          <stop offset="0.46" stop-color="${topCol}" stop-opacity="0.05"/>
-          <stop offset="0.54" stop-color="${botCol}" stop-opacity="0.05"/>
-          <stop offset="1"    stop-color="${botCol}" stop-opacity="0.55"/>
+          <stop offset="0"    stop-color="${topCol}" stop-opacity="0.75"/>
+          <stop offset="0.47" stop-color="${topCol}" stop-opacity="0.10"/>
+          <stop offset="0.53" stop-color="${botCol}" stop-opacity="0.10"/>
+          <stop offset="1"    stop-color="${botCol}" stop-opacity="0.75"/>
         </linearGradient>
         <clipPath id="${gradId}T"><rect x="0" y="0" width="${W}" height="${mid}"/></clipPath>
         <clipPath id="${gradId}B"><rect x="0" y="${mid}" width="${W}" height="${mid}"/></clipPath>
       </defs>
       <rect x="0" y="0" width="${W}" height="${h}" fill="url(#${gradId})"/>
       ${area ? `
-        <path d="${area}" fill="${topCol}" fill-opacity="0.30" clip-path="url(#${gradId}T)"/>
-        <path d="${area}" fill="${botCol}" fill-opacity="0.30" clip-path="url(#${gradId}B)"/>` : ''}
+        <path d="${area}" fill="${topCol}" fill-opacity="0.40" clip-path="url(#${gradId}T)"/>
+        <path d="${area}" fill="${botCol}" fill-opacity="0.40" clip-path="url(#${gradId}B)"/>` : ''}
       <line x1="0" y1="${mid}" x2="${W}" y2="${mid}"
-            stroke="rgba(15,14,10,0.35)" stroke-width="1" stroke-dasharray="5 6"/>
+            stroke="rgba(15,14,10,0.4)" stroke-width="1" stroke-dasharray="5 6"/>
       ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none"
             stroke="#B8922A" stroke-width="3.5" stroke-linejoin="round"/>` : ''}`;
     };
@@ -599,7 +599,7 @@
              spPickCol, spOppCol, coverPts, 'wpGradSp') +
         band(toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '',
              `${toUnder ? 'Under' : 'Over'} 100%`, `${toUnder ? 'Over' : 'Under'} 100%`,
-             '#B8922A', '#0F0E0A', totPts, 'wpGradTot');
+             '#E7BE4D', '#0F0E0A', totPts, 'wpGradTot');
     }
   }
 
