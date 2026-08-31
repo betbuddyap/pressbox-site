@@ -388,6 +388,145 @@
     } else {
       els.pgLive.classList.remove('red-zone');
     }
+
+    // ── In-game phase 2 furniture ─────────────────────────────────
+    // Field strip: ball at ESPN's 0-100 field coordinate. ORIENTATION:
+    // drawn with 100 at the right; first live game verifies which end
+    // is home — flip FIELD_100_RIGHT_IS_HOME if the ball reads mirrored.
+    const FIELD_100_RIGHT_IS_HOME = true;
+    const wrap = document.getElementById('pgFieldWrap');
+    const ballEl = document.getElementById('pgFieldBall');
+    const yl = g.current_yard_line_num;
+    if (wrap && ballEl && yl != null && yl >= 0 && yl <= 100) {
+      wrap.style.display = '';
+      const x = FIELD_100_RIGHT_IS_HOME ? yl : 100 - yl;
+      ballEl.style.left = `${x}%`;
+      ballEl.classList.toggle('rz', !!g.is_red_zone);
+    } else if (wrap) {
+      wrap.style.display = 'none';
+    }
+
+    // Current drive ("Florida State · 7 plays, 52 yards, 3:12")
+    const driveEl = document.getElementById('pgLiveDrive');
+    if (driveEl) driveEl.textContent = g.drive_summary || '';
+
+    // Quarter linescore
+    const lsEl = document.getElementById('pgLinescore');
+    const ls = g.linescores;
+    if (lsEl && ls && (ls.home || []).length) {
+      const n = Math.max((ls.home || []).length, (ls.away || []).length);
+      const qs = Array.from({length: n}, (_, i) =>
+        i < 4 ? `Q${i + 1}` : `OT${i - 3}`);
+      const row = (name, arr, total) =>
+        `<tr><td>${escape(name)}</td>${qs.map((_, i) =>
+          `<td>${arr && arr[i] != null ? arr[i] : ''}</td>`).join('')}` +
+        `<td class="ls-total">${total != null ? total : ''}</td></tr>`;
+      lsEl.innerHTML = `<table><tr><th></th>${qs.map(q =>
+        `<th>${q}</th>`).join('')}<th>T</th></tr>` +
+        row(data.game?.away?.name || 'Away', ls.away, g.away_points) +
+        row(data.game?.home?.name || 'Home', ls.home, g.home_points) +
+        `</table>`;
+      lsEl.style.display = '';
+    } else if (lsEl) {
+      lsEl.style.display = 'none';
+    }
+
+    renderWpChart(data);
+  }
+
+  // ── Live probabilities chart ─────────────────────────────────────
+  // Three lines from ONE tick series (score+clock ride each row):
+  //   gold  — home team win % (ESPN's live number)
+  //   sage  — our released SPREAD pick's cover %
+  //   cream — our released TOTAL pick's hit %
+  // Cover/total probabilities are closed-form: mean = so-far + market
+  // rate for the rest, sd shrinks with √(time left) — 50% at kickoff,
+  // certainty at 0:00. Phi via the logistic approximation.
+  let _wpTicks = null;
+  let _wpFetchedAt = 0;
+
+  function _phi(z) { return 1 / (1 + Math.exp(-1.702 * z)); }
+
+  function _tickFrac(t) {
+    const p = t.period;
+    if (!p) return null;
+    if (p > 4) return 1.0;
+    const parts = String(t.clock || '0:00').split(':');
+    const rem = (parseInt(parts[0], 10) || 0) + ((parseInt(parts[1], 10) || 0) / 60);
+    return Math.max(0.001, Math.min(1, ((p - 1) * 15 + (15 - rem)) / 60));
+  }
+
+  async function renderWpChart(data) {
+    const wrapEl = document.getElementById('pgWpWrap');
+    const svg = document.getElementById('pgWpChart');
+    if (!wrapEl || !svg) return;
+    const gid = data.game?.id;
+    if (!gid) return;
+    const now = Date.now();
+    if (!_wpTicks || now - _wpFetchedAt > 15000) {
+      try {
+        const r = await fetch(`${API_BASE}/games/${gid}/wp`);
+        const j = await r.json();
+        _wpTicks = j.ticks || [];
+        _wpFetchedAt = now;
+      } catch (e) { _wpTicks = _wpTicks || []; }
+    }
+    const ticks = _wpTicks;
+    if (!ticks || ticks.length < 2) { wrapEl.style.display = 'none'; return; }
+    wrapEl.style.display = '';
+
+    // Released picks drive the bet lines (locked board = released board)
+    const pk = {};
+    (data.picks || []).forEach(p => { pk[p.market] = p; });
+    const relOf = (p) => (p && p.history && p.history.released) || null;
+    const spRel = relOf(pk.spread), toRel = relOf(pk.total);
+    const spLine = spRel && spRel.tier !== 'no_edge' ? Number(spRel.line_raw) : null;
+    const spSideHome = spRel ? spRel.side_raw === 'home' : null;
+    const toLine = toRel && toRel.tier !== 'no_edge' ? Number(toRel.line_raw) : null;
+    const toUnder = toRel ? toRel.side_raw === 'under' : null;
+
+    const W = 1000, H = 220, SIG_M = 15.5, SIG_T = 11.0;
+    const n = ticks.length;
+    const x = (i) => (i / (n - 1)) * W;
+    const y = (p) => H - p * H;
+    const lines = { wp: [], cover: [], tot: [] };
+    ticks.forEach((t, i) => {
+      if (t.home_wp != null) lines.wp.push([x(i), y(Number(t.home_wp))]);
+      const f = _tickFrac(t);
+      if (f == null || t.home_pts == null) return;
+      if (spLine != null && !isNaN(spLine)) {
+        const diff = spSideHome ? (t.home_pts - t.away_pts) : (t.away_pts - t.home_pts);
+        const z = (diff + f * spLine) / (SIG_M * Math.sqrt(Math.max(1e-4, 1 - f)));
+        lines.cover.push([x(i), y(_phi(z))]);
+      }
+      if (toLine != null && !isNaN(toLine)) {
+        const pts = t.home_pts + t.away_pts;
+        const zOver = (pts - f * toLine) / (SIG_T * Math.sqrt(Math.max(1e-4, 1 - f)));
+        lines.tot.push([x(i), y(toUnder ? 1 - _phi(zOver) : _phi(zOver))]);
+      }
+    });
+
+    const path = (pts) => pts.map(([a, b], i) =>
+      `${i ? 'L' : 'M'}${a.toFixed(1)},${b.toFixed(1)}`).join(' ');
+    const COLORS = { wp: '#E7BE4D', cover: '#7FA05B', tot: 'rgba(248,245,238,0.85)' };
+    let s = `<line x1="0" y1="${H / 2}" x2="${W}" y2="${H / 2}"
+              stroke="rgba(248,245,238,0.18)" stroke-width="1" stroke-dasharray="4 5"/>`;
+    for (const k of ['tot', 'cover', 'wp']) {
+      if (lines[k].length > 1) {
+        s += `<path d="${path(lines[k])}" fill="none" stroke="${COLORS[k]}"
+               stroke-width="${k === 'wp' ? 3 : 2}" stroke-linejoin="round"/>`;
+      }
+    }
+    svg.innerHTML = s;
+
+    const home = data.game?.home?.name || 'Home';
+    const leg = [];
+    const last = (arr) => arr.length ? Math.round((1 - arr[arr.length - 1][1] / H) * 100) : null;
+    if (lines.wp.length) leg.push(`<span style="color:${COLORS.wp}">${escape(home)} ${last(lines.wp)}%</span>`);
+    if (lines.cover.length) leg.push(`<span style="color:${COLORS.cover}">${escape(spRel.side || 'spread')} ${spRel.line || ''} cover ${last(lines.cover)}%</span>`);
+    if (lines.tot.length) leg.push(`<span style="color:${COLORS.tot}">${escape(toRel.side || 'total')} ${toRel.line || ''} ${last(lines.tot)}%</span>`);
+    const legEl = document.getElementById('pgWpLegend');
+    if (legEl) legEl.innerHTML = leg.join('');
   }
 
   // Map market -> firing model DISPLAY name, from picks data. A null

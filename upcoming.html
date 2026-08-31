@@ -830,6 +830,9 @@
 
   /* Timeout pips under each live team (● left, max 3) */
   .gc-tos { font-size: 9px; letter-spacing: 3px; color: rgba(248,245,238,0.65); line-height: 1; margin-top: 3px; }
+  /* Current drive + live win% under the situation line */
+  .gc-live-drive { font-family: var(--sans); font-size: 11px; font-weight: 600; color: rgba(248,245,238,0.6); text-align: center; margin-top: 2px; }
+  .gc-live-wp { font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--gold-light); text-align: center; margin-top: 3px; }
 
   /* GOTW live/final: the center "at" becomes the score — BIGGER than the
      team names at every width (the score is the headline once it's real) */
@@ -2148,6 +2151,8 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
             </div>
           </div>
           ${downDistance ? `<div class="gc-live-situation">${downDistance}</div>` : ''}
+          ${g.drive_summary ? `<div class="gc-live-drive">${g.drive_summary}</div>` : ''}
+          ${g.home_win_prob != null ? `<div class="gc-live-wp" title="ESPN live win probability">${g.home_win_prob >= 0.5 ? g.home_team : g.away_team} ${Math.round((g.home_win_prob >= 0.5 ? g.home_win_prob : 1 - g.home_win_prob) * 100)}% to win</div>` : ''}
           <div class="gc-picks">
             ${liveSlot('Spread', slots.spread, 'spread')}
             ${liveSlot('Total',  slots.total,  'total')}

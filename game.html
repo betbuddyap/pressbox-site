@@ -245,7 +245,22 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
           <span class="pg-live-clock" id="pgLiveClock"></span>
           <span class="pg-live-situation" id="pgLiveSituation"></span>
         </div>
+        <div class="pg-field-wrap" id="pgFieldWrap" style="display:none;">
+          <div class="pg-field">
+            <div class="pg-field-mid"></div>
+            <div class="pg-field-ball" id="pgFieldBall"></div>
+          </div>
+        </div>
+        <div class="pg-live-drive" id="pgLiveDrive"></div>
         <div class="pg-live-lastplay" id="pgLiveLastPlay"></div>
+        <div class="pg-linescore" id="pgLinescore" style="display:none;"></div>
+        <div class="pg-wp-wrap" id="pgWpWrap" style="display:none;">
+          <div class="pg-wp-head">
+            <span class="pg-wp-title">LIVE PROBABILITIES</span>
+            <span class="pg-wp-legend" id="pgWpLegend"></span>
+          </div>
+          <svg id="pgWpChart" viewBox="0 0 1000 220" preserveAspectRatio="none"></svg>
+        </div>
       </div>
 
       <div id="preGameContent">
@@ -370,7 +385,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260831a"></script>
+<script src="/js/game.js?v=20260831b"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
