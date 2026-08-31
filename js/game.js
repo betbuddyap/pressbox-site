@@ -2565,7 +2565,7 @@
     if (data.stats?.fallback_used && data.stats?.source_season) {
       const note = document.createElement('div');
       note.className = 'numbers-fallback-note';
-      note.textContent = `Stats shown are from the ${data.stats.source_season} season — current season hasn't started.`;
+      note.textContent = `Stats shown are from the ${data.stats.source_season} season — they'll switch over once both teams have played this year.`;
       els.numbersStack.appendChild(note);
     }
 
