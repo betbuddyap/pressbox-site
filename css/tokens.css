@@ -27,6 +27,7 @@
 
   /* — Ink scale (text, dark surfaces) — */
   --ink:          #0F0E0A;   /* primary text, dark UI surfaces */
+  --ink-soft:     #3E392E;   /* really-dark warm grey — icons/stat leads that read softer than ink */
   --text-mid:     #6B6455;   /* secondary text */
   --text-light:   #A39A88;   /* tertiary text, captions, meta */
 

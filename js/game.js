@@ -1090,14 +1090,17 @@
       ? `Vegas: <strong>${escape(anchorName)} ${escape(ml.vegas_anchor_display || '')}</strong>` +
         ` <span class="read-card-vegas-price">(${Math.round(vg * 100)}% implied)</span>`
       : `<span class="read-card-vegas-pending">Moneyline pending</span>`;
-    let note = '';
+    // Calibration + Vegas price ride through as STRUCTURED fields — the
+    // icon footer builds cells from them (the old prose note is retired).
     const cal = ml.calibration;
-    if (cal) {
-      const favName = (ml.fav_is_anchor === false) ? otherName : anchorName;
-      note = `History check: favorites priced like ${escape(favName)} won ` +
-             `<b>${Math.round(cal.fav_win_rate * 100)}%</b> of the time ` +
-             `(${cal.n} games, 2023–25).`;
-    }
+    const calCell = cal ? {
+      favName: (ml.fav_is_anchor === false) ? otherName : anchorName,
+      rate: cal.fav_win_rate,
+      n: cal.n,
+    } : null;
+    const vegasCell = (vg != null && ml.vegas_anchor_display)
+      ? { txt: `${anchorName} ${ml.vegas_anchor_display}`, implied: vg }
+      : null;
     // Blend dot: same gold marker as the spread chart (position = blend
     // margin), labeled with the blend's HOME win probability.
     const blendHomeProb = anchorIsHome ? ml.pressbox_anchor_prob : ml.pressbox_other_prob;
@@ -1116,7 +1119,7 @@
     };
     return buildDotPlot(`Moneyline — chance ${home} wins`, section, 'anchor_spread',
                         anchor, null, mlPick,
-                        { ml: { vegasHead, probByName, note,
+                        { ml: { vegasHead, probByName, calCell, vegasCell,
                                 ends: [`${away} wins`, `${home} wins`] } });
   }
 
@@ -1705,7 +1708,8 @@
       if (pickZone && vegasPos != null) {
         const gid = 'histgrad-' + (ml ? 'ml-' : '') + key + '-' + Math.round(xPct(vegasPos) * 10);
         const frac = Math.max(0, Math.min(1, xPct(vegasPos) / 100));
-        const GOLD = 'rgba(184,146,42,0.30)', BLUE = 'rgba(76,124,168,0.18)';
+        // Soft washes per mock A — gold side = our pick cashes.
+        const GOLD = 'rgba(184,146,42,0.24)', BLUE = 'rgba(76,124,168,0.14)';
         const L = pickZone.goldLeft ? GOLD : BLUE;
         const R = pickZone.goldLeft ? BLUE : GOLD;
         const defs = document.createElementNS(svgNS, 'defs');
@@ -1728,7 +1732,7 @@
         defs.appendChild(grad);
         svg.appendChild(defs);
         path.style.fill = `url(#${gid})`;
-        path.style.stroke = 'rgba(107,100,85,0.35)';
+        path.style.stroke = 'rgba(107,100,85,0.25)';
       }
       svg.appendChild(path);
       const tip = !histRange?.sample_size ? ''
@@ -1809,9 +1813,17 @@
     // are ~70px wide regardless of screen, so the percentage they
     // occupy changes with viewport. On desktop (~1200px), 35px ≈ 3%.
     // On mobile (~380px), 35px ≈ 9%. Compute from actual measured width.
-    const chartPx = axisEl.parentElement?.offsetWidth || axisEl.offsetWidth || 1200;
-    const LABEL_HALF_PCT = Math.min(15, (35 / chartPx) * 100 + 1);  // +1 padding
-    const BLEND_HALF_PCT = Math.min(16, (38 / chartPx) * 100 + 1);
+    const chartPx = axisEl.parentElement?.offsetWidth
+                 || axisEl.offsetWidth
+                 || Math.min(1200, (window.innerWidth || 1200) - 80);
+    // Per-label half-width from the actual text — the flat 35px guess let
+    // "PRESSBOX 61%" (≈70px) kiss its neighbors on phones. Estimate from
+    // the wider stacked line: caps name ~6.5px/char, bold value ~7.5px/char.
+    const halfPctFor = (name, value) => {
+      const px = Math.max(String(name).length * 6.5, String(value).length * 7.5) / 2 + 4;
+      return Math.min(18, (px / chartPx) * 100 + 1);   // +1 padding
+    };
+    const BLEND_HALF_PCT = halfPctFor('PressBox', blendDisplay || '');
 
     // Lane registry: each lane tracks the placed labels [{x, halfW}]
     const lanes = [[], [], [], []];
@@ -1876,7 +1888,7 @@
       lbl.innerHTML = `<span class="strip-label-name">${escape(p.name)}</span><span class="strip-label-value">${escape(p.display)}</span>`;
 
       const xCenter = xPct(p.value);
-      const lane = tryPlace(xCenter, LABEL_HALF_PCT);
+      const lane = tryPlace(xCenter, halfPctFor(p.name, p.display));
       if (lane === -1) return;   // no clean slot — dot + tooltip only
       if (laneClasses[lane]) lbl.classList.add(`strip-label-${laneClasses[lane]}`);
       laneNodes[lane].appendChild(lbl);
@@ -1889,26 +1901,72 @@
     if (endsPair) {
       const ends = document.createElement('div');
       ends.className = 'mlstrip-ends';
-      ends.innerHTML = `<span>← ${escape(endsPair[0])}</span>` +
-                       `<span>${escape(endsPair[1])} →</span>`;
+      // Tint each end to match its half of the two-tone curve — gold where
+      // the pick cashes, slate elsewhere. No pick = both stay neutral.
+      const clsL = pickZone ? (pickZone.goldLeft ? ' class="end-gold"' : ' class="end-blue"') : '';
+      const clsR = pickZone ? (pickZone.goldLeft ? ' class="end-blue"' : ' class="end-gold"') : '';
+      ends.innerHTML = `<span${clsL}>← ${escape(endsPair[0])}</span>` +
+                       `<span${clsR}>${escape(endsPair[1])} →</span>`;
       card.insertBefore(ends, card.querySelector('.strip-plot'));
     }
-    // ML aggregate calibration note — only when the curve is NOT the fired
-    // signal's own (a graded ML pick gets the signal-conditioned note below).
+    // A graded ML pick with its own signal curve tells the signal story;
+    // an aggregate ML card gets market-calibration cells instead.
     const mlRuleCurve = ml && ['rule', 'bloc'].includes(histRange?.source)
                         && densityCurve.length >= 3;
-    if (ml && ml.note && !mlRuleCurve) {
-      const note = document.createElement('div');
-      note.className = 'mlstrip-note';
-      note.innerHTML = ml.note;
-      card.appendChild(note);
+
+    // ── Icon footer (mock A, 2026-08-31) — EVERY chart card gets the strip.
+    //    Cells adapt to what's honest: a graded pick with a signal record
+    //    shows [signals | record | price to clear]; otherwise [pick state |
+    //    the MARKET's history at this number | Vegas price]. A market number
+    //    is always LABELED as the market's — never dressed as our record
+    //    (WKU@Nevada rule, 2026-08-20). Caveats ride the tooltips.
+    const ICO = {
+      bars: '<svg viewBox="0 0 16 16"><rect x="2.2" y="8.6" width="2.8" height="5.4" rx="0.9" fill="currentColor"/><rect x="6.6" y="5.4" width="2.8" height="8.6" rx="0.9" fill="currentColor"/><rect x="11" y="2.4" width="2.8" height="11.6" rx="0.9" fill="currentColor"/></svg>',
+      check: '<svg viewBox="0 0 16 16"><path d="M3.6 8.5l3 3 5.8-6.4" stroke="currentColor" stroke-width="1.9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      price: '<svg viewBox="0 0 16 16"><path d="M8 1.6v12.8M11.2 4.3C10.6 3.4 9.5 2.9 8 2.9c-1.8 0-3 .9-3 2.3 0 3 6.2 1.7 6.2 4.7 0 1.5-1.4 2.4-3.2 2.4-1.6 0-2.8-.6-3.4-1.7" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>',
+    };
+    let cellPick = null, cellHist = null, cellPrice = null;
+    const BACKFILL_TIP = "Signal history for this pick is still backfilling — " +
+      "the middle number is the market's, not our signals'.";
+
+    // Price → break-even, any market. On a moneyline the released line IS
+    // the price; spread/total use the released row's juice when the payload
+    // carries it. A signal's record and THIS bet's price answer different
+    // questions (a 70% lifetime rate under a +215 dog is not "70% to win
+    // this game") — the price cell anchors the record to what the price
+    // has to clear. Pure price arithmetic. (Austin, 2026-08-19)
+    let am = NaN;
+    if (ml) {
+      const rawLine = (pick && pick._locked && pick.history?.released?.line_raw != null)
+        ? pick.history.released.line_raw
+        : ((pick && pick.history && pick.history.current
+            && pick.history.current.line) || (pick && pick.line));
+      am = parseInt(String(rawLine == null ? '' : rawLine)
+                      .replace(/[−–—]/g, '-').replace(/[^\-+\d]/g, ''), 10);
+    } else if (pick) {
+      const rawPrice = pick.history?.released?.price
+        ?? pick.history?.current?.price ?? pick.price;
+      am = parseInt(String(rawPrice == null ? '' : rawPrice)
+                      .replace(/[−–—]/g, '-').replace(/[^\-+\d]/g, ''), 10);
+    }
+    const bePct = (isFinite(am) && Math.abs(am) >= 100)
+      ? (am > 0 ? 100 / (am + 100) : Math.abs(am) / (Math.abs(am) + 100)) * 100
+      : null;
+    // The price cell doesn't need a GRADE — No Edge rows still carry our
+    // side and its price, and the break-even math is the same.
+    if (bePct != null) {
+      cellPrice = [ICO.price, `At ${am > 0 ? '+' : '−'}${Math.abs(am)}`,
+                   `break-even: ${bePct.toFixed(1)}%`,
+                   (ml && hasPick)
+                     ? `The record is across every price this signal fired at; ` +
+                       `at this price the bet profits above ${bePct.toFixed(1)}%.`
+                     : `A bet at this price profits above ${bePct.toFixed(1)}%.`];
     }
 
-    // History check — what share of these historical finals landed on each
+    // History cells — what share of these historical finals landed on each
     // side of TODAY'S number (trapezoid mass split of the curve). Applies to
     // spread/total always, and to the ML chart when a graded ML pick serves
-    // its signal's own curve. Rule-sourced curves phrase it as the fired
-    // signal's record.
+    // its signal's own curve.
     if ((!ml || mlRuleCurve) && densityCurve.length >= 3 && vegasPos != null
         && histRange?.sample_size && endsPair) {
       let left = 0, total = 0;
@@ -1928,89 +1986,92 @@
                    && typeof histRange.cover_rate === 'number'
                      ? histRange.cover_rate : null;
 
-      // A signal's record and THIS bet's price answer different questions, and
-      // on a moneyline they can look like the same one. ML rules fire at any
-      // price and mostly point at favorites, so a 70% lifetime rate printed
-      // under a +215 underdog reads as "70% to win this game" — it isn't.
-      // Anchor the record to what the price actually has to clear. Pure price
-      // arithmetic: no model number, no blend dot. (Austin, 2026-08-19)
-      let priceClause = '';
-      if (ml && rate != null) {
-        const rawLine = (pick && pick._locked && pick.history?.released?.line_raw != null)
-          ? pick.history.released.line_raw
-          : ((pick && pick.history && pick.history.current
-              && pick.history.current.line) || (pick && pick.line));
-        const am = parseInt(String(rawLine == null ? '' : rawLine)
-                              .replace(/[−–—]/g, '-').replace(/[^\-+\d]/g, ''), 10);
-        if (isFinite(am) && Math.abs(am) >= 100) {
-          const be = am > 0 ? 100 / (am + 100)
-                            : Math.abs(am) / (Math.abs(am) + 100);
-          priceClause = ` That's its record across every price it fired at; ` +
-            `at <b>${am > 0 ? '+' : '−'}${Math.abs(am)}</b> this one turns a ` +
-            `profit above <b>${(be * 100).toFixed(1)}%</b>.`;
+      if (rate != null) {
+        const nSig = histRange.source === 'bloc' ? (histRange.signal_count || 1) : 1;
+        // ACTUAL results of those signals — pooled W–L, same n-weighted
+        // pooling as the rate so the record and the % always agree.
+        // Older payloads without pooled fields fall back to rate×n for a
+        // single signal, and to the plain caption for blocs.
+        let recTxt = null;
+        if (histRange.pooled_n != null && histRange.pooled_wins != null) {
+          const W = Math.round(histRange.pooled_wins);
+          const L = Math.round(histRange.pooled_n - histRange.pooled_wins);
+          recTxt = `${W}–${L}`;
+        } else if (histRange.source === 'rule' && histRange.sample_size) {
+          const W = Math.round(rate * histRange.sample_size);
+          recTxt = `${W}–${histRange.sample_size - W}`;
         }
-      }
-      if (rate != null || total > 0) {
-        const note = document.createElement('div');
-        note.className = 'mlstrip-note';
-        // "In 2023–25" carries the in-sample framing inherently; the sitewide
-        // footer carries past-performance. The found-in-those-seasons caveat
-        // lives in the curve tooltip, not stamped on every card (Austin).
-        if (rate != null && histRange.source === 'bloc') {
-          // Bloc-weighted: the number is the signals' own pooled record, the
-          // same n-weighted rate that prices this leg — never the curve's area.
-          note.innerHTML =
-            `History check: ${histRange.signal_count} signals back this pick. ` +
-            `In 2023–25 the side they pointed to won <b>${Math.round(rate * 100)}%</b> ` +
-            `of the time, counting each signal by how many games it has.` + priceClause;
-        } else if (rate != null) {
-          note.innerHTML =
-            `History check: one signal backs this pick. In 2023–25 it fired ` +
-            `${histRange.sample_size} times and the side it pointed to won ` +
-            `<b>${Math.round(rate * 100)}%</b> of them.` + priceClause;
+        cellPick = [ICO.bars, `${nSig} signal${nSig === 1 ? '' : 's'}`,
+                    recTxt ? `back this pick\n${recTxt} · 2023–25`
+                           : 'back this pick\n2023–25 results', null];
+        cellHist = [ICO.check, `${Math.round(rate * 100)}%`, 'historical win rate',
+          histRange.source === 'bloc'
+            ? `In 2023–25 the side these ${nSig} signals pointed to won ` +
+              `${Math.round(rate * 100)}% of the time, counting each signal by ` +
+              `how many games it has. 2026 is the live test.`
+            : `In 2023–25 this signal fired ${histRange.sample_size} times and ` +
+              `the side it pointed to won ${Math.round(rate * 100)}% of them. ` +
+              `2026 is the live test.`];
+      } else if (total > 0) {
+        cellPick = hasPick
+          ? [ICO.bars, 'Backfilling', "this pick's signal history", BACKFILL_TIP]
+          : [ICO.bars, 'No Edge', 'no graded pick here', null];
+        const pctLeft = left / total;
+        let sideName, pct;
+        if (pickZone) {
+          pct = pickZone.goldLeft ? pctLeft : 1 - pctLeft;
+          sideName = pickZone.goldLeft ? endsPair[0] : endsPair[1];
         } else {
-          const pctLeft = left / total;
-          let sideName, pct;
-          if (pickZone) {
-            pct = pickZone.goldLeft ? pctLeft : 1 - pctLeft;
-            sideName = pickZone.goldLeft ? endsPair[0] : endsPair[1];
-          } else {
-            pct = Math.max(pctLeft, 1 - pctLeft);
-            sideName = pctLeft >= 0.5 ? endsPair[0] : endsPair[1];
-          }
-          const pctTxt = `<b>${Math.round(pct * 100)}%</b>`;
-          note.innerHTML = (histRange.source === 'rule')
-            ? `History check: in the ${histRange.sample_size} games where this pick's ` +
-              `#1 signal fired, ${pctTxt} of finals landed on the ${escape(sideName)} ` +
-              `side of today's number.`
-            : histRange.source === 'blend'
-              ? (hasPick
-                ? `Signal history for this pick is still backfilling. Below is the ` +
-                  `market conditioned on our read: at numbers like today's, where the ` +
-                  `models leaned like they do here, ${pctTxt} of finals landed on the ` +
-                  `${escape(sideName)} side (≈${histRange.sample_size} games' worth, 2023–25).`
-                : `History check: at numbers like today's, where our models read the ` +
-                  `game like they read this one, ${pctTxt} of finals landed on the ` +
-                  `${escape(sideName)} side (≈${histRange.sample_size} games' worth, ` +
-                  `weighted, 2023–25).`)
-            // The line band is the MARKET's base rate at this number — it says
-            // nothing about the signals that graded this pick. Under a No Edge
-            // verdict that reads fine. Under a GRADED pick it reads as the
-            // pick's own record, and the two can point opposite ways: Western
-            // Kentucky @ Nevada carried an A (net 5) over "48%", which is a
-            // coin flip on the market's history, not our signals' record.
-            // Rule curves for the 2026-08-20 electorate are still backfilling,
-            // so say plainly which number this is. (Austin, 2026-08-20)
-            : hasPick
-              ? `Signal history for this pick is still backfilling. The number ` +
-                `below it is the market's, not ours: at numbers like today's, ` +
-                `${pctTxt} of finals landed on the ${escape(sideName)} side ` +
-                `(${histRange.sample_size} games, 2023–25).`
-              : `History check: at numbers like today's, ${pctTxt} of finals landed ` +
-                `on the ${escape(sideName)} side (${histRange.sample_size} games, 2023–25).`;
+          pct = Math.max(pctLeft, 1 - pctLeft);
+          sideName = pctLeft >= 0.5 ? endsPair[0] : endsPair[1];
         }
-        card.appendChild(note);
+        const pTxt = Math.round(pct * 100);
+        // The WKU@Nevada rule (2026-08-20): the split is the MARKET's base
+        // rate at this number — label it as the market's, never as ours.
+        cellHist = (histRange.source === 'rule')
+          ? [ICO.check, `${pTxt}%`, `finals on ${sideName} side · signal`,
+             `In the ${histRange.sample_size} games where this pick's #1 signal ` +
+             `fired, ${pTxt}% of finals landed on the ${sideName} side of ` +
+             `today's number.`]
+          : [ICO.check, `${pTxt}%`, `finals on ${sideName} side · market`,
+             histRange.source === 'blend'
+               ? `At numbers like today's, where our models read the game like ` +
+                 `they read this one, ${pTxt}% of finals landed on the ` +
+                 `${sideName} side (≈${histRange.sample_size} games' worth, ` +
+                 `weighted, 2023–25). Market history, not our signals' record.`
+               : `At numbers like today's, ${pTxt}% of finals landed on the ` +
+                 `${sideName} side (${histRange.sample_size} games, 2023–25). ` +
+                 `Market history, not our signals' record.`];
       }
+    } else if (ml) {
+      // Aggregate moneyline (no signal curve): pick state + the market's
+      // favorite calibration + Vegas's own price and implied rate.
+      cellPick = hasPick
+        ? [ICO.bars, 'Backfilling', "this pick's signal history", BACKFILL_TIP]
+        : [ICO.bars, 'No Edge', 'no graded pick here', null];
+      if (ml.calCell) {
+        const c = ml.calCell;
+        cellHist = [ICO.check, `${Math.round(c.rate * 100)}%`,
+                    `favs like ${c.favName} won · market`,
+                    `Favorites priced like ${c.favName} won ` +
+                    `${Math.round(c.rate * 100)}% of the time (${c.n} games, ` +
+                    `2023–25). Market history, not our signals' record.`];
+      }
+      if (!cellPrice && ml.vegasCell) {
+        cellPrice = [ICO.price, ml.vegasCell.txt,
+                     `${Math.round(ml.vegasCell.implied * 100)}% implied`, null];
+      }
+    }
+
+    const footCells = [cellPick, cellHist, cellPrice].filter(Boolean);
+    if (footCells.length >= 2) {
+      const cells = document.createElement('div');
+      cells.className = 'mlstrip-cells';
+      cells.innerHTML = footCells.map(([icon, lead, sub, tip]) =>
+        `<div class="mlc"${tip ? ` title="${escape(tip)}"` : ''}>` +
+        `<span class="mlc-ico">${icon}</span>` +
+        `<span class="mlc-txt"><b>${escape(lead)}</b><small>${escape(sub)}</small></span></div>`).join('');
+      card.appendChild(cells);
     }
 
     return card;
