@@ -176,6 +176,10 @@
   .rk-gm-cx.cx-lean    { color: #B07C12; }
   .rk-gm-cx.cx-tossup  { color: #C0561C; }
   .rk-gm-cx.cx-loss    { color: var(--text-light); }
+  /* Played games: the result is a fact — score in the prob column, gold
+     FINAL chip (site convention: serif gold Final), no risk highlight. */
+  .rk-gm-cx.cx-final   { color: var(--gold); }
+  .rk-gm.is-final .rk-gm-wp { color: var(--ink); font-weight: 600; }
   .rk-reasons { display: inline-flex; gap: 3px; vertical-align: 1px; }
   .rk-reason { font-size: 8px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 4px; border-radius: 3px; background: rgba(176,124,18,0.14); color: #8A5E00; }
   .rk-reason-pos { background: rgba(46,107,62,0.14); color: #2E6B3E; }
@@ -675,14 +679,19 @@ function buildSeasonPanel(t) {
     // Highlight where the record can crack: toss-up wins first, then leans, then a
     // comfortable win that still carries an adverse travel/scheduling spot. A rest
     // edge (rested / off bye) is positive, so it never triggers the highlight.
-    const riskCls = g.risk === 'tossup' ? ' is-tossup'
+    const riskCls = g.played ? ' is-final'
+                  : g.risk === 'tossup' ? ' is-tossup'
                   : g.risk === 'lean'   ? ' is-lean'
                   : (adverse && g.result === 'W') ? ' is-spot' : '';
+    // Played: the score replaces the probability — a result, not a lean.
+    const wpCell = g.played
+      ? `${escapeHtml(g.score || '')} <span class="rk-gm-cx cx-final">final</span>`
+      : `${wp} <span class="rk-gm-cx cx-${escapeHtml(g.risk || '')}">${escapeHtml(g.complexion || '')}</span>`;
     return `
       <div class="rk-gm${riskCls}">
         <span class="rk-gm-wk">${escapeHtml(wk)}</span>
         <span class="rk-gm-opp"><span class="rk-gm-site">${site(g.site)}</span> ${escapeHtml(g.opp || '')}${tag(g)} ${chips}</span>
-        <span class="rk-gm-wp">${wp} <span class="rk-gm-cx cx-${escapeHtml(g.risk || '')}">${escapeHtml(g.complexion || '')}</span></span>
+        <span class="rk-gm-wp">${wpCell}</span>
         <span class="rk-wl rk-wl-${cls}">${g.result}</span>
       </div>`;
   };
@@ -690,7 +699,10 @@ function buildSeasonPanel(t) {
   const left = games.slice(0, half).map(gameRow).join('');
   const right = games.slice(half).map(gameRow).join('');
 
+  const pw = games.filter(g => g.played && g.result === 'W').length;
+  const pl = games.filter(g => g.played && g.result === 'L').length;
   const breakdown = [
+    (pw + pl > 0 ? `${pw}\u2013${pl} so far` : ''),
     (t.likely_w != null ? t.likely_w + ' W' : ''),
     (t.likely_l ? t.likely_l + ' L' : ''),
     (t.watch ? t.watch + ' to watch' : '')
