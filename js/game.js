@@ -550,7 +550,9 @@
       <line x1="0" y1="${mid}" x2="${W}" y2="${mid}"
             stroke="rgba(15,14,10,0.4)" stroke-width="1" stroke-dasharray="5 6"/>
       ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none"
-            stroke="#B8922A" stroke-width="3.5" stroke-linejoin="round"/>` : ''}`;
+            stroke="#F8F5EE" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round"/>
+      <path d="${path(pts, h)}" fill="none"
+            stroke="#0F0E0A" stroke-width="3.5" stroke-linejoin="round"/>` : ''}`;
     };
 
     svg.innerHTML = frame('wpGrad', homeCol, awayCol, wpPts, H);
@@ -571,7 +573,7 @@
     //    under vs over (gold pole vs ink pole, picked side on top).
     const betsEl = document.getElementById('pgWpBets');
     if (betsEl) {
-      const BH = 150;
+      const BH = 240;   // same viewBox as the main chart — all three frames identical
       const band = (title, topLbl, botLbl, topCol, botCol, pts, gradId) => {
         if (!pts || pts.length < 2) return '';
         const nowP = Math.round(pts[pts.length - 1][1] * 100);

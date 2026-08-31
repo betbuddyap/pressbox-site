@@ -673,15 +673,15 @@
    block, wearing the grade strip's surface (cream, --border, radius 6)
    so they read as its siblings. Win prob (team colors), spread as
    team-vs-team covers, total as under/over. Every frame: tinted poles
-   fading to cream at the 50/50 line, one gold line. */
+   fading to cream at the 50/50 line, one cream-cased ink line. */
 .pg-wp-section { margin-top: 18px; }
 .pg-wp-inner { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
 .pg-wp-block { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px 14px; text-align: left; }
 .pg-wp-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
 .pg-wp-title { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--ink); }
-.pg-wp-now { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--gold); }
+.pg-wp-now { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--ink); }
 .pg-wp-frame { position: relative; }
-.pg-wp-frame svg { width: 100%; display: block; border-radius: 4px; background: var(--cream-dark); }
+.pg-wp-frame svg { width: 100%; height: 200px; display: block; border-radius: 4px; background: var(--cream-dark); }
 /* Pole labels ride the strongest part of the gradient — cream chips keep
    them legible over any team color and echo the cards-on-hero language. */
 .pg-wp-teamlbl {
@@ -694,13 +694,10 @@
 }
 .pg-wp-teamlbl.top { top: 6px; }
 .pg-wp-teamlbl.bot { bottom: 6px; }
-#pgWpChart { height: 200px; }
-.pg-wp-bets { display: flex; flex-direction: column; gap: 12px; }
-.pg-wp-bets .pg-wp-frame svg { height: 120px; }
+.pg-wp-bets { display: flex; flex-direction: column; gap: 10px; }
 @media (max-width: 600px) {
   .pg-wp-section { margin-top: 14px; }
-  #pgWpChart { height: 150px; }
-  .pg-wp-bets .pg-wp-frame svg { height: 90px; }
+  .pg-wp-frame svg { height: 150px; }
   .pg-wp-title { font-size: 10px; }
 }
 
