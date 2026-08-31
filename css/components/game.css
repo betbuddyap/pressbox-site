@@ -630,17 +630,26 @@
 }
 
 /* ── In-game phase 2: field strip · drive · linescore · live probabilities ── */
-.pg-field-wrap { margin: 10px auto 0; max-width: 520px; }
+.pg-field-wrap { margin: 10px auto 0; max-width: 520px; width: 92%; }
 .pg-field {
   position: relative;
-  height: 12px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, rgba(248,245,238,0.16) 0 8%, rgba(248,245,238,0.07) 8% 92%, rgba(248,245,238,0.16) 92% 100%);
-  border: 1px solid rgba(248,245,238,0.14);
+  height: 14px;
+  border-radius: 7px;
+  /* End zones brighter, field readable over the team-color hero, faint
+     10-yard stripes so the ball position reads at a glance */
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 9.9%, rgba(248,245,238,0.22) 9.9% 10.1%),
+    linear-gradient(90deg,
+      rgba(231,190,77,0.35) 0 9%,
+      rgba(248,245,238,0.14) 9% 91%,
+      rgba(231,190,77,0.35) 91% 100%);
+  border: 1px solid rgba(248,245,238,0.3);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.35);
 }
 .pg-field-mid {
-  position: absolute; left: 50%; top: 0; bottom: 0; width: 1px;
-  background: rgba(248,245,238,0.25);
+  position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px;
+  background: rgba(248,245,238,0.45);
 }
 .pg-field-ball {
   position: absolute; top: 50%; width: 9px; height: 9px;
@@ -699,8 +708,20 @@
 }
 
 @media (max-width: 600px) {
-  .pg-live-num { font-size: 56px; }
-  .pg-live-dash { font-size: 26px; }
+  /* COMPACT LIVE BOX (Austin, 2026-08-31: "ESPN's shorter mobile box and
+     field/play action works better... ours takes the whole screen").
+     On phones the hero collapses toward a scorebox: half-size numerals,
+     tight gaps, the FIELD + situation as the action block, chart trimmed. */
+  .pg-live { padding: 8px 0 12px; gap: 6px; }
+  .pg-live-num { font-size: 40px; }
+  .pg-live-dash { font-size: 20px; padding: 0 8px; }
+  .pg-live-drive { font-size: 11px; margin-top: 4px; }
+  .pg-live-lastplay { font-size: 11px; }
+  .pg-field-wrap { margin-top: 6px; }
+  .pg-linescore { margin-top: 8px; }
+  .pg-linescore table { font-size: 11px; }
+  .pg-wp-wrap { margin-top: 10px; }
+  #pgWpChart { height: 84px; }
 }
 
 

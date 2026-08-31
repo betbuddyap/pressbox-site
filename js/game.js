@@ -2709,6 +2709,7 @@
     if ((demoMode === 'live' || demoMode === 'final') && data.game) {
       const away = data.game.away?.name || 'Away';
       if (demoMode === 'live') {
+        const home = data.game.home?.name || 'Home';
         Object.assign(data.game, {
           status: 'in_progress',
           away_points: 21, home_points: 17,
@@ -2718,8 +2719,37 @@
           // ESPN-style display name on purpose — exercises the loose match
           current_possession_team: `${away} Fightin' Demos`,
           is_red_zone: false,
-          last_play_text: `(7:21 - 3rd) ${away} pass complete short right for 11 yards.`,
+          last_play_text: `T.Boyd pass complete short right to J.Mercer for 11 yards to the ${away.substring(0, 4).toUpperCase()} 32 — tackle by K.Hill`,
+          // In-game phase 2 furniture
+          current_yard_line_num: 68,
+          home_timeouts: 2, away_timeouts: 3,
+          drive_summary: `${away} · 7 plays, 52 yards, 3:12`,
+          linescores: { away: [7, 14, 0], home: [3, 14, 0] },
+          home_win_prob: 0.41,
         });
+        // Synthetic win-prob series with a story arc (through Q3 7:21):
+        // home falls behind, storms back in Q2, away answers.
+        _wpTicks = [];
+        _wpFetchedAt = Date.now() + 1e12;   // never refetched in demo
+        let hp = 0, ap = 0;
+        for (let i = 0; i <= 55; i++) {
+          const f = (i / 55) * 0.63;
+          if (i === 7)  ap += 7;
+          if (i === 14) hp += 3;
+          if (i === 20) ap += 7;
+          if (i === 27) hp += 7;
+          if (i === 33) hp += 7;
+          if (i === 41) ap += 7;
+          const period = Math.min(4, Math.floor(f * 4) + 1);
+          const remQ = 15 - ((f * 60) % 15);
+          const wob = Math.sin(i / 4.2) * 0.035;
+          const wp = Math.min(0.93, Math.max(0.07,
+            0.5 + (hp - ap) / 26 + wob - 0.03));
+          _wpTicks.push({
+            home_wp: wp, home_pts: hp, away_pts: ap, period,
+            clock: `${Math.floor(remQ)}:${String(Math.round((remQ % 1) * 60)).padStart(2, '0')}`,
+          });
+        }
       } else {
         Object.assign(data.game, { status: 'final', away_points: 31, home_points: 24 });
         // Stamp fabricated outcomes so the W/L/P header chips render
