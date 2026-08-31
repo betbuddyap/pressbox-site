@@ -680,12 +680,12 @@
 .pg-wp-title { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); }
 .pg-wp-now { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--gold); }
 .pg-wp-frame { position: relative; }
-.pg-wp-frame svg { width: 100%; display: block; border-radius: 4px; }
+.pg-wp-frame svg { width: 100%; display: block; border-radius: 4px; background: var(--cream-dark); }
 .pg-wp-teamlbl {
   position: absolute; left: 8px; z-index: 2;
   font-family: var(--sans); font-size: 10px; font-weight: 700;
   letter-spacing: 0.03em; text-transform: uppercase;
-  color: rgba(15,14,10,0.6);
+  color: rgba(15,14,10,0.7);
 }
 .pg-wp-teamlbl.top { top: 6px; }
 .pg-wp-teamlbl.bot { bottom: 6px; }

@@ -522,23 +522,36 @@
     const path = (pts, h) => pts.map(([a, p], i) =>
       `${i ? 'L' : 'M'}${a.toFixed(1)},${y(p, h).toFixed(1)}`).join(' ');
 
-    // ── Shared frame internals: tinted poles fading to CREAM at the 50/50
-    //    line (charts sit on cream cards — the middle IS the page), dashed
-    //    ink mid line, one gold line. Same recipe for all three charts.
-    const frame = (gradId, topCol, botCol, pts, h) => `
+    // ── Shared frame internals, all three charts. The field is a tug-of-war:
+    //    each side's color tints its pole, and the area between the line and
+    //    the 50/50 mark fills with whichever side is ahead — the fill is what
+    //    keeps the chart from reading as empty cream. One gold line on top.
+    const frame = (gradId, topCol, botCol, pts, h) => {
+      const mid = h / 2;
+      const area = pts.length > 1
+        ? `${path(pts, h)} L${pts[pts.length - 1][0].toFixed(1)},${mid}` +
+          ` L${pts[0][0].toFixed(1)},${mid} Z`
+        : '';
+      return `
       <defs>
         <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0"    stop-color="${topCol}" stop-opacity="0.45"/>
-          <stop offset="0.42" stop-color="#F8F5EE"   stop-opacity="0"/>
-          <stop offset="0.58" stop-color="#F8F5EE"   stop-opacity="0"/>
-          <stop offset="1"    stop-color="${botCol}" stop-opacity="0.45"/>
+          <stop offset="0"    stop-color="${topCol}" stop-opacity="0.55"/>
+          <stop offset="0.46" stop-color="${topCol}" stop-opacity="0.05"/>
+          <stop offset="0.54" stop-color="${botCol}" stop-opacity="0.05"/>
+          <stop offset="1"    stop-color="${botCol}" stop-opacity="0.55"/>
         </linearGradient>
+        <clipPath id="${gradId}T"><rect x="0" y="0" width="${W}" height="${mid}"/></clipPath>
+        <clipPath id="${gradId}B"><rect x="0" y="${mid}" width="${W}" height="${mid}"/></clipPath>
       </defs>
       <rect x="0" y="0" width="${W}" height="${h}" fill="url(#${gradId})"/>
-      <line x1="0" y1="${h / 2}" x2="${W}" y2="${h / 2}"
-            stroke="rgba(15,14,10,0.3)" stroke-width="1" stroke-dasharray="5 6"/>
+      ${area ? `
+        <path d="${area}" fill="${topCol}" fill-opacity="0.30" clip-path="url(#${gradId}T)"/>
+        <path d="${area}" fill="${botCol}" fill-opacity="0.30" clip-path="url(#${gradId}B)"/>` : ''}
+      <line x1="0" y1="${mid}" x2="${W}" y2="${mid}"
+            stroke="rgba(15,14,10,0.35)" stroke-width="1" stroke-dasharray="5 6"/>
       ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none"
             stroke="#B8922A" stroke-width="3.5" stroke-linejoin="round"/>` : ''}`;
+    };
 
     svg.innerHTML = frame('wpGrad', homeCol, awayCol, wpPts, H);
 
@@ -553,12 +566,13 @@
       nowEl.textContent = `${leader} ${Math.round((wp >= 0.5 ? wp : 1 - wp) * 100)}%`;
     }
 
-    // ── Per-bet charts: same card + frame as the main chart, sage pole on
-    //    top (bet hitting), rust on the bottom (bet missing).
+    // ── Per-bet charts: same frame, two named sides. Spread = which TEAM
+    //    covers the released line (team colors, picked side on top). Total =
+    //    under vs over (gold pole vs ink pole, picked side on top).
     const betsEl = document.getElementById('pgWpBets');
     if (betsEl) {
       const BH = 150;
-      const band = (title, topLbl, pts, gradId) => {
+      const band = (title, topLbl, botLbl, topCol, botCol, pts, gradId) => {
         if (!pts || pts.length < 2) return '';
         const nowP = Math.round(pts[pts.length - 1][1] * 100);
         return `<div class="pg-wp-block">
@@ -567,19 +581,25 @@
             <span class="pg-wp-now">${nowP}%</span>
           </div>
           <div class="pg-wp-frame">
-            <span class="pg-wp-teamlbl top">${topLbl} 100%</span>
-            <span class="pg-wp-teamlbl bot">Misses 100%</span>
+            <span class="pg-wp-teamlbl top">${escape(topLbl)}</span>
+            <span class="pg-wp-teamlbl bot">${escape(botLbl)}</span>
             <svg viewBox="0 0 ${W} ${BH}" preserveAspectRatio="none">
-              ${frame(gradId, '#4A7A4A', '#B85A2A', pts, BH)}
+              ${frame(gradId, topCol, botCol, pts, BH)}
             </svg>
           </div>
         </div>`;
       };
+      const spPickName = spSideHome ? home : away;
+      const spOppName  = spSideHome ? away : home;
+      const spPickCol  = spSideHome ? homeCol : awayCol;
+      const spOppCol   = spSideHome ? awayCol : homeCol;
       betsEl.innerHTML =
         band(spRel ? `Spread — ${spRel.side || ''} ${spRel.line || ''}` : '',
-             'Covers', coverPts, 'wpGradSp') +
+             `${spPickName} covers 100%`, `${spOppName} covers 100%`,
+             spPickCol, spOppCol, coverPts, 'wpGradSp') +
         band(toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '',
-             'Hits', totPts, 'wpGradTot');
+             `${toUnder ? 'Under' : 'Over'} 100%`, `${toUnder ? 'Over' : 'Under'} 100%`,
+             '#B8922A', '#0F0E0A', totPts, 'wpGradTot');
     }
   }
 
