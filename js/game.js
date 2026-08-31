@@ -558,7 +558,7 @@
       <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" vector-effect="non-scaling-stroke"
             stroke="rgba(248,245,238,0.3)" stroke-width="1" stroke-dasharray="4 5"/>
       ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none" vector-effect="non-scaling-stroke"
-            stroke="#E7BE4D" stroke-width="2.5" stroke-linejoin="round"/>` : ''}`;
+            stroke="#E7BE4D" stroke-width="2" stroke-linejoin="round"/>` : ''}`;
     };
 
     // Quarter labels + the gold now-dot are HTML so the stretched SVG can't
