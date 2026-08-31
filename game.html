@@ -254,13 +254,6 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="pg-live-drive" id="pgLiveDrive"></div>
         <div class="pg-live-lastplay" id="pgLiveLastPlay"></div>
         <div class="pg-linescore" id="pgLinescore" style="display:none;"></div>
-        <div class="pg-wp-wrap" id="pgWpWrap" style="display:none;">
-          <div class="pg-wp-head">
-            <span class="pg-wp-title">LIVE PROBABILITIES</span>
-            <span class="pg-wp-legend" id="pgWpLegend"></span>
-          </div>
-          <svg id="pgWpChart" viewBox="0 0 1000 220" preserveAspectRatio="none"></svg>
-        </div>
       </div>
 
       <div id="preGameContent">
@@ -280,6 +273,24 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       </div>
     </div>
   </div>
+
+  <!-- LIVE PROBABILITIES — its own band under the hero. Tug-of-war frame:
+       top = home 100%, bottom = away 100%, team-color field fading to
+       neutral at the 50/50 line; spread/total each get a slim band. -->
+  <section class="pg-wp-section" id="pgWpWrap" style="display:none;">
+    <div class="pg-wp-inner">
+      <div class="pg-wp-head">
+        <span class="pg-wp-title">LIVE WIN PROBABILITY</span>
+        <span class="pg-wp-now" id="pgWpNow"></span>
+      </div>
+      <div class="pg-wp-frame">
+        <span class="pg-wp-teamlbl top" id="pgWpTop"></span>
+        <span class="pg-wp-teamlbl bot" id="pgWpBot"></span>
+        <svg id="pgWpChart" viewBox="0 0 1000 240" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="pg-wp-bets" id="pgWpBets"></div>
+    </div>
+  </section>
 
   <!-- MAIN COLUMN -->
   <main class="game-main">
@@ -385,7 +396,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260831b"></script>
+<script src="/js/game.js?v=20260831c"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->

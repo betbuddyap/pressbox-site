@@ -456,6 +456,8 @@
     return Math.max(0.001, Math.min(1, ((p - 1) * 15 + (15 - rem)) / 60));
   }
 
+  let _demoBetLines = null;   // demo mode: force all three bands for styling
+
   async function renderWpChart(data) {
     const wrapEl = document.getElementById('pgWpWrap');
     const svg = document.getElementById('pgWpChart');
@@ -475,58 +477,103 @@
     if (!ticks || ticks.length < 2) { wrapEl.style.display = 'none'; return; }
     wrapEl.style.display = '';
 
-    // Released picks drive the bet lines (locked board = released board)
+    const home = data.game?.home?.name || 'Home';
+    const away = data.game?.away?.name || 'Away';
+    const homeCol = data.game?.home?.primary_color || '#2E4057';
+    const awayCol = data.game?.away?.primary_color || '#6B2737';
+
+    // Released picks drive the bet bands (locked board = released board);
+    // demo mode may force lines so every band can be styled.
     const pk = {};
     (data.picks || []).forEach(p => { pk[p.market] = p; });
     const relOf = (p) => (p && p.history && p.history.released) || null;
-    const spRel = relOf(pk.spread), toRel = relOf(pk.total);
+    let spRel = relOf(pk.spread);
+    let toRel = relOf(pk.total);
+    if (_demoBetLines) {
+      if ((!spRel || spRel.tier === 'no_edge') && _demoBetLines.spread) spRel = _demoBetLines.spread;
+      if ((!toRel || toRel.tier === 'no_edge') && _demoBetLines.total) toRel = _demoBetLines.total;
+    }
     const spLine = spRel && spRel.tier !== 'no_edge' ? Number(spRel.line_raw) : null;
     const spSideHome = spRel ? spRel.side_raw === 'home' : null;
     const toLine = toRel && toRel.tier !== 'no_edge' ? Number(toRel.line_raw) : null;
     const toUnder = toRel ? toRel.side_raw === 'under' : null;
 
-    const W = 1000, H = 220, SIG_M = 15.5, SIG_T = 11.0;
+    const W = 1000, H = 240, SIG_M = 15.5, SIG_T = 11.0;
     const n = ticks.length;
     const x = (i) => (i / (n - 1)) * W;
-    const y = (p) => H - p * H;
-    const lines = { wp: [], cover: [], tot: [] };
+    const y = (p, h) => h - p * h;
+    const wpPts = [], coverPts = [], totPts = [];
     ticks.forEach((t, i) => {
-      if (t.home_wp != null) lines.wp.push([x(i), y(Number(t.home_wp))]);
+      if (t.home_wp != null) wpPts.push([x(i), Number(t.home_wp)]);
       const f = _tickFrac(t);
       if (f == null || t.home_pts == null) return;
       if (spLine != null && !isNaN(spLine)) {
         const diff = spSideHome ? (t.home_pts - t.away_pts) : (t.away_pts - t.home_pts);
         const z = (diff + f * spLine) / (SIG_M * Math.sqrt(Math.max(1e-4, 1 - f)));
-        lines.cover.push([x(i), y(_phi(z))]);
+        coverPts.push([x(i), _phi(z)]);
       }
       if (toLine != null && !isNaN(toLine)) {
         const pts = t.home_pts + t.away_pts;
         const zOver = (pts - f * toLine) / (SIG_T * Math.sqrt(Math.max(1e-4, 1 - f)));
-        lines.tot.push([x(i), y(toUnder ? 1 - _phi(zOver) : _phi(zOver))]);
+        totPts.push([x(i), toUnder ? 1 - _phi(zOver) : _phi(zOver)]);
       }
     });
 
-    const path = (pts) => pts.map(([a, b], i) =>
-      `${i ? 'L' : 'M'}${a.toFixed(1)},${b.toFixed(1)}`).join(' ');
-    const COLORS = { wp: '#E7BE4D', cover: '#7FA05B', tot: 'rgba(248,245,238,0.85)' };
-    let s = `<line x1="0" y1="${H / 2}" x2="${W}" y2="${H / 2}"
-              stroke="rgba(248,245,238,0.18)" stroke-width="1" stroke-dasharray="4 5"/>`;
-    for (const k of ['tot', 'cover', 'wp']) {
-      if (lines[k].length > 1) {
-        s += `<path d="${path(lines[k])}" fill="none" stroke="${COLORS[k]}"
-               stroke-width="${k === 'wp' ? 3 : 2}" stroke-linejoin="round"/>`;
-      }
-    }
-    svg.innerHTML = s;
+    const path = (pts, h) => pts.map(([a, p], i) =>
+      `${i ? 'L' : 'M'}${a.toFixed(1)},${y(p, h).toFixed(1)}`).join(' ');
 
-    const home = data.game?.home?.name || 'Home';
-    const leg = [];
-    const last = (arr) => arr.length ? Math.round((1 - arr[arr.length - 1][1] / H) * 100) : null;
-    if (lines.wp.length) leg.push(`<span style="color:${COLORS.wp}">${escape(home)} ${last(lines.wp)}%</span>`);
-    if (lines.cover.length) leg.push(`<span style="color:${COLORS.cover}">${escape(spRel.side || 'spread')} ${spRel.line || ''} cover ${last(lines.cover)}%</span>`);
-    if (lines.tot.length) leg.push(`<span style="color:${COLORS.tot}">${escape(toRel.side || 'total')} ${toRel.line || ''} ${last(lines.tot)}%</span>`);
-    const legEl = document.getElementById('pgWpLegend');
-    if (legEl) legEl.innerHTML = leg.join('');
+    // ── Main tug-of-war: home color owns the top half, away the bottom,
+    //    both fading to neutral at the 50/50 line. One gold line = home WP.
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="wpGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"    stop-color="${homeCol}" stop-opacity="0.85"/>
+          <stop offset="0.45" stop-color="#F8F5EE"    stop-opacity="0.10"/>
+          <stop offset="0.55" stop-color="#F8F5EE"    stop-opacity="0.10"/>
+          <stop offset="1"    stop-color="${awayCol}" stop-opacity="0.85"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="${W}" height="${H}" fill="url(#wpGrad)"/>
+      <line x1="0" y1="${H / 2}" x2="${W}" y2="${H / 2}"
+            stroke="rgba(248,245,238,0.35)" stroke-width="1" stroke-dasharray="5 6"/>
+      ${wpPts.length > 1 ? `<path d="${path(wpPts, H)}" fill="none"
+            stroke="#E7BE4D" stroke-width="3.5" stroke-linejoin="round"/>` : ''}`;
+
+    const lblTop = document.getElementById('pgWpTop');
+    const lblBot = document.getElementById('pgWpBot');
+    if (lblTop) lblTop.textContent = `${home} 100%`;
+    if (lblBot) lblBot.textContent = `${away} 100%`;
+    const nowEl = document.getElementById('pgWpNow');
+    if (nowEl && wpPts.length) {
+      const wp = wpPts[wpPts.length - 1][1];
+      const leader = wp >= 0.5 ? home : away;
+      nowEl.textContent = `${leader} ${Math.round((wp >= 0.5 ? wp : 1 - wp) * 100)}%`;
+    }
+
+    // ── Slim per-bet bands: one question per frame, mid line = 50%.
+    const betsEl = document.getElementById('pgWpBets');
+    if (betsEl) {
+      const BH = 100;
+      const band = (label, pts, color) => {
+        if (!pts || pts.length < 2) return '';
+        const nowP = Math.round(pts[pts.length - 1][1] * 100);
+        return `<div class="pg-wp-bet">
+          <span class="lbl">${escape(label)}</span>
+          <svg viewBox="0 0 ${W} ${BH}" preserveAspectRatio="none">
+            <line x1="0" y1="${BH / 2}" x2="${W}" y2="${BH / 2}"
+                  stroke="rgba(248,245,238,0.2)" stroke-width="1.5" stroke-dasharray="5 6"/>
+            <path d="${path(pts, BH)}" fill="none" stroke="${color}"
+                  stroke-width="4" stroke-linejoin="round"/>
+          </svg>
+          <span class="now" style="color:${color}">${nowP}%</span>
+        </div>`;
+      };
+      betsEl.innerHTML =
+        band(spRel ? `${spRel.side || 'Spread'} ${spRel.line || ''} covers` : '',
+             coverPts, '#7FA05B') +
+        band(toRel ? `${toRel.side || 'Total'} ${toRel.line || ''} hits` : '',
+             totPts, 'rgba(248,245,238,0.9)');
+    }
   }
 
   // Map market -> firing model DISPLAY name, from picks data. A null
@@ -2727,6 +2774,13 @@
           linescores: { away: [7, 14, 0], home: [3, 14, 0] },
           home_win_prob: 0.41,
         });
+        // Force all three chart bands for styling review (this game's
+        // released spread is No Edge — the demo needs the full design).
+        _demoBetLines = {
+          spread: { tier: 'C', side: away, side_raw: 'away',
+                    line: '+6.5', line_raw: 6.5 },
+          total: null,   // the real released total renders its own band
+        };
         // Synthetic win-prob series with a story arc (through Q3 7:21):
         // home falls behind, storms back in Q2, away answers.
         _wpTicks = [];
