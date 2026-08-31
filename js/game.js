@@ -551,14 +551,14 @@
         <clipPath id="${id}B"><rect x="0" y="${mid}" width="${W}" height="${mid}"/></clipPath>
       </defs>
       ${area ? `
-        <path d="${area}" fill="${topCol}" fill-opacity="0.15" clip-path="url(#${id}T)"/>
-        <path d="${area}" fill="${botCol}" fill-opacity="0.15" clip-path="url(#${id}B)"/>` : ''}
+        <path d="${area}" fill="${topCol}" fill-opacity="0.22" clip-path="url(#${id}T)"/>
+        <path d="${area}" fill="${botCol}" fill-opacity="0.22" clip-path="url(#${id}B)"/>` : ''}
       ${qDivs.map(q => `<line x1="${q.x.toFixed(1)}" y1="0" x2="${q.x.toFixed(1)}" y2="${h}"
-            stroke="rgba(15,14,10,0.08)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
+            stroke="rgba(248,245,238,0.10)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
       <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" vector-effect="non-scaling-stroke"
-            stroke="rgba(15,14,10,0.25)" stroke-width="1" stroke-dasharray="4 5"/>
+            stroke="rgba(248,245,238,0.3)" stroke-width="1" stroke-dasharray="4 5"/>
       ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none" vector-effect="non-scaling-stroke"
-            stroke="#0F0E0A" stroke-width="2" stroke-linejoin="round"/>` : ''}`;
+            stroke="#E7BE4D" stroke-width="2.5" stroke-linejoin="round"/>` : ''}`;
     };
 
     // Quarter labels + the gold now-dot are HTML so the stretched SVG can't
@@ -625,7 +625,7 @@
              spPickCol, spOppCol, coverPts, 'wpGradSp') +
         band(toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '',
              `${toUnder ? 'Under' : 'Over'} 100%`, `${toUnder ? 'Over' : 'Under'} 100%`,
-             '#E7BE4D', '#0F0E0A', totPts, 'wpGradTot');
+             '#E7BE4D', '#F8F5EE', totPts, 'wpGradTot');
     }
   }
 
