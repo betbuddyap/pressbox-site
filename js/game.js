@@ -522,22 +522,25 @@
     const path = (pts, h) => pts.map(([a, p], i) =>
       `${i ? 'L' : 'M'}${a.toFixed(1)},${y(p, h).toFixed(1)}`).join(' ');
 
-    // ── Main tug-of-war: home color owns the top half, away the bottom,
-    //    both fading to neutral at the 50/50 line. One gold line = home WP.
-    svg.innerHTML = `
+    // ── Shared frame internals: tinted poles fading to CREAM at the 50/50
+    //    line (charts sit on cream cards — the middle IS the page), dashed
+    //    ink mid line, one gold line. Same recipe for all three charts.
+    const frame = (gradId, topCol, botCol, pts, h) => `
       <defs>
-        <linearGradient id="wpGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0"    stop-color="${homeCol}" stop-opacity="0.85"/>
-          <stop offset="0.45" stop-color="#F8F5EE"    stop-opacity="0.10"/>
-          <stop offset="0.55" stop-color="#F8F5EE"    stop-opacity="0.10"/>
-          <stop offset="1"    stop-color="${awayCol}" stop-opacity="0.85"/>
+        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"    stop-color="${topCol}" stop-opacity="0.45"/>
+          <stop offset="0.42" stop-color="#F8F5EE"   stop-opacity="0"/>
+          <stop offset="0.58" stop-color="#F8F5EE"   stop-opacity="0"/>
+          <stop offset="1"    stop-color="${botCol}" stop-opacity="0.45"/>
         </linearGradient>
       </defs>
-      <rect x="0" y="0" width="${W}" height="${H}" fill="url(#wpGrad)"/>
-      <line x1="0" y1="${H / 2}" x2="${W}" y2="${H / 2}"
-            stroke="rgba(248,245,238,0.35)" stroke-width="1" stroke-dasharray="5 6"/>
-      ${wpPts.length > 1 ? `<path d="${path(wpPts, H)}" fill="none"
-            stroke="#E7BE4D" stroke-width="3.5" stroke-linejoin="round"/>` : ''}`;
+      <rect x="0" y="0" width="${W}" height="${h}" fill="url(#${gradId})"/>
+      <line x1="0" y1="${h / 2}" x2="${W}" y2="${h / 2}"
+            stroke="rgba(15,14,10,0.3)" stroke-width="1" stroke-dasharray="5 6"/>
+      ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none"
+            stroke="#B8922A" stroke-width="3.5" stroke-linejoin="round"/>` : ''}`;
+
+    svg.innerHTML = frame('wpGrad', homeCol, awayCol, wpPts, H);
 
     const lblTop = document.getElementById('pgWpTop');
     const lblBot = document.getElementById('pgWpBot');
@@ -550,29 +553,33 @@
       nowEl.textContent = `${leader} ${Math.round((wp >= 0.5 ? wp : 1 - wp) * 100)}%`;
     }
 
-    // ── Slim per-bet bands: one question per frame, mid line = 50%.
+    // ── Per-bet charts: same card + frame as the main chart, sage pole on
+    //    top (bet hitting), rust on the bottom (bet missing).
     const betsEl = document.getElementById('pgWpBets');
     if (betsEl) {
-      const BH = 100;
-      const band = (label, pts, color) => {
+      const BH = 150;
+      const band = (title, topLbl, pts, gradId) => {
         if (!pts || pts.length < 2) return '';
         const nowP = Math.round(pts[pts.length - 1][1] * 100);
-        return `<div class="pg-wp-bet">
-          <span class="lbl">${escape(label)}</span>
-          <svg viewBox="0 0 ${W} ${BH}" preserveAspectRatio="none">
-            <line x1="0" y1="${BH / 2}" x2="${W}" y2="${BH / 2}"
-                  stroke="rgba(248,245,238,0.2)" stroke-width="1.5" stroke-dasharray="5 6"/>
-            <path d="${path(pts, BH)}" fill="none" stroke="${color}"
-                  stroke-width="4" stroke-linejoin="round"/>
-          </svg>
-          <span class="now" style="color:${color}">${nowP}%</span>
+        return `<div class="pg-wp-block">
+          <div class="pg-wp-head">
+            <span class="pg-wp-title">${escape(title)}</span>
+            <span class="pg-wp-now">${nowP}%</span>
+          </div>
+          <div class="pg-wp-frame">
+            <span class="pg-wp-teamlbl top">${topLbl} 100%</span>
+            <span class="pg-wp-teamlbl bot">Misses 100%</span>
+            <svg viewBox="0 0 ${W} ${BH}" preserveAspectRatio="none">
+              ${frame(gradId, '#4A7A4A', '#B85A2A', pts, BH)}
+            </svg>
+          </div>
         </div>`;
       };
       betsEl.innerHTML =
-        band(spRel ? `${spRel.side || 'Spread'} ${spRel.line || ''} covers` : '',
-             coverPts, '#7FA05B') +
-        band(toRel ? `${toRel.side || 'Total'} ${toRel.line || ''} hits` : '',
-             totPts, 'rgba(248,245,238,0.9)');
+        band(spRel ? `Spread — ${spRel.side || ''} ${spRel.line || ''}` : '',
+             'Covers', coverPts, 'wpGradSp') +
+        band(toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '',
+             'Hits', totPts, 'wpGradTot');
     }
   }
 

@@ -14,7 +14,7 @@
 <!-- Tokens FIRST, then components -->
 <link rel="stylesheet" href="/css/tokens.css?v=20260807g">
 <link rel="stylesheet" href="/css/components/live-lines.css?v=20260813b">
-<link rel="stylesheet" href="/css/components/game.css?v=20260813b">
+<link rel="stylesheet" href="/css/components/game.css?v=20260831a">
 
 <style>
   /* ── Site nav (kept in sync across pages) ── */
@@ -274,19 +274,22 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     </div>
   </div>
 
-  <!-- LIVE PROBABILITIES — its own band under the hero. Tug-of-war frame:
-       top = home 100%, bottom = away 100%, team-color field fading to
-       neutral at the 50/50 line; spread/total each get a slim band. -->
+  <!-- LIVE PROBABILITIES — its own section under the hero, on cream.
+       Three matching cards: win probability (team-color poles), spread
+       cover and total hit (sage/rust poles). Poles fade to cream at the
+       50/50 line; one gold line per frame. -->
   <section class="pg-wp-section" id="pgWpWrap" style="display:none;">
     <div class="pg-wp-inner">
-      <div class="pg-wp-head">
-        <span class="pg-wp-title">LIVE WIN PROBABILITY</span>
-        <span class="pg-wp-now" id="pgWpNow"></span>
-      </div>
-      <div class="pg-wp-frame">
-        <span class="pg-wp-teamlbl top" id="pgWpTop"></span>
-        <span class="pg-wp-teamlbl bot" id="pgWpBot"></span>
-        <svg id="pgWpChart" viewBox="0 0 1000 240" preserveAspectRatio="none"></svg>
+      <div class="pg-wp-block">
+        <div class="pg-wp-head">
+          <span class="pg-wp-title">LIVE WIN PROBABILITY</span>
+          <span class="pg-wp-now" id="pgWpNow"></span>
+        </div>
+        <div class="pg-wp-frame">
+          <span class="pg-wp-teamlbl top" id="pgWpTop"></span>
+          <span class="pg-wp-teamlbl bot" id="pgWpBot"></span>
+          <svg id="pgWpChart" viewBox="0 0 1000 240" preserveAspectRatio="none"></svg>
+        </div>
       </div>
       <div class="pg-wp-bets" id="pgWpBets"></div>
     </div>
@@ -396,7 +399,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260831c"></script>
+<script src="/js/game.js?v=20260831d"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
