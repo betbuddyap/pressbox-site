@@ -522,11 +522,24 @@
     const path = (pts, h) => pts.map(([a, p], i) =>
       `${i ? 'L' : 'M'}${a.toFixed(1)},${y(p, h).toFixed(1)}`).join(' ');
 
-    // ── Shared frame internals, all three charts. The field is a tug-of-war:
-    //    each side's color tints its pole, and the area between the line and
-    //    the 50/50 mark fills with whichever side is ahead — the fill is what
-    //    keeps the chart from reading as empty cream. One gold line on top.
-    const frame = (gradId, topCol, botCol, pts, h) => {
+    // ── Shared frame internals, all three charts — the site's editorial
+    //    chart language, not a poster: quiet flat side-color washes between
+    //    the line and the 50/50 mark, hairline quarter dividers, a dashed
+    //    mid line, one thin ink line. The gold "now" dot is the lone accent.
+    //    (Strokes carry vector-effect so preserveAspectRatio="none" never
+    //    fattens them; text/dots live in HTML overlays so they never warp.)
+    const qDivs = [];
+    let _qp = null;
+    ticks.forEach((t, i) => {
+      if (t.period == null) return;
+      if (_qp != null && t.period !== _qp) {
+        qDivs.push({ x: x(i), pct: (i / (n - 1)) * 100,
+                     label: t.period > 4 ? 'OT' : `Q${t.period}` });
+      }
+      _qp = t.period;
+    });
+
+    const frame = (id, topCol, botCol, pts, h) => {
       const mid = h / 2;
       const area = pts.length > 1
         ? `${path(pts, h)} L${pts[pts.length - 1][0].toFixed(1)},${mid}` +
@@ -534,28 +547,38 @@
         : '';
       return `
       <defs>
-        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0"    stop-color="${topCol}" stop-opacity="0.75"/>
-          <stop offset="0.47" stop-color="${topCol}" stop-opacity="0.10"/>
-          <stop offset="0.53" stop-color="${botCol}" stop-opacity="0.10"/>
-          <stop offset="1"    stop-color="${botCol}" stop-opacity="0.75"/>
-        </linearGradient>
-        <clipPath id="${gradId}T"><rect x="0" y="0" width="${W}" height="${mid}"/></clipPath>
-        <clipPath id="${gradId}B"><rect x="0" y="${mid}" width="${W}" height="${mid}"/></clipPath>
+        <clipPath id="${id}T"><rect x="0" y="0" width="${W}" height="${mid}"/></clipPath>
+        <clipPath id="${id}B"><rect x="0" y="${mid}" width="${W}" height="${mid}"/></clipPath>
       </defs>
-      <rect x="0" y="0" width="${W}" height="${h}" fill="url(#${gradId})"/>
       ${area ? `
-        <path d="${area}" fill="${topCol}" fill-opacity="0.40" clip-path="url(#${gradId}T)"/>
-        <path d="${area}" fill="${botCol}" fill-opacity="0.40" clip-path="url(#${gradId}B)"/>` : ''}
-      <line x1="0" y1="${mid}" x2="${W}" y2="${mid}"
-            stroke="rgba(15,14,10,0.4)" stroke-width="1" stroke-dasharray="5 6"/>
-      ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none"
-            stroke="#F8F5EE" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round"/>
-      <path d="${path(pts, h)}" fill="none"
-            stroke="#0F0E0A" stroke-width="3.5" stroke-linejoin="round"/>` : ''}`;
+        <path d="${area}" fill="${topCol}" fill-opacity="0.15" clip-path="url(#${id}T)"/>
+        <path d="${area}" fill="${botCol}" fill-opacity="0.15" clip-path="url(#${id}B)"/>` : ''}
+      ${qDivs.map(q => `<line x1="${q.x.toFixed(1)}" y1="0" x2="${q.x.toFixed(1)}" y2="${h}"
+            stroke="rgba(15,14,10,0.08)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}
+      <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" vector-effect="non-scaling-stroke"
+            stroke="rgba(15,14,10,0.25)" stroke-width="1" stroke-dasharray="4 5"/>
+      ${pts.length > 1 ? `<path d="${path(pts, h)}" fill="none" vector-effect="non-scaling-stroke"
+            stroke="#0F0E0A" stroke-width="2" stroke-linejoin="round"/>` : ''}`;
+    };
+
+    // Quarter labels + the gold now-dot are HTML so the stretched SVG can't
+    // distort them; both position in % of the frame.
+    const overlays = (pts) => {
+      const qs = qDivs.filter(q => q.pct > 4 && q.pct < 96)
+        .map(q => `<span class="pg-wp-q" style="left:${q.pct.toFixed(1)}%">${q.label}</span>`)
+        .join('');
+      const dot = pts.length
+        ? `<span class="pg-wp-dot" style="top:${((1 - pts[pts.length - 1][1]) * 100).toFixed(1)}%"></span>`
+        : '';
+      return qs + dot;
     };
 
     svg.innerHTML = frame('wpGrad', homeCol, awayCol, wpPts, H);
+    const mainFrame = svg.parentElement;
+    if (mainFrame) {
+      mainFrame.querySelectorAll('.pg-wp-q, .pg-wp-dot').forEach(e => e.remove());
+      mainFrame.insertAdjacentHTML('beforeend', overlays(wpPts));
+    }
 
     const lblTop = document.getElementById('pgWpTop');
     const lblBot = document.getElementById('pgWpBot');
@@ -588,6 +611,7 @@
             <svg viewBox="0 0 ${W} ${BH}" preserveAspectRatio="none">
               ${frame(gradId, topCol, botCol, pts, BH)}
             </svg>
+            ${overlays(pts)}
           </div>
         </div>`;
       };
