@@ -1017,22 +1017,26 @@
   border: 0.5px solid var(--border);
   border-radius: 4px;
   padding: 16px 28px 20px;
+  overflow: hidden;
 }
+/* Header band — SAME recipe as the stats-section cards
+   (.numbers-card-head): tan bleed, hairline underline, serif title.
+   The chart itself is untouched — this card chrome is the only change
+   kept from the 2026-08-31 refresh round. */
 .read-card-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--cream-mid);
+  margin: -16px -28px 16px;
+  padding: 14px 28px 12px;
+  background: var(--cream-dark);
+  border-bottom: 1px solid var(--border);
 }
 .read-card-label {
-  font-family: var(--sans);
-  font-size: 11px;
+  font-family: var(--serif);
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
   color: var(--ink);
 }
 .read-card-vegas {
@@ -1940,10 +1944,11 @@ footer {
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 12px;
-    padding-bottom: 6px;
+    /* Band bleed matches THIS breakpoint's card padding. */
+    margin: -14px -12px 12px;
+    padding: 10px 12px 8px;
   }
-  .read-card-label { font-size: 10px; letter-spacing: 1.8px; }
+  .read-card-label { font-size: 14px; }
   .read-card-vegas { font-size: 11px; }
 
   /* Tighter strip-plot side padding so labels have more room */
@@ -1985,6 +1990,7 @@ footer {
  * ============================================================ */
 @media (max-width: 480px) {
   .read-card { padding: 12px 8px 14px; }
+  .read-card-head { margin: -12px -8px 12px; padding: 8px; }
   .strip-plot { padding: 0 2px; }
 
   /* Slightly smaller text + tighter padding on small phones,
