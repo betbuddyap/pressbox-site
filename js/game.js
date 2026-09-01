@@ -1369,7 +1369,9 @@
             : v.id;
           return `<tr data-rule="${escape(recKey)}"><td>${escape(v.label)}</td>` +
             `<td>${escape(MKT_LABEL[v.market] || v.market)}</td>` +
-            `<td>${escape(v.family)}</td><td class="sig-rec">—</td></tr>`;
+            `<td>${escape(v.family)}</td><td class="sig-rec">` +
+            `<span class="ll-skeleton" style="display:inline-block;width:72px;height:12px;border-radius:3px;"></span>` +
+            `</td></tr>`;
         }).join('') +
         `</tbody></table>` +
         // The old line cited the 2026-08-05 / 08-10 freezes and said "nothing
