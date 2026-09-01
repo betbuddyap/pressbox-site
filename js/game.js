@@ -1361,7 +1361,12 @@
       box.innerHTML = `<div class="receipt-eyebrow">The signals behind this game</div>` +
         `<table class="sig-table"><thead><tr><th>Signal</th><th>Market</th><th>Family</th><th>2026 record</th></tr></thead><tbody>` +
         sigs.map(v => {
-          const recKey = v.market === 'ml' ? `${v.id}:ml` : v.id;
+          // Collapsed ML chips join the ledger through their constituent
+          // rule ids ("|"-separated); everything else is its own id.
+          const recKey = v.market === 'ml'
+            ? ((v.rule_ids && v.rule_ids.length ? v.rule_ids : [v.id])
+                .map(id => `${id}:ml`).join('|'))
+            : v.id;
           return `<tr data-rule="${escape(recKey)}"><td>${escape(v.label)}</td>` +
             `<td>${escape(MKT_LABEL[v.market] || v.market)}</td>` +
             `<td>${escape(v.family)}</td><td class="sig-rec">—</td></tr>`;
@@ -1397,9 +1402,18 @@
         if (r.line && r.line.indexOf('rule:') === 0) last[r.line.slice(5)] = r;
       });
       box.querySelectorAll('tr[data-rule]').forEach(tr => {
-        const r = last[tr.getAttribute('data-rule')];
-        tr.querySelector('.sig-rec').textContent = r
-          ? `${r.running_wins}–${r.running_losses} (${r.running_pct != null ? r.running_pct + '%' : '—'})`
+        // A row's key may be several ledger lines: a collapsed ML chip
+        // (mlmodel:*) carries its constituent rule ids, and its record is
+        // their sum. Spread/total rows stay one key = one line.
+        const keys = (tr.getAttribute('data-rule') || '').split('|');
+        let W = 0, L = 0, hit = false;
+        keys.forEach(k => {
+          const r = last[k];
+          if (r) { hit = true; W += r.running_wins || 0; L += r.running_losses || 0; }
+        });
+        const pct = (W + L) > 0 ? Math.round((W / (W + L)) * 100) : null;
+        tr.querySelector('.sig-rec').textContent = hit
+          ? `${W}–${L}${pct != null ? ` (${pct}%)` : ''}`
           : '0–0 · sealed Aug 20';   // matches the receipt line under this table
       });
     } catch (e) { /* records stay as dashes */ }
@@ -1963,10 +1977,14 @@
 
     // History cells — what share of these historical finals landed on each
     // side of TODAY'S number (trapezoid mass split of the curve). Applies to
-    // spread/total always, and to the ML chart when a graded ML pick serves
-    // its signal's own curve.
-    if ((!ml || mlRuleCurve) && densityCurve.length >= 3 && vegasPos != null
-        && histRange?.sample_size && endsPair) {
+    // spread/total always, to the ML chart when a graded ML pick serves its
+    // signal's own curve, and to a No-Edge ML riding the blend-conditioned
+    // margin curve — its mass at ZERO answers "wins x% at prices and reads
+    // like these" (conditioned on line + models, not just the price bucket).
+    const mlBlendCurve = ml && histRange?.source === 'blend'
+                         && densityCurve.length >= 3;
+    if ((!ml || mlRuleCurve || mlBlendCurve) && densityCurve.length >= 3
+        && vegasPos != null && histRange?.sample_size && endsPair) {
       let left = 0, total = 0;
       for (let i = 1; i < densityCurve.length; i++) {
         const [x0, y0] = densityCurve[i - 1];
@@ -2031,6 +2049,12 @@
              `In the ${histRange.sample_size} games where this pick's #1 signal ` +
              `fired, ${pTxt}% of finals landed on the ${sideName} side of ` +
              `today's number.`]
+          : ml
+          ? [ICO.check, `${pTxt}%`, `${sideName} · reads like these · market`,
+             `At prices like today's, where our models read the game like ` +
+             `they read this one, the ${sideName.replace(/ wins$/i, '')} side ` +
+             `won ${pTxt}% of the time (≈${histRange.sample_size} games' ` +
+             `worth, weighted, 2023–25). Market history, not our signals' record.`]
           : [ICO.check, `${pTxt}%`, `finals on ${sideName} side · market`,
              histRange.source === 'blend'
                ? `At numbers like today's, where our models read the game like ` +
