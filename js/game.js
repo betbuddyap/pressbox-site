@@ -1901,12 +1901,10 @@
     if (endsPair) {
       const ends = document.createElement('div');
       ends.className = 'mlstrip-ends';
-      // Tint each end to match its half of the two-tone curve — gold where
-      // the pick cashes, slate elsewhere. No pick = both stay neutral.
-      const clsL = pickZone ? (pickZone.goldLeft ? ' class="end-gold"' : ' class="end-blue"') : '';
-      const clsR = pickZone ? (pickZone.goldLeft ? ' class="end-blue"' : ' class="end-gold"') : '';
-      ends.innerHTML = `<span${clsL}>← ${escape(endsPair[0])}</span>` +
-                       `<span${clsR}>${escape(endsPair[1])} →</span>`;
+      // Neutral on every chart — tinting them gold/slate made a graded ML
+      // read differently from its NE spread/total siblings (Austin, 09-01).
+      ends.innerHTML = `<span>← ${escape(endsPair[0])}</span>` +
+                       `<span>${escape(endsPair[1])} →</span>`;
       card.insertBefore(ends, card.querySelector('.strip-plot'));
     }
     // A graded ML pick with its own signal curve tells the signal story;

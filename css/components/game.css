@@ -1276,8 +1276,37 @@
 .strip-label-blend .strip-label-name { color: var(--gold); }
 .strip-label-blend .strip-label-value { color: var(--gold); }
 
-/* Mock A floats labels with no connector stubs — whitespace does the
-   associating. (Stubs retired 2026-08-31.) */
+/* Connector stubs — a thin vertical line ties each label to its dot
+   (floating labels read unanchored; stubs un-retired 2026-09-01).
+   Near labels get a short hint; far labels reach across the near lane. */
+.strip-labels-above .strip-label::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  width: 1px;
+  height: 7px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+.strip-labels-above .strip-label.strip-label-far::after {
+  height: 39px;
+  bottom: -41px;
+}
+.strip-labels-below .strip-label::before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 1px;
+  height: 7px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+.strip-labels-below .strip-label.strip-label-far::before {
+  height: 39px;
+  top: -41px;
+}
 
 /* Axis ticks */
 .strip-ticks {
@@ -2058,8 +2087,6 @@ footer {
   color: var(--text-light); font-weight: var(--weight-bold);
   margin: var(--space-3) 0 0;
 }
-.mlstrip-ends .end-gold { color: var(--gold); }
-.mlstrip-ends .end-blue { color: #4C7CA8; }
 .mlstrip-note {
   font-family: var(--sans); font-size: 11.5px; color: var(--text-mid);
   margin-top: var(--space-2);
@@ -2120,6 +2147,9 @@ footer {
 @media (max-width: 480px) {
   .mlstrip-cells { flex-direction: column; }
   .mlc + .mlc { border-left: none; border-top: 1px dashed var(--border); }
+  /* Stacked cells left-align as a group — centering each row made the
+     icons jump sideways line to line. */
+  .mlc { justify-content: flex-start; }
 }
 
 /* Picked-side zone on the spread/total charts — the region where the pick
