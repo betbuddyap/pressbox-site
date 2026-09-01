@@ -2145,11 +2145,11 @@ footer {
   .mlc-txt small { font-size: 10px; }
 }
 @media (max-width: 480px) {
-  .mlstrip-cells { flex-direction: column; }
-  .mlc + .mlc { border-left: none; border-top: 1px dashed var(--border); }
-  /* Stacked cells left-align as a group — centering each row made the
-     icons jump sideways line to line. */
+  /* Stacked cells: ONE centered column (grid track = widest row), so the
+     group sits centered while every circle shares the same left edge. */
+  .mlstrip-cells { display: grid; justify-content: center; }
   .mlc { justify-content: flex-start; }
+  .mlc + .mlc { border-left: none; border-top: 1px dashed var(--border); }
 }
 
 /* Picked-side zone on the spread/total charts — the region where the pick
