@@ -1361,13 +1361,18 @@
       box.innerHTML = `<div class="receipt-eyebrow">The signals behind this game</div>` +
         `<table class="sig-table"><thead><tr><th>Signal</th><th>Market</th><th>Family</th><th>2026 record</th></tr></thead><tbody>` +
         sigs.map(v => {
-          // Collapsed ML chips join the ledger through their constituent
-          // rule ids ("|"-separated); everything else is its own id.
+          // Collapsed ML chips read the BY-MODEL ledger line (one graded
+          // bet per model — 1-0, not 10-0 across ten constituent rules);
+          // the "|"-joined rule ids stay as the fallback while a stale
+          // ledger cache lacks the model lines.
           const recKey = v.market === 'ml'
             ? ((v.rule_ids && v.rule_ids.length ? v.rule_ids : [v.id])
                 .map(id => `${id}:ml`).join('|'))
             : v.id;
-          return `<tr data-rule="${escape(recKey)}"><td>${escape(v.label)}</td>` +
+          const modelKey = v.market === 'ml' && String(v.id).indexOf('mlmodel:') === 0
+            ? `${v.id}:ml` : '';
+          return `<tr data-rule="${escape(recKey)}" data-rule-model="${escape(modelKey)}">` +
+            `<td>${escape(v.label)}</td>` +
             `<td>${escape(MKT_LABEL[v.market] || v.market)}</td>` +
             `<td>${escape(v.family)}</td><td class="sig-rec">` +
             `<span class="ll-skeleton" style="display:inline-block;width:72px;height:12px;border-radius:3px;"></span>` +
@@ -1404,15 +1409,21 @@
         if (r.line && r.line.indexOf('rule:') === 0) last[r.line.slice(5)] = r;
       });
       box.querySelectorAll('tr[data-rule]').forEach(tr => {
-        // A row's key may be several ledger lines: a collapsed ML chip
-        // (mlmodel:*) carries its constituent rule ids, and its record is
-        // their sum. Spread/total rows stay one key = one line.
-        const keys = (tr.getAttribute('data-rule') || '').split('|');
+        // Collapsed ML chips: the BY-MODEL line is the record (one graded
+        // bet per model). Fall back to summing constituent rule lines only
+        // when a stale ledger cache lacks model lines — never both.
         let W = 0, L = 0, hit = false;
-        keys.forEach(k => {
-          const r = last[k];
-          if (r) { hit = true; W += r.running_wins || 0; L += r.running_losses || 0; }
-        });
+        const mk = tr.getAttribute('data-rule-model');
+        const m = mk && last[mk];
+        if (m) {
+          hit = true; W = m.running_wins || 0; L = m.running_losses || 0;
+        } else {
+          const keys = (tr.getAttribute('data-rule') || '').split('|');
+          keys.forEach(k => {
+            const r = last[k];
+            if (r) { hit = true; W += r.running_wins || 0; L += r.running_losses || 0; }
+          });
+        }
         const pct = (W + L) > 0 ? Math.round((W / (W + L)) * 100) : null;
         tr.querySelector('.sig-rec').textContent = hit
           ? `${W}–${L}${pct != null ? ` (${pct}%)` : ''}`
