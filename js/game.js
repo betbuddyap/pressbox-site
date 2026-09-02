@@ -491,9 +491,12 @@
       if ((!spRel || spRel.tier === 'no_edge') && _demoBetLines.spread) spRel = _demoBetLines.spread;
       if ((!toRel || toRel.tier === 'no_edge') && _demoBetLines.total) toRel = _demoBetLines.total;
     }
-    const spLine = spRel && spRel.tier !== 'no_edge' ? Number(spRel.line_raw) : null;
+    // Bands track the RELEASED line at ANY grade — a No Edge row still
+    // carries our side and line, and the cover/total math doesn't care
+    // about the tier (same call as the break-even cell, 2026-09-02).
+    const spLine = spRel ? Number(spRel.line_raw) : null;
     const spSideHome = spRel ? spRel.side_raw === 'home' : null;
-    const toLine = toRel && toRel.tier !== 'no_edge' ? Number(toRel.line_raw) : null;
+    const toLine = toRel ? Number(toRel.line_raw) : null;
     const toUnder = toRel ? toRel.side_raw === 'under' : null;
 
     const W = 1000, H = 240, SIG_M = 15.5, SIG_T = 11.0;
