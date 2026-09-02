@@ -131,10 +131,10 @@ def analyze(game_id):
         if abs(expect_delta) >= 5:
             side = dog if expect_delta > 0 else fav
             fundamentals.append(
-                f"expectations gap {expect_delta:+.1f}: SP+ (carries preseason "
-                f"priors) sits near the market while the pure-performance models "
-                f"lean {side} — the market is pricing the offseason, the trailing "
-                f"numbers are pricing last year's product")
+                f"expectations gap {expect_delta:+.1f}: prior-aware SP+ sits at "
+                f"{spg:+.1f} vs the number and the pure-performance trio goes "
+                f"{expect_delta:+.1f} further toward {side} — the difference "
+                f"between pricing the offseason and pricing last year's product")
         elif abs(sp_gap) >= 4 and abs(spg - rest_mean) < 3:
             fundamentals.append(
                 "prior-aware SP+ sits WITH the pure-performance models here — "
