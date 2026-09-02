@@ -2435,6 +2435,12 @@ function colorFor(team) {
 
 function formatDate(dateStr) {
   if (!dateStr || dateStr === 'TBD') return 'TBD';
+  // The server's date string ("Mon, Sep 7") is already display-ready and
+  // ET-correct. Re-parsing it through new Date() pinned the year-less
+  // string to 2001 in V8 and RECOMPUTED the weekday from that year — the
+  // FSU/SMU Monday hero printed "Fri, Sep 7" (and Saturday GOTWs printed
+  // "Wed"). Pass it through; only parse strings in other shapes.
+  if (/^[A-Za-z]{3},\s/.test(dateStr)) return dateStr;
   try {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
