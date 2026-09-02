@@ -175,10 +175,12 @@ def analyze(game_id):
             others_p = [v for k, v in model_gaps.items() if k != "Pace+"]
             if others_p and abs(pg - sum(others_p) / len(others_p)) >= 6 and pace_sig >= 0.5:
                 notes.append(
-                    f"tempo distortion: this projects {'fast' if (dna.get('pace') or {}).get('sigma', 0) > 0 else 'slow'} "
-                    f"(pace σ {(dna.get('pace') or {}).get('sigma')}), and Pace+ is the only "
-                    f"model that normalizes for it — raw stats flatter "
-                    f"{'up-tempo' if (dna.get('pace') or {}).get('sigma', 0) > 0 else 'grinding'} teams")
+                    f"possession elasticity: Pace+ models what happens when a "
+                    f"team's time of possession gets squeezed — a ball-control "
+                    f"offense without explosiveness loses opportunities it can't "
+                    f"replace (game projects "
+                    f"{'fast' if (dna.get('pace') or {}).get('sigma', 0) > 0 else 'slow'}, "
+                    f"pace σ {(dna.get('pace') or {}).get('sigma')})")
         adv_g, ppa2 = model_gaps.get("Advanced"), model_gaps.get("PPA")
         if adv_g is not None and ppa2 is not None and abs(adv_g - ppa2) >= 6:
             ex, ef = dna.get("explosiveness") or {}, dna.get("efficiency") or {}
