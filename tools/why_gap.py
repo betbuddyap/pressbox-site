@@ -117,6 +117,82 @@ def analyze(game_id):
         if p.get("tier") and p.get("tier") != "no_edge":
             fired.append(f"{p['market']} {p['tier']}")
 
+    # ── Fundamentals: WHAT creates this gap ─────────────────────────
+    # SP+ carries Connelly's preseason priors (returning production,
+    # recruiting) early season — it is semi-EXPECTATION-aware. PPA /
+    # Advanced / Pace+ are pure trailing performance. The split between
+    # them measures the roster-expectations story directly.
+    fundamentals = []
+    spg = model_gaps.get("SP+")
+    rest = [v for k, v in model_gaps.items() if k != "SP+"]
+    if spg is not None and rest:
+        rest_mean = sum(rest) / len(rest)
+        expect_delta = round(rest_mean - spg, 1)
+        if abs(expect_delta) >= 5:
+            side = dog if expect_delta > 0 else fav
+            fundamentals.append(
+                f"expectations gap {expect_delta:+.1f}: SP+ (carries preseason "
+                f"priors) sits near the market while the pure-performance models "
+                f"lean {side} — the market is pricing the offseason, the trailing "
+                f"numbers are pricing last year's product")
+        elif abs(sp_gap) >= 4 and abs(spg - rest_mean) < 3:
+            fundamentals.append(
+                "prior-aware SP+ sits WITH the pure-performance models here — "
+                "this gap is not an offseason-blindness artifact; the numbers "
+                "rate the matchup differently than the market on the merits")
+    pg = model_gaps.get("Pace+")
+    if pg is not None and rest and len(model_gaps) >= 3:
+        others = [v for k, v in model_gaps.items() if k != "Pace+"]
+        om = sum(others) / len(others)
+        if abs(pg - om) >= 6:
+            fundamentals.append(
+                f"Pace+ stands {pg - om:+.1f} apart from the other models — "
+                f"a tempo story: how fast this game is played changes its "
+                f"read more than anyone else's")
+    ppa_g = model_gaps.get("PPA")
+    if ppa_g is not None and len(model_gaps) >= 3:
+        others = [v for k, v in model_gaps.items() if k != "PPA"]
+        om = sum(others) / len(others)
+        if abs(ppa_g - om) >= 6:
+            fundamentals.append(
+                f"PPA stands {ppa_g - om:+.1f} apart — an efficiency-per-play "
+                f"story, sometimes turnover-luck or garbage-time residue in "
+                f"the EPA data")
+
+    # ── Model-vs-model: why the four disagree with EACH OTHER ───────
+    # Independent of the market. Who stands apart maps to what they
+    # measure: Pace+ = tempo-normalized scoring, PPA = per-play EPA,
+    # Advanced = down-to-down success + chunk plays, SP+ = smoothed
+    # composite with preseason priors.
+    dispersion = {}
+    if len(model_gaps) >= 3:
+        span = round(max(model_gaps.values()) - min(model_gaps.values()), 1)
+        dispersion["span"] = span
+        dispersion["verdict"] = ("rare agreement — high conviction read" if span <= 4
+                                 else "normal disagreement" if span <= 10
+                                 else "the models genuinely can't agree on this one")
+        notes = []
+        pace_sig = abs((dna.get("pace") or {}).get("sigma") or 0)
+        if pg is not None:
+            others_p = [v for k, v in model_gaps.items() if k != "Pace+"]
+            if others_p and abs(pg - sum(others_p) / len(others_p)) >= 6 and pace_sig >= 0.5:
+                notes.append(
+                    f"tempo distortion: this projects {'fast' if (dna.get('pace') or {}).get('sigma', 0) > 0 else 'slow'} "
+                    f"(pace σ {(dna.get('pace') or {}).get('sigma')}), and Pace+ is the only "
+                    f"model that normalizes for it — raw stats flatter "
+                    f"{'up-tempo' if (dna.get('pace') or {}).get('sigma', 0) > 0 else 'grinding'} teams")
+        adv_g, ppa2 = model_gaps.get("Advanced"), model_gaps.get("PPA")
+        if adv_g is not None and ppa2 is not None and abs(adv_g - ppa2) >= 6:
+            ex, ef = dna.get("explosiveness") or {}, dna.get("efficiency") or {}
+            prof = ""
+            if (ex.get("label") not in (None, "even")) != (ef.get("label") not in (None, "even")):
+                prof = (" — fits the boom-bust profile here: the explosiveness and "
+                        "efficiency edges don't point the same way")
+            notes.append(
+                f"PPA vs Advanced split {adv_g - ppa2:+.1f}: Advanced pays "
+                f"down-to-down consistency, PPA pays the chunk plays{prof}")
+        dispersion["notes"] = notes
+
     caveats = []
     if abs(sp_gap) >= 10:
         caveats.append("gap this size usually means the market knows something the "
@@ -137,6 +213,8 @@ def analyze(game_id):
                   if tot_gap is not None else "n/a"),
         "total_gap": tot_gap,
         "archetype": arche,
+        "dispersion": dispersion,
+        "fundamentals": fundamentals,
         "dna": dna_bits,
         "fired": fired or ["nothing — No Edge"],
         "caveats": caveats,
@@ -152,6 +230,13 @@ def render(a):
              f"   total: {a['total']}" + (f"  (gap {a['total_gap']:+.1f})" if a['total_gap'] is not None else "")]
     if a["archetype"]:
         lines.append(f"   read: {a['archetype']}")
+    disp = a.get("dispersion") or {}
+    if disp:
+        lines.append(f"   model spread: {disp['span']} pts — {disp['verdict']}")
+        for n in disp.get("notes") or []:
+            lines.append(f"   inter-model: {n}")
+    for f in a.get("fundamentals") or []:
+        lines.append(f"   why: {f}")
     if a["dna"]:
         lines.append(f"   dna: " + "; ".join(a["dna"]))
     lines.append(f"   signals: " + ", ".join(a["fired"]))
