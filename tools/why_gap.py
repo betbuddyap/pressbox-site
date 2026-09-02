@@ -118,28 +118,26 @@ def analyze(game_id):
             fired.append(f"{p['market']} {p['tier']}")
 
     # ── Fundamentals: WHAT creates this gap ─────────────────────────
-    # SP+ carries Connelly's preseason priors (returning production,
-    # recruiting) early season — it is semi-EXPECTATION-aware. PPA /
-    # Advanced / Pace+ are pure trailing performance. The split between
-    # them measures the roster-expectations story directly.
+    # ALL FOUR legs are in-house, point-in-time, prior-season-chained
+    # builds — none carries preseason projections (the SP+ leg is our own
+    # sp_weekly rebuild, NOT Connelly's published product; corrected
+    # 2026-09-02 after claiming otherwise). SP+-vs-trio therefore measures
+    # a points/drive COMPOSITE read of last season against three per-play
+    # reads of it — a measurement-family split, never an expectations one.
     fundamentals = []
     spg = model_gaps.get("SP+")
     rest = [v for k, v in model_gaps.items() if k != "SP+"]
     if spg is not None and rest:
         rest_mean = sum(rest) / len(rest)
-        expect_delta = round(rest_mean - spg, 1)
-        if abs(expect_delta) >= 5:
-            side = dog if expect_delta > 0 else fav
+        fam_delta = round(rest_mean - spg, 1)
+        if abs(fam_delta) >= 5:
+            side = dog if fam_delta > 0 else fav
             fundamentals.append(
-                f"expectations gap {expect_delta:+.1f}: prior-aware SP+ sits at "
-                f"{spg:+.1f} vs the number and the pure-performance trio goes "
-                f"{expect_delta:+.1f} further toward {side} — the difference "
-                f"between pricing the offseason and pricing last year's product")
-        elif abs(sp_gap) >= 4 and abs(spg - rest_mean) < 3:
-            fundamentals.append(
-                "prior-aware SP+ sits WITH the pure-performance models here — "
-                "this gap is not an offseason-blindness artifact; the numbers "
-                "rate the matchup differently than the market on the merits")
+                f"family split {fam_delta:+.1f}: the points/drive composite "
+                f"(SP+ leg, {spg:+.1f} vs the number) and the per-play trio "
+                f"read last season's product differently — the trio leans "
+                f"{side} harder; scoreboard-level and play-level views of "
+                f"the same games disagree")
     pg = model_gaps.get("Pace+")
     if pg is not None and rest and len(model_gaps) >= 3:
         others = [v for k, v in model_gaps.items() if k != "Pace+"]
