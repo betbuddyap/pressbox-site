@@ -193,8 +193,10 @@ def analyze(game_id):
 
     caveats = []
     if abs(sp_gap) >= 10:
-        caveats.append("gap this size usually means the market knows something the "
-                       "prior-year data can't: transfers, injuries, coaching change")
+        caveats.append("a gap this size IS the market's adjustment layer, measured "
+                       "— roster/coaching/injury information our stable prior-year "
+                       "baseline deliberately doesn't price. early season, big gaps "
+                       "grade the market's adjustments, not our disagreement")
     fbs_conf = {g.get("home", {}).get("conference"), g.get("away", {}).get("conference")}
     if None in fbs_conf or "" in fbs_conf:
         caveats.append("an FCS side is involved — our models barely have film on them")
