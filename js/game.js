@@ -1155,16 +1155,20 @@
              `<span class="vsq"></span>${escape(v.label)}</span>`;
     };
     // A collapsed moneyline chip carries its constituent rules — the vote is
-    // the model's, but the evidence behind it stays one hover away.
+    // the model's, but the evidence behind it stays one hover away. A counter
+    // chip keeps its explanation even when collapsed (the multi-rule text
+    // alone read as the model BACKING the pick when it leans the other way).
     const chipTip = (v) => {
-      if (v.rules && v.rules.length > 1) {
-        return `${v.model} fired ${v.rules.length} signals on this side — they count as ` +
-               `ONE vote, because within a model every rule is a slice of the same ` +
-               `projection:\n\n• ${v.rules.join('\n• ')}`;
-      }
-      return v.family === 'counter'
+      const counter = v.family === 'counter'
         ? 'Counter-signal: one of our own reads leans the other way — in a spot where it has been reliably wrong, so its lean counts FOR this side.'
         : '';
+      if (v.rules && v.rules.length > 1) {
+        const multi = `${v.model} fired ${v.rules.length} signals on this side — they count as ` +
+               `ONE vote, because within a model every rule is a slice of the same ` +
+               `projection:\n\n• ${v.rules.join('\n• ')}`;
+        return counter ? `${counter}\n\n${multi}` : multi;
+      }
+      return counter;
     };
     const chips = det.map(v => chip(v, '', chipTip(v))).join('');
     // Opposing signals get NAMED, muted chips — they explain the net math
