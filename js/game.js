@@ -589,6 +589,11 @@
       mainFrame.querySelectorAll('.pg-wp-q, .pg-wp-dot').forEach(e => e.remove());
       mainFrame.insertAdjacentHTML('beforeend', overlays(wpPts));
     }
+    // ESPN skips WP for some games (Colorado@GT, 9/3) — score-only ticks
+    // still drive the bet bands below, so hide just the empty win block
+    // instead of showing a bare frame.
+    const winBlock = mainFrame ? mainFrame.closest('.pg-wp-block') : null;
+    if (winBlock) winBlock.style.display = wpPts.length < 2 ? 'none' : '';
 
     const lblTop = document.getElementById('pgWpTop');
     const lblBot = document.getElementById('pgWpBot');
