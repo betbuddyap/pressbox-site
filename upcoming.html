@@ -735,7 +735,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    /* Wrap, don't clip: on live cards the badge + arrow + trajectory chip
+       can exceed the slot — extra pieces drop to a second centered line
+       instead of pushing off the card's right edge (Austin, 9/5). */
+    flex-wrap: wrap;
+    min-width: 0;
+    gap: 4px 6px;
     padding: 4px 6px;
     min-height: 24px;
   }

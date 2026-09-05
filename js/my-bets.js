@@ -136,6 +136,19 @@
     // the P&L card IS your FanDuel P&L.
     return ledgerBook ? base.filter(b => b.book === ledgerBook) : base;
   }
+  // Totals need their game named at RENDER time — rows logged before the
+  // label fix (and any bare "Over 54.5") get the home team appended from
+  // game_label, or the games map as a fallback. Idempotent: labels that
+  // already carry a "(...)" pass through.
+  function displaySideLabel(b) {
+    const lbl = b.side_label || '';
+    if (b.market !== 'total' || lbl.indexOf('(') !== -1) return lbl;
+    let home = (b.game_label || '').split(' @ ')[1] || '';
+    if (!home && b.game_id != null) {
+      try { home = (gamesById[b.game_id] || {}).home_team || ''; } catch (e) {}
+    }
+    return home ? `${lbl} (${home})` : lbl;
+  }
   // Effective result = the backend settle when it exists, else a live
   // CLINCH: a total past its number is decided mid-game (over won / under
   // lost — points never come off). Singles only; a parlay needs every leg.
@@ -445,7 +458,7 @@
     panel.style.display = mode === 'parlay' ? '' : 'none';
     if (mode !== 'parlay') return;
     const chips = parlayLegs.map((l, i) =>
-      `<span class="mb-leg-chip">${esc(l.side_label)} <span class="mb-leg-odds">${esc(fmtOdds(l.odds))}</span>` +
+      `<span class="mb-leg-chip">${esc(displaySideLabel(l))} <span class="mb-leg-odds">${esc(fmtOdds(l.odds))}</span>` +
       `<button type="button" data-legdel="${i}" aria-label="Remove leg">✕</button></span>`).join('');
     const dec = parlayLegs.reduce((d, l) => {
       const x = amToDec(l.odds);
@@ -897,14 +910,14 @@
       ? `<span class="mb-live">${esc(live)}</span>` +
         (b.book ? ` · ${esc(b.book)}` : '')
       : esc(b.market === 'parlay'
-          ? [(b.legs || []).map(l => l.side_label).join('  +  '), b.book,
+          ? [(b.legs || []).map(l => displaySideLabel(l)).join('  +  '), b.book,
              b.kickoff ? `first kick ${fmtKick(b.kickoff)}` : null].filter(Boolean).join(' · ')
           : [b.game_label, fmtKick(b.kickoff), b.book].filter(Boolean).join(' · '));
     return `
       <div class="mb-row" data-id="${esc(b.id)}">
         <div class="mb-row-mark ${cls}">${glyph}</div>
         <div class="mb-row-body">
-          <div class="mb-row-pick">${esc(b.side_label)} <span class="mb-odds">${esc(fmtOdds(b.odds))}</span></div>
+          <div class="mb-row-pick">${esc(displaySideLabel(b))} <span class="mb-odds">${esc(fmtOdds(b.odds))}</span></div>
           <div class="mb-row-sub">${sub}</div>
           ${renderMyBetsMove(b)}
         </div>
