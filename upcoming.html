@@ -741,13 +741,17 @@
     justify-content: center;
     column-gap: 12px;
   }
-  /* Phones: the chip-laden row physically can't fit three-across — stack
-     one slot per line, each centered, everything readable. */
+  /* The arrow + trajectory chip render inside one .gc-live-sub wrapper —
+     on desktop it lays out exactly like the old inline row. */
+  .gc-live-sub { display: inline-flex; align-items: center; gap: 6px; }
+  /* Phones: the three tiles STAY across — each keeps label + badge on its
+     top line and the live read (▲ proj +42) centers on a second line
+     inside its own tile. Nothing stacks, nothing detaches, nothing spills. */
   @media (max-width: 600px) {
-    .gc.slate.live-hero .gc-picks {
-      grid-template-columns: 1fr;
-      row-gap: 2px;
-    }
+    .gc.slate.live-hero .gc-picks { column-gap: 6px; }
+    .gc.slate.live-hero .gc-pick-slot { flex-wrap: wrap; padding: 4px 2px; row-gap: 3px; }
+    .gc.slate.live-hero .gc-pick-slot .gc-live-sub { flex-basis: 100%; justify-content: center; }
+    .gc.slate.live-hero .gc-pick-label { font-size: 9px; letter-spacing: 0.3px; }
   }
   .gc.slate .gc-pick-slot, .gc.gotw-card .gc-pick-slot {
     display: flex;
@@ -2150,8 +2154,13 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
     const paceChip = pace
       ? `<span class="gc-pace pace-${pace.cls}" title="${pace.tip}">${pace.txt}</span>`
       : '';
+    // Arrow + trajectory travel as one unit so phones can drop them to a
+    // second line inside the tile without detaching them from their pick.
+    const liveSub = (mark || paceChip)
+      ? `<span class="gc-live-sub">${mark}${paceChip}</span>`
+      : '';
     return `<div class="gc-pick-slot has-tier"><span class="gc-pick-label">${label}</span>` +
-           `<span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${gcBolt(slotData, tierKey)}</span>${mark}${paceChip}</div>`;
+           `<span class="gc-pick-tier tier-${tierKey}">${TIER_LABEL_SHORT[tierKey] || tierKey}${gcBolt(slotData, tierKey)}</span>${liveSub}</div>`;
   };
 
   return `
