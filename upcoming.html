@@ -731,6 +731,24 @@
     padding-top: 10px;
     border-top: 1px solid rgba(248,245,238,0.12);
   }
+  /* LIVE cards: the slots carry extra live furniture (arrow + trajectory
+     chip), so the row becomes a content-sized block CENTERED AS A WHOLE —
+     it slides left as a unit instead of anchoring left and spilling ML off
+     the card's right edge (repro'd at 375px: tracks 472px in a 283px card,
+     ML 223px past the edge). Scheduled/final cards keep even thirds. */
+  .gc.slate.live-hero .gc-picks {
+    grid-template-columns: repeat(3, auto);
+    justify-content: center;
+    column-gap: 12px;
+  }
+  /* Phones: the chip-laden row physically can't fit three-across — stack
+     one slot per line, each centered, everything readable. */
+  @media (max-width: 600px) {
+    .gc.slate.live-hero .gc-picks {
+      grid-template-columns: 1fr;
+      row-gap: 2px;
+    }
+  }
   .gc.slate .gc-pick-slot, .gc.gotw-card .gc-pick-slot {
     display: flex;
     align-items: center;
