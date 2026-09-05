@@ -2238,7 +2238,7 @@ footer {
 .adjsc-act { font-family: var(--sans); font-size: 13px; color: var(--text-mid); text-align: right; }
 /* Sans, per Austin (9/6): "the boxes are clean and analytical" — his
    carve-out from the serif-display-number rule for this panel. */
-.adjsc-adj { font-family: var(--sans); font-weight: 700; font-size: 15px; text-align: right; }
+.adjsc-adj { font-family: var(--sans); font-weight: 700; font-size: 13px; text-align: right; }
 .adjsc-note { font-size: 11.5px; color: var(--text-mid); margin-top: var(--space-2); line-height: 1.5; }
 
 .opi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
