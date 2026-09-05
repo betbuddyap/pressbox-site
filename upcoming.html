@@ -834,6 +834,10 @@
     line-height: 1;
     white-space: nowrap;
   }
+  /* The trajectory chip ALWAYS takes its own centered line — wrapping only
+     when tight made some slots two-line and others one-line on the same
+     card, which read ragged (Austin, 9/5). */
+  .gc.slate .gc-pick-slot .gc-pace { flex-basis: 100%; text-align: center; }
   .gc-pace.pace-good { color: var(--sage-mid); }
   .gc-pace.pace-bad  { color: var(--rust-light); }
   .gc-pace.pace-even { color: rgba(248,245,238,0.55); }
