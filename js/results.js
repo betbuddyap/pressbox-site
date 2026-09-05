@@ -103,13 +103,26 @@
     return Math.pow(edge * p, SIZING_GAMMA);
   }
   function assignStakes() {
+    // The weekly totals come from the feed's SHEET — every released graded
+    // pick, settled or not — so a half-finished Saturday doesn't fake a
+    // fully-staked 100u week (mid-week the settled volume reads partial,
+    // exactly like the real sheet would). Fallback: no sheet in the payload
+    // (older backend) → normalize over the settled picks alone.
     const totals = new Map();
+    if (state.sheet && state.sheet.length) {
+      for (const s of state.sheet) {
+        const w = deltaWeight(s.our_prob, amToDec(s.price_raw));
+        totals.set(s.week ?? 0, (totals.get(s.week ?? 0) || 0) + w);
+      }
+    }
     for (const g of state.games) for (const p of g.picks) {
       p.dec = amToDec(p.price_raw);
       p.weight = (p.tier && p.tier !== 'no_edge' && p.our_prob)
         ? deltaWeight(p.our_prob, p.dec) : 0;
-      const w = g.week ?? 0;
-      totals.set(w, (totals.get(w) || 0) + p.weight);
+      if (!state.sheet || !state.sheet.length) {
+        const w = g.week ?? 0;
+        totals.set(w, (totals.get(w) || 0) + p.weight);
+      }
     }
     for (const g of state.games) for (const p of g.picks) {
       const tot = totals.get(g.week ?? 0) || 0;
@@ -298,6 +311,7 @@
       state.games = payload.games || [];
       state.weeks = (payload.weeks || []).slice().sort((a, b) => b - a); // latest first
       state.record = payload.record || {};
+      state.sheet = payload.sheet || null;
       assignStakes();
       if (state.week == null && state.weeks.length) state.week = state.weeks[0];
       state.loading = false;

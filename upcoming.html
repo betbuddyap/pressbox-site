@@ -1760,7 +1760,11 @@ function renderSlate(games) {
   });
 
   const finals = sorted.filter(g => g.status === 'final');
-  const active = sorted.filter(g => g.status !== 'final');
+  // Delayed games leave the top of the page — a stopped game isn't the
+  // action. They hold their own group between the slate and the finals
+  // (Austin, 9/5: "looks terrible at the top").
+  const delayed = sorted.filter(g => g.status !== 'final' && g.current_clock === 'Delayed');
+  const active = sorted.filter(g => g.status !== 'final' && g.current_clock !== 'Delayed');
 
   // Group by calendar date (YYYY-MM-DD). Keep insertion order.
   const byDate = new Map();
@@ -1802,6 +1806,18 @@ function renderSlate(games) {
           <span class="date-head-meta">${dateGames.length} ${dateGames.length === 1 ? 'game' : 'games'}</span>
         </div>
         ${body}
+      </div>
+    `);
+  }
+
+  if (delayed.length) {
+    blocks.push(`
+      <div class="date-group">
+        <div class="date-head">
+          <span class="date-head-day"><em>Delayed</em></span>
+          <span class="date-head-meta">${delayed.length} ${delayed.length === 1 ? 'game' : 'games'}</span>
+        </div>
+        <div class="slate-grid">${delayed.map(renderSlateCard).join('')}</div>
       </div>
     `);
   }
