@@ -187,17 +187,27 @@
   // never bets: no record, no stake.
   function heroHTML() {
     const f = state.filters;
+    // No Edge view: keep the hero, run the transparency ledger at a FLAT
+    // unit on the blend's side (Austin, 9/5) — never the allocator's
+    // sheet, because these were never bets.
+    const neMode = f.tier === 'no_edge';
     let w = 0, l = 0, pu = 0, pnl = 0, staked = 0;
     for (const g of state.games) {
       if (state.week != null && g.week !== state.week) continue;
       for (const p of g.picks) {
         if (!matchesFilters(p)) continue;
-        if (!p.tier || p.tier === 'no_edge') continue;
+        if (neMode ? p.tier !== 'no_edge' : (!p.tier || p.tier === 'no_edge')) continue;
+        if (neMode && !p.dec) continue;   // unpriceable row — skip, never guess
         if (p.result === 'win') w++;
         else if (p.result === 'loss') l++;
         else if (p.result === 'push') pu++;
-        pnl += p.pnl || 0;
-        staked += p.stake || 0;
+        if (neMode) {
+          staked += 1;
+          pnl += p.result === 'win' ? p.dec - 1 : p.result === 'loss' ? -1 : 0;
+        } else {
+          pnl += p.pnl || 0;
+          staked += p.stake || 0;
+        }
       }
     }
     if (!(w + l + pu)) return '';
@@ -231,10 +241,13 @@
             <div class="rs-stat-value">${Math.round(staked)}u</div>
           </div>
         </div>
-        <div class="rs-hero-note">Sized by the allocator's own weights at an average of
-        one unit per pick — a strong pick carries more than a unit, a thin one less —
-        every pick at its released number and price, win or lose. Flip the week tabs and
-        pick-type pills and every number above follows.</div>
+        <div class="rs-hero-note">${neMode
+          ? `The verdicts we didn't bet — No Edge rows run at a flat unit on the blend's
+             side, for transparency. They never touch the record or the allocator's sheet.`
+          : `Sized by the allocator's own weights at an average of one unit per pick — a
+             strong pick carries more than a unit, a thin one less — every pick at its
+             released number and price, win or lose. Flip the week tabs and pick-type
+             pills and every number above follows.`}</div>
       </div>`;
   }
 
@@ -292,7 +305,7 @@
         { game_id: 'demo2', week: 0, matchup: 'Fixture A&M @ Demo College',
           home_points: 24, away_points: 24, picks: [
             { market: 'spread', tier: 'B', side: 'Demo College', line: '+3', price: '-110', price_raw: -110, our_prob: 0.616, book: { name: 'Bovada' }, result: 'push' },
-            { market: 'total', tier: 'no_edge', side: 'Over', line: '48.5', price: '-105', price_raw: null, our_prob: null, book: { name: 'BetMGM' }, result: 'loss' },
+            { market: 'total', tier: 'no_edge', side: 'Over', line: '48.5', price: '-105', price_raw: -105, our_prob: null, book: { name: 'BetMGM' }, result: 'loss' },
           ]},
         { game_id: 'demo3', week: 0, matchup: 'Placeholder Poly @ Sample U',
           home_points: 20, away_points: 27, picks: [
