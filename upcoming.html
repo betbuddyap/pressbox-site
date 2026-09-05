@@ -744,15 +744,25 @@
   /* The arrow + trajectory chip render inside one .gc-live-sub wrapper —
      on desktop it lays out exactly like the old inline row. */
   .gc-live-sub { display: inline-flex; align-items: center; gap: 6px; }
-  /* Phones: three tiles STAY across and the live read stays BESIDE the
-     badge at full size — the label rides its own small line above, and
-     the chip drops the word "proj" (colored arrow + number carry it).
-     Badge never compresses. Desktop rendering is untouched. */
+  /* Phones: ONE row, everything in, nothing resized — type and badge stay
+     at the ≤720 sizes. The room the live furniture needs comes purely
+     from padding: slots drop their side padding, gaps tighten a notch,
+     and the row borrows the card's side padding. (The real-world card
+     usually carries ONE loaded tile — the original spill was ~2 letters.) */
   @media (max-width: 600px) {
-    .gc.slate.live-hero .gc-picks { column-gap: 6px; }
-    .gc.slate.live-hero .gc-pick-slot { flex-wrap: wrap; row-gap: 6px; padding: 4px 2px; }
-    .gc.slate.live-hero .gc-pick-slot .gc-pick-label { flex-basis: 100%; text-align: center; }
+    .gc.slate.live-hero .gc-picks { column-gap: 3px; margin-left: -12px; margin-right: -12px; padding-top: 8px; }
+    .gc.slate.live-hero .gc-pick-slot { gap: 2px; padding: 2px 0; }
+    .gc.slate.live-hero .gc-pick-slot .gc-live-sub { gap: 2px; }
+    /* 1px absolute spacing at 10px = 0.1em — house standard for small caps
+       is ~0.03em; the tightening is also what buys the last ~11px. */
+    .gc.slate.live-hero .gc-pick-label { letter-spacing: 0.04em; }
     .gc.slate.live-hero .gc-pick-tier { flex-shrink: 0; }
+  }
+  /* Sub-406px phones (375/390-class): three loaded tiles + three "proj"
+     words measure ~345px against a ~303px row — the WORD hides there and
+     the colored arrow + full-size number carry the projection. 430-class
+     and up keep the word. */
+  @media (max-width: 405px) {
     .gc.slate.live-hero .gc-pace-word { display: none; }
   }
   .gc.slate .gc-pick-slot, .gc.gotw-card .gc-pick-slot {
