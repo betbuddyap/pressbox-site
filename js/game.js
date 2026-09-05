@@ -1139,6 +1139,35 @@
   function renderDNA(data) {
     const el = els.dnaStrip;
     if (!el) return;
+    // FINAL games hand this slot to the efficiency scoreline — the DNA
+    // strip is pregame context, the scoreline is the post-game verdict
+    // (Austin, 9/6). Until the play-by-play lands (next morning), the
+    // DNA keeps the slot.
+    const adj = data.adjusted_score;
+    if ((data.game?.status || '').toLowerCase() === 'final' && adj) {
+      const away = data.game?.away?.name || 'Away';
+      const home = data.game?.home?.name || 'Home';
+      const flip = (adj.home > adj.away) !== ((adj.home_actual ?? 0) > (adj.away_actual ?? 0));
+      const row = (name, act, a) =>
+        `<div class="adjsc-row"><span class="adjsc-team">${escape(name)}</span>` +
+        `<span class="adjsc-act">${act ?? '—'}</span>` +
+        `<span class="adjsc-adj">${Number(a).toFixed(1)}</span></div>`;
+      el.innerHTML =
+        `<div class="dna-head"><span>${escape(away)}</span>` +
+        `<span class="dna-head-mid">Efficiency scoreline</span>` +
+        `<span>${escape(home)}</span></div>` +
+        `<div class="adjsc-wrap">` +
+        `<div class="adjsc-head"><span></span><span>Final</span><span>Efficiency</span></div>` +
+        row(away, adj.away_actual, adj.away) +
+        row(home, adj.home_actual, adj.home) +
+        `<div class="adjsc-note">Each team's per-play value (PPA) over a league-average ` +
+        `${Math.round(adj.plays_norm)} snaps — return touchdowns and short fields count once ` +
+        `as plays instead of compounding on the scoreboard.` +
+        `${flip ? ' The play-by-play and the final disagree on the better team here.' : ''}</div>` +
+        `</div>`;
+      el.style.display = '';
+      return;
+    }
     const d = data.dna;
     if (!d || !Object.keys(d).length) { el.style.display = 'none'; return; }
     const away = data.game?.away?.name || 'Away';
@@ -1421,30 +1450,8 @@
     el.innerHTML = '';
     const away = data.game?.away?.name || 'Away';
     const home = data.game?.home?.name || 'Home';
-    // Efficiency scoreline — finals only (backend gates on status). What the
-    // play-by-play priced the game at: per-play value × league-average snaps.
-    // Runs BOTH directions on purpose: it calls out our lucky winners as
-    // loudly as an unlucky loser.
-    if (data.adjusted_score) {
-      const s = data.adjusted_score;
-      const flip = (s.home > s.away) !== ((s.home_actual ?? 0) > (s.away_actual ?? 0));
-      const row = (name, act, adj) =>
-        `<div class="adjsc-row"><span class="adjsc-team">${escape(name)}</span>` +
-        `<span class="adjsc-act">${act ?? '—'}</span>` +
-        `<span class="adjsc-adj">${Number(adj).toFixed(1)}</span></div>`;
-      const box = document.createElement('div');
-      box.className = 'game-card';
-      box.innerHTML =
-        `<div class="receipt-eyebrow">Efficiency scoreline — the play-by-play's price on this game</div>` +
-        `<div class="adjsc-head"><span></span><span>Final</span><span>Efficiency</span></div>` +
-        row(away, s.away_actual, s.away) +
-        row(home, s.home_actual, s.home) +
-        `<div class="adjsc-note">Each team's per-play value (PPA) over a league-average ` +
-        `${Math.round(s.plays_norm)} snaps — return touchdowns and short fields count once ` +
-        `as plays instead of compounding on the scoreboard, and snap-count flukes wash out.` +
-        `${flip ? ' The play-by-play and the final disagree on the better team here.' : ''}</div>`;
-      el.appendChild(box);
-    }
+    // (The efficiency scoreline moved out of this stack — on finals it
+    // takes over the DNA strip's slot instead. renderDNA owns it.)
     if (data.opi) {
       // When a bolted pick exists, the OPI box of the team whose band drove
       // it says so in words — hype-fade points at the hot team the pick goes
