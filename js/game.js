@@ -269,6 +269,9 @@
         if (els.pgFinalProj) els.pgFinalProj.textContent = projTxt;
         els.pgFinalRow.style.display = '';
       }
+      // The probability charts stay after the whistle — the full-game arc
+      // is the story of the game (Austin, 9/6). Ticks persist server-side.
+      renderWpChart(data);
     } else {
       els.pgLive.style.display = 'none';
       els.pgScore.style.display = 'none';
@@ -687,10 +690,12 @@
     const titleEl = mainFrame && mainFrame.closest('.pg-wp-block')
       ? mainFrame.closest('.pg-wp-block').querySelector('.pg-wp-title') : null;
     // Name the ticket like the band titles do — "YOUR WIN PROBABILITY"
-    // alone didn't say which side was yours (Austin, 9/6).
+    // alone didn't say which side was yours (Austin, 9/6). On finals the
+    // chart is the full-game arc, so LIVE comes off the label.
+    const wasFinal = (data.game?.status || '').toLowerCase() === 'final';
     if (titleEl) titleEl.textContent = myMl
       ? `Your bet — ${myMl.side === 'home' ? home : away} ML`
-      : 'LIVE WIN PROBABILITY';
+      : (wasFinal ? 'WIN PROBABILITY' : 'LIVE WIN PROBABILITY');
 
     // ── Per-bet charts: same frame, two named sides. Spread = which TEAM
     //    covers the released line (team colors, picked side on top). Total =
@@ -3084,6 +3089,11 @@
                     line: '+6.5', line_raw: 6.5 },
           total: null,   // the real released total renders its own band
         };
+        // The demo game may have really gone FINAL since — scrub the
+        // payload's post-game artifacts so a "live" demo never shows
+        // settled glyphs or the efficiency scoreline (Austin, 9/6).
+        data.adjusted_score = null;
+        (data.picks || []).forEach(p => { p.outcome = null; });
         // Fabricated YOUR-BET tickets so the demo shows the personalized
         // state ("Your bet — …" bands + "YOUR WIN PROBABILITY"): a ticket
         // on the away side at a different number than the board, an Over,
