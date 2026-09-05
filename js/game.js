@@ -3073,6 +3073,17 @@
                     line: '+6.5', line_raw: 6.5 },
           total: null,   // the real released total renders its own band
         };
+        // Fabricated YOUR-BET tickets so the demo shows the personalized
+        // state ("Your bet — …" bands + "YOUR WIN PROBABILITY"): a ticket
+        // on the away side at a different number than the board, an Over,
+        // and an away ML. Pre-seeds the _userBetsFor cache; nothing is
+        // read or written anywhere.
+        _myBets = {
+          gid: data.game.id,
+          spread: { market: 'spread', side: 'away', line: 4.5 },
+          total:  { market: 'total',  side: 'over', line: 51.5 },
+          ml:     { market: 'ml',     side: 'away', line: null },
+        };
         // Synthetic win-prob series with a story arc (through Q3 7:21):
         // home falls behind, storms back in Q2, away answers.
         _wpTicks = [];
