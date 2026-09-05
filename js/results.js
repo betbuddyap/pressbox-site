@@ -72,13 +72,56 @@
     const px = p.price ? ` <span class="ll-row-pick-px">${esc(p.price)}</span>` : '';
     const book = p.book && p.book.name ? ` · ${esc(p.book.name)}` : '';
     const ne = p.tier === 'no_edge';
+    const stake = p.stake > 0.5
+      ? `<span class="rs-stake" title="What the allocator's $1,000 weekly sheet assigned this pick">$${Math.round(p.stake)}</span>`
+      : '';
     return `
       <div class="rs-pick${ne ? ' rs-pick--ne' : ''}">
         ${renderBadge(p.tier, p.bolt)}
         <span class="rs-pick-mkt">${esc(marketLabel(p.market))}</span>
         <span class="ll-row-pick"><span class="ll-row-pick-num">${esc(p.side || '')} ${esc(p.line || '')}</span>${px}${esc(book)}</span>
+        ${stake}
         ${markHTML(p.result)}
       </div>`;
+  }
+
+  // ── Allocator reconstruction ─────────────────────────────────────────
+  // The SAME sizing rule the allocator sheet runs (allocator.html):
+  //   weight = ((our_prob − 1/dec) × our_prob)^GAMMA, zero at no edge,
+  // normalized per WEEK to a $1,000 sheet. our_prob arrives per pick from
+  // the feed (released tier through the committed ladder anchors; ML =
+  // the flat ROI floor over the released price). Stakes are assigned over
+  // the FULL weekly sheet once — the pills only choose which stakes'
+  // results get summed, exactly like reading the printed sheet back.
+  const SIZING_GAMMA = 0.50;
+  const WEEKLY_BANKROLL = 1000;
+  function amToDec(a) {
+    const o = Number(a);
+    if (!o || !isFinite(o)) return null;
+    return o > 0 ? 1 + o / 100 : 1 + 100 / (-o);
+  }
+  function deltaWeight(p, dec) {
+    if (!(p > 0) || !(dec > 1)) return 0;
+    const edge = p - 1 / dec;
+    if (!(edge > 0)) return 0;
+    return Math.pow(edge * p, SIZING_GAMMA);
+  }
+  function assignStakes() {
+    const totals = new Map();
+    for (const g of state.games) for (const p of g.picks) {
+      p.dec = amToDec(p.price_raw);
+      p.weight = (p.tier && p.tier !== 'no_edge' && p.our_prob)
+        ? deltaWeight(p.our_prob, p.dec) : 0;
+      const w = g.week ?? 0;
+      totals.set(w, (totals.get(w) || 0) + p.weight);
+    }
+    for (const g of state.games) for (const p of g.picks) {
+      const tot = totals.get(g.week ?? 0) || 0;
+      p.stake = tot > 0 ? WEEKLY_BANKROLL * p.weight / tot : 0;
+      p.pnl = !p.stake ? 0
+        : p.result === 'win' ? p.stake * (p.dec - 1)
+        : p.result === 'loss' ? -p.stake : 0;
+    }
   }
 
   function gameCardHTML(g) {
@@ -123,23 +166,45 @@
         ${pill('tier:A', 'A', f.tier === 'A')}
         ${pill('tier:B', 'B', f.tier === 'B')}
         ${pill('tier:C', 'C', f.tier === 'C')}
+        ${pill('tier:no_edge', 'No Edge', f.tier === 'no_edge')}
       </div>`;
   }
 
+  // The record line recalculates off whatever the pills select (like My
+  // Bets' hero tallies) — season-wide across all weeks, so flipping week
+  // tabs browses games while the pills slice the record. No-edge rows are
+  // transparency, never bets: they carry no record and no stake.
   function recordHTML() {
-    const r = state.record || {};
-    const w = r.win || 0, l = r.loss || 0, p = r.push || 0;
-    if (!(w + l + p)) return '';
-    const push = p ? ` · ${p} push${p === 1 ? '' : 'es'}` : '';
-    return `<div class="rs-record">${SEASON} so far:
-      <span class="ll-row-pick-num">${w}–${l}</span>${esc(push)}</div>`;
+    const f = state.filters;
+    let w = 0, l = 0, pu = 0, pnl = 0;
+    for (const g of state.games) for (const p of g.picks) {
+      if (!matchesFilters(p)) continue;
+      if (!p.tier || p.tier === 'no_edge') continue;
+      if (p.result === 'win') w++;
+      else if (p.result === 'loss') l++;
+      else if (p.result === 'push') pu++;
+      pnl += p.pnl || 0;
+    }
+    if (!(w + l + pu)) return '';
+    const slice = f.tier ? (f.tier === 'no_edge' ? 'No Edge' : f.tier)
+      : f.market ? marketLabel(f.market) : null;
+    const push = pu ? ` · ${pu} push${pu === 1 ? '' : 'es'}` : '';
+    const up = pnl >= 0;
+    const pnlTxt = `${up ? '+' : '−'}$${Math.abs(pnl).toFixed(0)}`;
+    return `<div class="rs-record">${SEASON} so far${slice ? ` · ${esc(slice)}` : ''}:
+      <span class="ll-row-pick-num">${w}–${l}</span>${esc(push)}
+      · <span class="rs-pnl ${up ? 'rs-pnl--up' : 'rs-pnl--down'}">${pnlTxt}</span>
+      <span class="rs-pnl-note">allocator's sheet, $1,000/wk</span></div>`;
   }
 
+  // Graded picks are the page (Austin, 9/5: "default to only show graded").
+  // No-edge verdicts stay reachable behind their own pill.
   function matchesFilters(p) {
     const f = state.filters;
     if (f.tier) return p.tier === f.tier;
-    if (f.market) return p.market === f.market;
-    return true;
+    const graded = !!p.tier && p.tier !== 'no_edge';
+    if (f.market) return graded && p.market === f.market;
+    return graded;
   }
 
   function render() {
@@ -180,19 +245,19 @@
       games: [
         { game_id: 'demo1', week: 0, matchup: 'Sample State @ Placeholder Tech',
           home_points: 31, away_points: 17, picks: [
-            { market: 'spread', tier: 'A+', bolt: true, side: 'Placeholder Tech', line: '-9.5', price: '-108', book: { name: 'FanDuel' }, result: 'win' },
-            { market: 'total', tier: 'B', side: 'Under', line: '54.5', price: '-112', book: { name: 'DraftKings' }, result: 'loss' },
-            { market: 'ml', tier: 'C', side: 'Placeholder Tech', line: '-260', price: null, book: { name: 'theScore Bet' }, result: 'win' },
+            { market: 'spread', tier: 'A+', bolt: true, side: 'Placeholder Tech', line: '-9.5', price: '-108', price_raw: -108, our_prob: 0.694, book: { name: 'FanDuel' }, result: 'win' },
+            { market: 'total', tier: 'B', side: 'Under', line: '54.5', price: '-112', price_raw: -112, our_prob: 0.616, book: { name: 'DraftKings' }, result: 'loss' },
+            { market: 'ml', tier: 'C', side: 'Placeholder Tech', line: '-260', price: null, price_raw: -260, our_prob: 0.7799, book: { name: 'theScore Bet' }, result: 'win' },
           ]},
         { game_id: 'demo2', week: 0, matchup: 'Fixture A&M @ Demo College',
           home_points: 24, away_points: 24, picks: [
-            { market: 'spread', tier: 'B', side: 'Demo College', line: '+3', price: '-110', book: { name: 'Bovada' }, result: 'push' },
-            { market: 'total', tier: 'no_edge', side: 'Over', line: '48.5', price: '-105', book: { name: 'BetMGM' }, result: 'loss' },
+            { market: 'spread', tier: 'B', side: 'Demo College', line: '+3', price: '-110', price_raw: -110, our_prob: 0.616, book: { name: 'Bovada' }, result: 'push' },
+            { market: 'total', tier: 'no_edge', side: 'Over', line: '48.5', price: '-105', price_raw: null, our_prob: null, book: { name: 'BetMGM' }, result: 'loss' },
           ]},
         { game_id: 'demo3', week: 0, matchup: 'Placeholder Poly @ Sample U',
           home_points: 20, away_points: 27, picks: [
-            { market: 'ml', tier: 'A', side: 'Placeholder Poly', line: '+195', price: null, book: { name: 'FanDuel' }, result: 'win' },
-            { market: 'spread', tier: 'C', side: 'Sample U', line: '-4.5', price: '-115', book: { name: 'DraftKings' }, result: 'loss' },
+            { market: 'ml', tier: 'A', side: 'Placeholder Poly', line: '+195', price: null, price_raw: 195, our_prob: 0.3661, book: { name: 'FanDuel' }, result: 'win' },
+            { market: 'spread', tier: 'C', side: 'Sample U', line: '-4.5', price: '-115', price_raw: -115, our_prob: 0.554, book: { name: 'DraftKings' }, result: 'loss' },
           ]},
       ],
     };
@@ -206,6 +271,7 @@
       state.games = payload.games || [];
       state.weeks = (payload.weeks || []).slice().sort((a, b) => b - a); // latest first
       state.record = payload.record || {};
+      assignStakes();
       if (state.week == null && state.weeks.length) state.week = state.weeks[0];
       state.loading = false;
       render();
