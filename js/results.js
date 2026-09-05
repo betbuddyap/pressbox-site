@@ -81,55 +81,24 @@
       </div>`;
   }
 
-  // ── Allocator reconstruction ─────────────────────────────────────────
-  // The SAME sizing rule the allocator sheet runs (allocator.html):
-  //   weight = ((our_prob − 1/dec) × our_prob)^GAMMA, zero at no edge,
-  // normalized per WEEK to a 100-unit sheet. our_prob arrives per pick from
-  // the feed (released tier through the committed ladder anchors; ML =
-  // the flat ROI floor over the released price). Stakes are assigned over
-  // the FULL weekly sheet once — the pills only choose which stakes'
-  // results get summed, exactly like reading the printed sheet back.
-  const SIZING_GAMMA = 0.50;
-  const WEEKLY_UNITS = 100;   // the sheet speaks in units, never dollars (Austin, 9/5)
+  // ── Units accounting ─────────────────────────────────────────────────
+  // ONE FLAT UNIT on every graded pick at its released price (Austin,
+  // 9/5) — the record convention every bettor can check by hand. A win
+  // pays dec−1 units, a loss costs the unit, a push is flat. price_raw
+  // arrives from the feed (spread/total juice, or the ML line itself).
   function amToDec(a) {
     const o = Number(a);
     if (!o || !isFinite(o)) return null;
     return o > 0 ? 1 + o / 100 : 1 + 100 / (-o);
   }
-  function deltaWeight(p, dec) {
-    if (!(p > 0) || !(dec > 1)) return 0;
-    const edge = p - 1 / dec;
-    if (!(edge > 0)) return 0;
-    return Math.pow(edge * p, SIZING_GAMMA);
-  }
   function assignStakes() {
-    // The weekly totals come from the feed's SHEET — every released graded
-    // pick, settled or not — so a half-finished Saturday doesn't fake a
-    // fully-staked 100u week (mid-week the settled volume reads partial,
-    // exactly like the real sheet would). Fallback: no sheet in the payload
-    // (older backend) → normalize over the settled picks alone.
-    const totals = new Map();
-    if (state.sheet && state.sheet.length) {
-      for (const s of state.sheet) {
-        const w = deltaWeight(s.our_prob, amToDec(s.price_raw));
-        totals.set(s.week ?? 0, (totals.get(s.week ?? 0) || 0) + w);
-      }
-    }
     for (const g of state.games) for (const p of g.picks) {
-      p.dec = amToDec(p.price_raw);
-      p.weight = (p.tier && p.tier !== 'no_edge' && p.our_prob)
-        ? deltaWeight(p.our_prob, p.dec) : 0;
-      if (!state.sheet || !state.sheet.length) {
-        const w = g.week ?? 0;
-        totals.set(w, (totals.get(w) || 0) + p.weight);
-      }
-    }
-    for (const g of state.games) for (const p of g.picks) {
-      const tot = totals.get(g.week ?? 0) || 0;
-      p.stake = tot > 0 ? WEEKLY_UNITS * p.weight / tot : 0;
+      p.dec = amToDec(p.price_raw) || (p.market !== 'ml' ? amToDec(-110) : null);
+      const graded = p.tier && p.tier !== 'no_edge';
+      p.stake = graded && p.dec ? 1 : 0;
       p.pnl = !p.stake ? 0
-        : p.result === 'win' ? p.stake * (p.dec - 1)
-        : p.result === 'loss' ? -p.stake : 0;
+        : p.result === 'win' ? p.dec - 1
+        : p.result === 'loss' ? -1 : 0;
     }
   }
 
@@ -232,9 +201,9 @@
             <div class="rs-stat-value">${Math.round(staked)}u</div>
           </div>
         </div>
-        <div class="rs-hero-note">Sized as the allocator's sheet — 100 units a week, every
-        graded pick staked at its released number, win or lose. Flip the week tabs and
-        pick-type pills and every number above follows.</div>
+        <div class="rs-hero-note">One flat unit on every graded pick at its released
+        number and price, win or lose. Flip the week tabs and pick-type pills and every
+        number above follows.</div>
       </div>`;
   }
 
