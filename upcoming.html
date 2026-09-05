@@ -735,12 +735,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Wrap, don't clip: on live cards the badge + arrow + trajectory chip
-       can exceed the slot — extra pieces drop to a second centered line
-       instead of pushing off the card's right edge (Austin, 9/5). */
-    flex-wrap: wrap;
     min-width: 0;
-    gap: 4px 6px;
+    gap: 6px;
     padding: 4px 6px;
     min-height: 24px;
   }
@@ -834,10 +830,14 @@
     line-height: 1;
     white-space: nowrap;
   }
-  /* The trajectory chip ALWAYS takes its own centered line — wrapping only
-     when tight made some slots two-line and others one-line on the same
-     card, which read ragged (Austin, 9/5). */
-  .gc.slate .gc-pick-slot .gc-pace { flex-basis: 100%; text-align: center; }
+  /* Trajectory chip rides NEXT TO the badge — never on its own line. The
+     slot stays one centered row and the cluster "scoots left" as a unit
+     when the chip activates: the market label is the piece that yields
+     (shrinks/ellipses), so badge + arrow + chip always fit (Austin, 9/5). */
+  .gc.slate .gc-pick-slot .gc-pick-label {
+    flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  }
+  .gc.slate .gc-pick-slot:has(.gc-pace) { gap: 4px; }
   .gc-pace.pace-good { color: var(--sage-mid); }
   .gc-pace.pace-bad  { color: var(--rust-light); }
   .gc-pace.pace-even { color: rgba(248,245,238,0.55); }
