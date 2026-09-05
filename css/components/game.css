@@ -2230,11 +2230,13 @@ footer {
   font-size: 10px; font-weight: var(--weight-bold); letter-spacing: 0.03em;
   text-transform: uppercase; color: var(--text-mid); text-align: right;
 }
-.adjsc-row { padding: 6px 0; border-bottom: 1px solid var(--cream-dark); }
+.adjsc-row { padding: 5px 0; border-bottom: 1px solid var(--cream-dark); }
 .adjsc-row:last-of-type { border-bottom: none; }
-.adjsc-team { font-weight: var(--weight-bold); font-size: 14px; }
-.adjsc-act { font-family: var(--sans); font-size: 15px; color: var(--text-mid); text-align: right; }
-.adjsc-adj { font-family: var(--serif); font-weight: 700; font-size: 24px; text-align: right; }
+.adjsc-team { font-weight: var(--weight-bold); font-size: 13px; }
+.adjsc-act { font-family: var(--sans); font-size: 13px; color: var(--text-mid); text-align: right; }
+/* Serif for the computed number (the rule), but scaled to the receipt
+   stack's density — 24px read as a second hero next to the OPI boxes. */
+.adjsc-adj { font-family: var(--serif); font-weight: 700; font-size: 17px; text-align: right; }
 .adjsc-note { font-size: 11.5px; color: var(--text-mid); margin-top: var(--space-2); line-height: 1.5; }
 
 .opi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
