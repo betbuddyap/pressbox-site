@@ -136,15 +136,43 @@
     // the P&L card IS your FanDuel P&L.
     return ledgerBook ? base.filter(b => b.book === ledgerBook) : base;
   }
+  // Effective result = the backend settle when it exists, else a live
+  // CLINCH: a total past its number is decided mid-game (over won / under
+  // lost — points never come off). Singles only; a parlay needs every leg.
+  // liveGame/gamesById are hoisted from the ledger section below.
+  function effResult(b) {
+    if (b.result) return b.result;
+    if (b.market !== 'total') return null;
+    try {
+      const g = liveGame(b);
+      if (!g) return null;
+      const tot = g.home_points + g.away_points;
+      if (!(tot > Number(b.line))) return null;
+      return b.side === 'over' ? 'W' : 'L';
+    } catch (e) { return null; }
+  }
+  function effProfit(b) {
+    if (b.result) return Number(b.profit) || 0;
+    const res = effResult(b);
+    const stake = Number(b.stake) || 0;
+    const odds = Number(b.odds);
+    if (res === 'W') return odds > 0 ? stake * odds / 100 : stake * 100 / Math.abs(odds);
+    if (res === 'L') return -stake;
+    return 0;
+  }
   function heroHTML() {
     const rows = scopeBets();
-    const settled = rows.filter(b => b.result);
-    const net = settled.reduce((a, b) => a + (Number(b.profit) || 0), 0);
+    // Clinched totals count as settled NOW — a passed number is a decided
+    // bet, and the win belongs in the column mid-game (Austin, 9/5). The
+    // backend's final settle replaces the client read with the identical
+    // outcome.
+    const settled = rows.filter(b => effResult(b));
+    const net = settled.reduce((a, b) => a + effProfit(b), 0);
     const stakedAll = rows.reduce((a, b) => a + (Number(b.stake) || 0), 0);
     const stakedSettled = settled.reduce((a, b) => a + (Number(b.stake) || 0), 0);
-    const W = settled.filter(b => b.result === 'W').length;
-    const L = settled.filter(b => b.result === 'L').length;
-    const P = settled.filter(b => b.result === 'P' || b.result === 'V').length;
+    const W = settled.filter(b => effResult(b) === 'W').length;
+    const L = settled.filter(b => effResult(b) === 'L').length;
+    const P = settled.filter(b => { const r = effResult(b); return r === 'P' || r === 'V'; }).length;
     const pending = rows.length - settled.length;
     const roi = stakedSettled > 0 ? (net / stakedSettled) * 100 : null;
     const netCls = net > 0 ? 'pos' : net < 0 ? 'neg' : '';
@@ -844,14 +872,15 @@
 
   function rowHTML(b) {
     const [cls, glyph] = markFor(b);
-    const settled = !!b.result;
-    const net = Number(b.profit) || 0;
+    const effR = effResult(b);
+    const settled = !!effR;               // includes live-clinched totals
+    const net = effProfit(b);
     const netCls = !settled ? 'flat' : net > 0 ? 'pos' : net < 0 ? 'neg' : 'flat';
     const netTxt = !settled ? 'Pending'
-      : b.result === 'P' ? 'Push'
-      : b.result === 'V' ? 'Void'
-      : fmtMoney(net, { signed: true });
-    const canDelete = !settled && isPregame(b.kickoff);
+      : effR === 'P' ? 'Push'
+      : effR === 'V' ? 'Void'
+      : fmtMoney(net, { signed: true }) + (!b.result ? ' · clinched' : '');
+    const canDelete = !b.result && isPregame(b.kickoff);
     // Once the ball is in the air the kickoff time is dead weight — the clock
     // and where the ticket stands are what you want at a glance on a phone.
     let live = null;
@@ -1006,8 +1035,8 @@
     const weeksDesc = Object.keys(byWeek).map(Number).sort((a, b) => b - a);
     const groups = weeksDesc.map(w => {
       const rows = ledgerOrder(byWeek[w]);
-      const settled = rows.filter(b => b.result);
-      const net = settled.reduce((a, b) => a + (Number(b.profit) || 0), 0);
+      const settled = rows.filter(b => effResult(b));
+      const net = settled.reduce((a, b) => a + effProfit(b), 0);
       const netTxt = settled.length ? fmtMoney(net, { signed: true }) : '';
       return `
         <div class="mb-week-group">
