@@ -493,6 +493,28 @@
 
   let _demoBetLines = null;   // demo mode: force all three bands for styling
 
+  // Your-ticket override (Austin, 9/5): when the signed-in user has a bet
+  // logged on THIS game, the live bands track THEIR line and say so —
+  // board released lines otherwise, byte-identical. Fetched once per game;
+  // logged-out / no bets / any error all fall through to board behavior.
+  let _myBets = null;
+  async function _userBetsFor(gid) {
+    if (_myBets && _myBets.gid === gid) return _myBets;
+    _myBets = { gid, spread: null, total: null, ml: null };
+    try {
+      if (!window.supabase) return _myBets;
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data } = await sb.from('user_bets')
+        .select('market, side, line, created_at')
+        .eq('game_id', gid).in('market', ['spread', 'total', 'ml'])
+        .order('created_at', { ascending: false });
+      for (const b of (data || [])) {
+        if (!_myBets[b.market]) _myBets[b.market] = b;   // latest per market
+      }
+    } catch (e) { /* board lines it is */ }
+    return _myBets;
+  }
+
   async function renderWpChart(data) {
     const wrapEl = document.getElementById('pgWpWrap');
     const svg = document.getElementById('pgWpChart');
@@ -529,10 +551,23 @@
     // Bands track the RELEASED line at ANY grade — a No Edge row still
     // carries our side and line, and the cover/total math doesn't care
     // about the tier (same call as the break-even cell, 2026-09-02).
-    const spLine = spRel ? Number(spRel.line_raw) : null;
-    const spSideHome = spRel ? spRel.side_raw === 'home' : null;
-    const toLine = toRel ? Number(toRel.line_raw) : null;
-    const toUnder = toRel ? toRel.side_raw === 'under' : null;
+    // A logged ticket of YOURS on this game outranks the board line.
+    const mine = await _userBetsFor(gid);
+    const mySp = mine && mine.spread;
+    const myTo = mine && mine.total;
+    const myMl = mine && mine.ml;
+    let spLine = spRel ? Number(spRel.line_raw) : null;
+    let spSideHome = spRel ? spRel.side_raw === 'home' : null;
+    if (mySp && mySp.line != null) {
+      spLine = Number(mySp.line);
+      spSideHome = mySp.side === 'home';
+    }
+    let toLine = toRel ? Number(toRel.line_raw) : null;
+    let toUnder = toRel ? toRel.side_raw === 'under' : null;
+    if (myTo && myTo.line != null) {
+      toLine = Number(myTo.line);
+      toUnder = myTo.side === 'under';
+    }
 
     const W = 1000, H = 240, SIG_M = 15.5, SIG_T = 11.0;
     const n = ticks.length;
@@ -555,7 +590,9 @@
       if (toLine != null && !isNaN(toLine)) {
         const pts = t.home_pts + t.away_pts;
         const zOver = (pts - f * toLine) / (SIG_T * Math.sqrt(Math.max(1e-4, 1 - f)));
-        totPts.push([x(i), toUnder ? 1 - _phi(zOver) : _phi(zOver)]);
+        // ALWAYS P(Over) — Over owns the top pole regardless of the pick
+        // side (Austin, 9/5); the header still reads out the tracked side.
+        totPts.push([x(i), _phi(zOver)]);
       }
     });
 
@@ -637,9 +674,19 @@
     const nowEl = document.getElementById('pgWpNow');
     if (nowEl && wpPts.length) {
       const wp = wpPts[wpPts.length - 1][1];
-      const leader = wp >= 0.5 ? home : away;
-      nowEl.textContent = `${leader} ${Math.round((wp >= 0.5 ? wp : 1 - wp) * 100)}%`;
+      if (myMl) {
+        // Your ML ticket personalizes the words — never the plot.
+        const mineHome = myMl.side === 'home';
+        const p = mineHome ? wp : 1 - wp;
+        nowEl.textContent = `${mineHome ? home : away} ${Math.round(p * 100)}%`;
+      } else {
+        const leader = wp >= 0.5 ? home : away;
+        nowEl.textContent = `${leader} ${Math.round((wp >= 0.5 ? wp : 1 - wp) * 100)}%`;
+      }
     }
+    const titleEl = mainFrame && mainFrame.closest('.pg-wp-block')
+      ? mainFrame.closest('.pg-wp-block').querySelector('.pg-wp-title') : null;
+    if (titleEl) titleEl.textContent = myMl ? 'YOUR WIN PROBABILITY' : 'LIVE WIN PROBABILITY';
 
     // ── Per-bet charts: same frame, two named sides. Spread = which TEAM
     //    covers the released line (team colors, picked side on top). Total =
@@ -672,16 +719,28 @@
       const spHomeNow = coverPts.length ? coverPts[coverPts.length - 1][1] : null;
       const spPickNow = spHomeNow == null ? null
                       : (spSideHome ? spHomeNow : 1 - spHomeNow);
-      const spPickName = spRel ? (spSideHome ? home : away) : '';
+      const spPickName = (spLine != null) ? (spSideHome ? home : away) : '';
+      const fmtLn = (v) => (v > 0 ? `+${v}` : `${v}`);
+      const spTitle = mySp && mySp.line != null
+        ? `Your bet — ${spPickName} ${fmtLn(spLine)}`
+        : (spRel ? `Spread — ${spRel.side || ''} ${spRel.line || ''}` : '');
+      const toSideName = toUnder ? 'Under' : 'Over';
+      // Over always plots on top, so an Under bet reads out as the mirror.
+      const toNow = totPts.length
+        ? (toUnder ? 1 - totPts[totPts.length - 1][1] : totPts[totPts.length - 1][1])
+        : null;
+      const toTitle = myTo && myTo.line != null
+        ? `Your bet — ${toSideName} ${toLine}`
+        : (toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '');
       betsEl.innerHTML =
-        band(spRel ? `Spread — ${spRel.side || ''} ${spRel.line || ''}` : '',
+        band(spTitle,
              `${home} covers 100%`, `${away} covers 100%`,
              WASH, WASH, coverPts, 'wpGradSp', spPickNow,
              spPickName ? `${spPickName} covers` : '') +
-        band(toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '',
-             `${toUnder ? 'Under' : 'Over'} 100%`, `${toUnder ? 'Over' : 'Under'} 100%`,
-             WASH, WASH, totPts, 'wpGradTot', null,
-             toRel ? (toUnder ? 'Under' : 'Over') : '');
+        band(toTitle,
+             `Over 100%`, `Under 100%`,
+             WASH, WASH, totPts, 'wpGradTot', toNow,
+             (toLine != null) ? toSideName : '');
     }
   }
 
