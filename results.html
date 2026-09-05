@@ -103,16 +103,25 @@
   .rs-mark--win  { color: var(--sage); }
   .rs-mark--loss { color: var(--rust); }
   .rs-mark--push { color: var(--text-mid); }
-  /* Allocator-assigned stake — small inline number (sans, per the rule).
-     Sits before the glyph; its auto margin absorbs the row's slack so the
-     glyph keeps its right edge with or without a stake. */
-  .rs-stake { margin-left: auto; font-family: var(--sans); font-size: var(--text-sm);
-              font-weight: var(--weight-semi); color: var(--text-mid); white-space: nowrap; }
-  .rs-pnl { font-family: var(--sans); font-weight: var(--weight-bold); }
-  .rs-pnl--up   { color: var(--sage); }
-  .rs-pnl--down { color: var(--rust); }
-  .rs-pnl-note { font-weight: var(--weight-reg, 400); color: var(--text-light, var(--text-mid));
-                 font-size: var(--text-eyebrow); margin-left: 4px; }
+  /* ── Hero card — the My Bets P&L card, verbatim (Austin: "build the top
+     portion like my bets"). Dark ink card, serif display numbers. ── */
+  .rs-hero { background: var(--ink); border-radius: 6px; padding: 32px 36px 28px;
+             color: var(--cream); margin-bottom: var(--space-4); }
+  .rs-hero-top { display: flex; align-items: baseline; justify-content: space-between;
+                 gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .rs-hero-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600;
+                     letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold-light); }
+  .rs-hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  @media (max-width: 720px) { .rs-hero-stats { grid-template-columns: repeat(2, 1fr); row-gap: 20px; } }
+  .rs-stat-label { font-family: var(--sans); font-size: 11px; font-weight: 600;
+                   letter-spacing: 0.02em; text-transform: uppercase;
+                   color: rgba(248,245,238,0.72); margin-bottom: 6px; }
+  .rs-stat-value { font-family: var(--serif); font-size: 34px; font-weight: 700;
+                   line-height: 1; color: var(--cream); }
+  .rs-stat-value.pos { color: var(--sage); }
+  .rs-stat-value.neg { color: var(--rust-light, var(--rust)); }
+  .rs-hero-note { font-family: var(--sans); font-size: 11px; color: rgba(248,245,238,0.45);
+                  margin-top: 22px; line-height: 1.5; }
   .rs-empty { font-family: var(--sans); color: var(--text-mid); padding: 72px 24px; line-height: 1.6;
               max-width: 560px; margin: 0 auto; text-align: center; }
   /* The visible way into the game page — the whole card navigates, but the
@@ -166,7 +175,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/results.js?v=20260905a"></script>
+<script src="/js/results.js?v=20260905b"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->

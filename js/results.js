@@ -72,15 +72,11 @@
     const px = p.price ? ` <span class="ll-row-pick-px">${esc(p.price)}</span>` : '';
     const book = p.book && p.book.name ? ` · ${esc(p.book.name)}` : '';
     const ne = p.tier === 'no_edge';
-    const stake = p.stake > 0.5
-      ? `<span class="rs-stake" title="What the allocator's $1,000 weekly sheet assigned this pick">$${Math.round(p.stake)}</span>`
-      : '';
     return `
       <div class="rs-pick${ne ? ' rs-pick--ne' : ''}">
         ${renderBadge(p.tier, p.bolt)}
         <span class="rs-pick-mkt">${esc(marketLabel(p.market))}</span>
         <span class="ll-row-pick"><span class="ll-row-pick-num">${esc(p.side || '')} ${esc(p.line || '')}</span>${px}${esc(book)}</span>
-        ${stake}
         ${markHTML(p.result)}
       </div>`;
   }
@@ -88,13 +84,13 @@
   // ── Allocator reconstruction ─────────────────────────────────────────
   // The SAME sizing rule the allocator sheet runs (allocator.html):
   //   weight = ((our_prob − 1/dec) × our_prob)^GAMMA, zero at no edge,
-  // normalized per WEEK to a $1,000 sheet. our_prob arrives per pick from
+  // normalized per WEEK to a 100-unit sheet. our_prob arrives per pick from
   // the feed (released tier through the committed ladder anchors; ML =
   // the flat ROI floor over the released price). Stakes are assigned over
   // the FULL weekly sheet once — the pills only choose which stakes'
   // results get summed, exactly like reading the printed sheet back.
   const SIZING_GAMMA = 0.50;
-  const WEEKLY_BANKROLL = 1000;
+  const WEEKLY_UNITS = 100;   // the sheet speaks in units, never dollars (Austin, 9/5)
   function amToDec(a) {
     const o = Number(a);
     if (!o || !isFinite(o)) return null;
@@ -117,7 +113,7 @@
     }
     for (const g of state.games) for (const p of g.picks) {
       const tot = totals.get(g.week ?? 0) || 0;
-      p.stake = tot > 0 ? WEEKLY_BANKROLL * p.weight / tot : 0;
+      p.stake = tot > 0 ? WEEKLY_UNITS * p.weight / tot : 0;
       p.pnl = !p.stake ? 0
         : p.result === 'win' ? p.stake * (p.dec - 1)
         : p.result === 'loss' ? -p.stake : 0;
@@ -140,13 +136,16 @@
   }
 
   function weekTabsHTML() {
-    if (!state.weeks || state.weeks.length <= 1) return '';
+    if (!state.weeks || !state.weeks.length) return '';
     return `
-      <div class="ll-week-bar"><div class="ll-week-bar-inner" role="tablist" aria-label="Results week">
+      <div class="ll-week-bar" style="margin-bottom:var(--space-4);">
+        <div class="ll-week-bar-inner" role="tablist" aria-label="Results week">
         ${state.weeks.map(w => `
           <button class="ll-week-tab ${w === state.week ? 'active' : ''}" data-week="${w}"
                   role="tab" aria-selected="${w === state.week ? 'true' : 'false'}">${esc(weekLabel(w))}</button>
         `).join('')}
+          <button class="ll-week-tab ${state.week == null ? 'active' : ''}" data-week="season"
+                  role="tab" aria-selected="${state.week == null ? 'true' : 'false'}">Full Season</button>
       </div></div>`;
   }
 
@@ -170,31 +169,60 @@
       </div>`;
   }
 
-  // The record line recalculates off whatever the pills select (like My
-  // Bets' hero tallies) — season-wide across all weeks, so flipping week
-  // tabs browses games while the pills slice the record. No-edge rows are
-  // transparency, never bets: they carry no record and no stake.
-  function recordHTML() {
+  // The hero recalculates off the week tab AND the pills (Austin: "build
+  // the top portion like my bets. week selector and everything" — one
+  // selector drives the hero and the list). No-edge rows are transparency,
+  // never bets: no record, no stake.
+  function heroHTML() {
     const f = state.filters;
-    let w = 0, l = 0, pu = 0, pnl = 0;
-    for (const g of state.games) for (const p of g.picks) {
-      if (!matchesFilters(p)) continue;
-      if (!p.tier || p.tier === 'no_edge') continue;
-      if (p.result === 'win') w++;
-      else if (p.result === 'loss') l++;
-      else if (p.result === 'push') pu++;
-      pnl += p.pnl || 0;
+    let w = 0, l = 0, pu = 0, pnl = 0, staked = 0;
+    for (const g of state.games) {
+      if (state.week != null && g.week !== state.week) continue;
+      for (const p of g.picks) {
+        if (!matchesFilters(p)) continue;
+        if (!p.tier || p.tier === 'no_edge') continue;
+        if (p.result === 'win') w++;
+        else if (p.result === 'loss') l++;
+        else if (p.result === 'push') pu++;
+        pnl += p.pnl || 0;
+        staked += p.stake || 0;
+      }
     }
     if (!(w + l + pu)) return '';
     const slice = f.tier ? (f.tier === 'no_edge' ? 'No Edge' : f.tier)
       : f.market ? marketLabel(f.market) : null;
-    const push = pu ? ` · ${pu} push${pu === 1 ? '' : 'es'}` : '';
-    const up = pnl >= 0;
-    const pnlTxt = `${up ? '+' : '−'}$${Math.abs(pnl).toFixed(0)}`;
-    return `<div class="rs-record">${SEASON} so far${slice ? ` · ${esc(slice)}` : ''}:
-      <span class="ll-row-pick-num">${w}–${l}</span>${esc(push)}
-      · <span class="rs-pnl ${up ? 'rs-pnl--up' : 'rs-pnl--down'}">${pnlTxt}</span>
-      <span class="rs-pnl-note">allocator's sheet, $1,000/wk</span></div>`;
+    const scopeLabel = state.week == null ? `${SEASON} season` : weekLabel(state.week);
+    const units = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)}u`;
+    const netCls = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : '';
+    const roi = staked > 0 ? (pnl / staked) * 100 : null;
+    const record = `${w}–${l}` + (pu ? `–${pu}` : '');
+    return `
+      <div class="rs-hero">
+        <div class="rs-hero-top">
+          <div class="rs-hero-eyebrow">The Record · ${esc(scopeLabel)}${slice ? ' · ' + esc(slice) : ''}</div>
+        </div>
+        <div class="rs-hero-stats">
+          <div class="rs-stat">
+            <div class="rs-stat-label">Net Units</div>
+            <div class="rs-stat-value ${netCls}">${units(pnl)}</div>
+          </div>
+          <div class="rs-stat">
+            <div class="rs-stat-label">Record</div>
+            <div class="rs-stat-value">${esc(record)}</div>
+          </div>
+          <div class="rs-stat">
+            <div class="rs-stat-label">ROI</div>
+            <div class="rs-stat-value ${netCls}">${roi == null ? '—' : esc((roi > 0 ? '+' : roi < 0 ? '−' : '') + Math.abs(roi).toFixed(1) + '%')}</div>
+          </div>
+          <div class="rs-stat">
+            <div class="rs-stat-label">Units Staked</div>
+            <div class="rs-stat-value">${Math.round(staked)}u</div>
+          </div>
+        </div>
+        <div class="rs-hero-note">Sized as the allocator's sheet — 100 units a week, every
+        graded pick staked at its released number, win or lose. Flip the week tabs and
+        pick-type pills and every number above follows.</div>
+      </div>`;
   }
 
   // Graded picks are the page (Austin, 9/5: "default to only show graded").
@@ -221,7 +249,6 @@
         when their game kicks off; when it goes final they land here — graded at the
         released number, exactly as published. Click any game for the full breakdown.
         <a href="/how-it-works.html#results" style="font-weight:600;color:var(--gold);text-decoration:none;white-space:nowrap;">How grading works →</a></p>
-        ${recordHTML()}
       </header>`;
 
     const inWeek = state.games.filter(g => state.week == null || g.week === state.week);
@@ -235,7 +262,7 @@
       : `<div class="rs-empty">The record starts with the Week 0 finals. Picks leave
          Live Lines at kickoff and land here graded shortly after the final whistle.</div>`;
 
-    root.innerHTML = header + weekTabsHTML() + (state.games.length ? filtersHTML() : '')
+    root.innerHTML = header + weekTabsHTML() + (state.games.length ? heroHTML() + filtersHTML() : '')
       + (cards || empty);
   }
 
@@ -284,7 +311,7 @@
   document.addEventListener('click', (e) => {
     const tab = e.target.closest('.ll-week-tab');
     if (tab) {
-      state.week = Number(tab.dataset.week);
+      state.week = tab.dataset.week === 'season' ? null : Number(tab.dataset.week);
       render(); return;
     }
     const pill = e.target.closest('.ll-filter-pill');
