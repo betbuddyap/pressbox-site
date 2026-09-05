@@ -317,6 +317,13 @@
       ? 'Halftime'
       : [periodLabel, clock].filter(Boolean).join(' · ');
     els.pgLiveClock.textContent = clockLine || '';
+    // A weather delay isn't live play — the badge says so and the dot
+    // stops claiming a running game (Tulane@Duke, 9/5).
+    const _badge = document.querySelector('.pg-live-badge');
+    if (_badge) {
+      _badge.innerHTML = clock === 'Delayed'
+        ? 'DELAYED' : '<span class="pg-live-dot"></span>LIVE';
+    }
 
     const awayName = g.away?.name || '';
     const homeName = g.home?.name || '';

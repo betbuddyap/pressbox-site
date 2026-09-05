@@ -2171,7 +2171,7 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
         <div class="gc-live-tint"></div>
         <div class="gc-content">
           <div class="gc-live-strip">
-            <span class="gc-live-badge"><span class="gc-live-dot"></span>LIVE</span>
+            <span class="gc-live-badge">${clock === 'Delayed' ? 'DELAYED' : '<span class="gc-live-dot"></span>LIVE'}</span>
             ${(() => { const m = [periodLabel, clockText, g.tv].filter(Boolean).join(' · ');
                        return m ? `<span class="gc-live-clock">${m}</span>` : ''; })()}
           </div>
@@ -2432,7 +2432,7 @@ function renderGotW(g) {
     const p = g.current_period;
     const pl = p ? (p <= 4 ? `Q${p}` : `OT${p - 4}`) : '';
     const bits = [pl, g.current_clock].filter(Boolean).join(' · ');
-    stripMeta = `<span class="gc-live-badge"><span class="gc-live-dot"></span>LIVE</span>` +
+    stripMeta = `<span class="gc-live-badge">${g.current_clock === 'Delayed' ? 'DELAYED' : '<span class="gc-live-dot"></span>LIVE'}</span>` +
                 (bits ? `<span class="gc-meta">${bits}</span>` : '');
   } else if (g.status === 'final') {
     stripMeta = `<span class="gc-meta">Final</span>`;
