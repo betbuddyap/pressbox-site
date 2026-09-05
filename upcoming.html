@@ -744,14 +744,16 @@
   /* The arrow + trajectory chip render inside one .gc-live-sub wrapper —
      on desktop it lays out exactly like the old inline row. */
   .gc-live-sub { display: inline-flex; align-items: center; gap: 6px; }
-  /* Phones: the three tiles STAY across — each keeps label + badge on its
-     top line and the live read (▲ proj +42) centers on a second line
-     inside its own tile. Nothing stacks, nothing detaches, nothing spills. */
+  /* Phones: three tiles STAY across and the live read stays BESIDE the
+     badge at full size — the label rides its own small line above, and
+     the chip drops the word "proj" (colored arrow + number carry it).
+     Badge never compresses. Desktop rendering is untouched. */
   @media (max-width: 600px) {
     .gc.slate.live-hero .gc-picks { column-gap: 6px; }
-    .gc.slate.live-hero .gc-pick-slot { flex-wrap: wrap; padding: 4px 2px; row-gap: 3px; }
-    .gc.slate.live-hero .gc-pick-slot .gc-live-sub { flex-basis: 100%; justify-content: center; }
-    .gc.slate.live-hero .gc-pick-label { font-size: 9px; letter-spacing: 0.3px; }
+    .gc.slate.live-hero .gc-pick-slot { flex-wrap: wrap; row-gap: 6px; padding: 4px 2px; }
+    .gc.slate.live-hero .gc-pick-slot .gc-pick-label { flex-basis: 100%; text-align: center; }
+    .gc.slate.live-hero .gc-pick-tier { flex-shrink: 0; }
+    .gc.slate.live-hero .gc-pace-word { display: none; }
   }
   .gc.slate .gc-pick-slot, .gc.gotw-card .gc-pick-slot {
     display: flex;
@@ -2302,7 +2304,7 @@ function livePace(market, slotData, awayPts, homePts, homeTeam, awayTeam, period
     const under = (side || '').toLowerCase() === 'under';
     const good = under ? proj < line : proj > line;
     const tight = Math.abs(proj - line) <= 2;
-    return { txt: `proj ${proj}`, cls: tight ? 'even' : good ? 'good' : 'bad',
+    return { txt: `<span class="gc-pace-word">proj </span>${proj}`, cls: tight ? 'even' : good ? 'good' : 'bad',
              tip: `Scored so far plus the market's rate for the rest projects ${proj} — your ${side} is ${line}` };
   }
   const pickIsHome = side === homeTeam, pickIsAway = side === awayTeam;
@@ -2317,12 +2319,12 @@ function livePace(market, slotData, awayPts, homePts, homeTeam, awayTeam, period
     if (line == null) return null;
     const coverBy = proj + Number(line);
     const tight = Math.abs(coverBy) <= 2;
-    return { txt: `proj ${sgn}`, cls: tight ? 'even' : coverBy > 0 ? 'good' : 'bad',
+    return { txt: `<span class="gc-pace-word">proj </span>${sgn}`, cls: tight ? 'even' : coverBy > 0 ? 'good' : 'bad',
              tip: `Margin so far plus the market's rate projects ${side} finishing ${sgn} — your line is ${line}` };
   }
   if (market === 'ml') {
     const tight = Math.abs(proj) <= 2;
-    return { txt: `proj ${sgn}`, cls: tight ? 'even' : proj > 0 ? 'good' : 'bad',
+    return { txt: `<span class="gc-pace-word">proj </span>${sgn}`, cls: tight ? 'even' : proj > 0 ? 'good' : 'bad',
              tip: proj >= 0 ? `Projects ${side} winning by ${proj}`
                             : `Projects ${side} losing by ${-proj}` };
   }
