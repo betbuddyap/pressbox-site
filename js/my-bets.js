@@ -879,7 +879,7 @@
     const netTxt = !settled ? 'Pending'
       : effR === 'P' ? 'Push'
       : effR === 'V' ? 'Void'
-      : fmtMoney(net, { signed: true }) + (!b.result ? ' · clinched' : '');
+      : fmtMoney(net, { signed: true });
     const canDelete = !b.result && isPregame(b.kickoff);
     // Once the ball is in the air the kickoff time is dead weight — the clock
     // and where the ticket stands are what you want at a glance on a phone.
@@ -998,8 +998,11 @@
       const d = kickoffDate(b.kickoff);
       return d ? d.getTime() : 8.64e15;          // no kickoff -> far future
     };
+    // effResult, not b.result: a clinched total is a settled bet in every
+    // way that matters — it sinks with the other decided tickets instead
+    // of floating among the live ones (Austin, 9/5).
     return [...rows].sort((a, b) =>
-      ((a.result ? 1 : 0) - (b.result ? 1 : 0)) || (t(a) - t(b)));
+      ((effResult(a) ? 1 : 0) - (effResult(b) ? 1 : 0)) || (t(a) - t(b)));
   }
 
   function ledgerToolsHTML() {
