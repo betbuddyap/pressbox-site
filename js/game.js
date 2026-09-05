@@ -373,6 +373,13 @@
       ? (homeHasBall ? 100 - yln : (awayHasBall ? yln : null))
       : null;
     let situation = '';
+    // ESPN's atomic "1st & 10 at OSU 40" wins outright when present — one
+    // string from one feed generation, so a fresh down can never pair with
+    // a stale distance (the phantom "1st & 4" class, 9/5). The constructed
+    // path below stays for demo mode and as fallback.
+    if (g.current_dd_text) {
+      situation = g.current_dd_text;
+    } else
     // down/distance of -1 is ESPN's between-plays sentinel — hide it.
     if (down >= 1 && down <= 4 && distance != null && distance >= 0) {
       const ord = ({1:'1st', 2:'2nd', 3:'3rd', 4:'4th'})[down];

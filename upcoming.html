@@ -726,7 +726,11 @@
   /* Pick slots row — always shows three slots; empty if no pick */
   .gc.slate .gc-picks, .gc.gotw-card .gc-picks {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    /* minmax(0,1fr), not bare 1fr: a heavy slot (badge + arrow + trajectory
+       chip) must not GROW its third and shove the whole row off-center —
+       the three tracks stay equal and the block stays centered on the card
+       (Austin, 9/5: "the whole block just needs to scoot slightly left"). */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
     padding-top: 10px;
     border-top: 1px solid rgba(248,245,238,0.12);
@@ -830,13 +834,9 @@
     line-height: 1;
     white-space: nowrap;
   }
-  /* Trajectory chip rides NEXT TO the badge — never on its own line. The
-     slot stays one centered row and the cluster "scoots left" as a unit
-     when the chip activates: the market label is the piece that yields
-     (shrinks/ellipses), so badge + arrow + chip always fit (Austin, 9/5). */
-  .gc.slate .gc-pick-slot .gc-pick-label {
-    flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
-  }
+  /* Trajectory chip rides NEXT TO the badge on one centered row; the
+     equal-track grid above keeps the whole block centered on the card.
+     Chip-active slots just tighten their gap — nothing shrinks or wraps. */
   .gc.slate .gc-pick-slot:has(.gc-pace) { gap: 4px; }
   .gc-pace.pace-good { color: var(--sage-mid); }
   .gc-pace.pace-bad  { color: var(--rust-light); }
@@ -2104,10 +2104,13 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
   const awayBall = (aPossScore > 0 && aPossScore > hPossScore) ? ballSpan : '';
   const homeBall = (hPossScore > 0 && hPossScore > aPossScore) ? ballSpan : '';
 
-  // Down + distance line. ESPN parks -1/-1 here between plays and after
-  // scores — a sentinel, not a football state ("-1TH & -1", 2026-08-29).
+  // Down + distance line. ESPN's atomic "1st & 10 at OSU 40" wins when
+  // present (one string, one feed generation — no fresh-down/stale-distance
+  // mixing). Constructed fallback below; -1/-1 stays a hidden sentinel.
   let downDistance = '';
-  if (down >= 1 && down <= 4 && distance != null && distance >= 0) {
+  if (g.current_dd_text) {
+    downDistance = g.current_dd_text;
+  } else if (down >= 1 && down <= 4 && distance != null && distance >= 0) {
     const ord = ({1:'1st', 2:'2nd', 3:'3rd', 4:'4th'})[down];
     const distText = (distance === 0) ? 'goal' : distance;
     downDistance = `${ord} & ${distText}`;
