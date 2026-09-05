@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game Breakdown â€” PressBox Analytics</title>
+<title>Game Breakdown — PressBox Analytics</title>
 <meta name="description" content="The math behind every pick. Five-model projections, side-by-side stat comparisons, and our editorial read on this matchup.">
 
 <!-- Google Fonts -->
@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="/css/components/game.css?v=20260905a">
 
 <style>
-  /* â”€â”€ Site nav (kept in sync across pages) â”€â”€ */
+  /* ── Site nav (kept in sync across pages) ── */
   nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
   .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
   .nav-logo img { height: 68px; width: auto; display: block; }
@@ -124,7 +124,7 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">âœ•</button>
+  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
   <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
   <a href="/upcoming.html">Upcoming</a>
   <a href="/parlay.html">Parlay</a>
@@ -137,51 +137,51 @@
 function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
 </script>
 
-<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+<!-- ─────────────────────────────────────────────────────────────
      STATE: LOADING
-     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+     ───────────────────────────────────────────────────────────── -->
 <div id="loadingState" class="game-loading">
   <div class="game-loading-spinner"></div>
-  <div class="game-loading-msg">Loading gameâ€¦</div>
+  <div class="game-loading-msg">Loading game…</div>
 </div>
 
-<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+<!-- ─────────────────────────────────────────────────────────────
      STATE: ERROR
-     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+     ───────────────────────────────────────────────────────────── -->
 <div id="errorState" class="game-status" style="display:none;">
   <h1 class="game-status-title"><em>Something</em> went wrong</h1>
   <p class="game-status-sub">We couldn't load this game right now. Please try again in a moment.</p>
   <a href="/live-lines.html" class="game-status-btn">Back to Live Lines</a>
 </div>
 
-<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+<!-- ─────────────────────────────────────────────────────────────
      STATE: NOT FOUND
-     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+     ───────────────────────────────────────────────────────────── -->
 <div id="notFoundState" class="game-status" style="display:none;">
   <h1 class="game-status-title">Game <em>not found</em></h1>
   <p class="game-status-sub">We don't have this game on the schedule. It may have been removed or the link is incorrect.</p>
   <a href="/live-lines.html" class="game-status-btn">Back to Live Lines</a>
 </div>
 
-<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+<!-- ─────────────────────────────────────────────────────────────
      STATE: PAYWALL (anonymous visitor)
-     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+     ───────────────────────────────────────────────────────────── -->
 <div id="paywallState" class="game-paywall" style="display:none;">
   <div class="game-paywall-inner">
-    <div class="game-paywall-eyebrow">â€” THE BREAKDOWN</div>
+    <div class="game-paywall-eyebrow">— THE BREAKDOWN</div>
     <h1 class="game-paywall-title">Subscribe to see the <em>full game breakdown</em>.</h1>
-    <p class="game-paywall-sub">Five-model projections, side-by-side stat comparisons, and our editorial take â€” for every FBS game with line capture.</p>
+    <p class="game-paywall-sub">Five-model projections, side-by-side stat comparisons, and our editorial take — for every FBS game with line capture.</p>
     <a href="/subscribe.html" class="game-paywall-btn">Subscribe</a>
     <div class="game-paywall-foot">Already a subscriber? <a href="/login.html">Sign in</a></div>
   </div>
 </div>
 
-<!-- â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+<!-- ─────────────────────────────────────────────────────────────
      STATE: GAME CONTENT (subscriber, success)
-     â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+     ───────────────────────────────────────────────────────────── -->
 <div id="gameContent" style="display:none;">
 
-  <!-- ZONE 1: HERO (preserved from prior design per brief Â§6) -->
+  <!-- ZONE 1: HERO (preserved from prior design per brief §6) -->
   <div class="ctx" id="ctxHero">
     <div class="ctx-bg" id="ctxBg">
       <div class="ctx-bg-half" id="ctxBgAway"></div>
@@ -210,12 +210,12 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="pg-score-team away">
           <div class="pg-score-num" id="pgAwayNum"></div>
         </div>
-        <span class="pg-score-dash">â€”</span>
+        <span class="pg-score-dash">—</span>
         <div class="pg-score-team home">
           <div class="pg-score-num" id="pgHomeNum"></div>
         </div>
       </div>
-      <!-- Final status row (below the score, mirroring the live row) â€”
+      <!-- Final status row (below the score, mirroring the live row) —
            same gold FINAL badge as Upcoming, plus the original projection
            so the score reads against what we said pregame. -->
       <div id="pgFinalRow" class="pg-final-row" style="display:none;">
@@ -223,23 +223,23 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <span class="pg-final-proj" id="pgFinalProj"></span>
       </div>
 
-      <!-- Live hero block â€” populated by renderLiveHero() in game.js
+      <!-- Live hero block — populated by renderLiveHero() in game.js
            when game.status === 'in_progress'. ESPN-sourced broadcast
            data: period, clock, down/distance, possession, last play. -->
       <div id="pgLive" class="pg-live" style="display:none;">
         <div class="pg-live-score">
           <div class="pg-live-team away">
             <div class="pg-live-team-name" id="pgLiveAwayName"></div>
-            <div class="pg-live-num" id="pgLiveAwayNum">â€”</div>
+            <div class="pg-live-num" id="pgLiveAwayNum">—</div>
           </div>
-          <span class="pg-live-dash">â€”</span>
+          <span class="pg-live-dash">—</span>
           <div class="pg-live-team home">
-            <div class="pg-live-num" id="pgLiveHomeNum">â€”</div>
+            <div class="pg-live-num" id="pgLiveHomeNum">—</div>
             <div class="pg-live-team-name" id="pgLiveHomeName"></div>
           </div>
         </div>
         <!-- One status row: LIVE badge + clock on the left, down & distance
-             on the right â€” the old floating top strip read as misplaced. -->
+             on the right — the old floating top strip read as misplaced. -->
         <div class="pg-live-row">
           <span class="pg-live-badge"><span class="pg-live-dot"></span>LIVE</span>
           <span class="pg-live-clock" id="pgLiveClock"></span>
@@ -255,7 +255,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="pg-live-lastplay" id="pgLiveLastPlay"></div>
         <div class="pg-linescore" id="pgLinescore" style="display:none;"></div>
 
-        <!-- LIVE PROBABILITIES â€” cream cards ON the hero, same surface
+        <!-- LIVE PROBABILITIES — cream cards ON the hero, same surface
              language as the grade strip. Win probability (team-color
              poles), spread as team-vs-team covers, total as under/over.
              Poles fade to cream at the 50/50 line; one gold line each. -->
@@ -281,12 +281,12 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
         <div class="ctx-projected" id="ctxProjected" style="display:none;">
           <div class="ctx-projected-eyebrow">Our Projection</div>
           <div class="ctx-projected-side">
-            <div class="ctx-projected-num" id="ctxProjAway">â€”</div>
+            <div class="ctx-projected-num" id="ctxProjAway">—</div>
             <div class="ctx-projected-label" id="ctxProjAwayLbl"></div>
           </div>
-          <div class="ctx-projected-dash">â€”</div>
+          <div class="ctx-projected-dash">—</div>
           <div class="ctx-projected-side">
-            <div class="ctx-projected-num" id="ctxProjHome">â€”</div>
+            <div class="ctx-projected-num" id="ctxProjHome">—</div>
             <div class="ctx-projected-label" id="ctxProjHomeLbl"></div>
           </div>
         </div>
@@ -298,14 +298,14 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <!-- MAIN COLUMN -->
   <main class="game-main">
 
-    <!-- MATCHUP DNA (beat 0 â€” primes the page) -->
+    <!-- MATCHUP DNA (beat 0 — primes the page) -->
     <div class="dna-strip" id="dnaStrip" style="display:none;"></div>
 
     <!-- BEAT 1: WHO WINS (moneyline) -->
     <section class="game-section" id="beat1Section">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">â€” 1 Â· WHO WINS</div>
+          <div class="game-section-eyebrow">— 1 · WHO WINS</div>
           <h2 class="game-section-title">Straight <em>up</em>.</h2>
           <p class="game-section-deck">Five win probabilities against the market's own number.</p>
         </div>
@@ -317,7 +317,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <section class="game-section" id="beat2Section">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">â€” 2 Â· THE MARGIN</div>
+          <div class="game-section-eyebrow">— 2 · THE MARGIN</div>
           <h2 class="game-section-title">Against the <em>spread</em>.</h2>
         </div>
       </header>
@@ -328,7 +328,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <section class="game-section" id="beat3Section">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">â€” 3 Â· THE SHAPE OF THE GAME</div>
+          <div class="game-section-eyebrow">— 3 · THE SHAPE OF THE GAME</div>
           <h2 class="game-section-title">The <em>total</em>.</h2>
         </div>
       </header>
@@ -339,7 +339,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <section class="game-section" id="receiptSection">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">â€” 4 Â· THE RECEIPT</div>
+          <div class="game-section-eyebrow">— 4 · THE RECEIPT</div>
           <h2 class="game-section-title">Show your <em>work</em>.</h2>
           <p class="game-section-deck">Form vs our projections, this pick's paper trail, and every signal's live record.</p>
         </div>
@@ -351,7 +351,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <section class="game-section" id="numbersSection">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">â€” THE NUMBERS</div>
+          <div class="game-section-eyebrow">— THE NUMBERS</div>
           <h2 class="game-section-title">Side <em>by side</em>.</h2>
           <p class="game-section-deck">Where they win, where they don't.</p>
         </div>
@@ -365,7 +365,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <section class="game-section" id="seriesSection" style="display:none;">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">â€” THE SERIES</div>
+          <div class="game-section-eyebrow">— THE SERIES</div>
           <h2 class="game-section-title">Matchup <em>history</em>.</h2>
         </div>
       </header>
@@ -402,7 +402,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <script src="/js/game.js?v=20260905a"></script>
 
 
-<!-- Shared site chrome (nav + footer + auth + disclaimer) â€” single source: /js/site-chrome.js -->
+<!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
 <script src="/js/site-chrome.js" defer></script>
 </body>
 </html>

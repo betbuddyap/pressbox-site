@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Bets â€” PressBox Analytics</title>
-<meta name="description" content="Your real tickets, settled against the final â€” your line, your odds.">
+<title>My Bets — PressBox Analytics</title>
+<meta name="description" content="Your real tickets, settled against the final — your line, your odds.">
 <meta name="robots" content="noindex">
 
 <!-- Favicon -->
@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="/css/components/live-lines.css">
 
 <style>
-  /* â”€â”€ Minimal nav (logo only) â€” site-chrome.js replaces this at runtime â”€â”€ */
+  /* ── Minimal nav (logo only) — site-chrome.js replaces this at runtime ── */
   nav { background: var(--cream); border-bottom: 1px solid var(--border); }
   .nav-inner {
     max-width: var(--max);
@@ -40,7 +40,7 @@
     .nav-logo img { height: 52px; }
   }
 
-  /* â”€â”€ PAGE HEADER (same pattern as Upcoming) â”€â”€ */
+  /* ── PAGE HEADER (same pattern as Upcoming) ── */
   .page-header { background: var(--cream); padding: 48px 0 32px; border-bottom: 1px solid var(--border); }
   .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
   .page-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -52,7 +52,7 @@
   .mb-main { max-width: var(--max); margin: 0 auto; padding: 32px; }
   @media (max-width: 960px) { .mb-main { padding: 20px 16px; } }
 
-  /* â”€â”€ P&L HERO â€” the screenshot card â”€â”€ */
+  /* ── P&L HERO — the screenshot card ── */
   .mb-hero { background: var(--ink); border-radius: 6px; padding: 32px 36px 28px; color: var(--cream); }
   .mb-hero-top { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
   .mb-hero-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold-light); }
@@ -67,13 +67,13 @@
   .mb-stat-value.neg { color: var(--rust-light, var(--rust)); }
   .mb-hero-note { font-family: var(--sans); font-size: 11px; color: rgba(248,245,238,0.45); margin-top: 22px; line-height: 1.5; }
 
-  /* â”€â”€ SECTIONS â”€â”€ */
+  /* ── SECTIONS ── */
   .mb-section { margin-top: 36px; }
   .mb-section-eyebrow { font-family: var(--sans); font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
   .mb-section-title { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 16px; }
   .mb-section-title em { font-style: italic; color: var(--gold); }
 
-  /* â”€â”€ LOG-A-BET FORM â”€â”€ */
+  /* ── LOG-A-BET FORM ── */
   .mb-form { background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 22px; }
   .mb-form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px; }
   @media (max-width: 960px) { .mb-form-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -94,12 +94,12 @@
   .mb-payout-preview { font-family: var(--sans); font-size: 12px; color: var(--text-mid); }
   .mb-payout-preview b { font-weight: 700; color: var(--text); }
 
-  /* â”€â”€ MODE TOGGLE (Single / Parlay) â”€â”€ */
+  /* ── MODE TOGGLE (Single / Parlay) ── */
   .mb-mode { display: inline-flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
   .mb-mode button { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid); background: var(--cream); border: 0; padding: 8px 16px; cursor: pointer; }
   .mb-mode button.active { background: var(--ink); color: var(--cream); }
 
-  /* â”€â”€ PARLAY BUILDER â”€â”€ */
+  /* ── PARLAY BUILDER ── */
   .mb-add-leg { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); background: var(--cream); border: 1px solid var(--border); border-radius: 4px; padding: 12px 20px; cursor: pointer; }
   .mb-add-leg:hover { border-color: var(--gold); }
   #mbParlayPanel { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--border); }
@@ -113,7 +113,7 @@
   .mb-ticket-odds { flex: 0 0 170px; }
   .mb-parlay-hint { font-family: var(--sans); font-size: 11px; color: var(--text-light); padding-bottom: 10px; }
 
-  /* â”€â”€ ALLOCATOR IMPORT â”€â”€ */
+  /* ── ALLOCATOR IMPORT ── */
   .mb-import { background: var(--cream); border: 1px solid var(--gold); border-radius: 6px; padding: 20px 22px; }
   .mb-import-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); }
   .mb-import-hint { font-family: var(--sans); font-size: 11px; color: var(--text-mid); margin: 4px 0 14px; }
@@ -132,7 +132,7 @@
     .mb-imp-spacer { display: none; }
   }
 
-  /* â”€â”€ LEDGER â”€â”€ */
+  /* ── LEDGER ── */
   .mb-week-group { margin-bottom: 26px; }
   .mb-week-head { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; display: flex; justify-content: space-between; }
   .mb-row { display: flex; align-items: center; gap: 14px; padding: 13px 14px; background: var(--cream); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 8px; }
@@ -140,7 +140,7 @@
   .mb-row-mark.win  { color: var(--sage); }
   .mb-row-mark.loss { color: var(--rust); }
   .mb-row-mark.push, .mb-row-mark.pending { color: var(--text-light); font-weight: 400; }
-  /* In-progress: â–²/â–¼ only. âœ“/âœ• stay reserved for settled results so a live
+  /* In-progress: ▲/▼ only. ✓/✕ stay reserved for settled results so a live
      ticket never reads as decided. */
   .mb-row-mark.live-ahead  { color: var(--sage); }
   .mb-row-mark.live-behind { color: var(--rust); }
@@ -166,7 +166,7 @@
      .ll-row-move on every other surface, deliberately: there you're about to
      bet and a market that came our way means the good number is gone (rust);
      here the bet is already down, so a market that came to you means you got
-     the number first (sage). sage/rust are in bounds â€” this is a delta. */
+     the number first (sage). sage/rust are in bounds — this is a delta. */
   .mb-row-move { font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.03em; margin-top: 3px; line-height: 1.3; }
   .mb-row-move--good { color: var(--sage); }
   .mb-row-move--bad  { color: var(--rust); }
@@ -181,16 +181,16 @@
   .mb-row-stake { font-family: var(--sans); font-size: 11px; color: var(--text-light); margin-top: 2px; }
   .mb-row-del { flex: 0 0 auto; background: none; border: 0; color: var(--text-light); font-size: 14px; cursor: pointer; padding: 4px 6px; line-height: 1; }
   .mb-row-del:hover { color: var(--rust); }
-  /* Ledger toolbar â€” book filter only (sort was built and cut: at ~10 rows
+  /* Ledger toolbar — book filter only (sort was built and cut: at ~10 rows
      a week under week headers there is nothing for it to do that a glance
      does not). The filter flows into the hero, so filtered-to-FanDuel the
-     P&L card IS the FanDuel P&L â€” the eyebrow names the book. */
+     P&L card IS the FanDuel P&L — the eyebrow names the book. */
   .mb-ledger-tools { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
   .mb-ledger-tools label { display: flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-mid); }
   .mb-ledger-tools select { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text); background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 6px 9px; }
   .mb-row-editbtn { flex: 0 0 auto; background: none; border: 0; color: var(--text-light); font-size: 13px; cursor: pointer; padding: 4px 6px; line-height: 1; }
   .mb-row-editbtn:hover { color: var(--gold); }
-  /* Inline ticket editor â€” pregame only; numbers and book only (the game,
+  /* Inline ticket editor — pregame only; numbers and book only (the game,
      market and side ARE the bet). */
   .mb-edit { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin: 4px 0 12px; }
   .mb-edit-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 12px; }
@@ -203,7 +203,7 @@
   .mb-edit-msg { font-family: var(--sans); font-size: 12px; color: var(--rust); }
   .mb-empty { font-family: var(--sans); font-size: 13px; color: var(--text-light); padding: 26px 0; text-align: center; }
 
-  /* â”€â”€ AUTH / SUB WALL â”€â”€ */
+  /* ── AUTH / SUB WALL ── */
   .mb-wall { max-width: 520px; margin: 64px auto; background: var(--cream); border: 1px solid var(--border); border-radius: 6px; padding: 40px 36px; text-align: center; }
   .mb-wall h2 { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
   .mb-wall p { font-family: var(--sans); font-size: 14px; font-weight: 300; color: var(--text-mid); line-height: 1.6; margin-bottom: 22px; }
@@ -218,7 +218,7 @@
 
 <body>
 
-<!-- Minimal nav â€” site-chrome.js injects the canonical nav, mobile menu, and footer -->
+<!-- Minimal nav — site-chrome.js injects the canonical nav, mobile menu, and footer -->
 <nav>
   <div class="nav-inner">
     <a href="/" class="nav-logo">
@@ -232,19 +232,19 @@
   <div class="page-header-inner">
     <div class="page-eyebrow">2026 Season</div>
     <h1 class="page-title">My <em>Bets</em></h1>
-    <p class="page-sub">Your real tickets, settled against the final â€” your line, your odds, the same lock-at-kickoff rules the board grades itself by.</p>
+    <p class="page-sub">Your real tickets, settled against the final — your line, your odds, the same lock-at-kickoff rules the board grades itself by.</p>
   </div>
 </div>
 
 <main class="mb-main" id="mb-app">
-  <div class="mb-loading">Loading your ledgerâ€¦</div>
+  <div class="mb-loading">Loading your ledger…</div>
 </main>
 
 <!-- Supabase JS client (loaded BEFORE my-bets.js, which uses it for auth + the ledger) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/my-bets.js?v=20260905a"></script>
 
-<!-- Shared site chrome (nav + footer + auth + disclaimer) â€” single source: /js/site-chrome.js -->
+<!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
 <script src="/js/site-chrome.js" defer></script>
 </body>
 </html>
