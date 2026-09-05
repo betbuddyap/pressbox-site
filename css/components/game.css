@@ -659,6 +659,12 @@
   transition: left 0.6s ease;
 }
 .pg-field-ball.rz { background: var(--rust-light); box-shadow: 0 0 8px rgba(200,90,50,0.8); }
+/* Drive trail — the ground covered on the current drive, behind the ball. */
+.pg-field-drive {
+  position: absolute; top: 50%; height: 5px; transform: translateY(-50%);
+  border-radius: 3px; background: rgba(231,190,77,0.28);
+  pointer-events: none; transition: left 0.6s ease, width 0.6s ease;
+}
 .pg-live-drive {
   font-family: var(--sans); font-size: 12px; font-weight: 600;
   color: rgba(248,245,238,0.75); text-align: center; margin-top: 8px;

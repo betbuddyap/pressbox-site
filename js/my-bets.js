@@ -474,7 +474,13 @@
   }
 
   function sideLabelFor(g, market, side, line) {
-    if (market === 'total') return `${side === 'over' ? 'Over' : 'Under'} ${String(line).replace(/\.0$/, '')}`;
+    // Totals carry the home team in parens — a bare "Over 54.5" says nothing
+    // about which game it belongs to (parlay leg chips especially). Same
+    // convention as the board cards.
+    if (market === 'total') {
+      return `${side === 'over' ? 'Over' : 'Under'} ${String(line).replace(/\.0$/, '')}` +
+             (g && g.home_team ? ` (${g.home_team})` : '');
+    }
     const team = side === 'home' ? g.home_team : g.away_team;
     if (market === 'ml') return `${team} ML`;
     return `${team} ${fmtSignedLine(line)}`;
@@ -630,12 +636,21 @@
     if (b.market === 'total') {
       const tot = hp + ap, line = Number(b.line);
       const diff = +(tot - line).toFixed(1);
+      // Past the number, a total is DECIDED mid-game — points never come
+      // off. Clinched overs wear the settled mark live (Austin, 9/5 —
+      // amends the 8/20 "never settled while live" rule for this one case
+      // where the outcome is a locked fact, not a lead).
+      if (tot > line) {
+        const won = b.side === 'over';
+        return { ahead: won, clinched: true,
+                 text: won ? `Over hit — won, settles at final`
+                           : `Over hit — no path back` };
+      }
       const f = paceFrac(g);
       const proj = f != null ? ` · projects ${Math.round(tot + (1 - f) * line)}` : '';
       if (diff === 0) return { ahead: null, text: `total sitting on ${line}${proj}` };
-      const under = diff < 0;
-      return { ahead: (b.side === 'under') === under,
-               text: `total ${Math.abs(diff)} ${under ? 'under' : 'over'} the number${proj}` };
+      return { ahead: (b.side === 'under'),
+               text: `total ${Math.abs(diff)} under the number${proj}` };
     }
     const weHome = b.side === 'home';
     const ourPts = weHome ? hp : ap, theirPts = weHome ? ap : hp;
@@ -698,6 +713,8 @@
         const g = liveGame(b);
         if (g) {
           const s = standing(b, g);
+          // Clinched totals are decided facts — settled glyphs, live.
+          if (s.clinched) return s.ahead ? ['win', '✓'] : ['loss', '✕'];
           if (s.ahead === true)  return ['live-ahead', '▲'];
           if (s.ahead === false) return ['live-behind', '▼'];
           return ['pending', '–'];
@@ -1198,8 +1215,9 @@
       };
     }
     // Rebuild the label when the line was edited, so the ledger reads true.
+    const homeRef = (r.game_label || '').split(' @ ')[1] || '';
     const side_label = r.market === 'ml' ? `${r.side_team} ML`
-      : r.market === 'total' ? `${r.side === 'over' ? 'Over' : 'Under'} ${String(line).replace(/\.0$/, '')}`
+      : r.market === 'total' ? `${r.side === 'over' ? 'Over' : 'Under'} ${String(line).replace(/\.0$/, '')}${homeRef ? ` (${homeRef})` : ''}`
       : `${r.side_team} ${fmtSignedLine(line)}`;
     return {
       season: SEASON, week: r.week, game_id: r.game_id,

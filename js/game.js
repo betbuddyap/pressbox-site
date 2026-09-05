@@ -361,11 +361,22 @@
     const down = g.current_down;
     const distance = g.current_distance;
     const yardLine = g.current_yard_line;
+    // Yards to the goal the possessing team is attacking. ESPN's yardLine
+    // is 0–100 from the HOME goal line (verified against live games 9/5:
+    // Stanford at their own 20 → 20; Miami at their own 41 → 59). Home
+    // attacks toward 100, away toward 0.
+    const yln = g.current_yard_line_num;
+    const ytg = (yln != null && yln >= 0 && yln <= 100)
+      ? (homeHasBall ? 100 - yln : (awayHasBall ? yln : null))
+      : null;
     let situation = '';
     // down/distance of -1 is ESPN's between-plays sentinel — hide it.
     if (down >= 1 && down <= 4 && distance != null && distance >= 0) {
       const ord = ({1:'1st', 2:'2nd', 3:'3rd', 4:'4th'})[down];
-      const distText = distance === 0 ? 'goal' : distance;
+      // Goal-to-go: the first-down marker sits in the end zone ("1st & 7"
+      // from the opponent 7 is 1st & Goal).
+      const goalToGo = distance === 0 || (ytg != null && distance >= ytg);
+      const distText = goalToGo ? 'Goal' : distance;
       situation = `${ord} & ${distText}`;
       if (yardLine) situation += ` · ${yardLine}`;
     } else if (yardLine) {
@@ -390,18 +401,42 @@
     }
 
     // ── In-game phase 2 furniture ─────────────────────────────────
-    // Field strip: ball at ESPN's 0-100 field coordinate. ORIENTATION:
-    // drawn with 100 at the right; first live game verifies which end
-    // is home — flip FIELD_100_RIGHT_IS_HOME if the ball reads mirrored.
-    const FIELD_100_RIGHT_IS_HOME = true;
+    // Field strip. ESPN's yardLine is 0–100 from the HOME goal line
+    // (calibrated live 9/5, both possessions), and the hero reads
+    // away-left / home-right — so home's end zone is the RIGHT end and
+    // the ball's distance from the LEFT end is 100 − yardLine. The strip
+    // paints its end zones in the outer 9%, so the playing field maps
+    // onto 9%…91% of the strip.
     const wrap = document.getElementById('pgFieldWrap');
     const ballEl = document.getElementById('pgFieldBall');
     const yl = g.current_yard_line_num;
+    const stripPct = (v) => 9 + (Math.max(0, Math.min(100, v)) / 100) * 82;
     if (wrap && ballEl && yl != null && yl >= 0 && yl <= 100) {
       wrap.style.display = '';
-      const x = FIELD_100_RIGHT_IS_HOME ? yl : 100 - yl;
-      ballEl.style.left = `${x}%`;
+      const fieldX = 100 - yl;
+      ballEl.style.left = `${stripPct(fieldX)}%`;
       ballEl.classList.toggle('rz', !!g.is_red_zone);
+      // Drive trail: how far the ball has come on THIS drive (yards parsed
+      // from the drive summary; home advances leftward, away rightward).
+      let seg = document.getElementById('pgFieldDrive');
+      const ym = /(\d+)\s*(?:yards?|yds?)/i.exec(g.drive_summary || '');
+      const yds = ym ? Number(ym[1]) : null;
+      if (yds != null && yds > 0 && (homeHasBall || awayHasBall)) {
+        if (!seg) {
+          seg = document.createElement('div');
+          seg.id = 'pgFieldDrive';
+          seg.className = 'pg-field-drive';
+          ballEl.parentElement.insertBefore(seg, ballEl);
+        }
+        const startX = fieldX + (homeHasBall ? yds : -yds);
+        const a = stripPct(Math.min(fieldX, startX));
+        const b = stripPct(Math.max(fieldX, startX));
+        seg.style.left = `${a}%`;
+        seg.style.width = `${Math.max(0, b - a)}%`;
+        seg.style.display = '';
+      } else if (seg) {
+        seg.style.display = 'none';
+      }
     } else if (wrap) {
       wrap.style.display = 'none';
     }
@@ -612,13 +647,16 @@
     const betsEl = document.getElementById('pgWpBets');
     if (betsEl) {
       const BH = 240;   // same viewBox as the main chart — all three frames identical
-      const band = (title, topLbl, botLbl, topCol, botCol, pts, gradId, nowOverride) => {
+      const band = (title, topLbl, botLbl, topCol, botCol, pts, gradId, nowOverride, nowName) => {
         if (!pts || pts.length < 2) return '';
         const nowP = Math.round((nowOverride != null ? nowOverride : pts[pts.length - 1][1]) * 100);
+        // Same top-right treatment as the win chart: WHO the number belongs
+        // to, not a bare percentage (Austin, live notes 9/5).
+        const nowTxt = nowName ? `${nowName} ${nowP}%` : `${nowP}%`;
         return `<div class="pg-wp-block">
           <div class="pg-wp-head">
             <span class="pg-wp-title">${escape(title)}</span>
-            <span class="pg-wp-now">${nowP}%</span>
+            <span class="pg-wp-now">${escape(nowTxt)}</span>
           </div>
           <div class="pg-wp-frame">
             <span class="pg-wp-teamlbl top">${escape(topLbl)}</span>
@@ -634,13 +672,16 @@
       const spHomeNow = coverPts.length ? coverPts[coverPts.length - 1][1] : null;
       const spPickNow = spHomeNow == null ? null
                       : (spSideHome ? spHomeNow : 1 - spHomeNow);
+      const spPickName = spRel ? (spSideHome ? home : away) : '';
       betsEl.innerHTML =
         band(spRel ? `Spread — ${spRel.side || ''} ${spRel.line || ''}` : '',
              `${home} covers 100%`, `${away} covers 100%`,
-             WASH, WASH, coverPts, 'wpGradSp', spPickNow) +
+             WASH, WASH, coverPts, 'wpGradSp', spPickNow,
+             spPickName ? `${spPickName} covers` : '') +
         band(toRel ? `Total — ${toRel.side || ''} ${toRel.line || ''}` : '',
              `${toUnder ? 'Under' : 'Over'} 100%`, `${toUnder ? 'Over' : 'Under'} 100%`,
-             WASH, WASH, totPts, 'wpGradTot');
+             WASH, WASH, totPts, 'wpGradTot', null,
+             toRel ? (toUnder ? 'Under' : 'Over') : '');
     }
   }
 

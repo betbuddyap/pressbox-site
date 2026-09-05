@@ -142,9 +142,14 @@
   .time-bin { margin-bottom: 22px; }
   .time-bin:last-child { margin-bottom: 0; }
   .time-bin-head { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-mid); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); }
-  .slate-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  /* minmax(0,1fr), not bare 1fr: a bare 1fr track refuses to shrink below
+     its content's min-width, so one nowrap span inside a live card pushed
+     the whole card off the right edge on phones (9/5). min-width:0 +
+     overflow guard on the card complete the chain. */
+  .slate-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .gc.slate { min-width: 0; max-width: 100%; overflow: hidden; }
   @media (max-width: 720px) {
-    .slate-grid { grid-template-columns: 1fr; gap: 10px; }
+    .slate-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
     .date-head-day { font-size: 17px; }
     .time-bin-head { font-size: 9px; letter-spacing: 2px; }
   }
@@ -523,7 +528,7 @@
     gap: 16px;
     padding: 4px 0;
   }
-  .gc-live-team { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .gc-live-team { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
   .gc-live-team.away { align-items: flex-end; }
   .gc-live-team.home { align-items: flex-start; flex-direction: column-reverse; }
   /* Full team names (the 4-char substrings read as random codes), score
@@ -1326,7 +1331,8 @@ function gotwSlot(label, slotData, g, market) {
     } else if (status === 'live' && market && g.away_points != null && g.home_points != null) {
       const perf = computeLivePerf(market, slotData, g.away_points, g.home_points, g.home_team, g.away_team);
       if (perf) {
-        const glyph = ({ win: '▲', loss: '▼', push: '–', pending: '–' })[perf.cls] || '';
+        const glyph = perf.final ? ({ win: '✓', loss: '✗' })[perf.cls] || '–'
+                                 : ({ win: '▲', loss: '▼', push: '–', pending: '–' })[perf.cls] || '';
         mark = `<span class="gc-perf-mark perf-${perf.cls}" title="${perf.label}">${glyph}</span>`;
       }
     }
@@ -2112,7 +2118,8 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
     const perf = hasScores
       ? computeLivePerf(market, slotData, awayPts, homePts, g.home_team, g.away_team)
       : null;
-    const glyph = perf ? ({ win: '▲', loss: '▼', push: '–', pending: '–' })[perf.cls] : '';
+    const glyph = perf ? (perf.final ? ({ win: '✓', loss: '✗' })[perf.cls] || '–'
+                                     : ({ win: '▲', loss: '▼', push: '–', pending: '–' })[perf.cls]) : '';
     const mark = perf
       ? `<span class="gc-perf-mark perf-${perf.cls}" title="${perf.label}">${glyph}</span>`
       : '';
@@ -2317,9 +2324,11 @@ function computeLivePerf(market, slotData, awayPts, homePts, homeTeam, awayTeam)
     const sum = homePts + awayPts;
     const isOver = (side || '').toLowerCase() === 'over';
     // Past the number the Over is a locked fact — points never come off.
+    // `final` renders the settled glyph (✓/✗), not the live lean (▲/▼):
+    // a clinched total IS decided mid-game (Austin, 9/5).
     if (sum > line) {
-      return isOver ? { cls: 'win', label: 'OVER hit' }
-                    : { cls: 'loss', label: 'OVER hit' };
+      return isOver ? { cls: 'win', final: true, label: 'Over — clinched' }
+                    : { cls: 'loss', final: true, label: 'Over hit — clinched loss' };
     }
     if (sum === line) return { cls: 'push', label: 'On the number' };
     // Below the number, read it as it stands — same present-tense
