@@ -726,11 +726,7 @@
   /* Pick slots row — always shows three slots; empty if no pick */
   .gc.slate .gc-picks, .gc.gotw-card .gc-picks {
     display: grid;
-    /* minmax(0,1fr), not bare 1fr: a heavy slot (badge + arrow + trajectory
-       chip) must not GROW its third and shove the whole row off-center —
-       the three tracks stay equal and the block stays centered on the card
-       (Austin, 9/5: "the whole block just needs to scoot slightly left"). */
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 6px;
     padding-top: 10px;
     border-top: 1px solid rgba(248,245,238,0.12);
@@ -739,7 +735,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 0;
     gap: 6px;
     padding: 4px 6px;
     min-height: 24px;
@@ -834,10 +829,6 @@
     line-height: 1;
     white-space: nowrap;
   }
-  /* Trajectory chip rides NEXT TO the badge on one centered row; the
-     equal-track grid above keeps the whole block centered on the card.
-     Chip-active slots just tighten their gap — nothing shrinks or wraps. */
-  .gc.slate .gc-pick-slot:has(.gc-pace) { gap: 4px; }
   .gc-pace.pace-good { color: var(--sage-mid); }
   .gc-pace.pace-bad  { color: var(--rust-light); }
   .gc-pace.pace-even { color: rgba(248,245,238,0.55); }
