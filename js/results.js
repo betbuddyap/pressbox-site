@@ -81,24 +81,54 @@
       </div>`;
   }
 
-  // ── Units accounting ─────────────────────────────────────────────────
-  // ONE FLAT UNIT on every graded pick at its released price (Austin,
-  // 9/5) — the record convention every bettor can check by hand. A win
-  // pays dec−1 units, a loss costs the unit, a push is flat. price_raw
-  // arrives from the feed (spread/total juice, or the ML line itself).
+  // ── Units accounting: the ALLOCATOR'S SHAPE at an average of one unit
+  // per pick (Austin, 9/5). Weights come from the same sizing rule the
+  // allocator sheet runs — ((our_prob − 1/dec) × our_prob)^GAMMA, zero at
+  // no positive edge — and each week's sheet is scaled so it totals one
+  // unit per graded pick: a strong pick carries more than a unit, a thin
+  // one less, and weeks with different slate sizes stay comparable. The
+  // weekly denominators come from the feed's SHEET (every released graded
+  // pick, settled or not) so a half-finished Saturday reads partial volume.
+  const SIZING_GAMMA = 0.50;
   function amToDec(a) {
     const o = Number(a);
     if (!o || !isFinite(o)) return null;
     return o > 0 ? 1 + o / 100 : 1 + 100 / (-o);
   }
+  function deltaWeight(p, dec) {
+    if (!(p > 0) || !(dec > 1)) return 0;
+    const edge = p - 1 / dec;
+    if (!(edge > 0)) return 0;
+    return Math.pow(edge * p, SIZING_GAMMA);
+  }
   function assignStakes() {
+    const totals = new Map();   // week -> Σ weights
+    const counts = new Map();   // week -> graded pick count (= units to hand out)
+    const useSheet = !!(state.sheet && state.sheet.length);
+    if (useSheet) {
+      for (const s of state.sheet) {
+        const wk = s.week ?? 0;
+        totals.set(wk, (totals.get(wk) || 0) + deltaWeight(s.our_prob, amToDec(s.price_raw)));
+        counts.set(wk, (counts.get(wk) || 0) + 1);
+      }
+    }
     for (const g of state.games) for (const p of g.picks) {
-      p.dec = amToDec(p.price_raw) || (p.market !== 'ml' ? amToDec(-110) : null);
+      p.dec = amToDec(p.price_raw);
       const graded = p.tier && p.tier !== 'no_edge';
-      p.stake = graded && p.dec ? 1 : 0;
+      p.weight = (graded && p.our_prob) ? deltaWeight(p.our_prob, p.dec) : 0;
+      if (!useSheet && graded) {
+        const wk = g.week ?? 0;
+        totals.set(wk, (totals.get(wk) || 0) + p.weight);
+        counts.set(wk, (counts.get(wk) || 0) + 1);
+      }
+    }
+    for (const g of state.games) for (const p of g.picks) {
+      const wk = g.week ?? 0;
+      const tot = totals.get(wk) || 0;
+      p.stake = tot > 0 ? (counts.get(wk) || 0) * p.weight / tot : 0;
       p.pnl = !p.stake ? 0
-        : p.result === 'win' ? p.dec - 1
-        : p.result === 'loss' ? -1 : 0;
+        : p.result === 'win' ? p.stake * (p.dec - 1)
+        : p.result === 'loss' ? -p.stake : 0;
     }
   }
 
@@ -201,9 +231,10 @@
             <div class="rs-stat-value">${Math.round(staked)}u</div>
           </div>
         </div>
-        <div class="rs-hero-note">One flat unit on every graded pick at its released
-        number and price, win or lose. Flip the week tabs and pick-type pills and every
-        number above follows.</div>
+        <div class="rs-hero-note">Sized by the allocator's own weights at an average of
+        one unit per pick — a strong pick carries more than a unit, a thin one less —
+        every pick at its released number and price, win or lose. Flip the week tabs and
+        pick-type pills and every number above follows.</div>
       </div>`;
   }
 
