@@ -547,7 +547,14 @@
         _wpFetchedAt = now;
       } catch (e) { _wpTicks = _wpTicks || []; }
     }
-    const ticks = _wpTicks;
+    let ticks = _wpTicks;
+    // Delay junk guard: a weather delay writes dozens of period-less ticks
+    // while ESPN's PREGAME number wobbles (Tulane–Duke: 73 of 159 ticks
+    // pre-kick, 9/5) — plotted by index they become a meaningless flat left
+    // half. Once real-period ticks exist, the chart starts at the first one.
+    if (ticks && ticks.some(t => t.period >= 1)) {
+      ticks = ticks.filter(t => t.period >= 1);
+    }
     if (!ticks || ticks.length < 2) { wrapEl.style.display = 'none'; return; }
     wrapEl.style.display = '';
 
