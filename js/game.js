@@ -686,7 +686,11 @@
     }
     const titleEl = mainFrame && mainFrame.closest('.pg-wp-block')
       ? mainFrame.closest('.pg-wp-block').querySelector('.pg-wp-title') : null;
-    if (titleEl) titleEl.textContent = myMl ? 'YOUR WIN PROBABILITY' : 'LIVE WIN PROBABILITY';
+    // Name the ticket like the band titles do — "YOUR WIN PROBABILITY"
+    // alone didn't say which side was yours (Austin, 9/6).
+    if (titleEl) titleEl.textContent = myMl
+      ? `Your bet — ${myMl.side === 'home' ? home : away} ML`
+      : 'LIVE WIN PROBABILITY';
 
     // ── Per-bet charts: same frame, two named sides. Spread = which TEAM
     //    covers the released line (team colors, picked side on top). Total =
