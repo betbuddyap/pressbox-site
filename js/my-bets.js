@@ -883,6 +883,36 @@
            `${esc(mv.yours)} &rarr; ${esc(mv.now)}</span></div>`;
   }
 
+  // One line per parlay leg while the ticket is in flight (Austin, 9/5:
+  // "when a 3 leg parlay is live, can you show the legs?") — each leg
+  // wears its own glyph + the same standing read a single would show.
+  function parlayLegLineHTML(l) {
+    const g = gamesById[l.game_id];
+    let cls = 'pending', glyph = '–', state = '';
+    if (g && g.home_points != null && g.status === 'final') {
+      const s = standing(l, g);
+      if (s.ahead === true) { cls = 'win'; glyph = '✓'; }
+      else if (s.ahead === false) { cls = 'loss'; glyph = '✕'; }
+      else { cls = 'push'; }
+      state = `Final ${g.away_points}–${g.home_points}`;
+    } else if (g && g.home_points != null && isLiveStatus(g.status)) {
+      const s = standing(l, g);
+      if (s.clinched) { cls = s.ahead ? 'win' : 'loss'; glyph = s.ahead ? '✓' : '✕'; }
+      else if (s.ahead === true) { cls = 'live-ahead'; glyph = '▲'; }
+      else if (s.ahead === false) { cls = 'live-behind'; glyph = '▼'; }
+      state = [clockOf(g), s.text].filter(Boolean).join(' · ');
+    } else {
+      const k = (g && g.start_date) || l.kickoff;
+      if (k) state = fmtKick(k);
+    }
+    return `
+      <div class="mb-parlay-leg">
+        <span class="mb-row-mark mb-leg-mark ${cls}">${glyph}</span>
+        <span class="mb-leg-pick">${esc(displaySideLabel(l))}</span>
+        ${state ? `<span class="mb-leg-state">${esc(state)}</span>` : ''}
+      </div>`;
+  }
+
   function rowHTML(b) {
     const [cls, glyph] = markFor(b);
     const effR = effResult(b);
@@ -919,6 +949,8 @@
         <div class="mb-row-body">
           <div class="mb-row-pick">${esc(displaySideLabel(b))} <span class="mb-odds">${esc(fmtOdds(b.odds))}</span></div>
           <div class="mb-row-sub">${sub}</div>
+          ${b.market === 'parlay' && !settled && parlayStanding(b)
+            ? `<div class="mb-parlay-legs">${(b.legs || []).map(parlayLegLineHTML).join('')}</div>` : ''}
           ${renderMyBetsMove(b)}
         </div>
         <div class="mb-row-money">

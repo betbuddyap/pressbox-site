@@ -144,6 +144,14 @@
      ticket never reads as decided. */
   .mb-row-mark.live-ahead  { color: var(--sage); }
   .mb-row-mark.live-behind { color: var(--rust); }
+  /* Per-leg lines under an in-flight parlay row — the ticket's glyph stays
+     the verdict; each leg gets its own smaller read. */
+  .mb-parlay-legs { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+  .mb-parlay-leg { display: flex; align-items: baseline; gap: 8px;
+                   font-family: var(--sans); font-size: 12.5px; }
+  .mb-leg-mark { width: 14px; font-size: 12px; }
+  .mb-leg-pick { font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .mb-leg-state { color: var(--text-mid); min-width: 0; }
   .mb-live { font-weight: 600; color: var(--text); }
   .mb-live::before {
     content: ''; display: inline-block; width: 6px; height: 6px;
@@ -242,7 +250,7 @@
 
 <!-- Supabase JS client (loaded BEFORE my-bets.js, which uses it for auth + the ledger) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/my-bets.js?v=20260905c"></script>
+<script src="/js/my-bets.js?v=20260905e"></script>
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
 <script src="/js/site-chrome.js" defer></script>
