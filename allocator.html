@@ -389,6 +389,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       render();
       // Parlays load in the background and fill in when ready.
       fetchParlays().then(render).catch(() => {});
+      // The week's still-unplayed game counts — the DENOMINATOR for the
+      // released-parlay minting gate (released games / unplayed games).
+      fetch(`${API_BASE}/games/upcoming?season=${SEASON}`, { credentials: 'omit', headers })
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          if (!j || !j.games) return;
+          const counts = {};
+          for (const g of j.games) {
+            if (g.status !== 'scheduled') continue;
+            counts[g.week] = (counts[g.week] || 0) + 1;
+          }
+          state.weekScheduled = counts;
+          render();
+        })
+        .catch(() => {});
     } catch (e) {
       state.loading = false; state.error = true; render();
     }
@@ -852,23 +867,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     state._relParlayNote = null;
     // Released-view tickets: built HERE from the released legs at released
     // (or your-book) prices — the presets endpoint's tickets are current-
-    // board constructs and don't apply. They only MINT once the week's
-    // board is mostly out (Austin, 9/6: an early-Sunday 4-pick board would
-    // stamp a "Best 3-leg" that's really just the only 3 legs alive) —
-    // gate: 10+ graded releases across 6+ games this week, counted before
-    // the invalidated-drop toggle so toggling can't unmint tickets.
-    const _relPool = state.legs.filter(l =>
-      (state.week == null || l.week === state.week)
-      && l.released && l.released.tier && l.released.tier !== 'no_edge');
-    const _relGames = new Set(_relPool.map(l => l.game_id));
-    const _relReady = _relPool.length >= 10 && _relGames.size >= 6;
+    // board constructs and don't apply. They only MINT once ~90% of the
+    // week's board is out (Austin, 9/6: "10 picks is like 1/3 of a week"
+    // — an early-Sunday board would stamp a Best 3-leg that's really just
+    // release-order trivia). Numerator: unplayed games with ANY released
+    // pick row. Denominator: the week's still-unplayed games. Counted
+    // before the invalidated-drop toggle so toggling can't unmint.
+    const _relGames = new Set(state.legs
+      .filter(l => (state.week == null || l.week === state.week))
+      .map(l => l.game_id));
+    const _schedTotal = (state.weekScheduled || {})[state.week];
+    const _share = (_schedTotal > 0) ? _relGames.size / _schedTotal : null;
+    // No denominator yet (fetch pending/failed) → conservative floor: a
+    // near-full board by absolute size.
+    const _relReady = (_share != null ? _share >= 0.9 : _relGames.size >= 12)
+      && _relGames.size >= 6;
     if (state.boardView === 'released'
         && state.includeParlays && !state.filters.market && !state.filters.tier
         && !_relReady) {
       state._relParlayNote =
-        `Released parlays mint once the week's board is mostly out — `
-        + `${_relPool.length} graded release${_relPool.length === 1 ? '' : 's'} `
-        + `across ${_relGames.size} game${_relGames.size === 1 ? '' : 's'} so far.`;
+        `Released parlays mint once ~90% of the week's board is out — `
+        + `${_relGames.size} of ${_schedTotal || '?'} unplayed game${_relGames.size === 1 ? '' : 's'} released so far.`;
     }
     if (state.boardView === 'released' && _relReady
         && state.includeParlays && !state.filters.market && !state.filters.tier) {
