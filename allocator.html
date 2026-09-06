@@ -546,12 +546,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     return !!(mv && mv.moved && mv.adverse);
   }
   // The leg AS RELEASED — grade, side, line, price, book of record.
+  // With a single book selected: the released GRADE and probability stand
+  // (the doctrine), payable at that book's CURRENT number — the movement
+  // chip then reads released → your book. Legs the book doesn't post
+  // drop (same as current view); so do side-flipped legs, because the
+  // payload only carries the book's juice for the board's current side
+  // and pricing the other side would be a guess.
   function releasedView(raw) {
     const r = raw.released;
     if (!r || !r.tier || r.tier === 'no_edge') return null;
     if (!(r.our_prob > 0) || !(r.decimal_odds > 1)) return null;
     if (state.dropInvalidated && invalidatedAdversely(raw)) return null;
-    return { ...raw,
+    const base = { ...raw,
       tier: r.tier, bolt: false,
       side: r.side, side_raw: r.side_raw,
       line: r.line, line_raw: r.line_raw,
@@ -559,6 +565,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       our_prob: r.our_prob, edge: null,
       book: r.book, line_move: null, other_books: [],
       _relMove: relMove(raw) };
+    if (!state.book) return base;
+    if (String(raw.side_raw) !== String(r.side_raw)) return null;   // flipped
+    const e = (raw.other_books || []).find(b => b.book && b.book.name === state.book);
+    if (!e) return null;                                            // book doesn't post it
+    const px = (e.price != null) ? e.price
+             : (raw.market === 'ml' ? e.line_raw : -110);
+    const dec = amToDec(px);
+    if (!(dec > 1)) return null;
+    const probe = { market: raw.market, side_raw: r.side_raw,
+                    line_raw: e.line_raw, price_american: px,
+                    released: r };
+    return { ...base,
+      line: e.line, line_raw: e.line_raw,
+      price_american: (raw.market === 'ml' ? e.line_raw : px),
+      decimal_odds: dec,
+      book: { name: state.book, url: (e.book && e.book.url) || null },
+      _relMove: relMove(probe) };
   }
   function renderRelMove(mv) {
     if (!mv || !mv.moved) return '';
@@ -883,6 +906,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           </button>
           <p class="al-hint" style="margin-top:var(--space-1);">Hides only picks whose line moved AGAINST the
           release far enough that the grade no longer holds at today's number.</p>
+          <label class="al-field-label" for="al-book" style="margin-top:var(--space-4);">Your sportsbook</label>
+          <select class="al-input" id="al-book" aria-label="Pay the released picks at one sportsbook's current lines">
+            <option value="">Book of record — as released</option>
+            ${allBookNames().filter(n => !state.excluded.has(n)).map(n =>
+              `<option value="${esc(n)}"${state.book === n ? ' selected' : ''}>${esc(n)}</option>`).join('')}
+          </select>
+          ${state.book ? `<p class="al-hint" style="margin-top:var(--space-2);">Released grades and probabilities,
+          payable at ${esc(state.book)}’s current lines — each row shows released → ${esc(state.book)}.
+          Picks ${esc(state.book)} doesn’t post are hidden.</p>` : ''}
           ` : `
           <button type="button" class="al-toggle${state.includeParlays ? ' active' : ''}"
                   data-action="toggle-parlays" role="switch"
