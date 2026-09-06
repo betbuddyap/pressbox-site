@@ -592,6 +592,45 @@ document.addEventListener('DOMContentLoaded', async () => {
            `<span class="ll-row-move-nums">${esc(mv.txt)}</span></div>`;
   }
 
+  // Released-view tickets: the SAME Best/Longshot construction the sheet's
+  // parlays use (rank p·dec / p·dec², one leg per game, three legs),
+  // built from the released legs at released prices.
+  function releasedParlays(legs) {
+    const pick3 = (ranked) => {
+      const out = [], used = new Set();
+      for (const l of ranked) {
+        if (used.has(l.game_id)) continue;
+        used.add(l.game_id);
+        out.push(l);
+        if (out.length === 3) break;
+      }
+      return out;
+    };
+    const decAm = (dec) => (dec >= 2
+      ? Math.round((dec - 1) * 100) : -Math.round(100 / (dec - 1)));
+    const mk = (name, ls) => {
+      if (ls.length < 3) return null;
+      let p = 1, dec = 1;
+      for (const l of ls) { p *= l.our_prob; dec *= l.decimal_odds; }
+      return { name, legs: ls, our_prob: p, decimal_odds: dec,
+               price_american: decAm(dec), leg_count: ls.length,
+               week: ls[0].week, book: null, edge: null };
+    };
+    const best = mk('Best 3-leg',
+      pick3(legs.slice().sort((a, b) => b.our_prob * b.decimal_odds - a.our_prob * a.decimal_odds)));
+    const lon = mk('Longshot 3-leg',
+      pick3(legs.slice().sort((a, b) => b.our_prob * b.decimal_odds ** 2 - a.our_prob * a.decimal_odds ** 2)));
+    const out = [], seen = new Set();
+    for (const t of [best, lon]) {
+      if (!t) continue;
+      const sig = t.legs.map(l => `${l.game_id}|${l.market}`).sort().join(',');
+      if (seen.has(sig)) continue;
+      seen.add(sig);
+      out.push(t);
+    }
+    return out;
+  }
+
   // ── Delta sizing, compressed (Austin's spec, 2026-08-19b) ───────────
   //   weight = ((p − the % to clear) × p) ^ SIZING_GAMMA
   //
@@ -768,13 +807,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // toward the bigger payouts among the +edge set).
     const cand = [];
     const released = state.boardView === 'released';
+    const relLegs = [];   // the released legs that made the sheet — ticket pool
     for (const raw of state.legs) {
       // Released view reshapes FIRST so the tier pills filter on the
-      // RELEASED grade; single-book re-shopping is a current-board idea
-      // (the released book IS the book of record) and doesn't apply.
+      // RELEASED grade; a selected book re-prices the payout at its
+      // current line while the released grade/probability stand.
       const leg = released ? releasedView(raw) : (matchesFilters(raw) ? bookView(raw) : null);
       if (!leg) continue;
       if (released && !matchesFilters(leg)) continue;
+      if (released) relLegs.push(leg);
       const p = sizingProb(leg), dec = leg.decimal_odds;
       if (!(p > 0) || !(dec > 1)) continue;
       const f = deltaWeight(p, dec);
@@ -806,8 +847,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     // whole-season pool (61) — the per-week sheet is what the page renders,
     // and it is where parlays surface.
     state._droppedParlays = [];
-    // Parlays are current-board constructs (built and priced from today's
-    // sheet) — the released view shows straights only.
+    // Released-view tickets: built HERE from the released legs at released
+    // (or your-book) prices — the presets endpoint's tickets are current-
+    // board constructs and don't apply.
+    if (state.boardView === 'released'
+        && state.includeParlays && !state.filters.market && !state.filters.tier) {
+      for (const pl of releasedParlays(relLegs)) {
+        const p = pl.our_prob, dec = pl.decimal_odds;
+        if (!(p > 0) || !(dec > 1)) continue;
+        const f = deltaWeight(p, dec) * p;   // cash-frequency, post-compression
+        if (!(f > 0)) continue;
+        cand.push({ item: pl, is_parlay: true, p, dec,
+                    weight: f * Math.pow(dec, beta),
+                    edge: null, ev: (p * dec - 1) });
+      }
+    }
     if (state.boardView === 'current'
         && state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const rawPl of state.parlays) {
@@ -898,14 +952,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           book — the board of record, since games release at different times and the full
           release board never sits on the site at once. A line moving your way never
           touches the grade; it just made the entry better.</p>
-          <button type="button" class="al-toggle${state.dropInvalidated ? ' active' : ''}"
-                  data-action="toggle-dropinv" role="switch"
-                  aria-checked="${state.dropInvalidated ? 'true' : 'false'}">
+          <button type="button" class="al-toggle${state.includeParlays ? ' active' : ''}"
+                  data-action="toggle-parlays" role="switch"
+                  aria-checked="${state.includeParlays ? 'true' : 'false'}">
             <span class="al-toggle-box" aria-hidden="true"></span>
-            Drop picks the market invalidated
+            Roll in a parlay or two
           </button>
-          <p class="al-hint" style="margin-top:var(--space-1);">Hides only picks whose line moved AGAINST the
-          release far enough that the grade no longer holds at today's number.</p>
           <label class="al-field-label" for="al-book" style="margin-top:var(--space-4);">Your sportsbook</label>
           <select class="al-input" id="al-book" aria-label="Pay the released picks at one sportsbook's current lines">
             <option value="">Book of record — as released</option>
@@ -935,6 +987,16 @@ document.addEventListener('DOMContentLoaded', async () => {
           <label class="al-field-label">Weighting</label>
           <div class="al-frac">${presetPills}</div>
           <p class="al-hint">${esc(currentPreset().blurb)}</p>
+          ${state.boardView === 'released' ? `
+          <button type="button" class="al-toggle${state.dropInvalidated ? ' active' : ''}"
+                  data-action="toggle-dropinv" role="switch"
+                  aria-checked="${state.dropInvalidated ? 'true' : 'false'}"
+                  style="margin-top:var(--space-4);">
+            <span class="al-toggle-box" aria-hidden="true"></span>
+            Drop picks the market invalidated
+          </button>
+          <p class="al-hint" style="margin-top:var(--space-1);">Hides only picks whose line moved AGAINST the
+          release far enough that the grade no longer holds at today's number.</p>` : ''}
         </div>
         ${(state.book || state.boardView === 'released') ? '' : `
         <div class="al-books-excl">
