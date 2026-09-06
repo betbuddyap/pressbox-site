@@ -1701,10 +1701,15 @@ function selectGameOfWeek(games) {
       return (bCombined - bDiff * 2) - (aCombined - aDiff * 2);
     })[0];
   }
+  // STRAIGHTFORWARD (Austin, 9/6): the biggest names win, not the closest
+  // spread — #1 vs #14 IS the game of the week even when #10 vs #12
+  // projects tighter. Lowest combined ranking first; the projected margin
+  // only breaks ties.
   return ranked.sort((a, b) => {
+    const sum = (g) => powerRankings[g.home_team] + powerRankings[g.away_team];
     const aMargin = Math.abs((teamScores[a.home_team] || 0) - (teamScores[a.away_team] || 0));
     const bMargin = Math.abs((teamScores[b.home_team] || 0) - (teamScores[b.away_team] || 0));
-    return aMargin - bMargin;
+    return (sum(a) - sum(b)) || (aMargin - bMargin);
   })[0];
 }
 
