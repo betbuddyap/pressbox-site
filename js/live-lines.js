@@ -407,21 +407,26 @@
   function renderFilters() {
     const f = state.filters;
     const on = (v) => `class="ll-filter-pill${v ? ' active' : ''}" aria-pressed="${v ? 'true' : 'false'}"`;
+    // "Graded" = the C/B/A/A+ set in one tap (hides no-edge rows).
+    const gradedOn = ['C', 'B', 'A', 'A+'].every(t => f.tiers.has(t)) && !f.tiers.has('no_edge');
     return `
-      <div class="ll-filters" role="group" aria-label="Filter picks by bet type">
-        <span class="ll-filter-label">Bet Type</span>
-        <button ${on(!f.markets.size)} data-filter="all">All</button>
-        <button ${on(f.markets.has('spread'))} data-filter="spread">Spread</button>
-        <button ${on(f.markets.has('total'))} data-filter="total">Total</button>
-        <button ${on(f.markets.has('ml'))} data-filter="ml">Moneyline</button>
-      </div>
-      <div class="ll-filters" role="group" aria-label="Filter picks by grade">
-        <span class="ll-filter-label">Grade</span>
-        <button ${on(f.tiers.has('no_edge'))} data-filter="tier:no_edge">NE</button>
-        <button ${on(f.tiers.has('C'))} data-filter="tier:C">C</button>
-        <button ${on(f.tiers.has('B'))} data-filter="tier:B">B</button>
-        <button ${on(f.tiers.has('A'))} data-filter="tier:A">A</button>
-        <button ${on(f.tiers.has('A+'))} data-filter="tier:A+">A+</button>
+      <div class="ll-filters-bar">
+        <div class="ll-filters" role="group" aria-label="Filter picks by bet type">
+          <span class="ll-filter-label">Bet Type</span>
+          <button ${on(!f.markets.size)} data-filter="all">All</button>
+          <button ${on(f.markets.has('spread'))} data-filter="spread">Spread</button>
+          <button ${on(f.markets.has('total'))} data-filter="total">Total</button>
+          <button ${on(f.markets.has('ml'))} data-filter="ml">Moneyline</button>
+        </div>
+        <div class="ll-filters" role="group" aria-label="Filter picks by grade">
+          <span class="ll-filter-label">Grade</span>
+          <button ${on(gradedOn)} data-filter="graded">Graded</button>
+          <button ${on(f.tiers.has('no_edge'))} data-filter="tier:no_edge">NE</button>
+          <button ${on(f.tiers.has('C'))} data-filter="tier:C">C</button>
+          <button ${on(f.tiers.has('B'))} data-filter="tier:B">B</button>
+          <button ${on(f.tiers.has('A'))} data-filter="tier:A">A</button>
+          <button ${on(f.tiers.has('A+'))} data-filter="tier:A+">A+</button>
+        </div>
       </div>
     `;
   }
@@ -1067,20 +1072,23 @@
         </p>
       </header>
 
-      <div class="ll-filters" aria-hidden="true" style="pointer-events:none;">
-        <span class="ll-filter-label">Bet Type</span>
-        <button class="ll-filter-pill" aria-pressed="true">All</button>
-        <button class="ll-filter-pill" aria-pressed="false">Spread</button>
-        <button class="ll-filter-pill" aria-pressed="false">Total</button>
-        <button class="ll-filter-pill" aria-pressed="false">Moneyline</button>
-      </div>
-      <div class="ll-filters" aria-hidden="true" style="pointer-events:none;">
-        <span class="ll-filter-label">Grade</span>
-        <button class="ll-filter-pill" aria-pressed="false">NE</button>
-        <button class="ll-filter-pill" aria-pressed="false">C</button>
-        <button class="ll-filter-pill" aria-pressed="false">B</button>
-        <button class="ll-filter-pill" aria-pressed="false">A</button>
-        <button class="ll-filter-pill" aria-pressed="false">A+</button>
+      <div class="ll-filters-bar" aria-hidden="true" style="pointer-events:none;">
+        <div class="ll-filters">
+          <span class="ll-filter-label">Bet Type</span>
+          <button class="ll-filter-pill" aria-pressed="true">All</button>
+          <button class="ll-filter-pill" aria-pressed="false">Spread</button>
+          <button class="ll-filter-pill" aria-pressed="false">Total</button>
+          <button class="ll-filter-pill" aria-pressed="false">Moneyline</button>
+        </div>
+        <div class="ll-filters">
+          <span class="ll-filter-label">Grade</span>
+          <button class="ll-filter-pill" aria-pressed="false">Graded</button>
+          <button class="ll-filter-pill" aria-pressed="false">NE</button>
+          <button class="ll-filter-pill" aria-pressed="false">C</button>
+          <button class="ll-filter-pill" aria-pressed="false">B</button>
+          <button class="ll-filter-pill" aria-pressed="false">A</button>
+          <button class="ll-filter-pill" aria-pressed="false">A+</button>
+        </div>
       </div>
 
       <div class="ll-paywall-blur">
@@ -1193,6 +1201,11 @@
         const f = btn.getAttribute('data-filter');
         if (f === 'all') {
           state.filters.markets.clear();
+        } else if (f === 'graded') {
+          const t = state.filters.tiers;
+          const isOn = ['C', 'B', 'A', 'A+'].every(x => t.has(x)) && !t.has('no_edge');
+          t.clear();
+          if (!isOn) ['C', 'B', 'A', 'A+'].forEach(x => t.add(x));
         } else if (f.startsWith('tier:')) {
           const t = f.slice(5);
           state.filters.tiers.has(t)

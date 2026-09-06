@@ -24,7 +24,10 @@
 
   const state = {
     games: [], weeks: [], week: null, record: {},
-    filters: { market: null, tier: null },
+    // Two multi-select groups (Austin, 9/5): bet type AND grade, several
+    // of each. Empty markets = all markets; empty tiers = all GRADED
+    // (no-edge transparency rows appear only when NE is selected).
+    filters: { markets: new Set(), tiers: new Set() },
     loading: true, error: false,
   };
 
@@ -167,17 +170,22 @@
       `<button type="button" class="ll-filter-pill${active ? ' active' : ''}" data-filter="${key}"
                aria-pressed="${active ? 'true' : 'false'}">${label}</button>`;
     return `
-      <div class="ll-filters" style="margin-bottom:var(--space-4);">
-        <span class="ll-filter-label">Pick Type</span>
-        ${pill('all', 'All', !f.market && !f.tier)}
-        ${pill('spread', 'Spread', f.market === 'spread')}
-        ${pill('total', 'Total', f.market === 'total')}
-        ${pill('ml', 'Moneyline', f.market === 'ml')}
-        ${pill('tier:A+', 'A+', f.tier === 'A+')}
-        ${pill('tier:A', 'A', f.tier === 'A')}
-        ${pill('tier:B', 'B', f.tier === 'B')}
-        ${pill('tier:C', 'C', f.tier === 'C')}
-        ${pill('tier:no_edge', 'No Edge', f.tier === 'no_edge')}
+      <div class="ll-filters-bar" style="margin-bottom:var(--space-4);">
+        <div class="ll-filters" role="group" aria-label="Filter by bet type">
+          <span class="ll-filter-label">Bet Type</span>
+          ${pill('all', 'All', !f.markets.size)}
+          ${pill('spread', 'Spread', f.markets.has('spread'))}
+          ${pill('total', 'Total', f.markets.has('total'))}
+          ${pill('ml', 'Moneyline', f.markets.has('ml'))}
+        </div>
+        <div class="ll-filters" role="group" aria-label="Filter by grade">
+          <span class="ll-filter-label">Grade</span>
+          ${pill('tier:no_edge', 'NE', f.tiers.has('no_edge'))}
+          ${pill('tier:C', 'C', f.tiers.has('C'))}
+          ${pill('tier:B', 'B', f.tiers.has('B'))}
+          ${pill('tier:A', 'A', f.tiers.has('A'))}
+          ${pill('tier:A+', 'A+', f.tiers.has('A+'))}
+        </div>
       </div>`;
   }
 
@@ -187,32 +195,35 @@
   // never bets: no record, no stake.
   function heroHTML() {
     const f = state.filters;
-    // No Edge view: keep the hero, run the transparency ledger at a FLAT
-    // unit on the blend's side (Austin, 9/5) — never the allocator's
-    // sheet, because these were never bets.
-    const neMode = f.tier === 'no_edge';
-    let w = 0, l = 0, pu = 0, pnl = 0, staked = 0;
+    // Graded rows count at their allocator stake; NE rows (visible only
+    // when the NE pill is on) run the transparency ledger at a FLAT unit
+    // on the blend's side — never the allocator's sheet (Austin, 9/5).
+    let w = 0, l = 0, pu = 0, pnl = 0, staked = 0, anyNe = false, anyGraded = false;
     for (const g of state.games) {
       if (state.week != null && g.week !== state.week) continue;
       for (const p of g.picks) {
         if (!matchesFilters(p)) continue;
-        if (neMode ? p.tier !== 'no_edge' : (!p.tier || p.tier === 'no_edge')) continue;
-        if (neMode && !p.dec) continue;   // unpriceable row — skip, never guess
+        const isNe = !p.tier || p.tier === 'no_edge';
+        if (isNe && !p.dec) continue;   // unpriceable row — skip, never guess
         if (p.result === 'win') w++;
         else if (p.result === 'loss') l++;
         else if (p.result === 'push') pu++;
-        if (neMode) {
+        if (isNe) {
+          anyNe = true;
           staked += 1;
           pnl += p.result === 'win' ? p.dec - 1 : p.result === 'loss' ? -1 : 0;
         } else {
+          anyGraded = true;
           pnl += p.pnl || 0;
           staked += p.stake || 0;
         }
       }
     }
     if (!(w + l + pu)) return '';
-    const slice = f.tier ? (f.tier === 'no_edge' ? 'No Edge' : f.tier)
-      : f.market ? marketLabel(f.market) : null;
+    const mTxt = f.markets.size ? [...f.markets].map(marketLabel).join(' + ') : null;
+    const tTxt = f.tiers.size
+      ? [...f.tiers].map(t => t === 'no_edge' ? 'NE' : t).join(' + ') : null;
+    const slice = [mTxt, tTxt].filter(Boolean).join(' · ') || null;
     const scopeLabel = state.week == null ? `${SEASON} season` : weekLabel(state.week);
     const units = (v) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(1)}u`;
     const netCls = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : '';
@@ -241,24 +252,28 @@
             <div class="rs-stat-value">${Math.round(staked)}u</div>
           </div>
         </div>
-        <div class="rs-hero-note">${neMode
+        <div class="rs-hero-note">${anyNe && !anyGraded
           ? `The verdicts we didn't bet — No Edge rows run at a flat unit on the blend's
              side, for transparency. They never touch the record or the allocator's sheet.`
+          : anyNe
+          ? `Graded picks at the allocator's weights (averaging one unit per pick);
+             the NE rows mixed in run at a flat unit each — transparency, not record.`
           : `Sized by the allocator's own weights at an average of one unit per pick — a
              strong pick carries more than a unit, a thin one less — every pick at its
-             released number and price, win or lose. Flip the week tabs and pick-type
-             pills and every number above follows.`}</div>
+             released number and price, win or lose. Flip the week tabs and the pills
+             and every number above follows.`}</div>
       </div>`;
   }
 
   // Graded picks are the page (Austin, 9/5: "default to only show graded").
-  // No-edge verdicts stay reachable behind their own pill.
+  // No-edge verdicts stay reachable via the NE grade pill. Union inside a
+  // group, intersection across groups.
   function matchesFilters(p) {
     const f = state.filters;
-    if (f.tier) return p.tier === f.tier;
-    const graded = !!p.tier && p.tier !== 'no_edge';
-    if (f.market) return graded && p.market === f.market;
-    return graded;
+    if (f.markets.size && !f.markets.has(p.market)) return false;
+    const t = (!p.tier || p.tier === 'no_edge') ? 'no_edge' : p.tier;
+    if (f.tiers.size) return f.tiers.has(t);
+    return t !== 'no_edge';
   }
 
   function render() {
@@ -348,12 +363,13 @@
     const pill = e.target.closest('.ll-filter-pill');
     if (pill) {
       const key = pill.dataset.filter;
-      if (key === 'all') state.filters = { market: null, tier: null };
+      const f = state.filters;
+      if (key === 'all') f.markets.clear();
       else if (key.startsWith('tier:')) {
         const t = key.slice(5);
-        state.filters = { market: null, tier: state.filters.tier === t ? null : t };
+        f.tiers.has(t) ? f.tiers.delete(t) : f.tiers.add(t);
       } else {
-        state.filters = { market: state.filters.market === key ? null : key, tier: null };
+        f.markets.has(key) ? f.markets.delete(key) : f.markets.add(key);
       }
       render();
     }

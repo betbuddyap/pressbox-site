@@ -188,6 +188,20 @@
   }
 }
 
+/* Bet Type + Grade share ONE line on desktop (Austin, 9/5) and stack only
+   when the width forces it. Inside the bar each group loses its block
+   padding so the pair reads as one toolbar. */
+.ll-filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--space-6);
+  row-gap: var(--space-2);
+}
+@media (min-width: 768px) {
+  .ll-filters-bar .ll-filters { padding-top: var(--space-2); padding-bottom: var(--space-2); }
+}
+
 .ll-filter-label {
   font-size: var(--text-eyebrow);
   font-weight: var(--weight-semi);
