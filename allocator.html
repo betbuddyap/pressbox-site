@@ -608,15 +608,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       our_prob: r.our_prob, edge: null,
       book: best ? { name: best.name, url: best.url } : r.book,
       line_move: null, other_books: [],
-      _relMove: relMove(raw) };
+      _relMove: isMl ? mlPayMove(r.price_american, am) : relMove(raw) };
   }
   function renderRelMove(mv) {
     if (!mv || !mv.moved) return '';
     const cls = mv.adverse ? 'away' : 'toward';
-    const label = mv.bare ? '' : (mv.adverse
-      ? 'moved against the release · ' : 'better than the release · ');
+    const label = mv.bare ? '' : (mv.label
+      || (mv.adverse ? 'moved against the release · ' : 'better than the release · '));
     return `<div class="ll-row-move ll-row-move--${cls}">${label}` +
            `<span class="ll-row-move-nums">${esc(mv.txt)}</span></div>`;
+  }
+
+  // ML chips compare the released price to THE PRICE ON THE ROW (what you
+  // can actually bet) and speak payout language — the market-direction
+  // read confused three numbers onto one row (Missouri −225 · −238 → −245,
+  // Austin 9/7). Display only: the invalidation predicate stays the
+  // market-direction relMove.
+  function mlPayMove(relAm, nowAm) {
+    const a = Number(relAm), b = Number(nowAm);
+    if (!isFinite(a) || !isFinite(b)) return null;
+    if (a === b) return { moved: false };
+    const dec = (x) => (x > 0 ? 1 + x / 100 : 1 + 100 / (-x));
+    const better = dec(b) > dec(a);
+    return { txt: `${fmtSigned(a)} → ${fmtSigned(b)}`, moved: true,
+             adverse: !better,
+             label: better ? 'pays better than the release · '
+                           : 'pays worse than the release · ' };
   }
 
   // Released-view tickets: the SAME Best/Longshot construction the sheet's
@@ -801,8 +818,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   function bookView(leg) {
     if (state.book) return legAtBook(leg, state.book);
-    if (state.excluded.size) return bestAllowedLeg(leg);
-    return leg;
+    // ALWAYS shop (Austin, 9/7: released best price and current best
+    // price, nothing else). The payload's headline quote is the regrade's
+    // credited book, which can trail the live best between cycles — the
+    // label says best line, so the row shops it. Legs with no book list
+    // keep the endpoint quote rather than dropping.
+    return bestAllowedLeg(leg) || leg;
   }
   function parlayView(pl) {
     if (state.book) {
@@ -1266,7 +1287,18 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
             <div class="ll-row-pick">${pickText(leg)}</div>
-            ${state.boardView === 'released' ? renderRelMove(leg._relMove) : renderLineMove(leg.line_move)}
+            ${(() => {
+              // ONE chip language on both views: released \u2192 the price on
+              // THIS row. The journal's tracked-quote marker is gone from
+              // the allocator (it printed numbers no row was selling).
+              const mv = leg._relMove !== undefined ? leg._relMove
+                : (leg.released
+                    ? (leg.market === 'ml'
+                        ? mlPayMove(leg.released.price_american, leg.price_american)
+                        : relMove(leg))
+                    : null);
+              return mv ? renderRelMove(mv) : '';
+            })()}
           </div>
           <div class="al-metrics">
             <div class="al-metric"><span class="al-metric-k">Win prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
