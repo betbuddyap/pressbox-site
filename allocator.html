@@ -545,43 +545,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mv = relMove(raw);
     return !!(mv && mv.moved && mv.adverse);
   }
-  // The leg AS RELEASED — grade, side, line, price, book of record.
-  // With a single book selected: the released GRADE and probability stand
-  // (the doctrine), payable at that book's CURRENT number — the movement
-  // chip then reads released → your book. Legs the book doesn't post
-  // drop (same as current view); so do side-flipped legs, because the
-  // payload only carries the book's juice for the board's current side
-  // and pricing the other side would be a guess.
+  // The leg AS RELEASED — the released GRADE, probability, and LINE stand
+  // (the doctrine); the PRICE is today's (Austin, 9/6: "use the released
+  // line and best available current from those books"): a chosen book =
+  // that book's current juice, all-books = the best current juice among
+  // the non-excluded books, and the released price stands when nobody
+  // prices it (board side flipped, or no book posting). Same controls,
+  // same exclusion semantics, as the current view.
   function releasedView(raw) {
     const r = raw.released;
     if (!r || !r.tier || r.tier === 'no_edge') return null;
     if (!(r.our_prob > 0) || !(r.decimal_odds > 1)) return null;
     if (state.dropInvalidated && invalidatedAdversely(raw)) return null;
-    const base = { ...raw,
+    let best = null;
+    if (String(raw.side_raw) === String(r.side_raw)) {
+      for (const e of (raw.other_books || [])) {
+        const name = e.book && e.book.name;
+        if (!name) continue;
+        if (state.book ? name !== state.book : state.excluded.has(name)) continue;
+        const am = (e.price != null) ? e.price
+                 : (raw.market === 'ml' ? e.line_raw : null);
+        const d = amToDec(am);
+        if (!(d > 1)) continue;
+        if (!best || d > best.d) best = { d, am, name, url: (e.book && e.book.url) || null };
+      }
+    }
+    if (state.book && !best) return null;    // chosen book doesn't post it
+    const dec = best ? best.d : r.decimal_odds;
+    const am = best ? best.am : r.price_american;
+    const isMl = raw.market === 'ml';
+    return { ...raw,
       tier: r.tier, bolt: false,
       side: r.side, side_raw: r.side_raw,
-      line: r.line, line_raw: r.line_raw,
-      price_american: r.price_american, decimal_odds: r.decimal_odds,
+      line: (isMl && best) ? fmtSigned(am) : r.line,
+      line_raw: (isMl && best) ? am : r.line_raw,
+      price_american: am, decimal_odds: dec,
       our_prob: r.our_prob, edge: null,
-      book: r.book, line_move: null, other_books: [],
+      book: best ? { name: best.name, url: best.url } : r.book,
+      line_move: null, other_books: [],
       _relMove: relMove(raw) };
-    if (!state.book) return base;
-    if (String(raw.side_raw) !== String(r.side_raw)) return null;   // flipped
-    const e = (raw.other_books || []).find(b => b.book && b.book.name === state.book);
-    if (!e) return null;                                            // book doesn't post it
-    const px = (e.price != null) ? e.price
-             : (raw.market === 'ml' ? e.line_raw : -110);
-    const dec = amToDec(px);
-    if (!(dec > 1)) return null;
-    const probe = { market: raw.market, side_raw: r.side_raw,
-                    line_raw: e.line_raw, price_american: px,
-                    released: r };
-    return { ...base,
-      line: e.line, line_raw: e.line_raw,
-      price_american: (raw.market === 'ml' ? e.line_raw : px),
-      decimal_odds: dec,
-      book: { name: state.book, url: (e.book && e.book.url) || null },
-      _relMove: relMove(probe) };
   }
   function renderRelMove(mv) {
     if (!mv || !mv.moved) return '';
@@ -948,26 +950,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     data-view="released" aria-pressed="${state.boardView === 'released' ? 'true' : 'false'}">As released</button>
           </div>
           ${state.boardView === 'released' ? `
-          <p class="al-hint" style="margin-top:var(--space-2);">Every pick at its released grade, line, price, and
-          book — the board of record, since games release at different times and the full
-          release board never sits on the site at once. A line moving your way never
-          touches the grade; it just made the entry better.</p>
-          <button type="button" class="al-toggle${state.includeParlays ? ' active' : ''}"
-                  data-action="toggle-parlays" role="switch"
-                  aria-checked="${state.includeParlays ? 'true' : 'false'}">
-            <span class="al-toggle-box" aria-hidden="true"></span>
-            Roll in a parlay or two
-          </button>
-          <label class="al-field-label" for="al-book" style="margin-top:var(--space-4);">Your sportsbook</label>
-          <select class="al-input" id="al-book" aria-label="Pay the released picks at one sportsbook's current lines">
-            <option value="">Book of record — as released</option>
-            ${allBookNames().filter(n => !state.excluded.has(n)).map(n =>
-              `<option value="${esc(n)}"${state.book === n ? ' selected' : ''}>${esc(n)}</option>`).join('')}
-          </select>
-          ${state.book ? `<p class="al-hint" style="margin-top:var(--space-2);">Released grades and probabilities,
-          payable at ${esc(state.book)}’s current lines — each row shows released → ${esc(state.book)}.
-          Picks ${esc(state.book)} doesn’t post are hidden.</p>` : ''}
-          ` : `
+          <p class="al-hint" style="margin-top:var(--space-2);">Every pick at its released grade and line — the
+          board of record — priced at the best juice available right now. A line moving
+          your way never touches the grade; it just made the entry better.</p>` : ''}
           <button type="button" class="al-toggle${state.includeParlays ? ' active' : ''}"
                   data-action="toggle-parlays" role="switch"
                   aria-checked="${state.includeParlays ? 'true' : 'false'}">
@@ -980,8 +965,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${allBookNames().filter(n => !state.excluded.has(n)).map(n =>
               `<option value="${esc(n)}"${state.book === n ? ' selected' : ''}>${esc(n)}</option>`).join('')}
           </select>
-          ${state.book ? `<p class="al-hint" style="margin-top:var(--space-2);">Every stake sized at ${esc(state.book)}’s lines and juice. Picks ${esc(state.book)} doesn’t post are hidden.</p>` : ''}
-          `}
+          ${state.book ? `<p class="al-hint" style="margin-top:var(--space-2);">Every stake sized at ${esc(state.book)}’s ${state.boardView === 'released' ? 'current juice on the released lines' : 'lines and juice'}. Picks ${esc(state.book)} doesn’t post are hidden.</p>` : ''}
         </div>
         <div class="al-controls-right">
           <label class="al-field-label">Weighting</label>
@@ -998,7 +982,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <p class="al-hint" style="margin-top:var(--space-1);">Hides only picks whose line moved AGAINST the
           release far enough that the grade no longer holds at today's number.</p>` : ''}
         </div>
-        ${(state.book || state.boardView === 'released') ? '' : `
+        ${state.book ? '' : `
         <div class="al-books-excl">
           <span class="al-field-label" style="margin:0 0 var(--space-2);">Books</span>
           <div class="al-books-grid">
