@@ -389,18 +389,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       render();
       // Parlays load in the background and fill in when ready.
       fetchParlays().then(render).catch(() => {});
-      // The week's still-unplayed game counts — the DENOMINATOR for the
-      // released-parlay minting gate (released games / unplayed games).
+      // The released-parlay gate counts the SAME things Upcoming shows
+      // (Austin counted 20 of 47 there while the legs-derived gate said
+      // 15 of 84): denominator = the week's still-unplayed FBS matchups
+      // from /games/upcoming; numerator = those with ANY released row
+      // (No Edge verdicts included — a release is a release) per
+      // /picks/upcoming. Both land async; the gate falls back to an
+      // absolute floor until they do.
       fetch(`${API_BASE}/games/upcoming?season=${SEASON}`, { credentials: 'omit', headers })
         .then(r => (r.ok ? r.json() : null))
         .then(j => {
           if (!j || !j.games) return;
-          const counts = {};
-          for (const g of j.games) {
-            if (g.status !== 'scheduled') continue;
-            counts[g.week] = (counts[g.week] || 0) + 1;
-          }
-          state.weekScheduled = counts;
+          state.schedGames = j.games
+            .filter(g => g.is_fbs_matchup && g.status === 'scheduled')
+            .map(g => ({ week: g.week, id: String(g.game_id) }));
+          render();
+        })
+        .catch(() => {});
+      fetch(`${API_BASE}/picks/upcoming?season=${SEASON}`, { credentials: 'omit', headers })
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          if (!j || !j.picks) return;
+          state.releasedGameIds = new Set(Object.keys(j.picks).map(String));
           render();
         })
         .catch(() => {});
@@ -873,21 +883,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     // release-order trivia). Numerator: unplayed games with ANY released
     // pick row. Denominator: the week's still-unplayed games. Counted
     // before the invalidated-drop toggle so toggling can't unmint.
-    const _relGames = new Set(state.legs
+    const _wkSched = (state.schedGames || []).filter(g =>
+      state.week == null || g.week === state.week);
+    const _relCount = (state.releasedGameIds)
+      ? _wkSched.filter(g => state.releasedGameIds.has(g.id)).length : null;
+    const _share = (_wkSched.length > 0 && _relCount != null)
+      ? _relCount / _wkSched.length : null;
+    // Feeds still loading (or failed) → conservative absolute floor.
+    const _poolGames = new Set(state.legs
       .filter(l => (state.week == null || l.week === state.week))
       .map(l => l.game_id));
-    const _schedTotal = (state.weekScheduled || {})[state.week];
-    const _share = (_schedTotal > 0) ? _relGames.size / _schedTotal : null;
-    // No denominator yet (fetch pending/failed) → conservative floor: a
-    // near-full board by absolute size.
-    const _relReady = (_share != null ? _share >= 0.9 : _relGames.size >= 12)
-      && _relGames.size >= 6;
+    const _relReady = (_share != null ? _share >= 0.9 : _poolGames.size >= 12)
+      && _poolGames.size >= 6;
     if (state.boardView === 'released'
         && state.includeParlays && !state.filters.market && !state.filters.tier
         && !_relReady) {
       state._relParlayNote =
         `Released parlays mint once ~90% of the week's board is out — `
-        + `${_relGames.size} of ${_schedTotal || '?'} unplayed game${_relGames.size === 1 ? '' : 's'} released so far.`;
+        + (_share != null
+          ? `${_relCount} of ${_wkSched.length} unplayed games released so far.`
+          : `the board is still filling in.`);
     }
     if (state.boardView === 'released' && _relReady
         && state.includeParlays && !state.filters.market && !state.filters.tier) {
