@@ -849,10 +849,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // whole-season pool (61) — the per-week sheet is what the page renders,
     // and it is where parlays surface.
     state._droppedParlays = [];
+    state._relParlayNote = null;
     // Released-view tickets: built HERE from the released legs at released
     // (or your-book) prices — the presets endpoint's tickets are current-
-    // board constructs and don't apply.
+    // board constructs and don't apply. They only MINT once the week's
+    // board is mostly out (Austin, 9/6: an early-Sunday 4-pick board would
+    // stamp a "Best 3-leg" that's really just the only 3 legs alive) —
+    // gate: 10+ graded releases across 6+ games this week, counted before
+    // the invalidated-drop toggle so toggling can't unmint tickets.
+    const _relPool = state.legs.filter(l =>
+      (state.week == null || l.week === state.week)
+      && l.released && l.released.tier && l.released.tier !== 'no_edge');
+    const _relGames = new Set(_relPool.map(l => l.game_id));
+    const _relReady = _relPool.length >= 10 && _relGames.size >= 6;
     if (state.boardView === 'released'
+        && state.includeParlays && !state.filters.market && !state.filters.tier
+        && !_relReady) {
+      state._relParlayNote =
+        `Released parlays mint once the week's board is mostly out — `
+        + `${_relPool.length} graded release${_relPool.length === 1 ? '' : 's'} `
+        + `across ${_relGames.size} game${_relGames.size === 1 ? '' : 's'} so far.`;
+    }
+    if (state.boardView === 'released' && _relReady
         && state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const pl of releasedParlays(relLegs)) {
         const p = pl.our_prob, dec = pl.decimal_odds;
@@ -1281,13 +1299,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function listHTML(rows) {
     const dropped = (state._droppedParlays || []);
-    const droppedNote = dropped.length ? `
+    const droppedNote = (dropped.length ? `
       <div class="al-dropped-note">${dropped.map(d =>
         `<b>${esc(d.name)}</b> can't be built at ${esc(state.book)} — ` +
         (d.missing.length
           ? `it isn't posting ${esc(d.missing.join(' or '))} right now (any line would do)`
           : `no full-ticket price there`)
-      ).join('<br>')}</div>` : '';
+      ).join('<br>')}</div>` : '')
+      + (state._relParlayNote
+        ? `<div class="al-dropped-note">${esc(state._relParlayNote)}</div>` : '');
     if (!rows.length) {
       const amount = Number(state.amount) || 0;
       if (!(amount > 0)) return `<div class="al-empty">Enter an amount above to split across the board.</div>` + droppedNote;
