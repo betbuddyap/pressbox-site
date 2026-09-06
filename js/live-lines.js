@@ -44,10 +44,10 @@
     weeks:       [],              // all weeks present in open picks (for tab bar)
     picks:       [],              // ALL open picks (across all weeks)
     filters: {
-      market:    null,            // 'spread' | 'total' | 'ml' | null
-      tier:      null,            // 'A' | 'B' | 'C' | 'smart_money' | ... | null
-      aplusOnly: false,           // shorthand pill: A (top tier) across markets
-      gradedOnly: false,          // hide no-edge picks (show only graded/tiered)
+      // Multi-select in BOTH groups (Austin, 9/5): bet type AND grade,
+      // several of each at once. Empty set = that group is unfiltered.
+      markets: new Set(),         // 'spread' | 'total' | 'ml'
+      tiers:   new Set(),         // 'no_edge' | 'C' | 'B' | 'A' | 'A+'
     },
     lastFetchedAt: null,          // ISO timestamp of last successful fetch
     pollTimer:   null,
@@ -401,24 +401,27 @@
   }
 
   // ── Render: filters (used by all populated states) ───────────
-  // One row, single-select: a MARKET (Spread/Total/Moneyline) or a TIER
-  // (A+/A/B/C) at a time — Austin's spec. "All" clears.
+  // TWO groups, both multi-select (Austin, 9/5): bet type and grade.
+  // Union inside a group, intersection across groups; "All" clears the
+  // bet-type group, deselecting every grade clears that group.
   function renderFilters() {
     const f = state.filters;
-    const mkt = (m) => `aria-pressed="${f.market === m && !f.tier ? 'true' : 'false'}"`;
-    const tr = (t) => `aria-pressed="${f.tier === t ? 'true' : 'false'}"`;
+    const on = (v) => `class="ll-filter-pill${v ? ' active' : ''}" aria-pressed="${v ? 'true' : 'false'}"`;
     return `
-      <div class="ll-filters" role="group" aria-label="Filter picks">
-        <span class="ll-filter-label">Pick Type</span>
-        <button class="ll-filter-pill" data-filter="all"
-          aria-pressed="${!f.market && !f.tier ? 'true' : 'false'}">All</button>
-        <button class="ll-filter-pill" data-filter="spread" ${mkt('spread')}>Spread</button>
-        <button class="ll-filter-pill" data-filter="total" ${mkt('total')}>Total</button>
-        <button class="ll-filter-pill" data-filter="ml" ${mkt('ml')}>Moneyline</button>
-        <button class="ll-filter-pill" data-filter="tier:A+" ${tr('A+')}>A+</button>
-        <button class="ll-filter-pill" data-filter="tier:A" ${tr('A')}>A</button>
-        <button class="ll-filter-pill" data-filter="tier:B" ${tr('B')}>B</button>
-        <button class="ll-filter-pill" data-filter="tier:C" ${tr('C')}>C</button>
+      <div class="ll-filters" role="group" aria-label="Filter picks by bet type">
+        <span class="ll-filter-label">Bet Type</span>
+        <button ${on(!f.markets.size)} data-filter="all">All</button>
+        <button ${on(f.markets.has('spread'))} data-filter="spread">Spread</button>
+        <button ${on(f.markets.has('total'))} data-filter="total">Total</button>
+        <button ${on(f.markets.has('ml'))} data-filter="ml">Moneyline</button>
+      </div>
+      <div class="ll-filters" role="group" aria-label="Filter picks by grade">
+        <span class="ll-filter-label">Grade</span>
+        <button ${on(f.tiers.has('no_edge'))} data-filter="tier:no_edge">NE</button>
+        <button ${on(f.tiers.has('C'))} data-filter="tier:C">C</button>
+        <button ${on(f.tiers.has('B'))} data-filter="tier:B">B</button>
+        <button ${on(f.tiers.has('A'))} data-filter="tier:A">A</button>
+        <button ${on(f.tiers.has('A+'))} data-filter="tier:A+">A+</button>
       </div>
     `;
   }
@@ -451,8 +454,7 @@
     const inWeek = state.picks.filter(p => state.week === null || p.week === state.week);
     const totalInWeek = inWeek.length;
     const filteredCount = filtered.length;
-    const anyActive = !!(state.filters.market || state.filters.tier
-                         || state.filters.aplusOnly || state.filters.gradedOnly);
+    const anyActive = !!(state.filters.markets.size || state.filters.tiers.size);
 
     const metaText = anyActive
       ? `${filteredCount} pick${filteredCount === 1 ? '' : 's'} · filtered from ${totalInWeek}`
@@ -656,15 +658,8 @@
     return picks.filter(p => {
       // Filter by selected week (week-tab bar)
       if (state.week !== null && p.week !== state.week) return false;
-      if (f.tier && p.tier !== f.tier) return false;
-      // Top tier is A+ AND A. This shorthand is not currently wired to a pill
-      // (nothing sets aplusOnly true), but it excluded A+ outright — which
-      // would have hidden the strongest picks on the board, moneyline
-      // included, the moment anyone wired it up.
-      if (f.aplusOnly && p.tier !== 'A' && p.tier !== 'A+') return false;
-      if (f.gradedOnly && (!p.tier || p.tier === 'no_edge')) return false;
-      if (f.market && p.market !== f.market) return false;
-      if (f.tier && p.tier !== f.tier) return false;
+      if (f.markets.size && !f.markets.has(p.market)) return false;
+      if (f.tiers.size && !f.tiers.has(p.tier || 'no_edge')) return false;
       return true;
     });
   }
@@ -1073,12 +1068,19 @@
       </header>
 
       <div class="ll-filters" aria-hidden="true" style="pointer-events:none;">
-        <span class="ll-filter-label">Pick Type</span>
+        <span class="ll-filter-label">Bet Type</span>
         <button class="ll-filter-pill" aria-pressed="true">All</button>
         <button class="ll-filter-pill" aria-pressed="false">Spread</button>
         <button class="ll-filter-pill" aria-pressed="false">Total</button>
-        <button class="ll-filter-pill" aria-pressed="false">ML</button>
-        <button class="ll-filter-pill" aria-pressed="false">A only</button>
+        <button class="ll-filter-pill" aria-pressed="false">Moneyline</button>
+      </div>
+      <div class="ll-filters" aria-hidden="true" style="pointer-events:none;">
+        <span class="ll-filter-label">Grade</span>
+        <button class="ll-filter-pill" aria-pressed="false">NE</button>
+        <button class="ll-filter-pill" aria-pressed="false">C</button>
+        <button class="ll-filter-pill" aria-pressed="false">B</button>
+        <button class="ll-filter-pill" aria-pressed="false">A</button>
+        <button class="ll-filter-pill" aria-pressed="false">A+</button>
       </div>
 
       <div class="ll-paywall-blur">
@@ -1190,21 +1192,16 @@
       btn.addEventListener('click', () => {
         const f = btn.getAttribute('data-filter');
         if (f === 'all') {
-          state.filters.market = null;
-          state.filters.tier = null;
-          state.filters.aplusOnly = false;
-          state.filters.gradedOnly = false;
+          state.filters.markets.clear();
         } else if (f.startsWith('tier:')) {
           const t = f.slice(5);
-          state.filters.tier = (state.filters.tier === t) ? null : t;
-          state.filters.market = null;
-          state.filters.aplusOnly = false;
-          state.filters.gradedOnly = false;
+          state.filters.tiers.has(t)
+            ? state.filters.tiers.delete(t)
+            : state.filters.tiers.add(t);
         } else {
-          state.filters.market = (state.filters.market === f) ? null : f;
-          state.filters.tier = null;
-          state.filters.aplusOnly = false;
-          state.filters.gradedOnly = false;
+          state.filters.markets.has(f)
+            ? state.filters.markets.delete(f)
+            : state.filters.markets.add(f);
         }
         render();
       });
@@ -1390,7 +1387,7 @@
 
   // Refresh meta line ("X min ago") every minute even without new data
   setInterval(() => {
-    if (state.picks && state.picks.length > 0 && !state.filters.market && !state.filters.aplusOnly) {
+    if (state.picks && state.picks.length > 0 && !state.filters.markets.size && !state.filters.tiers.size) {
       const metaEl = document.querySelector('.ll-meta span:first-child');
       if (metaEl && state.lastFetchedAt) {
         const text = `${state.picks.length} open pick${state.picks.length === 1 ? '' : 's'} · last updated ${relativeTimeFrom(state.lastFetchedAt)}`;

@@ -40,6 +40,12 @@
   let importRows = null;        // allocator-sheet handoff (localStorage), or null
   let editingId = null;           // bet id with the inline editor open
   let ledgerBook = null;          // ledger + hero filtered to one book
+  // Multi-select filters (Austin, 9/5): bet type AND board grade, several
+  // of each — empty set = no filter. Both flow into the hero like the
+  // book filter does.
+  let fMarkets = new Set();       // 'spread' | 'total' | 'ml'
+  let fTiers = new Set();         // 'NE' | 'C' | 'B' | 'A' | 'A+'
+  let relTiers = null;            // (game_id|market) -> RELEASED tier, results feed
 
   // ── Utils ──────────────────────────────────────────────────────────
   const esc = (s) => String(s == null ? '' : s)
@@ -130,11 +136,42 @@
   }
 
   // ── Hero (the screenshot card) ─────────────────────────────────────
+  // The board's grade for a ticket: the CURRENT board slot when the game
+  // is on it, else the RELEASED tier from the results feed. No pick row
+  // anywhere = NE (we had no edge; the ticket was the user's own call).
+  function betTier(b) {
+    let t = null;
+    try {
+      const entry = picksByGame && picksByGame[b.game_id];
+      const s = entry && entry.slots &&
+        (b.market === 'ml' ? entry.slots.ml
+          : b.market === 'total' ? entry.slots.total : entry.slots.spread);
+      t = s && s.tier_full;
+    } catch (e) {}
+    if (!t && relTiers) t = relTiers[`${b.game_id}|${b.market}`];
+    if (!t || /^(ne|no_edge)$/i.test(String(t))) return 'NE';
+    return String(t).toUpperCase();
+  }
+  function matchesTypeGrade(b) {
+    if (fMarkets.size) {
+      const ok = b.market === 'parlay'
+        ? (b.legs || []).some(l => fMarkets.has(l.market))
+        : fMarkets.has(b.market);
+      if (!ok) return false;
+    }
+    if (fTiers.size) {
+      return b.market === 'parlay'
+        ? (b.legs || []).some(l => fTiers.has(betTier(l)))
+        : fTiers.has(betTier(b));
+    }
+    return true;
+  }
   function scopeBets() {
     const base = heroScope === 'season' ? bets : bets.filter(b => b.week === formWeek);
     // The book filter flows into the hero on purpose: filtered to FanDuel,
-    // the P&L card IS your FanDuel P&L.
-    return ledgerBook ? base.filter(b => b.book === ledgerBook) : base;
+    // the P&L card IS your FanDuel P&L. Bet-type and grade flow the same way.
+    return (ledgerBook ? base.filter(b => b.book === ledgerBook) : base)
+      .filter(matchesTypeGrade);
   }
   // Totals need their game named at RENDER time — rows logged before the
   // label fix (and any bare "Over 54.5") get the home team appended from
@@ -1052,8 +1089,26 @@
 
   function ledgerToolsHTML() {
     const books = [...new Set(bets.map(b => b.book).filter(Boolean))].sort();
+    const pill = (attr, val, label, on) =>
+      `<button type="button" class="ll-filter-pill${on ? ' active' : ''}" ${attr}="${val}"
+               aria-pressed="${on ? 'true' : 'false'}">${label}</button>`;
     return `
       <div class="mb-ledger-tools">
+        <div class="mb-filter-row">
+          <span class="ll-filter-label">Bet Type</span>
+          ${pill('data-mbmkt', 'all', 'All', !fMarkets.size)}
+          ${pill('data-mbmkt', 'spread', 'Spread', fMarkets.has('spread'))}
+          ${pill('data-mbmkt', 'total', 'Total', fMarkets.has('total'))}
+          ${pill('data-mbmkt', 'ml', 'Moneyline', fMarkets.has('ml'))}
+        </div>
+        <div class="mb-filter-row">
+          <span class="ll-filter-label">Grade</span>
+          ${pill('data-mbtier', 'NE', 'NE', fTiers.has('NE'))}
+          ${pill('data-mbtier', 'C', 'C', fTiers.has('C'))}
+          ${pill('data-mbtier', 'B', 'B', fTiers.has('B'))}
+          ${pill('data-mbtier', 'A', 'A', fTiers.has('A'))}
+          ${pill('data-mbtier', 'A+', 'A+', fTiers.has('A+'))}
+        </div>
         <label>Book
           <select id="mbLedgerBook">
             <option value="">All books</option>
@@ -1077,7 +1132,8 @@
     const scoped = heroScope === 'week'
       ? bets.filter(b => b.week === formWeek)
       : bets;
-    const visible = ledgerBook ? scoped.filter(b => b.book === ledgerBook) : scoped;
+    const visible = (ledgerBook ? scoped.filter(b => b.book === ledgerBook) : scoped)
+      .filter(matchesTypeGrade);
     const byWeek = {};
     visible.forEach(b => { (byWeek[b.week] = byWeek[b.week] || []).push(b); });
     const weeksDesc = Object.keys(byWeek).map(Number).sort((a, b) => b - a);
@@ -1187,6 +1243,21 @@
     if (fb) fb.addEventListener('change', () => {
       ledgerBook = fb.value || null;
       renderLedgerAndHero();
+    });
+    document.querySelectorAll('[data-mbmkt]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const v = btn.getAttribute('data-mbmkt');
+        if (v === 'all') fMarkets.clear();
+        else fMarkets.has(v) ? fMarkets.delete(v) : fMarkets.add(v);
+        renderLedgerAndHero();
+      });
+    });
+    document.querySelectorAll('[data-mbtier]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const v = btn.getAttribute('data-mbtier');
+        fTiers.has(v) ? fTiers.delete(v) : fTiers.add(v);
+        renderLedgerAndHero();
+      });
     });
   }
   function wireForm() {
@@ -1455,6 +1526,21 @@
       .then(r => (r.ok ? r.json() : null))
       .then(j => {
         if (j && j.picks) { picksByGame = j.picks; rebuildSideSelect(); }
+      })
+      .catch(() => {});
+    // Released tiers for FINISHED games (public results feed) — the grade
+    // filter's source for historical tickets; picksByGame covers the
+    // current board. Non-blocking; the filter works without it for
+    // this-week bets.
+    fetch(`${API}/canonical/results/feed?season=${SEASON}`, { credentials: 'omit' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        if (!j || !j.games) return;
+        relTiers = {};
+        j.games.forEach(g => (g.picks || []).forEach(p => {
+          relTiers[`${g.game_id}|${p.market}`] = p.tier || 'no_edge';
+        }));
+        try { renderLedgerAndHero(); } catch (e) {}
       })
       .catch(() => {});
     games = (gamesRes && gamesRes.games) || [];

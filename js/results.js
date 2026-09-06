@@ -322,11 +322,15 @@
         : await (await fetch(`${API_BASE}/canonical/results/feed?season=${SEASON}`,
                              { credentials: 'omit' })).json();
       state.games = payload.games || [];
-      state.weeks = (payload.weeks || []).slice().sort((a, b) => b - a); // latest first
+      // Oldest → newest left-to-right (Austin, 9/5); the newest week is
+      // still the landing selection.
+      state.weeks = (payload.weeks || []).slice().sort((a, b) => a - b);
       state.record = payload.record || {};
       state.sheet = payload.sheet || null;
       assignStakes();
-      if (state.week == null && state.weeks.length) state.week = state.weeks[0];
+      if (state.week == null && state.weeks.length) {
+        state.week = state.weeks[state.weeks.length - 1];
+      }
       state.loading = false;
       render();
     } catch (e) {
