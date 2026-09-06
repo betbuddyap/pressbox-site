@@ -942,17 +942,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             <input class="al-input al-money" id="al-amount" type="text" inputmode="numeric"
                    value="${esc(fmtMoney(state.amount))}" aria-label="Total amount to bet, in dollars">
           </div>
-          <label class="al-field-label" style="margin-top:var(--space-4);">Board</label>
-          <div class="al-frac">
-            <button type="button" class="ll-filter-pill${state.boardView === 'current' ? ' active' : ''}"
-                    data-view="current" aria-pressed="${state.boardView === 'current' ? 'true' : 'false'}">Current</button>
-            <button type="button" class="ll-filter-pill${state.boardView === 'released' ? ' active' : ''}"
-                    data-view="released" aria-pressed="${state.boardView === 'released' ? 'true' : 'false'}">As released</button>
-          </div>
           ${state.boardView === 'released' ? `
-          <p class="al-hint" style="margin-top:var(--space-2);">Every pick at its released grade and line — the
-          board of record — priced at the best juice available right now. A line moving
-          your way never touches the grade; it just made the entry better.</p>` : ''}
+          <button type="button" class="al-toggle${state.dropInvalidated ? ' active' : ''}"
+                  data-action="toggle-dropinv" role="switch"
+                  aria-checked="${state.dropInvalidated ? 'true' : 'false'}"
+                  style="margin-top:var(--space-4);">
+            <span class="al-toggle-box" aria-hidden="true"></span>
+            Drop picks the market invalidated
+          </button>
+          <p class="al-hint" style="margin-top:var(--space-1);">Only adverse moves that killed the grade.</p>` : ''}
           <button type="button" class="al-toggle${state.includeParlays ? ' active' : ''}"
                   data-action="toggle-parlays" role="switch"
                   aria-checked="${state.includeParlays ? 'true' : 'false'}">
@@ -971,16 +969,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           <label class="al-field-label">Weighting</label>
           <div class="al-frac">${presetPills}</div>
           <p class="al-hint">${esc(currentPreset().blurb)}</p>
-          ${state.boardView === 'released' ? `
-          <button type="button" class="al-toggle${state.dropInvalidated ? ' active' : ''}"
-                  data-action="toggle-dropinv" role="switch"
-                  aria-checked="${state.dropInvalidated ? 'true' : 'false'}"
-                  style="margin-top:var(--space-4);">
-            <span class="al-toggle-box" aria-hidden="true"></span>
-            Drop picks the market invalidated
-          </button>
-          <p class="al-hint" style="margin-top:var(--space-1);">Hides only picks whose line moved AGAINST the
-          release far enough that the grade no longer holds at today's number.</p>` : ''}
+          <label class="al-field-label" style="margin-top:var(--space-4);">Board</label>
+          <div class="al-frac">
+            <button type="button" class="ll-filter-pill${state.boardView === 'current' ? ' active' : ''}"
+                    data-view="current" aria-pressed="${state.boardView === 'current' ? 'true' : 'false'}">Current</button>
+            <button type="button" class="ll-filter-pill${state.boardView === 'released' ? ' active' : ''}"
+                    data-view="released" aria-pressed="${state.boardView === 'released' ? 'true' : 'false'}">As released</button>
+          </div>
+          ${state.boardView === 'released'
+            ? `<p class="al-hint">Released grades and lines, priced at today's juice.</p>` : ''}
         </div>
         ${state.book ? '' : `
         <div class="al-books-excl">
