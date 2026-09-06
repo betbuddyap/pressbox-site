@@ -263,6 +263,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Same filter model as Live Lines / Parlay: market and tier are each
     // single-select and mutually exclusive; null/null = all picks.
     filters: { market: null, tier: null },
+    // Board view (Austin, 9/6): 'current' = the live regraded board;
+    // 'released' = every pick AS RELEASED — the grade/line/price/book of
+    // record — because staggered releases mean the full release board
+    // never exists on the site as one simultaneous snapshot. On the
+    // released view a FAVORABLE move never touches the grade (Over 50
+    // released, market now 47 = an even better entry, even outside the
+    // cell); the optional drop hides only picks the market moved AGAINST
+    // hard enough that the grade no longer holds (adverse direction AND
+    // currently No Edge).
+    boardView: (() => { try { return localStorage.getItem('al_view') === 'released' ? 'released' : 'current'; } catch (e) { return 'current'; } })(),
+    dropInvalidated: (() => { try { return localStorage.getItem('al_drop_inv') === '1'; } catch (e) { return false; } })(),
     loading: true, error: false,
   };
 
@@ -362,7 +373,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (res.status === 401 || res.status === 402) { state.loading = false; renderPaywall(); return; }
       if (!res.ok) throw new Error(`board HTTP ${res.status}`);
       const payload = await res.json();
-      const legs = (payload.legs || []).filter(l => l && l.our_prob != null && l.decimal_odds != null);
+      // Keep a leg when EITHER view can price it — a released-graded pick
+      // that regraded to No Edge may have no current pricing but is exactly
+      // what the released view exists to show.
+      const legs = (payload.legs || []).filter(l => l && (
+        (l.our_prob != null && l.decimal_odds != null)
+        || (l.released && l.released.our_prob != null && l.released.decimal_odds != null)));
       state.legs = legs;
       // Derive the week bar from the legs themselves (board returns the whole pool).
       const weeks = [...new Set(legs.map(l => l.week).filter(w => w != null))].sort((a, b) => a - b);
@@ -485,6 +501,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (f.tier && leg.tier !== f.tier) return false;
     if (f.market && leg.market !== f.market) return false;
     return true;
+  }
+
+  // ── Released view ─────────────────────────────────────────────
+  // Movement since release, RELEASED-side POV. "Adverse" is the validity
+  // direction: the number got worse for our released side (fewer points /
+  // laying more; Under's total dropping / Over's rising; an ML price
+  // lengthening = the market running away from our side).
+  function relMove(raw) {
+    const r = raw.released || {};
+    const sameSide = (r.side_raw != null && raw.side_raw != null)
+      ? String(r.side_raw) === String(raw.side_raw) : true;
+    const amDec = (x) => (x > 0 ? 1 + x / 100 : 1 + 100 / (-x));
+    if (raw.market === 'ml') {
+      if (!sameSide) {
+        return { txt: 'the market flipped the favorite', adverse: true, moved: true, bare: true };
+      }
+      const a = Number(r.price_american), b = Number(raw.price_american);
+      if (!isFinite(a) || !isFinite(b)) return null;
+      if (a === b) return { moved: false };
+      return { txt: `${fmtSigned(a)} → ${fmtSigned(b)}`,
+               adverse: amDec(b) > amDec(a), moved: true };
+    }
+    let cur = Number(raw.line_raw);
+    const rel = Number(r.line_raw);
+    if (!isFinite(cur) || !isFinite(rel)) return null;
+    if (!sameSide && raw.market === 'spread') cur = -cur;
+    if (cur === rel) return { moved: false };
+    let adverse;
+    if (raw.market === 'total') {
+      const under = String(r.side_raw || '').toLowerCase() === 'under';
+      adverse = under ? cur < rel : cur > rel;   // Over 50 → 47 = favorable
+    } else {
+      adverse = cur < rel;                        // picked-side spread: lower = worse
+    }
+    return { txt: `${fmtSigned(rel)} → ${fmtSigned(cur)}`, adverse, moved: true };
+  }
+  // The drop rule: adverse movement AND the grade no longer holds at
+  // today's number (current No Edge). A favorable move never drops a
+  // pick — the released grade stands, now at a better entry.
+  function invalidatedAdversely(raw) {
+    if ((raw.tier || 'no_edge') !== 'no_edge') return false;
+    const mv = relMove(raw);
+    return !!(mv && mv.moved && mv.adverse);
+  }
+  // The leg AS RELEASED — grade, side, line, price, book of record.
+  function releasedView(raw) {
+    const r = raw.released;
+    if (!r || !r.tier || r.tier === 'no_edge') return null;
+    if (!(r.our_prob > 0) || !(r.decimal_odds > 1)) return null;
+    if (state.dropInvalidated && invalidatedAdversely(raw)) return null;
+    return { ...raw,
+      tier: r.tier, bolt: false,
+      side: r.side, side_raw: r.side_raw,
+      line: r.line, line_raw: r.line_raw,
+      price_american: r.price_american, decimal_odds: r.decimal_odds,
+      our_prob: r.our_prob, edge: null,
+      book: r.book, line_move: null, other_books: [],
+      _relMove: relMove(raw) };
+  }
+  function renderRelMove(mv) {
+    if (!mv || !mv.moved) return '';
+    const cls = mv.adverse ? 'away' : 'toward';
+    const label = mv.bare ? '' : (mv.adverse
+      ? 'moved against the release · ' : 'better than the release · ');
+    return `<div class="ll-row-move ll-row-move--${cls}">${label}` +
+           `<span class="ll-row-move-nums">${esc(mv.txt)}</span></div>`;
   }
 
   // ── Delta sizing, compressed (Austin's spec, 2026-08-19b) ───────────
@@ -662,10 +744,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Conservative β=0 is the pure compressed delta sizing; Aggressive leans
     // toward the bigger payouts among the +edge set).
     const cand = [];
+    const released = state.boardView === 'released';
     for (const raw of state.legs) {
-      if (!matchesFilters(raw)) continue;
-      const leg = bookView(raw);          // single-book re-price, or drop
+      // Released view reshapes FIRST so the tier pills filter on the
+      // RELEASED grade; single-book re-shopping is a current-board idea
+      // (the released book IS the book of record) and doesn't apply.
+      const leg = released ? releasedView(raw) : (matchesFilters(raw) ? bookView(raw) : null);
       if (!leg) continue;
+      if (released && !matchesFilters(leg)) continue;
       const p = sizingProb(leg), dec = leg.decimal_odds;
       if (!(p > 0) || !(dec > 1)) continue;
       const f = deltaWeight(p, dec);
@@ -697,7 +783,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // whole-season pool (61) — the per-week sheet is what the page renders,
     // and it is where parlays surface.
     state._droppedParlays = [];
-    if (state.includeParlays && !state.filters.market && !state.filters.tier) {
+    // Parlays are current-board constructs (built and priced from today's
+    // sheet) — the released view shows straights only.
+    if (state.boardView === 'current'
+        && state.includeParlays && !state.filters.market && !state.filters.tier) {
       for (const rawPl of state.parlays) {
         if (state.week != null && rawPl.week !== state.week) continue;
         const pl = parlayView(rawPl);     // single-book ticket price, or drop
@@ -774,6 +863,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             <input class="al-input al-money" id="al-amount" type="text" inputmode="numeric"
                    value="${esc(fmtMoney(state.amount))}" aria-label="Total amount to bet, in dollars">
           </div>
+          <label class="al-field-label" style="margin-top:var(--space-4);">Board</label>
+          <div class="al-frac">
+            <button type="button" class="ll-filter-pill${state.boardView === 'current' ? ' active' : ''}"
+                    data-view="current" aria-pressed="${state.boardView === 'current' ? 'true' : 'false'}">Current</button>
+            <button type="button" class="ll-filter-pill${state.boardView === 'released' ? ' active' : ''}"
+                    data-view="released" aria-pressed="${state.boardView === 'released' ? 'true' : 'false'}">As released</button>
+          </div>
+          ${state.boardView === 'released' ? `
+          <p class="al-hint" style="margin-top:var(--space-2);">Every pick at its released grade, line, price, and
+          book — the board of record, since games release at different times and the full
+          release board never sits on the site at once. A line moving your way never
+          touches the grade; it just made the entry better.</p>
+          <button type="button" class="al-toggle${state.dropInvalidated ? ' active' : ''}"
+                  data-action="toggle-dropinv" role="switch"
+                  aria-checked="${state.dropInvalidated ? 'true' : 'false'}">
+            <span class="al-toggle-box" aria-hidden="true"></span>
+            Drop picks the market invalidated
+          </button>
+          <p class="al-hint" style="margin-top:var(--space-1);">Hides only picks whose line moved AGAINST the
+          release far enough that the grade no longer holds at today's number.</p>
+          ` : `
           <button type="button" class="al-toggle${state.includeParlays ? ' active' : ''}"
                   data-action="toggle-parlays" role="switch"
                   aria-checked="${state.includeParlays ? 'true' : 'false'}">
@@ -787,13 +897,14 @@ document.addEventListener('DOMContentLoaded', async () => {
               `<option value="${esc(n)}"${state.book === n ? ' selected' : ''}>${esc(n)}</option>`).join('')}
           </select>
           ${state.book ? `<p class="al-hint" style="margin-top:var(--space-2);">Every stake sized at ${esc(state.book)}’s lines and juice. Picks ${esc(state.book)} doesn’t post are hidden.</p>` : ''}
+          `}
         </div>
         <div class="al-controls-right">
           <label class="al-field-label">Weighting</label>
           <div class="al-frac">${presetPills}</div>
           <p class="al-hint">${esc(currentPreset().blurb)}</p>
         </div>
-        ${state.book ? '' : `
+        ${(state.book || state.boardView === 'released') ? '' : `
         <div class="al-books-excl">
           <span class="al-field-label" style="margin:0 0 var(--space-2);">Books</span>
           <div class="al-books-grid">
@@ -1028,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="ll-row-content">
             <div class="ll-row-matchup">${esc(leg.matchup || '\u2014')}</div>
             <div class="ll-row-pick">${pickText(leg)}</div>
-            ${renderLineMove(leg.line_move)}
+            ${state.boardView === 'released' ? renderRelMove(leg._relMove) : renderLineMove(leg.line_move)}
           </div>
           <div class="al-metrics">
             <div class="al-metric"><span class="al-metric-k">Win prob</span><span class="al-metric-v">${(r.p * 100).toFixed(1)}%</span></div>
@@ -1284,6 +1395,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (state.includeParlays && !state.parlays.length) {
         fetchParlays().then(render).catch(() => {});
       }
+      return;
+    }
+
+    const viewPill = e.target.closest('.ll-filter-pill[data-view]');
+    if (viewPill) {
+      state.boardView = viewPill.dataset.view === 'released' ? 'released' : 'current';
+      try { localStorage.setItem('al_view', state.boardView); } catch (err) {}
+      render();
+      return;
+    }
+
+    const dropInv = e.target.closest('[data-action="toggle-dropinv"]');
+    if (dropInv) {
+      state.dropInvalidated = !state.dropInvalidated;
+      try { localStorage.setItem('al_drop_inv', state.dropInvalidated ? '1' : '0'); } catch (err) {}
+      render();
       return;
     }
 
