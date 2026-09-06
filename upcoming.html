@@ -857,7 +857,15 @@
   .gc-pace.pace-even { color: rgba(248,245,238,0.55); }
 
   /* Timeout pips under each live team (● left, max 3) */
-  .gc-tos { font-size: 9px; letter-spacing: 3px; color: rgba(248,245,238,0.65); line-height: 1; margin-top: 3px; }
+  /* Timeout pips as CSS circles, not font glyphs — at 9px the ● glyph
+     renders SMALLER than ○, which inverted the visual hierarchy and made
+     the count unreadable (Austin, 9/5). Uniform size by construction:
+     filled = still in hand, faint outline = burned. */
+  .gc-tos { display: inline-flex; gap: 3px; align-items: center; margin-top: 4px; }
+  .gc-tos .pip { width: 5px; height: 5px; border-radius: 50%;
+                 background: rgba(248,245,238,0.75); }
+  .gc-tos .pip-used { background: transparent;
+                      border: 1px solid rgba(248,245,238,0.3); box-sizing: border-box; }
   /* Current drive + live win% under the situation line */
   .gc-live-drive { font-family: var(--sans); font-size: 11px; font-weight: 600; color: rgba(248,245,238,0.6); text-align: center; margin-top: 2px; }
   .gc-live-wp { font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--gold-light); text-align: center; margin-top: 3px; }
@@ -2088,6 +2096,15 @@ function renderSlateCard(g) {
 // Renders a card in live state. Big italic score numerals (mirrors
 // game page final-score block), pulsing LIVE indicator, period/clock,
 // down/distance, possession ball indicator, pick-performance overlay.
+// Timeout pips: FILLED = still in hand, faint outline = burned (TV
+// convention). The title spells it out for anyone hovering/long-pressing.
+function tosHTML(n) {
+  const left = Math.max(0, Math.min(3, n));
+  return `<div class="gc-tos" title="${left} of 3 timeouts left">` +
+         '<i class="pip"></i>'.repeat(left) +
+         '<i class="pip pip-used"></i>'.repeat(3 - left) + '</div>';
+}
+
 function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRank, awayRank) {
   const hasScores = (awayPts !== null && awayPts !== undefined &&
                      homePts !== null && homePts !== undefined);
@@ -2195,13 +2212,13 @@ function renderLiveCard(g, slots, awayPts, homePts, homeColor, awayColor, homeRa
             <div class="gc-live-team away${awayLoserCls}">
               <div class="gc-live-team-name">${g.away_team}${awayBall}</div>
               <div class="gc-live-num">${hasScores ? awayPts : '—'}</div>
-              ${g.away_timeouts != null ? `<div class="gc-tos" title="Timeouts">${'●'.repeat(Math.max(0, Math.min(3, g.away_timeouts)))}${'○'.repeat(Math.max(0, 3 - Math.min(3, g.away_timeouts)))}</div>` : ''}
+              ${g.away_timeouts != null ? tosHTML(g.away_timeouts) : ''}
             </div>
             <span class="gc-live-dash">—</span>
             <div class="gc-live-team home${homeLoserCls}">
               <div class="gc-live-num">${hasScores ? homePts : '—'}</div>
               <div class="gc-live-team-name">${homeBall}${g.home_team}</div>
-              ${g.home_timeouts != null ? `<div class="gc-tos" title="Timeouts">${'●'.repeat(Math.max(0, Math.min(3, g.home_timeouts)))}${'○'.repeat(Math.max(0, 3 - Math.min(3, g.home_timeouts)))}</div>` : ''}
+              ${g.home_timeouts != null ? tosHTML(g.home_timeouts) : ''}
             </div>
           </div>
           ${downDistance ? `<div class="gc-live-situation">${downDistance}</div>` : ''}

@@ -620,13 +620,24 @@
   text-shadow: 0 0 4px rgba(248,217,107,0.6);
   margin: 0 4px;
 }
-/* Timeout pips beside each live team (● remaining of 3) */
+/* Timeout pips beside each live team — uniform CSS circles, not glyphs
+   (● renders smaller than ○ at small sizes; the count read backwards).
+   Filled = still in hand, faint outline = burned. */
 .pg-live-tos {
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: rgba(248,245,238,0.6);
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
   margin: 0 4px;
   vertical-align: middle;
+}
+.pg-live-tos .pip {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(248,245,238,0.7);
+}
+.pg-live-tos .pip-used {
+  background: transparent;
+  border: 1px solid rgba(248,245,238,0.3);
+  box-sizing: border-box;
 }
 
 /* ── In-game phase 2: field strip · drive · linescore · live probabilities ── */

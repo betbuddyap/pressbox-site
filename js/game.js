@@ -345,10 +345,15 @@
     // The serif hero names above already say who's who — repeating them
     // in sans here doubled the names (Austin). The name slots carry the
     // possession dot plus each side's remaining timeouts (●●○ of 3).
-    const pips = (n) => (n == null) ? '' :
-      `<span class="pg-live-tos" title="Timeouts">` +
-      `${'●'.repeat(Math.max(0, Math.min(3, n)))}` +
-      `${'○'.repeat(Math.max(0, 3 - Math.min(3, n)))}</span>`;
+    // Uniform CSS circles, not glyphs — ● renders smaller than ○ at small
+    // sizes and the count read backwards (Austin, 9/5). Filled = in hand.
+    const pips = (n) => {
+      if (n == null) return '';
+      const left = Math.max(0, Math.min(3, n));
+      return `<span class="pg-live-tos" title="${left} of 3 timeouts left">` +
+        '<i class="pip"></i>'.repeat(left) +
+        '<i class="pip pip-used"></i>'.repeat(3 - left) + '</span>';
+    };
     els.pgLiveAwayName.innerHTML = (awayHasBall ? ballHTML : '') + pips(g.away_timeouts);
     els.pgLiveHomeName.innerHTML = (homeHasBall ? ballHTML : '') + pips(g.home_timeouts);
 
