@@ -662,13 +662,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     const decAm = (dec) => (dec >= 2
       ? Math.round((dec - 1) * 100) : -Math.round(100 / (dec - 1)));
+    // THE PRICE IS A REAL TICKET OR IT IS NOTHING (the sheet's standing
+    // doctrine): a released ticket prices at the single best book posting
+    // ALL its legs, at that book's own juice per leg — never the cross-
+    // book product no sportsbook sells (Austin, 9/7: "the parlays still
+    // don't show the books").
+    const coveringBook = (ls) => {
+      const per = ls.map(l => {
+        const m = new Map();
+        for (const e of (l.other_books || [])) {
+          const n = e.book && e.book.name;
+          if (!n) continue;
+          const px = (e.price != null) ? e.price
+                   : (l.market === 'ml' ? e.line_raw : -110);
+          const d = amToDec(px);
+          if (d > 1) m.set(n, { d, url: (e.book && e.book.url) || null });
+        }
+        return m;
+      });
+      if (per.some(m => !m.size)) return null;
+      let best = null;
+      for (const n of per[0].keys()) {
+        if (!per.every(m => m.has(n))) continue;
+        let dec = 1;
+        for (const m of per) dec *= m.get(n).d;
+        if (!best || dec > best.dec) best = { name: n, dec, url: per[0].get(n).url };
+      }
+      return best;
+    };
     const mk = (name, ls) => {
       if (ls.length < 3) return null;
-      let p = 1, dec = 1;
-      for (const l of ls) { p *= l.our_prob; dec *= l.decimal_odds; }
-      return { name, legs: ls, our_prob: p, decimal_odds: dec,
-               price_american: decAm(dec), leg_count: ls.length,
-               week: ls[0].week, book: null, edge: null };
+      const cb = coveringBook(ls);
+      if (!cb) return null;              // no single book sells this ticket
+      let p = 1;
+      for (const l of ls) p *= l.our_prob;
+      return { name, legs: ls, our_prob: p, decimal_odds: cb.dec,
+               price_american: decAm(cb.dec), leg_count: ls.length,
+               week: ls[0].week, edge: null,
+               book: { name: cb.name, url: cb.url } };
     };
     const best = mk('Best 3-leg',
       pick3(legs.slice().sort((a, b) => b.our_prob * b.decimal_odds - a.our_prob * a.decimal_odds)));
