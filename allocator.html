@@ -570,51 +570,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mv = relMove(raw);
     return !!(mv && mv.moved && mv.adverse);
   }
-  // The leg AS RELEASED — the released GRADE, probability, and LINE stand
-  // (the doctrine); the PRICE is today's (Austin, 9/6: "use the released
-  // line and best available current from those books"): a chosen book =
-  // that book's current juice, all-books = the best current juice among
-  // the non-excluded books, and the released price stands when nobody
-  // prices it (board side flipped, or no book posting). Same controls,
-  // same exclusion semantics, as the current view.
+  // The RELEASED pick, BETTABLE TODAY (Austin, 9/7: "show the released
+  // picks at the current line and juice. then show the release to current
+  // numbers... but with the original grade"): the row's side, grade, and
+  // sizing probability are the RELEASE of record; its line, juice, book,
+  // and book table are the CURRENT market for that side, shopped through
+  // the exact same machinery as the current view (best line then price,
+  // single-book, exclusions). The chip narrates released → current. Only
+  // when the board flipped sides (no current data for our released side)
+  // does the released record stand in as the display.
   function releasedView(raw) {
     const r = raw.released;
     if (!r || !r.tier || r.tier === 'no_edge') return null;
-    if (!(r.our_prob > 0) || !(r.decimal_odds > 1)) return null;
+    if (!(r.our_prob > 0)) return null;
     if (state.dropInvalidated && invalidatedAdversely(raw)) return null;
-    let best = null;
-    if (String(raw.side_raw) === String(r.side_raw)) {
-      for (const e of (raw.other_books || [])) {
-        const name = e.book && e.book.name;
-        if (!name) continue;
-        if (state.book ? name !== state.book : state.excluded.has(name)) continue;
-        const am = (e.price != null) ? e.price
-                 : (raw.market === 'ml' ? e.line_raw : null);
-        const d = amToDec(am);
-        if (!(d > 1)) continue;
-        if (!best || d > best.d) best = { d, am, name, url: (e.book && e.book.url) || null };
-      }
+    let cur = null;
+    if (String(raw.side_raw) === String(r.side_raw)
+        && raw.our_prob != null && raw.decimal_odds != null) {
+      cur = bookView(raw);
+    } else if (String(raw.side_raw) === String(r.side_raw)) {
+      // current pricing was suppressed server-side (regraded away etc.)
+      // but the book table still describes our side — shop it directly.
+      cur = bookView({ ...raw, our_prob: r.our_prob, decimal_odds: r.decimal_odds });
     }
-    if (state.book && !best) return null;    // chosen book doesn't post it
-    const dec = best ? best.d : r.decimal_odds;
-    const am = best ? best.am : r.price_american;
-    const isMl = raw.market === 'ml';
-    return { ...raw,
-      tier: r.tier, bolt: false,
-      side: r.side, side_raw: r.side_raw,
-      line: (isMl && best) ? fmtSigned(am) : r.line,
-      line_raw: (isMl && best) ? am : r.line_raw,
-      price_american: am, decimal_odds: dec,
-      our_prob: r.our_prob, edge: null,
-      book: best ? { name: best.name, url: best.url } : r.book,
-      line_move: null,
-      // Keep the current book table so the accordion still answers "where
-      // is the best line right now" (Austin, 9/7) — it lists the CURRENT
-      // side's books, valid whenever the board side matches the released
-      // side (the overwhelming case; flipped legs show none).
-      other_books: (String(raw.side_raw) === String(r.side_raw)
-        ? (raw.other_books || []) : []),
-      _relMove: isMl ? mlPayMove(r.price_american, am) : relMove(raw) };
+    if (!cur) {
+      if (state.book) return null;   // chosen book can't bet it — same as current view
+      cur = { ...raw, side: r.side, side_raw: r.side_raw,
+              line: r.line, line_raw: r.line_raw,
+              price_american: r.price_american, decimal_odds: r.decimal_odds,
+              book: r.book, other_books: [] };
+    }
+    if (!(cur.decimal_odds > 1)) return null;
+    const mv = raw.market === 'ml'
+      ? mlPayMove(r.price_american, cur.price_american)
+      : relMove({ market: raw.market, side_raw: r.side_raw,
+                  line_raw: cur.line_raw, released: r });
+    return { ...cur, tier: r.tier, bolt: false,
+             our_prob: r.our_prob, edge: null,
+             line_move: null, _relMove: mv };
   }
   function renderRelMove(mv) {
     if (!mv || !mv.moved) return '';
@@ -1056,7 +1049,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     data-view="released" aria-pressed="${state.boardView === 'released' ? 'true' : 'false'}">As released</button>
           </div>
           ${state.boardView === 'released'
-            ? `<p class="al-hint">Released grades and lines, priced at today's juice.</p>` : ''}
+            ? `<p class="al-hint">The released picks at their original grades, shown at today's
+               bettable line and juice — each row's chip reads release → now.</p>` : ''}
         </div>
         ${state.book ? '' : `
         <div class="al-books-excl">
