@@ -607,7 +607,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       price_american: am, decimal_odds: dec,
       our_prob: r.our_prob, edge: null,
       book: best ? { name: best.name, url: best.url } : r.book,
-      line_move: null, other_books: [],
+      line_move: null,
+      // Keep the current book table so the accordion still answers "where
+      // is the best line right now" (Austin, 9/7) — it lists the CURRENT
+      // side's books, valid whenever the board side matches the released
+      // side (the overwhelming case; flipped legs show none).
+      other_books: (String(raw.side_raw) === String(r.side_raw)
+        ? (raw.other_books || []) : []),
       _relMove: isMl ? mlPayMove(r.price_american, am) : relMove(raw) };
   }
   function renderRelMove(mv) {
