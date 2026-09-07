@@ -914,13 +914,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const _poolGames = new Set(state.legs
       .filter(l => (state.week == null || l.week === state.week))
       .map(l => l.game_id));
-    const _relReady = (_share != null ? _share >= 0.9 : _poolGames.size >= 12)
+    const _relReady = (_share != null ? _share >= 0.85 : _poolGames.size >= 12)
       && _poolGames.size >= 6;
     if (state.boardView === 'released'
         && state.includeParlays && !state.filters.market && !state.filters.tier
         && !_relReady) {
       state._relParlayNote =
-        `Released parlays mint once ~90% of the week's board is out — `
+        `Released parlays mint once ~85% of the week's board is out — `
         + (_share != null
           ? `${_relCount} of ${_wkSched.length} unplayed games released so far.`
           : `the board is still filling in.`);
