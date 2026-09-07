@@ -585,13 +585,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!(r.our_prob > 0)) return null;
     if (state.dropInvalidated && invalidatedAdversely(raw)) return null;
     let cur = null;
-    if (String(raw.side_raw) === String(r.side_raw)
-        && raw.our_prob != null && raw.decimal_odds != null) {
-      cur = bookView(raw);
-    } else if (String(raw.side_raw) === String(r.side_raw)) {
-      // current pricing was suppressed server-side (regraded away etc.)
-      // but the book table still describes our side — shop it directly.
-      cur = bookView({ ...raw, our_prob: r.our_prob, decimal_odds: r.decimal_odds });
+    const sameSide = String(raw.side_raw) === String(r.side_raw);
+    if (sameSide) {
+      // the leg's book table describes our side — shop it directly (pass
+      // released prob/dec through for legs whose current pricing the
+      // server suppressed).
+      cur = bookView((raw.our_prob != null && raw.decimal_odds != null)
+        ? raw : { ...raw, our_prob: r.our_prob, decimal_odds: r.decimal_odds });
+    } else if (r.other_books && r.other_books.length) {
+      // Board flipped sides — the backend ships the RELEASED side's own
+      // book table; shop it like any other leg so the row is a real,
+      // bettable current quote (Clemson released −23.5 was masquerading
+      // as a live BetMGM quote at a number the book stopped selling).
+      cur = bookView({ ...raw,
+        side: r.side, side_raw: r.side_raw,
+        line: r.line, line_raw: r.line_raw,
+        price_american: r.price_american, decimal_odds: r.decimal_odds,
+        our_prob: r.our_prob,
+        other_books: r.other_books, book: r.book, line_move: null });
     }
     if (!cur) {
       if (state.book) return null;   // chosen book can't bet it — same as current view
