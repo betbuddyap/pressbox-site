@@ -42,24 +42,25 @@
   html, body { background: var(--cream); min-height: 100vh; }
   body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-  /* HERO (rankings page-header idiom, painted in the TEAM'S color — Austin
-     9/7). JS sets the --hero-* props from /teams/colors with a luminance
-     guard: bright primaries flip the foreground to ink. Ink defaults. */
-  .page-header { background: var(--hero-bg, var(--ink)); padding: 52px 0 40px; }
-  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
-  .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--hero-acc, var(--gold)); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--hero-acc, var(--gold)); }
-  .page-eyebrow a { color: var(--hero-acc, var(--gold)); text-decoration: none; }
-  .page-eyebrow a:hover { text-decoration: underline; text-underline-offset: 3px; }
-  .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--hero-fg, var(--cream)); line-height: 1.1; }
-  .tm-accent { width: 64px; height: 4px; border-radius: 2px; background: var(--hero-bar, var(--gold)); margin-top: 14px; }
-  .page-sub { font-size: 14px; font-weight: 300; color: var(--hero-dim, #8A8A76); margin-top: 10px; }
+  /* HERO — the game-page ctx idiom (Austin 9/8: match the upcoming/game
+     hero language): ink base, the team's color as a flat fill under the
+     ink veil, italic serif name in cream. Any team color stays legible
+     because the veil deepens downward — same recipe as the game hero,
+     no luminance logic. */
+  .tm-hero { position: relative; background: var(--ink); overflow: hidden; }
+  .tm-hero-bg { position: absolute; inset: 0; }
+  .tm-hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,14,10,0.35) 0%, rgba(15,14,10,0.55) 55%, rgba(15,14,10,0.85) 100%); }
+  .tm-hero-inner { position: relative; z-index: 2; max-width: var(--max); margin: 0 auto; padding: 44px 32px 38px; }
+  .tm-breadcrumb { display: flex; align-items: center; gap: 10px; font-family: var(--sans); font-size: 11px; font-weight: 500; color: rgba(248,245,238,0.65); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 14px; }
+  .tm-breadcrumb a { color: rgba(248,245,238,0.75); text-decoration: none; }
+  .tm-breadcrumb a:hover { color: var(--gold-light); }
+  .tm-hero-name { font-family: var(--serif); font-style: italic; font-weight: 700; font-size: 48px; color: var(--cream); line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
 
   /* Hero stat strip — display numbers are SERIF (house number rule) */
-  .tm-stats { display: flex; gap: 44px; flex-wrap: wrap; margin-top: 28px; }
-  .tm-stat-lab { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--hero-dim, #8A8A76); margin-bottom: 6px; }
-  .tm-stat-val { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--hero-fg, var(--cream)); font-variant-numeric: tabular-nums; line-height: 1; }
-  .tm-stat-val .of { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--hero-dim, #8A8A76); margin-left: 4px; }
+  .tm-stats { display: flex; gap: 44px; flex-wrap: wrap; margin-top: 26px; }
+  .tm-stat-lab { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(248,245,238,0.6); margin-bottom: 6px; }
+  .tm-stat-val { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--cream); font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 1px 8px rgba(0,0,0,0.4); }
+  .tm-stat-val .of { font-family: var(--sans); font-size: 13px; font-weight: 500; color: rgba(248,245,238,0.6); margin-left: 4px; }
 
   /* MAIN */
   .tm-main { max-width: var(--max); margin: 0 auto; padding: 36px 32px 80px; }
@@ -141,9 +142,8 @@
   @keyframes tm-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
   @media (max-width: 720px) {
-    .page-header { padding: 34px 0 26px; }
-    .page-header-inner { padding: 0 18px; }
-    .page-title { font-size: 30px; }
+    .tm-hero-inner { padding: 30px 18px 26px; }
+    .tm-hero-name { font-size: 32px; }
     .tm-stats { gap: 22px; margin-top: 20px; }
     .tm-stat-val { font-size: 24px; }
     .tm-main { padding: 22px 18px 64px; }
@@ -163,11 +163,12 @@
 </nav>
 
 <!-- HERO -->
-<div class="page-header">
-  <div class="page-header-inner">
-    <div class="page-eyebrow" id="tmEyebrow"><a href="/teams.html">Teams</a></div>
-    <h1 class="page-title" id="tmTitle">&nbsp;</h1>
-    <div class="tm-accent" id="tmAccent"></div>
+<div class="tm-hero">
+  <div class="tm-hero-bg" id="tmHeroBg"></div>
+  <div class="tm-hero-overlay"></div>
+  <div class="tm-hero-inner">
+    <div class="tm-breadcrumb" id="tmEyebrow"><a href="/teams.html">Teams</a></div>
+    <h1 class="tm-hero-name" id="tmTitle">&nbsp;</h1>
     <div class="tm-stats" id="tmStats"></div>
   </div>
 </div>
@@ -199,7 +200,6 @@ const POSITIVE_SPOTS = new Set(['rested', 'off bye']);
 const els = {
   eyebrow: document.getElementById('tmEyebrow'),
   title:   document.getElementById('tmTitle'),
-  accent:  document.getElementById('tmAccent'),
   stats:   document.getElementById('tmStats'),
   body:    document.getElementById('tmBody'),
 };
@@ -236,29 +236,13 @@ function notFound(msg) {
     <div class="tm-state-sub">Pick a team from <a href="/teams.html">the directory</a>.</div></div>`;
 }
 
-// Paint the hero in the team's primary color (Austin 9/7). Bright
-// primaries (Tennessee orange, Baylor gold) flip the text to ink via a
-// relative-luminance guard; missing/odd colors leave the ink default.
+// Paint the hero's color fill — the ink veil in CSS handles legibility
+// for any team color, exactly like the game page's ctx hero.
 function paintHero(c) {
   const hex = c && /^#?[0-9a-f]{6}$/i.test(c.primary || '')
     ? (c.primary[0] === '#' ? c.primary : '#' + c.primary) : null;
   if (!hex) return;
-  const ch = i => parseInt(hex.slice(i, i + 2), 16);
-  const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-  const lum = 0.2126 * lin(ch(1)) + 0.7152 * lin(ch(3)) + 0.0722 * lin(ch(5));
-  const light = lum > 0.35;
-  const darker = '#' + [1, 3, 5].map(i =>
-    Math.round(ch(i) * 0.72).toString(16).padStart(2, '0')).join('');
-  const hdr = document.querySelector('.page-header');
-  hdr.style.setProperty('--hero-bg', `linear-gradient(150deg, ${hex} 0%, ${darker} 100%)`);
-  hdr.style.setProperty('--hero-fg', light ? 'var(--ink)' : 'var(--cream)');
-  hdr.style.setProperty('--hero-dim', light ? 'rgba(15,14,10,0.62)' : 'rgba(248,245,238,0.62)');
-  hdr.style.setProperty('--hero-acc', light ? 'rgba(15,14,10,0.85)' : 'var(--gold-light)');
-  const alt = c.alt && /^#?[0-9a-f]{6}$/i.test(c.alt)
-    ? (c.alt[0] === '#' ? c.alt : '#' + c.alt) : null;
-  hdr.style.setProperty('--hero-bar',
-    (alt && alt.toLowerCase() !== hex.toLowerCase()) ? alt
-      : light ? 'var(--ink)' : 'var(--cream)');
+  document.getElementById('tmHeroBg').style.background = hex;
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', hex);
 }
