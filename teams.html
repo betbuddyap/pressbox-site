@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="PressBox Analytics">
 <meta property="og:url" content="https://pressboxanalytics.com/teams.html">
 <meta property="og:title" content="Teams — PressBox Analytics">
-<meta property="og:description" content="All 134 FBS teams. Ratings, schedules, and performance against the spread.">
+<meta property="og:description" content="Every FBS team: rating, record, schedule, and win probabilities from the four-model board.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image-2026.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -24,49 +24,26 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Teams — PressBox Analytics">
-<meta name="twitter:description" content="All 134 FBS teams. Ratings, schedules, and performance against the spread.">
+<meta name="twitter:description" content="Every FBS team: rating, record, schedule, and win probabilities from the four-model board.">
 <meta name="twitter:image" content="https://pressboxanalytics.com/og-image-2026.png">
 
 <!-- Theme color (mobile browser chrome) -->
 <meta name="theme-color" content="#0F0E0A">
 
 <!-- Description (general SEO) -->
-<meta name="description" content="All 134 FBS teams. Ratings, schedules, and performance against the spread.">
+<meta name="description" content="Every FBS team: rating, record, schedule, and win probabilities from the four-model board.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- Design tokens (single source of truth) -->
 <link rel="stylesheet" href="/css/tokens.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #F8F5EE; min-height: 100vh; }
+  html, body { background: var(--cream); min-height: 100vh; }
   body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-  /* TICKER */
-  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
-  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
-  .ticker-track span { margin: 0 28px; color: #6A6A58; }
-  .ticker-track b { color: var(--gold-light); }
-  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-  /* NAV */
-  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
-  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
-  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
-  .nav-links a:hover, .nav-links a.active { color: var(--text); }
-  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; letter-spacing: 0.5px; }
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: transparent; border: 0; padding: 4px; }
-  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
-  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
-  .mobile-menu.open { display: flex !important; }
-  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
-  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); }
-  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
-
-  /* PAGE HEADER */
+  /* PAGE HEADER (rankings idiom) */
   .page-header { background: var(--ink); padding: 56px 0 48px; }
   .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
   .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -75,381 +52,214 @@
   .page-title em { font-style: italic; color: var(--gold-light); }
   .page-sub { font-size: 14px; font-weight: 300; color: #8A8A76; margin-top: 8px; }
 
-  /* CONTROLS */
-  .controls-bar { background: var(--cream-dark); border-bottom: 1px solid var(--border); position: sticky; top: 80px; z-index: 90; }
-  .controls-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; gap: 0; overflow-x: auto; }
-  .conf-tab { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text-light); padding: 14px 18px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
-  .conf-tab:hover { color: var(--text-mid); }
-  .conf-tab.active { color: var(--text); border-bottom-color: var(--gold); }
-  .search-wrap { margin-left: auto; padding: 8px 0; }
-  .search-input { font-family: var(--sans); font-size: 12px; color: var(--text); background: var(--cream); border: 1px solid var(--border); border-radius: 3px; padding: 7px 12px; width: 200px; outline: none; }
-  .search-input::placeholder { color: var(--text-light); }
-  .search-input:focus { border-color: var(--gold); }
+  /* CONTROLS (rankings bar idiom) */
+  .tm-bar { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 90; }
+  .tm-bar-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .tm-conf-wrap { display: flex; align-items: center; gap: 10px; padding: 12px 0; }
+  .tm-conf-label { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); }
+  .tm-conf { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 10px; outline: none; cursor: pointer; }
+  .tm-conf:focus { border-color: var(--gold); }
+  .tm-search { font-family: var(--sans); font-size: 13px; color: var(--text); background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px 12px; width: 220px; outline: none; }
+  .tm-search::placeholder { color: var(--text-light); }
+  .tm-search:focus { border-color: var(--gold); }
 
   /* MAIN */
-  .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; }
+  .tm-main { max-width: var(--max); margin: 0 auto; padding: 28px 32px 80px; }
+  .tm-provenance { font-family: var(--sans); font-size: 12px; color: var(--text-light); margin-bottom: 18px; }
 
   /* CONFERENCE SECTION */
-  .conf-section { margin-bottom: 48px; }
-  .conf-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-  .conf-name { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--text); }
-  .conf-count { font-size: 12px; color: var(--text-light); }
-  .conf-line { flex: 1; height: 1px; background: var(--border); }
+  .tm-conf-section { margin-bottom: 40px; }
+  .tm-conf-header { display: flex; align-items: center; gap: 14px; margin: 0 0 10px; }
+  .tm-conf-name { font-family: var(--serif); font-size: var(--text-xl); font-weight: 700; color: var(--text); }
+  .tm-conf-count { font-family: var(--sans); font-size: var(--text-sm); color: var(--text-light); }
+  .tm-conf-line { flex: 1; height: 1px; background: var(--border); }
 
-  /* TEAMS GRID */
-  .teams-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-  @media (max-width: 900px) { .teams-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 600px) { .teams-grid { grid-template-columns: repeat(2, 1fr); } }
+  /* TEAM LIST (rankings row idiom) */
+  .tm-list { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--cream); overflow: hidden; }
+  .tm-listhead { display: grid; grid-template-columns: 44px 1fr 84px 96px 64px; gap: 12px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--cream-dark); }
+  .tm-listhead span { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); }
+  .tm-listhead .num { text-align: right; }
+  .tm-row { display: grid; grid-template-columns: 44px 1fr 84px 96px 64px; gap: 12px; align-items: center; padding: 13px 16px; border-bottom: 1px solid var(--border); text-decoration: none; transition: background var(--transition-fast); }
+  .tm-row:last-child { border-bottom: none; }
+  .tm-row:hover { background: var(--cream-dark); }
+  .tm-rank { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--gold-deep); font-variant-numeric: tabular-nums; }
+  .tm-name { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tm-name .conf-tag { font-family: var(--sans); font-size: var(--text-micro); font-weight: 600; color: var(--text-light); margin-left: 8px; }
+  .tm-rec, .tm-proj, .tm-rating { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
+  .tm-proj { color: var(--text-mid); }
+  .tm-rec .sub, .tm-proj .sub { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); }
 
-  /* TEAM CARD */
-  .team-card { background: var(--cream); padding: 18px 20px; text-decoration: none; display: block; transition: background 0.12s; }
-  .team-card:hover { background: var(--cream-dark); }
-  .team-rank { font-family: var(--serif); font-size: 11px; color: var(--gold); font-weight: 700; margin-bottom: 6px; }
-  .team-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.2; }
-  .team-score-row { display: flex; align-items: center; gap: 8px; }
-  .team-score-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .team-score-fill { height: 100%; border-radius: 2px; }
-  .team-score-val { font-size: 11px; font-weight: 600; color: var(--text-light); flex-shrink: 0; }
+  /* STATES */
+  .tm-state { text-align: center; padding: 80px 24px; }
+  .tm-state-title { font-family: var(--serif); font-size: var(--text-xl); font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .tm-state-sub { font-family: var(--sans); font-size: 14px; color: var(--text-light); line-height: 1.6; }
+  .tm-skel { height: 56px; border-bottom: 1px solid var(--border); background: linear-gradient(90deg, rgba(26,23,5,0.03) 25%, rgba(26,23,5,0.06) 50%, rgba(26,23,5,0.03) 75%); background-size: 200% 100%; animation: tm-shimmer 1.3s ease-in-out infinite; }
+  @keyframes tm-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-  /* LOADING */
-  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; }
-  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-light); }
-
-  /* FOOTER */
-  footer { background: var(--ink); padding: 32px 0; }
-  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
-  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
-  .footer-links { display: flex; gap: 20px; }
-  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
-
-  /* ── LIVE LINES NAV TREATMENT ── */
-  /* Live Lines is the "what's actionable right now" surface — rust pulsing dot
-     signals "we have live picks." The dot stays on every page; on the Live Lines
-     page itself, .active turns it dark to indicate "you are here." */
-  .nav-links a.nav-live {
-    color: var(--rust) !important;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    position: relative;
-    text-transform: uppercase;
-    font-size: 11px;
+  @media (max-width: 720px) {
+    .page-header { padding: 36px 0 26px; }
+    .page-header-inner { padding: 0 18px; }
+    .page-title { font-size: 32px; }
+    .tm-bar-inner { padding: 0 18px; flex-wrap: wrap; }
+    .tm-search { width: 100%; }
+    .tm-main { padding: 22px 18px 64px; }
+    .tm-listhead { display: none; }
+    .tm-row { grid-template-columns: 36px 1fr 74px; }
+    .tm-proj, .tm-rating { display: none; }
   }
-  .nav-links a.nav-live::before {
-    content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: var(--rust);
-    border-radius: 50%;
-    margin-right: 7px;
-    vertical-align: 2px;
-    animation: pulse-live 2.4s ease-in-out infinite;
-  }
-  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
-  .nav-links a.nav-live.active { color: var(--text) !important; }
-  .nav-links a.nav-live.active::before { background: var(--text); animation: none; }
-  @keyframes pulse-live {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-  }
-  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
-
-  /* ── HAMBURGER (consistent) ── */
-  .hamburger {
-    display: none;
-    flex-direction: column !important;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    cursor: pointer;
-    padding: 4px;
-    background: transparent;
-    border: 0;
-    outline: 0;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 0;
-    box-shadow: none;
-    width: 32px;
-    height: 32px;
-  }
-  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
-  .mobile-menu {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--cream);
-    z-index: 300;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 36px;
-  }
-  .mobile-menu.open { display: flex !important; }
-  .mobile-menu a {
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text);
-    text-decoration: none;
-  }
-  .mobile-menu .close-btn {
-    position: absolute;
-    top: 28px; right: 28px;
-    font-size: 28px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: var(--text);
-    line-height: 1;
-  }
-  .mobile-menu .btn-mobile {
-    background: var(--ink);
-    color: var(--cream) !important;
-    padding: 14px 32px;
-    border-radius: 4px;
-    font-family: var(--sans) !important;
-    font-size: 14px !important;
-    font-weight: 600;
-  }
-  @media (min-width: 961px) { .hamburger { display: none !important; } }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
-
-  /* ── UNIFIED FOOTER ── */
-  footer { background: var(--cream-dark); border-top: 1px solid var(--border); margin-top: 80px; padding: 48px 0 32px; }
-  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .footer-logo img { height: 56px; width: auto; display: block; opacity: 0.85; }
-  .footer-meta-links { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
-  .footer-meta-links a { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
-  .footer-meta-links a:hover { color: var(--text); }
-  .footer-note { font-family: var(--sans); font-size: 11px; color: var(--text-light); text-align: center; max-width: 600px; line-height: 1.6; }
-  .footer-legal-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-  .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
-  .footer-legal-links a:hover { color: var(--text-mid); }
-
-
-
-  /* ── MOBILE POLISH ── */
-  @media (max-width: 480px) {
-    .teams-grid { grid-template-columns: 1fr; gap: 8px; }
-    .conf-tab { font-size: 10px; padding: 8px 10px; }
-    .main { padding: 24px 16px 60px; }
-  }
-
-  </style>
+  @media (prefers-reduced-motion: reduce) { .tm-skel { animation: none; } }
+</style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-inner">
     <a href="/" class="nav-logo">
       <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
     </a>
-    <ul class="nav-links">
-      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
-      <li><a href="/how-it-works.html" class="">How It Works</a></li>
-      <li><a href="/about.html" class="">About</a></li>
-    </ul>
-    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
   </div>
 </nav>
-
-<!-- MOBILE MENU -->
-<div class="mobile-menu" id="mobileMenu">
-  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
-  <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
-  <a href="/how-it-works.html">How It Works</a>
-  <a href="/about.html">About</a>
-</div>
-<script>
-function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
-</script>
-
-
-
 
 <!-- PAGE HEADER -->
 <div class="page-header">
   <div class="page-header-inner">
-    <div class="page-eyebrow">2026 Season</div>
-    <h1 class="page-title">FBS <em>Teams</em></h1>
-    <p class="page-sub">133 teams · 11 conferences · Click any team for schedule, stats, and history</p>
+    <div class="page-eyebrow">FBS · 2026</div>
+    <h1 class="page-title">The <em>Teams</em></h1>
+    <p class="page-sub">Every FBS program — record, rating, and projected season off the four-model board. Pick a team for the full page.</p>
   </div>
 </div>
 
 <!-- CONTROLS -->
-<div class="controls-bar">
-  <div class="controls-inner">
-    <button class="conf-tab active" id="tab-all" onclick="setConf('all')">All</button>
-    <button class="conf-tab" id="tab-SEC" onclick="setConf('SEC')">SEC</button>
-    <button class="conf-tab" id="tab-Big Ten" onclick="setConf('Big Ten')">Big Ten</button>
-    <button class="conf-tab" id="tab-Big 12" onclick="setConf('Big 12')">Big 12</button>
-    <button class="conf-tab" id="tab-ACC" onclick="setConf('ACC')">ACC</button>
-    <button class="conf-tab" id="tab-American Athletic" onclick="setConf('American Athletic')">AAC</button>
-    <button class="conf-tab" id="tab-Mountain West" onclick="setConf('Mountain West')">Mtn West</button>
-    <button class="conf-tab" id="tab-Sun Belt" onclick="setConf('Sun Belt')">Sun Belt</button>
-    <button class="conf-tab" id="tab-Pac-12" onclick="setConf('Pac-12')">Pac-12</button>
-    <button class="conf-tab" id="tab-Mid-American" onclick="setConf('Mid-American')">MAC</button>
-    <button class="conf-tab" id="tab-Conference USA" onclick="setConf('Conference USA')">CUSA</button>
-    <button class="conf-tab" id="tab-FBS Independents" onclick="setConf('FBS Independents')">Ind</button>
-    <div class="search-wrap">
-      <input class="search-input" type="text" placeholder="Search teams..." oninput="searchTeams(this.value)" id="searchInput">
+<div class="tm-bar">
+  <div class="tm-bar-inner">
+    <div class="tm-conf-wrap">
+      <span class="tm-conf-label">Conference</span>
+      <select class="tm-conf" id="tmConf" aria-label="Filter by conference"></select>
     </div>
+    <input class="tm-search" id="tmSearch" type="search" placeholder="Find a team…" aria-label="Find a team">
   </div>
 </div>
 
 <!-- MAIN -->
-<div class="main" id="mainContent">
-  <div class="loading" id="loadingState">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading teams...</div>
+<main class="tm-main">
+  <div class="tm-provenance" id="tmProvenance"></div>
+  <div id="tmBody">
+    <div class="tm-skel"></div><div class="tm-skel"></div><div class="tm-skel"></div>
+    <div class="tm-skel"></div><div class="tm-skel"></div><div class="tm-skel"></div>
   </div>
-  <div id="teamsContainer" style="display:none;"></div>
-</div>
+</main>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-logo">
-      <img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics">
-    </div>
-    <div class="footer-meta-links">
-      <a href="/how-it-works.html">How It Works</a>
-      <a href="/about.html">About</a>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Privacy</span>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Terms</span>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Contact</span>
-    </div>
-    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
-    </div>
-</footer>
-
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-nav.js" defer></script>
 <script>
 const API = 'https://betbuddy-backend.onrender.com';
-const CONF_ORDER = ['SEC','Big Ten','Big 12','ACC','American Athletic','Mountain West','Sun Belt','Pac-12','Mid-American','Conference USA','FBS Independents'];
+const SEASON = 2026;
 
-let teamsData = {};     // { conference: [team, ...] }
-let rankingsMap = {};   // { team: rank }
-let maxScore = 60;
-let currentConf = 'all';
-let searchQuery = '';
+const state = { conf: 'All FBS', q: '', payload: null };
+const els = {
+  body: document.getElementById('tmBody'),
+  conf: document.getElementById('tmConf'),
+  search: document.getElementById('tmSearch'),
+  provenance: document.getElementById('tmProvenance'),
+};
 
-async function init() {
-  // Load teams first — show them immediately
-  const teamsRes = await fetch(`${API}/teams?season=2026`);
-  const teamsJson = await teamsRes.json();
-  teamsData = teamsJson.conferences || {};
-
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('teamsContainer').style.display = 'block';
-  render();
-
-  // Load rankings in background — enrich cards when ready
-  try {
-    const rankRes = await fetch(`${API}/rankings/power?season=2025&limit=200`);
-    const rankJson = await rankRes.json();
-    const allRanked = rankJson.full || rankJson.rankings || [];
-    maxScore = allRanked[0]?.score || 60;
-    allRanked.forEach(t => {
-      rankingsMap[t.team] = { rank: t.rank, score: t.score };
-    });
-    Object.values(teamsData).forEach(teams => {
-      teams.forEach(t => {
-        const r = rankingsMap[t.team];
-        if (r) { t.rank = r.rank; t.score = r.score; }
-      });
-      teams.sort((a, b) => (a.rank || 999) - (b.rank || 999));
-    });
-    render(); // Re-render with ranks
-  } catch(e) {
-    console.warn('Rankings failed to load:', e);
-  }
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function setConf(conf) {
-  currentConf = conf;
-  searchQuery = '';
-  document.getElementById('searchInput').value = '';
-  document.querySelectorAll('.conf-tab').forEach(t => t.classList.remove('active'));
-  const tab = document.getElementById(`tab-${conf}`);
-  if (tab) tab.classList.add('active');
-  render();
+// Actual W-L from the season rows' played games (the board locks results).
+function actualRecord(t) {
+  const g = Array.isArray(t.season) ? t.season : [];
+  const w = g.filter(x => x.played && x.result === 'W').length;
+  const l = g.filter(x => x.played && x.result === 'L').length;
+  return `${w}-${l}`;
 }
 
-function searchTeams(q) {
-  searchQuery = q.toLowerCase();
-  currentConf = 'all';
-  document.querySelectorAll('.conf-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-all').classList.add('active');
-  render();
-}
+function teamHref(name) { return `/team.html?team=${encodeURIComponent(name)}`; }
 
 function render() {
-  const container = document.getElementById('teamsContainer');
-  const confs = currentConf === 'all' ? CONF_ORDER : [currentConf];
+  const p = state.payload;
+  if (!p) return;
+  let teams = (p.teams || []).slice().sort((a, b) => b.rating - a.rating);
+  const rankOf = {};
+  teams.forEach((t, i) => { rankOf[t.team] = i + 1; });
 
-  container.innerHTML = confs.map(conf => {
-    let teams = teamsData[conf] || [];
-    if (searchQuery) {
-      teams = Object.values(teamsData).flat().filter(t =>
-        t.team.toLowerCase().includes(searchQuery)
-      );
-      // Only show once when searching
-      if (conf !== confs[0]) return '';
-    }
-    if (!teams.length) return '';
+  const q = state.q.trim().toLowerCase();
+  if (q) teams = teams.filter(t => t.team.toLowerCase().includes(q));
+  if (state.conf !== 'All FBS') teams = teams.filter(t => t.conference === state.conf);
 
+  if (!teams.length) {
+    els.body.innerHTML = `<div class="tm-state"><div class="tm-state-title">No teams match.</div>
+      <div class="tm-state-sub">Try a different search or conference.</div></div>`;
+    return;
+  }
+
+  const rowHTML = t => `
+    <a class="tm-row" href="${teamHref(t.team)}">
+      <span class="tm-rank">${rankOf[t.team]}</span>
+      <span class="tm-name">${escapeHtml(t.team)}${q ? `<span class="conf-tag">${escapeHtml(t.conference || '')}</span>` : ''}</span>
+      <span class="tm-rec">${actualRecord(t)}</span>
+      <span class="tm-proj">${escapeHtml(t.proj_record || '—')}</span>
+      <span class="tm-rating">${t.rating == null ? '—' : t.rating.toFixed(1)}</span>
+    </a>`;
+
+  const head = `
+    <div class="tm-listhead">
+      <span>Rk</span><span>Team</span><span class="num">Record</span>
+      <span class="num">Projected</span><span class="num">Rating</span>
+    </div>`;
+
+  // Searching or a single conference → one flat list; otherwise grouped by
+  // conference in the board's own order.
+  if (q || state.conf !== 'All FBS') {
+    els.body.innerHTML = `<div class="tm-list">${head}${teams.map(rowHTML).join('')}</div>`;
+    return;
+  }
+  const confs = p.conferences && p.conferences.length
+    ? p.conferences : [...new Set(teams.map(t => t.conference))];
+  els.body.innerHTML = confs.map(c => {
+    const group = teams.filter(t => t.conference === c);
+    if (!group.length) return '';
     return `
-      <div class="conf-section">
-        <div class="conf-header">
-          <div class="conf-name">${conf}</div>
-          <div class="conf-count">${teams.length} teams</div>
-          <div class="conf-line"></div>
+      <section class="tm-conf-section">
+        <div class="tm-conf-header">
+          <h2 class="tm-conf-name">${escapeHtml(c)}</h2>
+          <span class="tm-conf-count">${group.length} teams</span>
+          <span class="tm-conf-line"></span>
         </div>
-        <div class="teams-grid">
-          ${teams.map(t => teamCard(t)).join('')}
-        </div>
-      </div>
-    `;
+        <div class="tm-list">${head}${group.map(rowHTML).join('')}</div>
+      </section>`;
   }).join('');
 }
 
-function teamCard(t) {
-  const score = t.score ?? null;
-  const rank  = t.rank ?? null;
-  const barPct = score != null
-    ? Math.max(2, Math.min(100, ((score + 60) / (maxScore + 60)) * 100))
-    : 2;
-  const barColor = score > 10 ? '#B8922A' : score > 0 ? '#C5A878' : '#DDD6C8';
-
-  return `
-    <a class="team-card" href="/team.html?team=${encodeURIComponent(t.team)}">
-      ${rank ? `<div class="team-rank">#${rank}</div>` : ''}
-      <div class="team-name">${t.team}</div>
-      <div class="team-score-row">
-        <div class="team-score-bar">
-          <div class="team-score-fill" style="width:${barPct}%;background:${barColor};"></div>
-        </div>
-        <div class="team-score-val">${score != null ? (score >= 0 ? '+' : '') + score.toFixed(1) : '—'}</div>
-      </div>
-    </a>
-  `;
+function buildConfSelect() {
+  const p = state.payload;
+  const confs = p.conferences && p.conferences.length
+    ? p.conferences : [...new Set((p.teams || []).map(t => t.conference))];
+  els.conf.innerHTML = ['All FBS', ...confs]
+    .map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
 }
 
-init().catch(e => {
-  console.error(e);
-  document.getElementById('loadingState').innerHTML = '<div class="loading-text" style="color:#B87878;">Failed to load teams. Please refresh.</div>';
-});
+els.conf.addEventListener('change', () => { state.conf = els.conf.value; render(); });
+els.search.addEventListener('input', () => { state.q = els.search.value; render(); });
+
+fetch(`${API}/rankings/teams?season=${SEASON}&offseason=1`)
+  .then(r => { if (!r.ok) throw new Error(`board ${r.status}`); return r.json(); })
+  .then(p => {
+    state.payload = p;
+    els.provenance.textContent =
+      `${(p.teams || []).length} FBS teams · four-model blend · rebuilt after every game weekend`;
+    buildConfSelect();
+    render();
+  })
+  .catch(() => {
+    els.body.innerHTML = `<div class="tm-state"><div class="tm-state-title">The board is rebuilding.</div>
+      <div class="tm-state-sub">Give it a moment and refresh — rankings recompute after every data pull.</div></div>`;
+  });
 </script>
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/site-chrome.js" defer></script>
 </body>
 </html>

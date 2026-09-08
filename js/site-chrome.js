@@ -33,6 +33,7 @@
     { href: '/parlay.html',     label: 'Parlay' },
     { href: '/allocator.html',  label: 'Allocator' },
     { href: '/rankings.html',   label: 'Rankings' },
+    { href: '/teams.html',      label: 'Teams' },
     { href: '/results.html',    label: 'Results' }
   ];
 
@@ -58,6 +59,8 @@
     return p || '/';
   }
   var here = normPath(location.pathname);
+  // A single team's page belongs to the Teams tab.
+  if (here === '/team.html') here = '/teams.html';
   function isActive(href) { return normPath(href) === here; }
 
   // ── Canonical stylesheet (Live Lines nav + footer) ───────────

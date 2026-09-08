@@ -13,9 +13,8 @@
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PressBox Analytics">
-<meta property="og:url" content="https://pressboxanalytics.com/team.html">
 <meta property="og:title" content="Team — PressBox Analytics">
-<meta property="og:description" content="PressBox Analytics team profile, ratings, and schedule.">
+<meta property="og:description" content="Rank, record, schedule, and win probabilities from the four-model board.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image-2026.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -24,630 +23,340 @@
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Team — PressBox Analytics">
-<meta name="twitter:description" content="PressBox Analytics team profile, ratings, and schedule.">
+<meta name="twitter:description" content="Rank, record, schedule, and win probabilities from the four-model board.">
 <meta name="twitter:image" content="https://pressboxanalytics.com/og-image-2026.png">
 
 <!-- Theme color (mobile browser chrome) -->
 <meta name="theme-color" content="#0F0E0A">
 
 <!-- Description (general SEO) -->
-<meta name="description" content="PressBox Analytics team profile, ratings, and schedule.">
+<meta name="description" content="Rank, record, schedule, and win probabilities from the four-model board.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- Design tokens (single source of truth) -->
 <link rel="stylesheet" href="/css/tokens.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #F8F5EE; min-height: 100vh; }
+  html, body { background: var(--cream); min-height: 100vh; }
   body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-  /* TICKER */
-  .ticker { background: var(--ink); color: var(--gold-light); font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; padding: 8px 0; overflow: hidden; white-space: nowrap; }
-  .ticker-track { display: inline-block; animation: ticker 36s linear infinite; }
-  .ticker-track span { margin: 0 28px; color: #6A6A58; }
-  .ticker-track b { color: var(--gold-light); }
-  @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  /* HERO (rankings page-header idiom + team identity accent) */
+  .page-header { background: var(--ink); padding: 52px 0 40px; }
+  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+  .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+  .page-eyebrow a { color: var(--gold); text-decoration: none; }
+  .page-eyebrow a:hover { color: var(--gold-light); }
+  .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--cream); line-height: 1.1; }
+  .tm-accent { width: 64px; height: 4px; border-radius: 2px; background: var(--gold); margin-top: 14px; }
+  .page-sub { font-size: 14px; font-weight: 300; color: #8A8A76; margin-top: 10px; }
 
-  /* NAV */
-  nav { background: var(--cream); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
-  .nav-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 80px; }
-  .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
-  .nav-links a { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
-  .nav-links a:hover, .nav-links a.active { color: var(--text); }
-  .btn-nav { background: var(--ink) !important; color: var(--cream) !important; padding: 8px 18px; border-radius: 4px; font-size: 12px !important; font-weight: 600 !important; }
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: transparent; border: 0; padding: 4px; }
-  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
-  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--cream); z-index: 300; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
-  .mobile-menu.open { display: flex !important; }
-  .mobile-menu a { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text); text-decoration: none; }
-  .mobile-menu .close-btn { position: absolute; top: 28px; right: 28px; font-size: 28px; cursor: pointer; background: none; border: none; color: var(--text); }
-  .mobile-menu .btn-mobile { background: var(--ink); color: var(--cream) !important; padding: 14px 32px; border-radius: 4px; font-family: var(--sans) !important; font-size: 14px !important; font-weight: 600; }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
+  /* Hero stat strip — display numbers are SERIF (house number rule) */
+  .tm-stats { display: flex; gap: 44px; flex-wrap: wrap; margin-top: 28px; }
+  .tm-stat-lab { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: #8A8A76; margin-bottom: 6px; }
+  .tm-stat-val { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--cream); font-variant-numeric: tabular-nums; line-height: 1; }
+  .tm-stat-val .of { font-family: var(--sans); font-size: 13px; font-weight: 500; color: #8A8A76; margin-left: 4px; }
 
-  /* PAGE HEADER */
-  .page-header { background: var(--ink); padding: 52px 0 44px; }
-  .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; }
-  .header-left { }
-  .breadcrumb { font-size: 11px; color: #8A8A76; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  .breadcrumb a { color: #8A8A76; text-decoration: none; }
-  .breadcrumb a:hover { color: var(--gold); }
-  .page-conference { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .page-conference::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
-  .page-team { font-family: var(--serif); font-size: 48px; font-weight: 700; color: var(--cream); line-height: 1.05; }
-  .header-right { text-align: right; flex-shrink: 0; }
-  .rank-display { font-family: var(--serif); font-size: 72px; font-weight: 700; color: var(--gold-light); line-height: 1; }
-  .rank-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #8A8A76; margin-top: 4px; }
+  /* MAIN */
+  .tm-main { max-width: var(--max); margin: 0 auto; padding: 36px 32px 80px; }
+  .tm-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 36px; }
+  @media (max-width: 880px) { .tm-grid { grid-template-columns: 1fr; } }
+  .tm-sect-h { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold-deep); margin-bottom: 14px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .tm-sect-h .note { font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text-light); font-size: var(--text-sm); }
 
-  /* MAIN LAYOUT */
-  .main { max-width: var(--max); margin: 0 auto; padding: 40px 32px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
-  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+  /* SCHEDULE (rankings rk-gm idiom, widened) */
+  .tm-sched { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--cream); overflow: hidden; }
+  .tm-gm { display: grid; grid-template-columns: 96px 1fr auto 30px; align-items: center; gap: 12px; padding: 11px 14px; border-bottom: 1px dashed var(--border); text-decoration: none; transition: background var(--transition-fast); }
+  .tm-gm:last-child { border-bottom: none; }
+  a.tm-gm:hover { background: var(--cream-dark); }
+  .tm-gm-when { min-width: 0; }
+  .tm-gm-date { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--text); }
+  .tm-gm-time { font-family: var(--sans); font-size: var(--text-micro); font-weight: 500; color: var(--text-light); margin-top: 1px; }
+  .tm-gm-opp { min-width: 0; }
+  .tm-gm-opp-name { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tm-gm-opp-name .site { color: var(--text-light); font-weight: 500; }
+  .tm-gm-opp-name .oppr { color: var(--gold-deep); font-weight: 700; }
+  .tm-gm-meta { font-family: var(--sans); font-size: var(--text-micro); font-weight: 500; color: var(--text-light); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .tm-tv { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; background: rgba(26,23,5,0.07); color: var(--text-mid); }
+  .tm-reason { font-size: 8px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; padding: 1px 4px; border-radius: 3px; background: rgba(176,124,18,0.14); color: #8A5E00; }
+  .tm-reason-pos { background: rgba(46,107,62,0.14); color: #2E6B3E; }
+  .tm-gm-num { text-align: right; }
+  .tm-gm-wp { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .tm-gm-cx { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.3px; color: var(--text-light); text-transform: uppercase; margin-top: 1px; }
+  .cx-lock    { color: #2E6B3E; }
+  .cx-favored { color: var(--text-light); }
+  .cx-lean    { color: #B07C12; }
+  .cx-tossup  { color: #C0561C; }
+  .cx-loss    { color: var(--text-light); }
+  .cx-final   { color: var(--gold); }
+  .tm-wl { font-family: var(--sans); font-size: 11px; font-weight: 800; text-align: center; border-radius: var(--radius-md); padding: 3px 0; }
+  .tm-wl-w { background: rgba(46,107,62,0.14); color: #2E6B3E; }
+  .tm-wl-l { background: rgba(26,23,5,0.06); color: var(--text-light); }
+  .tm-gm.is-danger { background: rgba(176,124,18,0.05); box-shadow: inset 2px 0 0 #B07C12; }
+  .tm-gm.is-tossup { background: rgba(192,86,28,0.06); box-shadow: inset 2px 0 0 #C0561C; }
+  .tm-gm.is-final .tm-gm-wp { color: var(--ink); }
 
-  /* SECTION LABELS */
-  .section-label { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--text-light); display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  /* THE FOUR SIGNALS (rankings rk-model idiom) */
+  .tm-panel { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--cream); padding: 18px 16px; }
+  .tm-model { display: grid; grid-template-columns: 64px 1fr 52px; align-items: center; gap: 12px; margin-bottom: 9px; }
+  .tm-model:last-child { margin-bottom: 0; }
+  .tm-model-name { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--text-mid); }
+  .tm-model.is-blend .tm-model-name { color: var(--gold); font-weight: 700; }
+  .tm-model-track { position: relative; height: 6px; background: rgba(26,23,5,0.07); border-radius: 3px; }
+  .tm-model-zero { position: absolute; top: -2px; bottom: -2px; width: 1px; background: rgba(26,23,5,0.25); }
+  .tm-model-fill { position: absolute; top: 0; height: 6px; border-radius: 3px; background: var(--text-mid); }
+  .tm-model.is-blend .tm-model-fill { background: var(--gold); }
+  .tm-model-val { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; }
 
-  /* SCHEDULE */
-  .schedule-table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
-  .schedule-table th { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); }
-  .schedule-table th.r { text-align: right; }
-  .schedule-row { border-bottom: 1px solid var(--border); }
-  .schedule-row:last-child { border-bottom: none; }
-  .schedule-row:hover { background: var(--cream-dark); }
-  .schedule-row td { padding: 12px; vertical-align: middle; }
-  .week-cell { font-size: 11px; color: var(--text-light); width: 44px; }
-  .date-cell { font-size: 12px; color: var(--text-light); width: 80px; white-space: nowrap; }
-  .opp-cell { }
-  .opp-ha { font-size: 10px; color: var(--text-light); font-style: italic; margin-right: 4px; }
-  .opp-name { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); }
-  .opp-conf { font-size: 10px; color: var(--text-light); margin-left: 6px; }
-  .neutral-tag { font-size: 9px; color: #7060A8; background: #EDE8F5; padding: 1px 6px; border-radius: 2px; margin-left: 6px; }
-  .conf-tag { font-size: 9px; color: #5A4010; background: var(--gold-pale); padding: 1px 6px; border-radius: 2px; margin-left: 6px; }
-  .result-cell { text-align: right; width: 100px; }
-  .result-win { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--win); }
-  .result-loss { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--loss); }
-  .result-score { font-size: 12px; color: var(--text-mid); margin-left: 6px; }
-  .result-upcoming { font-size: 11px; color: var(--text-light); }
-  .venue-cell { font-size: 11px; color: var(--text-light); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Context rows (rankings rk-kv idiom) */
+  .tm-kv { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px dashed var(--border); }
+  .tm-kv:last-child { border-bottom: none; }
+  .tm-kv-k { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); }
+  .tm-kv-v { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .tm-side-stack > * + * { margin-top: 24px; }
 
-  /* SIDEBAR CARDS */
-  .sidebar { display: flex; flex-direction: column; gap: 20px; }
-  .sidebar-card { background: var(--cream-dark); border: 1px solid var(--border); border-radius: 4px; padding: 22px; }
-  .card-title { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .card-title em { font-style: italic; color: var(--gold); }
+  /* STATES */
+  .tm-state { text-align: center; padding: 80px 24px; }
+  .tm-state-title { font-family: var(--serif); font-size: var(--text-xl); font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .tm-state-sub { font-family: var(--sans); font-size: 14px; color: var(--text-light); line-height: 1.6; }
+  .tm-state-sub a { color: var(--gold-deep); font-weight: 600; text-decoration: none; }
+  .tm-skel { height: 56px; border-bottom: 1px solid var(--border); background: linear-gradient(90deg, rgba(26,23,5,0.03) 25%, rgba(26,23,5,0.06) 50%, rgba(26,23,5,0.03) 75%); background-size: 200% 100%; animation: tm-shimmer 1.3s ease-in-out infinite; }
+  @keyframes tm-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-  /* STAT ROWS */
-  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-name { font-size: 12px; color: var(--text-mid); }
-  .stat-val { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
-  .stat-val.good { color: var(--win); }
-  .stat-val.bad { color: var(--loss); }
-
-  /* FULL STAT ROWS WITH PERCENTILE */
-  .stats-group { margin-bottom: 20px; }
-  .stats-group-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-light); padding: 8px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
-  .stat-row-full { padding: 7px 0; border-bottom: 1px solid #EFE9DC; }
-  .stat-row-full:last-child { border-bottom: none; }
-  .stat-row-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
-  .stat-right { display: flex; align-items: baseline; gap: 10px; }
-  .stat-rank-label { font-size: 10px; color: var(--text-light); }
-  .stat-val-main { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--text); }
-  .stat-bar-wrap { display: flex; align-items: center; gap: 10px; }
-  .stat-bar-track { flex: 1; height: 8px; background: var(--cream-dark); border-radius: 4px; overflow: hidden; }
-  .stat-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease, background 0.2s; min-width: 4px; }
-  .stat-pct { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; width: 70px; text-align: right; flex-shrink: 0; }
-
-  /* RATINGS HISTORY */
-  .ratings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .rating-item { text-align: center; padding: 12px 8px; background: var(--cream); border: 1px solid var(--border); border-radius: 3px; }
-  .rating-season { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); margin-bottom: 4px; }
-  .rating-val { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--text); }
-  .rating-val.gold { color: var(--gold); }
-  .rating-label { font-size: 9px; color: var(--text-light); margin-top: 2px; }
-
-  /* RECORD DISPLAY */
-  .record-big { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
-  .record-num { font-family: var(--serif); font-size: 36px; font-weight: 700; }
-  .record-w { color: var(--win); }
-  .record-l { color: var(--loss); }
-  .record-dash { color: var(--border); font-size: 28px; }
-  .record-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--text-light); }
-
-  .stats-main-card { margin-bottom: 40px; }
-
-  /* LOADING */
-  .loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px; grid-column: 1 / -1; }
-  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-light); }
-
-  /* FOOTER */
-  footer { background: var(--ink); padding: 32px 0; }
-  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
-  .footer-note { font-family: var(--sans); font-size: 11px; color: #2A2920; max-width: 400px; line-height: 1.5; text-align: center; }
-  .footer-links { display: flex; gap: 20px; }
-  .footer-links a { font-family: var(--sans); font-size: 11px; color: #2A2920; text-decoration: none; }
-
-  /* ── LIVE LINES NAV TREATMENT ── */
-  /* Live Lines is the "what's actionable right now" surface — rust pulsing dot
-     signals "we have live picks." The dot stays on every page; on the Live Lines
-     page itself, .active turns it dark to indicate "you are here." */
-  .nav-links a.nav-live {
-    color: var(--rust) !important;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    position: relative;
-    text-transform: uppercase;
-    font-size: 11px;
+  @media (max-width: 720px) {
+    .page-header { padding: 34px 0 26px; }
+    .page-header-inner { padding: 0 18px; }
+    .page-title { font-size: 30px; }
+    .tm-stats { gap: 22px; margin-top: 20px; }
+    .tm-stat-val { font-size: 24px; }
+    .tm-main { padding: 22px 18px 64px; }
+    .tm-gm { grid-template-columns: 78px 1fr auto 26px; gap: 8px; padding: 10px 10px; }
   }
-  .nav-links a.nav-live::before {
-    content: '';
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    background: var(--rust);
-    border-radius: 50%;
-    margin-right: 7px;
-    vertical-align: 2px;
-    animation: pulse-live 2.4s ease-in-out infinite;
-  }
-  .nav-links a.nav-live:hover { color: var(--rust-light) !important; }
-  .nav-links a.nav-live.active { color: var(--text) !important; }
-  .nav-links a.nav-live.active::before { background: var(--text); animation: none; }
-  @keyframes pulse-live {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.85); }
-  }
-  .mobile-menu a.nav-live-mobile { color: var(--rust) !important; }
-
-  /* ── HAMBURGER (consistent) ── */
-  .hamburger {
-    display: none;
-    flex-direction: column !important;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    cursor: pointer;
-    padding: 4px;
-    background: transparent;
-    border: 0;
-    outline: 0;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 0;
-    box-shadow: none;
-    width: 32px;
-    height: 32px;
-  }
-  .hamburger span { display: block; width: 22px; height: 2px; background: #1A1705; border-radius: 2px; }
-  .mobile-menu {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--cream);
-    z-index: 300;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 36px;
-  }
-  .mobile-menu.open { display: flex !important; }
-  .mobile-menu a {
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text);
-    text-decoration: none;
-  }
-  .mobile-menu .close-btn {
-    position: absolute;
-    top: 28px; right: 28px;
-    font-size: 28px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: var(--text);
-    line-height: 1;
-  }
-  .mobile-menu .btn-mobile {
-    background: var(--ink);
-    color: var(--cream) !important;
-    padding: 14px 32px;
-    border-radius: 4px;
-    font-family: var(--sans) !important;
-    font-size: 14px !important;
-    font-weight: 600;
-  }
-  @media (min-width: 961px) { .hamburger { display: none !important; } }
-  @media (max-width: 960px) { .nav-links { display: none; } .hamburger { display: flex; } }
-
-  /* ── UNIFIED FOOTER ── */
-  footer { background: var(--cream-dark); border-top: 1px solid var(--border); margin-top: 80px; padding: 48px 0 32px; }
-  .footer-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .footer-logo img { height: 56px; width: auto; display: block; opacity: 0.85; }
-  .footer-meta-links { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
-  .footer-meta-links a { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
-  .footer-meta-links a:hover { color: var(--text); }
-  .footer-note { font-family: var(--sans); font-size: 11px; color: var(--text-light); text-align: center; max-width: 600px; line-height: 1.6; }
-  .footer-legal-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-  .footer-legal-links a { font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--text-light); text-decoration: none; }
-  .footer-legal-links a:hover { color: var(--text-mid); }
-
-
-
-  /* ── MOBILE POLISH ── */
-  @media (max-width: 480px) {
-    .main { padding: 24px 16px 60px; }
-    .team-hero { padding: 24px 16px; }
-  }
-
-  </style>
+  @media (prefers-reduced-motion: reduce) { .tm-skel { animation: none; } }
+</style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="nav-inner">
     <a href="/" class="nav-logo">
       <img src="pressbox-w2a-cream-cropped.png" alt="PressBox Analytics" style="height:68px;width:auto;display:block;">
     </a>
-    <ul class="nav-links">
-      <li><a href="/live-lines.html" class="nav-live">Live Lines</a></li>
-      <li><a href="/how-it-works.html" class="">How It Works</a></li>
-      <li><a href="/about.html" class="">About</a></li>
-    </ul>
-    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
   </div>
 </nav>
 
-<!-- MOBILE MENU -->
-<div class="mobile-menu" id="mobileMenu">
-  <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('open')" aria-label="Close menu">✕</button>
-  <a href="/live-lines.html" class="nav-live-mobile">Live Lines</a>
-  <a href="/how-it-works.html">How It Works</a>
-  <a href="/about.html">About</a>
-</div>
-<script>
-function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
-</script>
-
-
-
-
-<!-- PAGE HEADER -->
-<div class="page-header" id="pageHeader">
+<!-- HERO -->
+<div class="page-header">
   <div class="page-header-inner">
-    <div class="header-left">
-      <div class="breadcrumb">
-        <a href="/teams.html">← Teams</a>
-      </div>
-      <div class="page-conference" id="headerConf">Loading...</div>
-      <div class="page-team" id="headerTeam">—</div>
-    </div>
-    <div class="header-right" id="headerRank" style="display:none;">
-      <div class="rank-display" id="rankNum">—</div>
-      <div class="rank-label">PressBox Ranking</div>
-    </div>
+    <div class="page-eyebrow" id="tmEyebrow"><a href="/teams.html">Teams</a></div>
+    <h1 class="page-title" id="tmTitle">&nbsp;</h1>
+    <div class="tm-accent" id="tmAccent"></div>
+    <div class="tm-stats" id="tmStats"></div>
   </div>
 </div>
 
 <!-- MAIN -->
-<div class="main" id="mainContent">
-  <div class="loading" id="loadingState">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading team data...</div>
+<main class="tm-main">
+  <div id="tmBody">
+    <div class="tm-skel"></div><div class="tm-skel"></div><div class="tm-skel"></div>
+    <div class="tm-skel"></div><div class="tm-skel"></div><div class="tm-skel"></div>
   </div>
-</div>
+</main>
 
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-logo">
-      <img src="pressbox-w2a-ink-cropped.png" alt="PressBox Analytics">
-    </div>
-    <div class="footer-meta-links">
-      <a href="/how-it-works.html">How It Works</a>
-      <a href="/about.html">About</a>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Privacy</span>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Terms</span>
-      <span style="font-family:var(--sans);font-size:12px;font-weight:500;color:var(--text-light);">Contact</span>
-    </div>
-    <div class="footer-note">PressBox is for entertainment and educational purposes only. Past performance does not guarantee future results. Please bet responsibly.</div>
-    </div>
-</footer>
-
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-nav.js" defer></script>
 <script>
 const API = 'https://betbuddy-backend.onrender.com';
+const SEASON = 2026;
+const TEAM = new URLSearchParams(location.search).get('team') || '';
 
-const CONF_SHORT = {
-  'ACC': 'ACC', 'Big 12': 'B12', 'Big Ten': 'B1G', 'SEC': 'SEC',
-  'American Athletic': 'AAC', 'Mountain West': 'MW', 'Sun Belt': 'SBC',
-  'Conference USA': 'CUSA', 'Mid-American': 'MAC', 'Pac-12': 'P12',
-  'FBS Independents': 'IND'
+const MODEL_ORDER = [
+  { key: 'sp',   label: 'SP+' },
+  { key: 'ppa',  label: 'PPA' },
+  { key: 'adv',  label: 'Advanced' },
+  { key: 'pace', label: 'Pace+' },
+];
+// A rest edge helps — green chip, same rule as the rankings page.
+const POSITIVE_SPOTS = new Set(['rested', 'off bye']);
+
+const els = {
+  eyebrow: document.getElementById('tmEyebrow'),
+  title:   document.getElementById('tmTitle'),
+  accent:  document.getElementById('tmAccent'),
+  stats:   document.getElementById('tmStats'),
+  body:    document.getElementById('tmBody'),
 };
 
-function buildScheduleCompact(schedule, record) {
-  if (!schedule.length) return '<div style="padding:8px 0;font-size:12px;color:var(--text-light);">No schedule available.</div>';
-  return schedule.map(g => {
-    const ha = g.neutral_site ? 'N' : (g.is_home ? 'vs' : '@');
-    const resultHtml = g.result
-      ? `<span class="result-${g.result === 'W' ? 'win' : 'loss'}" style="font-family:var(--serif);font-size:13px;font-weight:700;">${g.result} ${g.team_points}–${g.opp_points}</span>`
-      : `<span style="font-size:11px;color:var(--text-light);">TBD</span>`;
-    return `
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:10px;color:var(--text-light);width:28px;flex-shrink:0;">W${g.week}</span>
-        <span style="font-size:10px;font-style:italic;color:var(--text-light);width:20px;flex-shrink:0;">${ha}</span>
-        <a href="/team.html?team=${encodeURIComponent(g.opponent)}" style="font-family:var(--serif);font-size:13px;font-weight:700;color:var(--text);text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${g.opponent}</a>
-        <div style="text-align:right;flex-shrink:0;">${resultHtml}</div>
-      </div>
-    `;
-  }).join('');
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function fmtSigned(v) {
+  const n = Number(v);
+  if (!isFinite(n)) return '—';
+  return (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n).toFixed(1);
 }
 
-async function init() {
-  const params = new URLSearchParams(window.location.search);
-  const team = params.get('team');
-  if (!team) { window.location.href = '/teams.html'; return; }
+// Kick display, ET. CFBD gives TBD games a placeholder that lands on
+// midnight ET — show the date and say TBD instead of inventing a time.
+function kickParts(iso) {
+  if (!iso) return { date: 'TBD', time: '' };
+  const d = new Date(iso);
+  if (isNaN(d)) return { date: 'TBD', time: '' };
+  const date = d.toLocaleDateString('en-US',
+    { weekday: 'short', month: 'numeric', day: 'numeric', timeZone: 'America/New_York' });
+  const hm = d.toLocaleTimeString('en-US',
+    { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' });
+  const mid = d.toLocaleTimeString('en-US',
+    { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' }) === '00:00';
+  return { date, time: mid ? 'TBD' : hm + ' ET' };
+}
 
-  document.title = `${team} — PressBox Analytics`;
+function notFound(msg) {
+  els.title.textContent = 'Team not found';
+  els.body.innerHTML = `<div class="tm-state">
+    <div class="tm-state-title">${escapeHtml(msg)}</div>
+    <div class="tm-state-sub">Pick a team from <a href="/teams.html">the directory</a>.</div></div>`;
+}
 
-  // Load team data and rankings in parallel
-  const [teamRes, rankRes] = await Promise.all([
-    fetch(`${API}/teams/${encodeURIComponent(team)}?season=2026`),
-    fetch(`${API}/rankings/power?season=2025&limit=200`)
-  ]);
-
-  const teamData = await teamRes.json();
-  const rankData = await rankRes.json();
-
-  // Find this team's ranking
-  const allRanked = rankData.full || [];
-  const myRank = allRanked.find(t => t.team === team);
-
-  // Update header
-  document.getElementById('headerTeam').textContent = team;
-  document.getElementById('headerConf').textContent = teamData.conference || '';
-  if (myRank) {
-    document.getElementById('rankNum').textContent = `#${myRank.rank}`;
-    document.getElementById('headerRank').style.display = 'block';
+function modelRow(name, v, isBlend, maxAbs) {
+  let fill = '';
+  if (v != null && isFinite(v)) {
+    const half = Math.min(50, Math.abs(v) / maxAbs * 50);
+    const left = v >= 0 ? 50 : 50 - half;
+    fill = `<span class="tm-model-fill" style="left:${left}%;width:${half}%;"></span>`;
   }
-
-  // Build page
-  const main = document.getElementById('mainContent');
-  main.innerHTML = buildPage(teamData, myRank, allRanked);
-}
-
-function buildPage(data, myRank, allRanked) {
-  const schedule = data.schedule || [];
-  const stats    = data.stats || {};
-  const ratings  = data.ratings || {};
-  const record   = data.record || { wins: 0, losses: 0 };
-
-  const statSeason = data.stat_season || 2025;
-  const statRanks  = data.stat_ranks || {};
-
   return `
-    <!-- LEFT: Stats -->
-    <div>
-      ${Object.keys(statRanks).length ? `
-        <div class="section-label">${statSeason} Stats vs FBS</div>
-        <div class="stats-main-card">
-          ${buildStatsCard(statRanks, statSeason)}
-        </div>
-      ` : ''}
-      ${buildRatingsHistory(ratings)}
-    </div>
-
-    <!-- RIGHT: Sidebar -->
-    <div class="sidebar">
-      ${myRank ? buildRankCard(myRank, allRanked) : ''}
-      <div class="sidebar-card" style="padding:0;">
-        <div class="card-title" style="padding:22px 22px 12px;">2026 <em>Schedule</em></div>
-        <div style="padding:0 12px 12px;">
-          ${buildScheduleCompact(schedule, record)}
-        </div>
-      </div>
-    </div>
-  `;
+    <div class="tm-model${isBlend ? ' is-blend' : ''}">
+      <span class="tm-model-name">${escapeHtml(name)}</span>
+      <span class="tm-model-track"><span class="tm-model-zero" style="left:50%;"></span>${fill}</span>
+      <span class="tm-model-val">${v == null ? '—' : fmtSigned(v)}</span>
+    </div>`;
 }
 
-function buildSchedule(schedule, record) {
-  if (!schedule.length) return '<div style="color:var(--text-light);font-size:13px;padding:20px 0;">No schedule data available.</div>';
+function render(p, colors) {
+  const teams = (p.teams || []).slice().sort((a, b) => b.rating - a.rating);
+  const t = teams.find(x => x.team === TEAM)
+    || teams.find(x => x.team.toLowerCase() === TEAM.toLowerCase());
+  if (!t) { notFound(`No FBS team called “${TEAM}” on the board.`); return; }
 
-  const rows = schedule.map(g => {
-    const ha = g.neutral_site ? '' : (g.is_home ? '' : '@');
-    const resultHtml = g.result
-      ? `<span class="result-${g.result === 'W' ? 'win' : 'loss'}">${g.result}</span><span class="result-score">${g.team_points}–${g.opp_points}</span>`
-      : `<span class="result-upcoming">TBD</span>`;
+  const rankOf = {}, confOf = {};
+  teams.forEach((x, i) => { rankOf[x.team] = i + 1; confOf[x.team] = x.conference; });
+  const confSize = teams.filter(x => x.conference === t.conference).length;
 
-    return `
-      <tr class="schedule-row">
-        <td class="week-cell">Wk ${g.week}</td>
-        <td class="date-cell">${g.date}</td>
-        <td class="opp-cell">
-          <span class="opp-ha">${ha}</span>
-          <a class="opp-name" href="/team.html?team=${encodeURIComponent(g.opponent)}" style="text-decoration:none;color:inherit;">${g.opponent}</a>
-          <span class="opp-conf">${CONF_SHORT[g.opp_conference] || g.opp_conference || ''}</span>
-          ${g.neutral_site ? '<span class="neutral-tag">N</span>' : ''}
-          ${g.conference_game ? '<span class="conf-tag">Conf</span>' : ''}
-        </td>
-        <td class="result-cell">${resultHtml}</td>
-        <td class="venue-cell">${g.neutral_site ? g.venue || '' : ''}</td>
-      </tr>
-    `;
-  }).join('');
+  // Records off the locked season rows.
+  const season = Array.isArray(t.season) ? t.season : [];
+  const played = season.filter(g => g.played);
+  const rec = `${played.filter(g => g.result === 'W').length}-${played.filter(g => g.result === 'L').length}`;
+  const confPlayed = played.filter(g => confOf[g.opp] === t.conference);
+  const confRec = `${confPlayed.filter(g => g.result === 'W').length}-${confPlayed.filter(g => g.result === 'L').length}`;
 
-  return `
-    <table class="schedule-table">
-      <thead>
-        <tr>
-          <th>Wk</th>
-          <th>Date</th>
-          <th>Opponent</th>
-          <th class="r">Result</th>
-          <th>Venue</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
-}
+  // Hero
+  document.title = `${t.team} — PressBox Analytics`;
+  els.eyebrow.innerHTML = `<a href="/teams.html">Teams</a> · ${escapeHtml(t.conference || 'FBS')} · ${SEASON}`;
+  els.title.textContent = t.team;
+  const c = colors && colors.teams && colors.teams[t.team];
+  if (c && c.primary) els.accent.style.background = c.primary;
+  els.stats.innerHTML = `
+    <div><div class="tm-stat-lab">National</div><div class="tm-stat-val">#${rankOf[t.team]}<span class="of">of ${teams.length}</span></div></div>
+    <div><div class="tm-stat-lab">Record</div><div class="tm-stat-val">${rec}</div></div>
+    <div><div class="tm-stat-lab">${escapeHtml(t.conference || 'Conference')}</div><div class="tm-stat-val">#${t.rating_conf_rank || '—'}<span class="of">of ${confSize}</span></div></div>
+    <div><div class="tm-stat-lab">In conference</div><div class="tm-stat-val">${confRec}</div></div>
+    <div><div class="tm-stat-lab">Rating</div><div class="tm-stat-val">${t.rating == null ? '—' : t.rating.toFixed(1)}</div></div>`;
 
-function buildRatingsHistory(ratings) {
-  const seasons = [2025, 2024, 2023];
-  const hasSome = seasons.some(s => ratings[s]);
-  if (!hasSome) return '';
-
-  return `
-    <div class="section-label" style="margin-top:32px;">SP+ History</div>
-    <div class="ratings-grid">
-      ${seasons.map(s => {
-        const r = ratings[s];
-        const sp = r?.sp_overall;
-        return `
-          <div class="rating-item">
-            <div class="rating-season">${s}</div>
-            <div class="rating-val ${sp > 10 ? 'gold' : ''}">${sp != null ? (sp >= 0 ? '+' : '') + sp.toFixed(1) : '—'}</div>
-            <div class="rating-label">SP+</div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-}
-
-function buildRankCard(myRank, allRanked) {
-  const confTeams = allRanked.filter(t => t.conference === myRank.conference);
-  const score = myRank.score;
-
-  return `
-    <div class="sidebar-card">
-      <div class="card-title">PressBox <em>Ranking</em></div>
-      <div class="stat-row">
-        <span class="stat-name">Overall Rank</span>
-        <span class="stat-val">#${myRank.rank} of ${allRanked.length}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-name">Conference Rank</span>
-        <span class="stat-val">#${myRank.conference_rank} in ${myRank.conference}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-name">Model Score</span>
-        <span class="stat-val ${score >= 0 ? 'good' : 'bad'}">${score >= 0 ? '+' : ''}${score.toFixed(1)}</span>
-      </div>
-      ${myRank.sp_overall != null ? `
-      <div class="stat-row">
-        <span class="stat-name">SP+ Overall</span>
-        <span class="stat-val">${myRank.sp_overall >= 0 ? '+' : ''}${myRank.sp_overall.toFixed(1)}</span>
-      </div>` : ''}
-    </div>
-  `;
-}
-
-function buildStatsCard(statRanks, statSeason) {
-  if (!statRanks || !Object.keys(statRanks).length) return '';
-
-  // Group stats into categories
-  const groups = [
-    { label: 'Offense', keys: ['points_per_game','yards_per_game','yards_per_play','pass_yards_per_game','rush_yards_per_game','first_downs_per_game','third_down_pct','red_zone_pct','plays_per_game','top_pct','seconds_per_play','off_success_rate','off_explosiveness'] },
-    { label: 'Defense', keys: ['points_allowed_per_game','yards_allowed_per_game','yards_allowed_per_play','pass_yards_allowed_per_game','rush_yards_allowed_per_game','opp_third_down_pct','opp_red_zone_pct','opp_plays_per_game','def_success_rate','def_explosiveness','def_havoc_total','def_stuff_rate'] },
-    { label: 'Turnover & Special Teams', keys: ['turnovers_per_game','takeaways_per_game','st_points_per_game','penalties_per_game','penalty_yards_per_game'] },
-  ];
-
-  const fmt = (v, unit, key) => {
-    if (v == null) return '—';
-    // Advanced rates are decimals like 0.513 — show as percentage
-    const isRate = key && (key.includes('success_rate') || key.includes('explosiveness') || key.includes('havoc') || key.includes('stuff_rate'));
-    if (isRate) return (v * 100).toFixed(1) + '%';
-    const n = typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(1)) : v;
-    return unit === '%' ? n + '%' : unit === 's' ? n + 's' : n;
-  };
-
-  const barColor = pct => pct >= 75 ? '#4A7A4A' : pct >= 50 ? '#B8922A' : pct >= 25 ? '#C5A878' : '#7A4A4A';
-  const qualLabel = pct => pct >= 90 ? 'Elite' : pct >= 75 ? 'Strong' : pct >= 50 ? 'Above Avg' : pct >= 25 ? 'Below Avg' : 'Weak';
-
-  // Bar width tracks raw MAGNITUDE (min=2%, median=50%, max=100%), NOT inverted for lowerBetter.
-  // Color tracks QUALITY derived from league position (low=good for lowerBetter metrics).
-  function valueWidth(s) {
-    const v = s.value;
-    if (v == null) return 0;
-    const lmin = s.league_min, lmax = s.league_max, lmed = s.league_median;
-    if (lmin == null || lmax == null || lmed == null || lmax === lmin) {
-      return s.percentile != null ? s.percentile : 5;
-    }
-    let pct;
-    if (v >= lmed) {
-      const denom = (lmax - lmed) || 1;
-      pct = 50 + ((v - lmed) / denom) * 50;
+  // Schedule rows
+  const gmHTML = g => {
+    const k = kickParts(g.kick);
+    const oppRank = !g.fcs && rankOf[g.opp] && rankOf[g.opp] <= 25 ? `<span class="oppr">#${rankOf[g.opp]}</span> ` : '';
+    const site = g.site === 'home' ? 'vs' : g.site === 'away' ? 'at' : 'vs';
+    const neutral = g.site === 'neutral' ? ' <span class="site">· neutral</span>' : '';
+    const meta = [
+      g.tv ? `<span class="tm-tv">${escapeHtml(g.tv)}</span>` : '',
+      g.fcs ? `<span class="tm-tv">FCS</span>` : '',
+      ...(Array.isArray(g.reasons) ? g.reasons.map(r =>
+        `<span class="tm-reason${POSITIVE_SPOTS.has(r) ? ' tm-reason-pos' : ''}">${escapeHtml(r)}</span>`) : []),
+    ].filter(Boolean).join('');
+    let num, pill;
+    if (g.played) {
+      num = `<span class="tm-gm-wp">${escapeHtml(g.score || '')}</span><span class="tm-gm-cx cx-final">Final</span>`;
+      pill = `<span class="tm-wl ${g.result === 'W' ? 'tm-wl-w' : 'tm-wl-l'}">${g.result}</span>`;
     } else {
-      const denom = (lmed - lmin) || 1;
-      pct = 50 - ((lmed - v) / denom) * 50;
+      const wp = isFinite(g.win_prob) ? Math.round(g.win_prob * 100) + '%' : '—';
+      num = `<span class="tm-gm-wp">${wp}</span><span class="tm-gm-cx cx-${escapeHtml(g.risk || '')}">${escapeHtml(g.complexion || '')}</span>`;
+      pill = '';
     }
-    return Math.max(2, Math.min(100, pct));
-  }
-
-  // Quality percentile for color/label — derived from league min/max position.
-  // Inverts for lowerBetter so a low (good) value gets high quality.
-  // Falls back to s.percentile if no league context available.
-  function qualityPct(s) {
-    if (!s) return null;
-    const v = s.value;
-    const lmin = s.league_min, lmax = s.league_max;
-    if (v == null || lmin == null || lmax == null || lmax === lmin) {
-      return s.percentile != null ? s.percentile : null;
-    }
-    let pos = ((v - lmin) / (lmax - lmin)) * 100;
-    if (!s.higher_better) pos = 100 - pos;
-    return Math.max(0, Math.min(100, pos));
-  }
-
-  const statRow = (s) => {
-    // Width = magnitude position. Color/label = rank percentile (matches the
-    // #N of M label so they don't disagree).
-    return `
-    <div class="stat-row-full">
-      <div class="stat-row-top">
-        <span class="stat-name">${s.label}</span>
-        <div class="stat-right">
-          <span class="stat-rank-label">#${s.rank} of ${s.of}</span>
-          <span class="stat-val-main">${fmt(s.value, s.unit, s.label.toLowerCase().replace(/ /g,'_'))}</span>
-        </div>
-      </div>
-      <div class="stat-bar-wrap">
-        <div class="stat-bar-track">
-          <div class="stat-bar-fill" style="width:${valueWidth(s)}%;background:${barColor(s.percentile)};"></div>
-        </div>
-        <span class="stat-pct" style="color:${barColor(s.percentile)};">${qualLabel(s.percentile)}</span>
-      </div>
-    </div>
-  `;
+    const cls = 'tm-gm' + (g.played ? ' is-final' : g.danger ? ' is-danger' : g.risk === 'tossup' ? ' is-tossup' : '');
+    const inner = `
+      <span class="tm-gm-when">
+        <span class="tm-gm-date">${g.week != null ? 'Wk ' + g.week + ' · ' : ''}${escapeHtml(k.date)}</span>
+        <span class="tm-gm-time">${escapeHtml(k.time)}</span>
+      </span>
+      <span class="tm-gm-opp">
+        <span class="tm-gm-opp-name"><span class="site">${site}</span> ${oppRank}${escapeHtml(g.opp)}${neutral}</span>
+        ${meta ? `<span class="tm-gm-meta">${meta}</span>` : ''}
+      </span>
+      <span class="tm-gm-num">${num}</span>
+      ${pill || '<span></span>'}`;
+    return g.game_id
+      ? `<a class="${cls}" href="/game.html?id=${encodeURIComponent(g.game_id)}">${inner}</a>`
+      : `<div class="${cls}">${inner}</div>`;
   };
 
-  return groups.map(g => {
-    const rows = g.keys.map(k => statRanks[k]).filter(Boolean);
-    if (!rows.length) return '';
-    return `
-      <div class="stats-group">
-        <div class="stats-group-label">${g.label}</div>
-        ${rows.map(statRow).join('')}
-      </div>
-    `;
-  }).join('');
+  // The four signals + context
+  const models = t.models || {};
+  const modelVals = MODEL_ORDER.map(m => models[m.key]).filter(v => v != null);
+  const maxAbs = Math.max(10, ...teams.map(x => Math.abs(x.rating || 0)));
+  const modelRows = MODEL_ORDER.map(m => modelRow(m.label, models[m.key], false, maxAbs)).join('')
+    + modelRow('Blend', models.blend != null ? models.blend : t.rating, true, maxAbs);
+  const variance = modelVals.length >= 2
+    ? (Math.max(...modelVals) - Math.min(...modelVals)) : null;
+  const sosRank = teams.slice().sort((a, b) => (b.sos ?? -99) - (a.sos ?? -99))
+    .findIndex(x => x.team === t.team) + 1;
+
+  els.body.innerHTML = `
+    <div class="tm-grid">
+      <section>
+        <div class="tm-sect-h">Schedule <span class="note">win probabilities off the current board</span></div>
+        <div class="tm-sched">${season.map(gmHTML).join('')}</div>
+      </section>
+      <section class="tm-side-stack">
+        <div>
+          <div class="tm-sect-h">The four signals</div>
+          <div class="tm-panel">${modelRows}</div>
+        </div>
+        <div>
+          <div class="tm-sect-h">Season outlook</div>
+          <div class="tm-panel">
+            <div class="tm-kv"><span class="tm-kv-k">Projected record</span><span class="tm-kv-v">${escapeHtml(t.proj_record || '—')}${t.proj_band ? ` <span style="color:var(--text-light);font-weight:500;">± ${t.proj_band}</span>` : ''}</span></div>
+            <div class="tm-kv"><span class="tm-kv-k">Expected wins</span><span class="tm-kv-v">${t.expected_wins != null ? t.expected_wins.toFixed(1) : '—'}</span></div>
+            <div class="tm-kv"><span class="tm-kv-k">Rating variance</span><span class="tm-kv-v">${variance == null ? '—' : variance.toFixed(1) + ' pts'}</span></div>
+            <div class="tm-kv"><span class="tm-kv-k">Strength of schedule</span><span class="tm-kv-v">${sosRank ? '#' + sosRank + ' <span style="color:var(--text-light);font-weight:500;">of ' + teams.length + '</span>' : '—'}</span></div>
+            <div class="tm-kv"><span class="tm-kv-k">Danger spots</span><span class="tm-kv-v">${season.filter(g => g.danger).length}</span></div>
+          </div>
+        </div>
+      </section>
+    </div>`;
 }
 
-init().catch(e => {
-  console.error(e);
-  document.getElementById('loadingState').innerHTML = '<div class="loading-text" style="color:#B87878;">Failed to load team data. Please refresh.</div>';
-});
+if (!TEAM) {
+  notFound('No team in the address.');
+} else {
+  Promise.all([
+    fetch(`${API}/rankings/teams?season=${SEASON}&offseason=1`)
+      .then(r => { if (!r.ok) throw new Error(`board ${r.status}`); return r.json(); }),
+    fetch(`${API}/teams/colors`).then(r => r.json()).catch(() => null),
+  ])
+    .then(([p, colors]) => render(p, colors))
+    .catch(() => {
+      els.body.innerHTML = `<div class="tm-state"><div class="tm-state-title">The board is rebuilding.</div>
+        <div class="tm-state-sub">Give it a moment and refresh — rankings recompute after every data pull.</div></div>`;
+    });
+}
 </script>
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/site-chrome.js" defer></script>
 </body>
 </html>
