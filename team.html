@@ -119,6 +119,19 @@
   .tm-kv-v { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
   .tm-side-stack > * + * { margin-top: 24px; }
 
+  /* WHO MOVES THE NEEDLE (player leaders — rankings panel idiom) */
+  .tm-pgroup { margin-top: 16px; }
+  .tm-pgroup:first-child { margin-top: 0; }
+  .tm-pgroup-h { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+  .tm-prow { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+  .tm-prow:last-child { border-bottom: none; }
+  .tm-prow-name { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); }
+  .tm-prow-name .pos { font-size: var(--text-micro); font-weight: 600; color: var(--text-light); margin-left: 6px; }
+  .tm-prow-sub { font-family: var(--sans); font-size: var(--text-micro); font-weight: 500; color: var(--text-light); margin-top: 2px; }
+  .tm-prow-val { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--text); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .tm-prow-val .lab { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-light); }
+  .tm-players-empty { font-family: var(--sans); font-size: 12px; color: var(--text-light); line-height: 1.6; }
+
   /* STATES */
   .tm-state { text-align: center; padding: 80px 24px; }
   .tm-state-title { font-family: var(--serif); font-size: var(--text-xl); font-weight: 700; color: var(--text); margin-bottom: 8px; }
@@ -365,8 +378,67 @@ function render(p, colors) {
             <div class="tm-kv"><span class="tm-kv-k">Danger spots</span><span class="tm-kv-v">${season.filter(g => g.danger).length}</span></div>
           </div>
         </div>
+        <div>
+          <div class="tm-sect-h">Who moves the needle <span class="note">updates daily</span></div>
+          <div class="tm-panel" id="tmPlayers">
+            <div class="tm-players-empty">Loading player data…</div>
+          </div>
+        </div>
       </section>
     </div>`;
+  loadPlayers(t.team);
+}
+
+// ── Player leaders (display only — player data never votes) ──
+function loadPlayers(team) {
+  const box = document.getElementById('tmPlayers');
+  const n = v => (v == null ? '—' : Number(v) % 1 === 0 ? String(v) : Number(v).toFixed(1));
+  const prow = (name, pos, sub, val, lab) => `
+    <div class="tm-prow">
+      <span>
+        <span class="tm-prow-name">${escapeHtml(name || '—')}${pos ? `<span class="pos">${escapeHtml(pos)}</span>` : ''}</span>
+        <span class="tm-prow-sub">${sub}</span>
+      </span>
+      <span class="tm-prow-val">${val}<span class="lab">${lab}</span></span>
+    </div>`;
+  fetch(`${API}/teams/${encodeURIComponent(team)}/players?season=${SEASON}`)
+    .then(r => { if (!r.ok) throw new Error(`players ${r.status}`); return r.json(); })
+    .then(d => {
+      if (!d.has_data) {
+        box.innerHTML = `<div class="tm-players-empty">Player data lands with the next data pull — usage, efficiency, and season lines show here once the games are in the books.</div>`;
+        return;
+      }
+      const groups = [];
+      if (d.qb && d.qb.length) {
+        groups.push(`<div class="tm-pgroup"><div class="tm-pgroup-h">Quarterback</div>` +
+          d.qb.map(p => prow(p.name, null,
+            `${n(p.comp)}/${n(p.att)} · ${n(p.pass_yds)} yds · ${n(p.pass_td)} TD, ${n(p.ints)} INT${p.rush_yds ? ` · ${n(p.rush_yds)} rush` : ''}`,
+            n(p.ypa), 'yds/att')).join('') + `</div>`);
+      }
+      if (d.backs && d.backs.length) {
+        groups.push(`<div class="tm-pgroup"><div class="tm-pgroup-h">On the ground</div>` +
+          d.backs.map(p => prow(p.name, p.position,
+            `${n(p.car)} car · ${n(p.rush_yds)} yds · ${n(p.rush_td)} TD${p.usage != null ? ` · ${(p.usage * 100).toFixed(0)}% of plays` : ''}`,
+            n(p.ypc), 'yds/carry')).join('') + `</div>`);
+      }
+      if (d.receivers && d.receivers.length) {
+        groups.push(`<div class="tm-pgroup"><div class="tm-pgroup-h">Through the air</div>` +
+          d.receivers.map(p => prow(p.name, p.position,
+            `${n(p.rec)} rec · ${n(p.rec_yds)} yds · ${n(p.rec_td)} TD`,
+            n(p.ypr), 'yds/catch')).join('') + `</div>`);
+      }
+      if (d.defense && d.defense.length) {
+        groups.push(`<div class="tm-pgroup"><div class="tm-pgroup-h">Defense</div>` +
+          d.defense.map(p => prow(p.name, p.position,
+            `${n(p.tfl)} TFL · ${n(p.sacks)} sacks${p.ints ? ` · ${n(p.ints)} INT` : ''}${p.pd ? ` · ${n(p.pd)} PD` : ''}`,
+            n(p.tackles), 'tackles')).join('') + `</div>`);
+      }
+      box.innerHTML = groups.join('') ||
+        `<div class="tm-players-empty">No player lines yet for this team.</div>`;
+    })
+    .catch(() => {
+      box.innerHTML = `<div class="tm-players-empty">Player data is warming up — check back after the next pull.</div>`;
+    });
 }
 
 if (!TEAM) {
