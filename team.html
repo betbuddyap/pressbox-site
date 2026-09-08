@@ -72,8 +72,8 @@
   .tm-gm:last-child { border-bottom: none; }
   a.tm-gm:hover { background: var(--cream-dark); }
   .tm-gm-when { min-width: 0; }
-  .tm-gm-date { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--text); }
-  .tm-gm-time { font-family: var(--sans); font-size: var(--text-micro); font-weight: 500; color: var(--text-light); margin-top: 1px; }
+  .tm-gm-date { display: block; font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--text); }
+  .tm-gm-time { display: block; font-family: var(--sans); font-size: var(--text-micro); font-weight: 500; color: var(--text-light); margin-top: 1px; }
   .tm-gm-opp { min-width: 0; }
   .tm-gm-opp-name { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tm-gm-opp-name .site { color: var(--text-light); font-weight: 500; }
@@ -132,7 +132,7 @@
     .tm-stats { gap: 22px; margin-top: 20px; }
     .tm-stat-val { font-size: 24px; }
     .tm-main { padding: 22px 18px 64px; }
-    .tm-gm { grid-template-columns: 78px 1fr auto 26px; gap: 8px; padding: 10px 10px; }
+    .tm-gm { grid-template-columns: 88px 1fr auto 26px; gap: 8px; padding: 10px 10px; }
   }
   @media (prefers-reduced-motion: reduce) { .tm-skel { animation: none; } }
 </style>
@@ -290,7 +290,7 @@ function render(p, colors) {
     const cls = 'tm-gm' + (g.played ? ' is-final' : g.danger ? ' is-danger' : g.risk === 'tossup' ? ' is-tossup' : '');
     const inner = `
       <span class="tm-gm-when">
-        <span class="tm-gm-date">${g.week != null ? 'Wk ' + g.week + ' · ' : ''}${escapeHtml(k.date)}</span>
+        <span class="tm-gm-date">${escapeHtml(k.date.replace(',', ''))}</span>
         <span class="tm-gm-time">${escapeHtml(k.time)}</span>
       </span>
       <span class="tm-gm-opp">
