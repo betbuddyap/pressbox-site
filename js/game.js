@@ -219,8 +219,12 @@
     document.getElementById('ctxHero')?.classList.toggle('has-grades', !!gradesHtml);
 
     // Team names
-    els.awayName.textContent = g.away?.name || '—';
-    els.homeName.textContent = g.home?.name || '—';
+    // Team names link to the team pages (Austin 9/7).
+    const teamLink = (name) => name
+      ? `<a class="ctx-team-link" href="/team.html?team=${encodeURIComponent(name)}">${escape(name)}</a>`
+      : '—';
+    els.awayName.innerHTML = teamLink(g.away?.name);
+    els.homeName.innerHTML = teamLink(g.home?.name);
 
     // Team sublines
     const awaySubParts = [];

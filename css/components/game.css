@@ -331,6 +331,9 @@
   line-height: 1.1;
   text-shadow: 0 2px 12px rgba(0,0,0,0.5);
 }
+/* Hero names link to the team pages — identical at rest, gold rule on hover */
+.ctx-team-link { color: inherit; text-decoration: none; }
+.ctx-team-link:hover { text-decoration: underline; text-decoration-color: var(--gold-light); text-decoration-thickness: 2px; text-underline-offset: 6px; }
 .ctx-team-sub {
   display: flex;
   align-items: center;

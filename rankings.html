@@ -126,6 +126,8 @@
   .rk-panel-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; }
   @media (max-width: 720px) { .rk-panel-grid { grid-template-columns: 1fr; gap: 20px; } }
   .rk-panel-h { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .rk-panel-link { display: inline-block; margin-top: 16px; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--gold-deep); text-decoration: none; }
+  .rk-panel-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 
   /* Model breakdown — the signature */
   .rk-model { display: grid; grid-template-columns: 64px 1fr 52px; align-items: center; gap: 12px; margin-bottom: 9px; }
@@ -600,6 +602,7 @@ function buildPanel(t) {
           ${ctx}
         </div>
       </div>
+      <a class="rk-panel-link" href="/team.html?team=${encodeURIComponent(t.team)}">${escapeHtml(t.team)} team page — schedule, win probabilities, the four signals →</a>
     </div>`;
 }
 

@@ -42,22 +42,24 @@
   html, body { background: var(--cream); min-height: 100vh; }
   body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-  /* HERO (rankings page-header idiom + team identity accent) */
-  .page-header { background: var(--ink); padding: 52px 0 40px; }
+  /* HERO (rankings page-header idiom, painted in the TEAM'S color — Austin
+     9/7). JS sets the --hero-* props from /teams/colors with a luminance
+     guard: bright primaries flip the foreground to ink. Ink defaults. */
+  .page-header { background: var(--hero-bg, var(--ink)); padding: 52px 0 40px; }
   .page-header-inner { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
-  .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
-  .page-eyebrow a { color: var(--gold); text-decoration: none; }
-  .page-eyebrow a:hover { color: var(--gold-light); }
-  .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--cream); line-height: 1.1; }
-  .tm-accent { width: 64px; height: 4px; border-radius: 2px; background: var(--gold); margin-top: 14px; }
-  .page-sub { font-size: 14px; font-weight: 300; color: #8A8A76; margin-top: 10px; }
+  .page-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--hero-acc, var(--gold)); display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--hero-acc, var(--gold)); }
+  .page-eyebrow a { color: var(--hero-acc, var(--gold)); text-decoration: none; }
+  .page-eyebrow a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--hero-fg, var(--cream)); line-height: 1.1; }
+  .tm-accent { width: 64px; height: 4px; border-radius: 2px; background: var(--hero-bar, var(--gold)); margin-top: 14px; }
+  .page-sub { font-size: 14px; font-weight: 300; color: var(--hero-dim, #8A8A76); margin-top: 10px; }
 
   /* Hero stat strip — display numbers are SERIF (house number rule) */
   .tm-stats { display: flex; gap: 44px; flex-wrap: wrap; margin-top: 28px; }
-  .tm-stat-lab { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: #8A8A76; margin-bottom: 6px; }
-  .tm-stat-val { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--cream); font-variant-numeric: tabular-nums; line-height: 1; }
-  .tm-stat-val .of { font-family: var(--sans); font-size: 13px; font-weight: 500; color: #8A8A76; margin-left: 4px; }
+  .tm-stat-lab { font-family: var(--sans); font-size: var(--text-eyebrow); font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: var(--hero-dim, #8A8A76); margin-bottom: 6px; }
+  .tm-stat-val { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--hero-fg, var(--cream)); font-variant-numeric: tabular-nums; line-height: 1; }
+  .tm-stat-val .of { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--hero-dim, #8A8A76); margin-left: 4px; }
 
   /* MAIN */
   .tm-main { max-width: var(--max); margin: 0 auto; padding: 36px 32px 80px; }
@@ -221,6 +223,33 @@ function notFound(msg) {
     <div class="tm-state-sub">Pick a team from <a href="/teams.html">the directory</a>.</div></div>`;
 }
 
+// Paint the hero in the team's primary color (Austin 9/7). Bright
+// primaries (Tennessee orange, Baylor gold) flip the text to ink via a
+// relative-luminance guard; missing/odd colors leave the ink default.
+function paintHero(c) {
+  const hex = c && /^#?[0-9a-f]{6}$/i.test(c.primary || '')
+    ? (c.primary[0] === '#' ? c.primary : '#' + c.primary) : null;
+  if (!hex) return;
+  const ch = i => parseInt(hex.slice(i, i + 2), 16);
+  const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const lum = 0.2126 * lin(ch(1)) + 0.7152 * lin(ch(3)) + 0.0722 * lin(ch(5));
+  const light = lum > 0.35;
+  const darker = '#' + [1, 3, 5].map(i =>
+    Math.round(ch(i) * 0.72).toString(16).padStart(2, '0')).join('');
+  const hdr = document.querySelector('.page-header');
+  hdr.style.setProperty('--hero-bg', `linear-gradient(150deg, ${hex} 0%, ${darker} 100%)`);
+  hdr.style.setProperty('--hero-fg', light ? 'var(--ink)' : 'var(--cream)');
+  hdr.style.setProperty('--hero-dim', light ? 'rgba(15,14,10,0.62)' : 'rgba(248,245,238,0.62)');
+  hdr.style.setProperty('--hero-acc', light ? 'rgba(15,14,10,0.85)' : 'var(--gold-light)');
+  const alt = c.alt && /^#?[0-9a-f]{6}$/i.test(c.alt)
+    ? (c.alt[0] === '#' ? c.alt : '#' + c.alt) : null;
+  hdr.style.setProperty('--hero-bar',
+    (alt && alt.toLowerCase() !== hex.toLowerCase()) ? alt
+      : light ? 'var(--ink)' : 'var(--cream)');
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', hex);
+}
+
 function modelRow(name, v, isBlend, maxAbs) {
   let fill = '';
   if (v != null && isFinite(v)) {
@@ -258,7 +287,7 @@ function render(p, colors) {
   els.eyebrow.innerHTML = `<a href="/teams.html">Teams</a> · ${escapeHtml(t.conference || 'FBS')} · ${SEASON}`;
   els.title.textContent = t.team;
   const c = colors && colors.teams && colors.teams[t.team];
-  if (c && c.primary) els.accent.style.background = c.primary;
+  paintHero(c);
   els.stats.innerHTML = `
     <div><div class="tm-stat-lab">National</div><div class="tm-stat-val">#${rankOf[t.team]}<span class="of">of ${teams.length}</span></div></div>
     <div><div class="tm-stat-lab">Record</div><div class="tm-stat-val">${rec}</div></div>
