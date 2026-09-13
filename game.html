@@ -275,6 +275,42 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
             <div class="pg-wp-bets" id="pgWpBets"></div>
           </div>
         </div>
+
+        <!-- THE ENGINE'S DISTRIBUTIONS — the same surface language as the
+             live charts. Bars are simulated outcomes; gold bars are this
+             game's measured key numbers; the wash is the side we're on;
+             the ticks along the top are where each model lands. Text lives
+             in HTML overlays so the stretched SVG never warps it. -->
+        <div class="pg-hist-section" id="pgHistWrap" style="display:none;">
+          <div class="pg-wp-inner">
+            <div class="pg-wp-block pg-hist-block" id="pgHistMarginBlock">
+              <div class="pg-wp-head">
+                <span class="pg-wp-title" id="pgHistMarginTitle">SIMULATED MARGIN</span>
+                <span class="pg-wp-now" id="pgHistMarginCover"></span>
+              </div>
+              <div class="pg-hist-frame" id="pgHistMarginFrame">
+                <svg id="pgHistMarginSvg" viewBox="0 0 1000 240" preserveAspectRatio="none"></svg>
+                <div class="pg-hist-overlay" id="pgHistMarginOverlay"></div>
+                <div class="pg-hist-tip" id="pgHistMarginTip" hidden></div>
+              </div>
+              <div class="pg-hist-axis" id="pgHistMarginAxis"></div>
+              <div class="pg-hist-caption" id="pgHistMarginCaption"></div>
+            </div>
+            <div class="pg-wp-block pg-hist-block" id="pgHistTotalBlock">
+              <div class="pg-wp-head">
+                <span class="pg-wp-title" id="pgHistTotalTitle">SIMULATED TOTAL</span>
+                <span class="pg-wp-now" id="pgHistTotalCover"></span>
+              </div>
+              <div class="pg-hist-frame" id="pgHistTotalFrame">
+                <svg id="pgHistTotalSvg" viewBox="0 0 1000 240" preserveAspectRatio="none"></svg>
+                <div class="pg-hist-overlay" id="pgHistTotalOverlay"></div>
+                <div class="pg-hist-tip" id="pgHistTotalTip" hidden></div>
+              </div>
+              <div class="pg-hist-axis" id="pgHistTotalAxis"></div>
+              <div class="pg-hist-caption" id="pgHistTotalCaption"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="preGameContent">

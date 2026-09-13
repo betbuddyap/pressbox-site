@@ -974,6 +974,184 @@
     return d.toLocaleDateString('en-US', opts);
   }
 
+  // ── Engine histograms ────────────────────────────────────────────
+  // The Monte-Carlo engine's simulated outcomes, drawn the way a book
+  // quotes: the market favourite sits on the LEFT (negative), the dog on
+  // the right. Everything arrives on ONE axis from the backend — home
+  // margin, positive = home wins — and is flipped exactly once here, so
+  // the page never resolves a sign on its own (card-orientation-bug-class).
+  //   bars      integer outcomes, cream; gold = this game's measured key numbers
+  //   wash      the side our pick covers, at the pick's own line
+  //   ticks     where each model lands (labels, not colors, carry identity)
+  //   dashes    the market's number
+  function renderEngineHist(data) {
+    const wrap = document.getElementById('pgHistWrap');
+    if (!wrap) return;
+    const e = data.engine, g = data.game || {};
+    const has = (s) => s && s.hist && Object.keys(s.hist).length > 0;
+    const okM = e && e.available && has(e.margin);
+    const okT = e && e.available && has(e.total);
+    if (!okM && !okT) { wrap.style.display = 'none'; return; }
+    wrap.style.display = '';
+    const home = g.home_team || 'Home', away = g.away_team || 'Away';
+    const sgn = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v);
+    const lineFmt = (v) => sgn(v).replace(/(\.\d)$/, '$1');
+
+    const mBlock = document.getElementById('pgHistMarginBlock');
+    if (okM) {
+      const m = e.margin;
+      // Who the market favours decides the orientation; no line → our mean.
+      const favHome = m.market_x != null ? m.market_x > 0 : m.mean > 0;
+      const flip = favHome ? -1 : 1;
+      const fav = favHome ? home : away, dog = favHome ? away : home;
+      mBlock.style.display = '';
+      drawHist({
+        ids: 'pgHistMargin', hist: m.hist, shift: m.shift || 0, flip,
+        keys: m.keys || [], markers: m.markers || {},
+        marketX: m.market_x, meanX: m.mean,
+        marketLabel: m.market_x != null ? `${fav} −${Math.abs(m.market_x)}` : null,
+        pick: m.pick ? {
+          x: m.pick.x, above: m.pick.side === 'home', covers: m.pick.covers,
+          label: `${m.pick.side === 'home' ? home : away} ${lineFmt(m.pick.line)}`,
+        } : null,
+        tickStep: 7,
+        dirLeft: `◄ ${fav} wins by more`, dirRight: `${dog} covers ►`,
+        tipFor: (x) => x > 0.5 ? `${home} by ${Math.round(x)}`
+                   : x < -0.5 ? `${away} by ${Math.round(-x)}` : 'a tie',
+      });
+    } else {
+      mBlock.style.display = 'none';
+    }
+
+    const tBlock = document.getElementById('pgHistTotalBlock');
+    if (okT) {
+      const t = e.total;
+      tBlock.style.display = '';
+      drawHist({
+        ids: 'pgHistTotal', hist: t.hist, shift: t.shift || 0, flip: 1,
+        keys: t.keys || [], markers: t.markers || {},
+        marketX: t.market_x, meanX: t.mean,
+        marketLabel: t.market_x != null ? `total ${t.market_x}` : null,
+        pick: t.pick ? {
+          x: t.pick.x, above: t.pick.side === 'over', covers: t.pick.covers,
+          label: `${t.pick.side === 'over' ? 'Over' : 'Under'} ${t.pick.line}`,
+        } : null,
+        tickStep: 7,
+        dirLeft: '◄ lower scoring', dirRight: 'higher scoring ►',
+        tipFor: (x) => `${Math.round(x)} points`,
+      });
+    } else {
+      tBlock.style.display = 'none';
+    }
+  }
+
+  function drawHist(c) {
+    const $ = (suffix) => document.getElementById(c.ids + suffix);
+    const svg = $('Svg'), ov = $('Overlay'), tip = $('Tip'), ax = $('Axis'),
+          cap = $('Caption'), cov = $('Cover');
+    if (!svg) return;
+    // Bins in DISPLAY coordinates: d = flip × (bin + shift).
+    const bins = Object.entries(c.hist)
+      .map(([k, n]) => ({ k: +k, n: +n, d: c.flip * (+k + c.shift) }))
+      .filter(b => b.n > 0).sort((a, b) => a.d - b.d);
+    if (!bins.length) return;
+    const N = bins.reduce((s, b) => s + b.n, 0);
+    // Domain: the central 99% of the mass, widened to hold every marker.
+    let acc = 0, lo = bins[0].d, hi = bins[bins.length - 1].d;
+    for (const b of bins) {
+      acc += b.n;
+      if (acc <= 0.005 * N) lo = b.d;
+      if (acc <= 0.995 * N) hi = b.d;
+    }
+    const marks = Object.values(c.markers).map(v => c.flip * v);
+    if (c.marketX != null) marks.push(c.flip * c.marketX);
+    if (c.meanX != null) marks.push(c.flip * c.meanX);
+    if (c.pick) marks.push(c.flip * c.pick.x);
+    lo = Math.min(lo, ...marks) - 2;
+    hi = Math.max(hi, ...marks) + 2;
+    const W = 1000, H = 240, span = hi - lo;
+    const X  = (d) => (d - lo) / span * W;        // viewBox units
+    const PX = (d) => (d - lo) / span * 100;      // % for HTML overlays
+    const slot = W / span;
+    const barW = Math.max(slot * 0.78, 2);        // the gap between bars is the spacer
+    const maxN = Math.max(...bins.map(b => b.n));
+    const top = 40, base = H - 2;                  // headroom for the model ticks
+    const keys = new Set(c.keys || []);
+    let s = '';
+    // The side our pick covers. `above` is in the HOME frame (home covers
+    // when margin > x); flipping the axis flips which side of x that is.
+    if (c.pick) {
+      const px = X(c.flip * c.pick.x);
+      const right = (c.flip > 0) === !!c.pick.above;
+      const x0 = right ? px : 0, x1 = right ? W : px;
+      s += `<rect x="${x0.toFixed(1)}" y="0" width="${(x1 - x0).toFixed(1)}" height="${H}"
+              fill="#E7BE4D" fill-opacity="0.14"/>`;
+    }
+    for (const b of bins) {
+      const h = (b.n / maxN) * (base - top), x = X(b.d) - barW / 2;
+      const key = keys.has(b.k);
+      s += `<rect x="${x.toFixed(1)}" y="${(base - h).toFixed(1)}" width="${barW.toFixed(1)}"
+              height="${h.toFixed(1)}" fill="${key ? '#E7BE4D' : '#F8F5EE'}"
+              fill-opacity="${key ? 0.95 : 0.55}"/>`;
+    }
+    if (c.marketX != null) {
+      const x = X(c.flip * c.marketX).toFixed(1);
+      s += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="rgba(248,245,238,0.85)"
+              stroke-width="1.5" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/>`;
+    }
+    svg.innerHTML = s;
+
+    // Overlays — text never lives in the stretched SVG.
+    const items = Object.entries(c.markers)
+      .map(([name, v]) => ({ name, d: c.flip * v })).sort((a, b) => a.d - b.d);
+    let html = '', lastP = -99, row = 0;
+    for (const it of items) {
+      const p = PX(it.d);
+      row = (p - lastP < 7) ? 1 - row : 0;          // stagger neighbours
+      lastP = p;
+      html += `<span class="pg-hist-mk${row ? ' row2' : ''}" style="left:${p.toFixed(1)}%">${escape(it.name)}</span>`;
+    }
+    if (c.meanX != null) {
+      html += `<span class="pg-hist-mk engine" style="left:${PX(c.flip * c.meanX).toFixed(1)}%">engine</span>`;
+    }
+    if (c.marketX != null && c.marketLabel) {
+      html += `<span class="pg-hist-mkt" style="left:${PX(c.flip * c.marketX).toFixed(1)}%">${escape(c.marketLabel)}</span>`;
+    }
+    ov.innerHTML = html;
+
+    const step = c.tickStep || 7;
+    let axh = '';
+    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
+      const p = PX(v);
+      if (p < 4 || p > 96) continue;
+      axh += `<span style="left:${p.toFixed(1)}%">${v}</span>`;
+    }
+    axh += `<span class="dir left">${escape(c.dirLeft)}</span>` +
+           `<span class="dir right">${escape(c.dirRight)}</span>`;
+    ax.innerHTML = axh;
+
+    cov.textContent = (c.pick && c.pick.covers != null)
+      ? `${c.pick.label} covers ${Math.round(c.pick.covers * 100)}%` : '';
+    cap.innerHTML = `<b>${N.toLocaleString()}</b> simulated games. Gold bars are this ` +
+      `game's key numbers — outcomes carrying more weight than their neighbours.` +
+      (c.pick ? ` The wash is the side we're on.` : '') +
+      ` Ticks along the top: where each model lands.`;
+
+    // Hover: nearest bar, one tooltip.
+    const frame = svg.parentElement;
+    frame.onpointermove = (ev) => {
+      const r = frame.getBoundingClientRect();
+      const d = lo + (ev.clientX - r.left) / r.width * span;
+      let best = null;
+      for (const b of bins) if (!best || Math.abs(b.d - d) < Math.abs(best.d - d)) best = b;
+      if (!best) { tip.hidden = true; return; }
+      tip.textContent = `${c.tipFor(best.d * c.flip)} · ${(100 * best.n / N).toFixed(1)}% of sims`;
+      tip.style.left = `${PX(best.d).toFixed(1)}%`;
+      tip.hidden = false;
+    };
+    frame.onpointerleave = () => { tip.hidden = true; };
+  }
+
   function renderStoryline(data) {
     const n = data.narrative || {};
     const entries = Array.isArray(n.entries) ? n.entries : [];
@@ -3179,6 +3357,7 @@
     // Render everything
     try {
       renderHero(data);
+      renderEngineHist(data);
       renderDNA(data);
       renderBeats(data);
       renderReceipt(data);
