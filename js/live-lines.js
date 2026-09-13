@@ -344,10 +344,23 @@
   }
 
   // ── Render: empty state ──────────────────────────────────────
+  // EMPTY STATE. This used to count down to a HARDCODED Week 0 kickoff
+  // (2026-08-22) and promise "first picks drop Tuesday, Aug 18" — so from
+  // the moment Week 0 started it showed a countdown to a date in the past
+  // and a promise three weeks stale. There is no public endpoint that
+  // serves a week's first kickoff, so rather than invent a date the page
+  // cannot verify, say only what is true whenever this renders.
+  //
+  // It IS true every time: a week's board fills once the prior week's
+  // stats are fully ingested and books have posted at least three lines
+  // per game. Both are normal mid-week conditions, not faults, so the
+  // copy explains the wait instead of apologising for it.
   function renderEmpty() {
     const w = state.week ?? 0;
-    const kickoffDate = new Date(`2026-08-22T12:00:00-04:00`); // Week 0 kickoff
-    const countdown = formatCountdown(kickoffDate);
+    if (state._countdownInterval) {
+      clearInterval(state._countdownInterval);
+      state._countdownInterval = null;
+    }
 
     $app().innerHTML = `
       <header class="ll-header">
@@ -355,21 +368,20 @@
           <span class="ll-eyebrow-dot ll-eyebrow-dot--static"></span>
           Live Lines
         </div>
-        <h1 class="ll-headline">Holding for kickoff</h1>
+        <h1 class="ll-headline">Waiting on picks</h1>
       </header>
 
       <div class="ll-empty">
         <div class="ll-empty-card">
-          <div class="ll-empty-label">${esc(weekLabel(w))} kicks off in</div>
-          <div class="ll-empty-countdown" id="ll-countdown">${esc(countdown)}</div>
-          <div class="ll-empty-date">${esc(kickoffDate.toLocaleDateString('en-US', {
-            weekday: 'long', month: 'short', day: 'numeric', timeZone: 'America/New_York'
-          }))} · 12:00 PM ET</div>
+          <div class="ll-empty-label">${esc(weekLabel(w))}</div>
+          <div class="ll-empty-status">Board not posted yet</div>
+          <div class="ll-empty-date">Refreshing every 30 seconds</div>
         </div>
 
         <p class="ll-empty-message">
-          First picks for <strong>${esc(weekLabel(w))}</strong> drop Tuesday, Aug 18.
-          Until then, the board is quiet.
+          <strong>${esc(weekLabel(w))}</strong> fills in once last week's
+          results are fully in and the books have posted enough lines to
+          price a side. That usually lands midweek.
         </p>
 
         <div class="ll-empty-ctas">
@@ -379,25 +391,9 @@
           </a>
         </div>
 
-        <div class="ll-empty-footer">You'll see picks here the moment they drop.</div>
+        <div class="ll-empty-footer">Picks appear here the moment they release.</div>
       </div>
     `;
-
-    // Tick the countdown every minute
-    if (state._countdownInterval) clearInterval(state._countdownInterval);
-    state._countdownInterval = setInterval(() => {
-      const el = document.getElementById('ll-countdown');
-      if (el) el.textContent = formatCountdown(kickoffDate);
-    }, 60000);
-  }
-
-  function formatCountdown(targetDate) {
-    const diffMs = targetDate.getTime() - Date.now();
-    if (diffMs <= 0) return 'now';
-    const totalHr = Math.floor(diffMs / 3600000);
-    const days = Math.floor(totalHr / 24);
-    const hrs = totalHr - days * 24;
-    return `${days}d ${hrs}h`;
   }
 
   // ── Render: filters (used by all populated states) ───────────

@@ -761,19 +761,25 @@
 .ll-empty-label {
   font-size: var(--text-eyebrow);
   font-weight: var(--weight-semi);
-  letter-spacing: 0.12em;
+  /* house rule: small uppercase labels sit at ~0.03em. 0.12em reads as
+     a different typeface with the letters flung apart. */
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--text-mid);
   margin-bottom: var(--space-2);
 }
 
-.ll-empty-countdown {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: var(--weight-bold);
-  color: var(--gold);
-  font-size: var(--text-3xl);
-  line-height: 1.2;
+/* Was .ll-empty-countdown: gold italic serif at --text-3xl, sized for
+   "5d 12h". The countdown is gone (it pointed at a hardcoded Week 0
+   date), and a sentence set at that size reads as shouting an absence
+   the headline has already stated. Same slot, calmer: body scale, mid
+   text, no gold. */
+.ll-empty-status {
+  font-family: var(--sans);
+  font-weight: var(--weight-semi);
+  color: var(--text-strong);
+  font-size: var(--text-lg);
+  line-height: 1.3;
   margin: var(--space-2) 0;
 }
 
