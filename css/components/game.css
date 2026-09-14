@@ -858,7 +858,8 @@
 .path-pill.on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
 .path-pill.on span { color: var(--gold-light); }
 .path-pill:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-.pg-path-frame { position: relative; }
+.pg-path-frame { position: relative; margin: 18px 0; }
+.pg-path-frame .pg-hist-overlay { overflow: visible; }
 .pg-path-frame svg {
   width: 100%; height: 260px; display: block;
   border-radius: 4px; border: 1px solid var(--border); background: var(--cream);
@@ -871,14 +872,17 @@
 .pg-path-y {
   position: absolute; left: 6px; transform: translateY(-50%);
   font-family: var(--sans); font-size: 10px; color: var(--text-light);
+  background: var(--cream); padding: 0 3px; border-radius: 2px;   /* masks the line behind */
 }
 .pg-path-pole {
   position: absolute; right: 8px;
   font-family: var(--sans); font-size: 10px; font-weight: 700;
   letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid);
 }
-.pg-path-pole.top { top: 6px; }
-.pg-path-pole.bot { bottom: 6px; }
+/* The poles sit just OUTSIDE the plot, so they never collide with the
+   Q3/Q4 markers along the top edge (they did at every width). */
+.pg-path-pole.top { top: -16px; }
+.pg-path-pole.bot { bottom: -16px; }
 .pg-path-desc { margin-top: 12px; }
 .pg-path-desc p {
   font-family: var(--sans); font-size: var(--text-md); line-height: 1.55;
