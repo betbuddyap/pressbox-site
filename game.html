@@ -14,7 +14,7 @@
 <!-- Tokens FIRST, then components -->
 <link rel="stylesheet" href="/css/tokens.css?v=20260831a">
 <link rel="stylesheet" href="/css/components/live-lines.css?v=20260813b">
-<link rel="stylesheet" href="/css/components/game.css?v=20260907a">
+<link rel="stylesheet" href="/css/components/game.css?v=20260913f">
 
 <style>
   /* ── Site nav (kept in sync across pages) ── */
@@ -298,48 +298,113 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <!-- MAIN COLUMN -->
   <main class="game-main">
 
-    <!-- MATCHUP DNA (beat 0 — primes the page) -->
-    <div class="dna-strip" id="dnaStrip" style="display:none;"></div>
-
-    <!-- BEAT 1: WHO WINS (moneyline) -->
-    <section class="game-section" id="beat1Section">
+    <!-- THE RANGE OF OUTCOMES — the engine's simulated margin. Bars are
+         outcomes, gold bars this game's measured key numbers, the wash the
+         side our spread pick covers; the moneyline pick sits at zero.
+         (Matchup DNA retired 2026-09-13 — the ranked engine-input grid in
+         The Numbers carries what it reached for.) -->
+    <section class="game-section" id="engineSection" style="display:none;">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">— 1 · WHO WINS</div>
-          <h2 class="game-section-title">Straight <em>up</em>.</h2>
-          <p class="game-section-deck">Five win probabilities against the market's own number.</p>
+          <div class="game-section-eyebrow">— 1 · THE RANGE OF OUTCOMES</div>
+          <h2 class="game-section-title">Every way this game <em>goes</em>.</h2>
+          <p class="game-section-deck" id="engineSectionDeck">Simulated play by play, thousands of times.</p>
         </div>
       </header>
-      <div class="beat-stack" id="beat1Stack"></div>
+      <div class="beat-stack" id="pgHistWrap">
+        <div class="game-card pg-hist-block" id="pgHistMarginBlock">
+          <div class="pg-hist-head">
+            <span class="pg-hist-title" id="pgHistMarginTitle">SIMULATED MARGIN</span>
+            <span class="pg-hist-cover" id="pgHistMarginCover"></span>
+          </div>
+          <div class="pg-hist-frame" id="pgHistMarginFrame">
+            <svg id="pgHistMarginSvg" viewBox="0 0 1000 240" preserveAspectRatio="none"></svg>
+            <div class="pg-hist-overlay" id="pgHistMarginOverlay"></div>
+            <div class="pg-hist-tip" id="pgHistMarginTip" hidden></div>
+          </div>
+          <div class="pg-hist-axis" id="pgHistMarginAxis"></div>
+          <div class="pg-hist-caption" id="pgHistMarginCaption"></div>
+        </div>
+      </div>
     </section>
 
-    <!-- BEAT 2: THE MARGIN (spread) -->
+    <!-- BEAT 2: THE MARGIN (spread) — the spread pick, right under its chart -->
     <section class="game-section" id="beat2Section">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">— 2 · THE MARGIN</div>
+          <div class="game-section-eyebrow">— 2 · THE SPREAD</div>
           <h2 class="game-section-title">Against the <em>spread</em>.</h2>
         </div>
       </header>
       <div class="beat-stack" id="beat2Stack"></div>
     </section>
 
-    <!-- BEAT 3: THE SHAPE (total) -->
+    <!-- BEAT 1: WHO WINS (moneyline) -->
+    <section class="game-section" id="beat1Section">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">— 3 · THE MONEYLINE</div>
+          <h2 class="game-section-title">Straight <em>up</em>.</h2>
+        </div>
+      </header>
+      <div class="beat-stack" id="beat1Stack"></div>
+    </section>
+
+    <!-- THE TOTAL — the engine's simulated total, drawn vertically, then the pick -->
     <section class="game-section" id="beat3Section">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">— 3 · THE SHAPE OF THE GAME</div>
+          <div class="game-section-eyebrow">— 4 · THE TOTAL</div>
           <h2 class="game-section-title">The <em>total</em>.</h2>
         </div>
       </header>
-      <div class="beat-stack" id="beat3Stack"></div>
+      <div class="beat-stack">
+        <div class="game-card pg-hist-block pg-hist-vertical" id="pgHistTotalBlock" style="display:none;">
+          <div class="pg-hist-head">
+            <span class="pg-hist-title" id="pgHistTotalTitle">SIMULATED TOTAL</span>
+            <span class="pg-hist-cover" id="pgHistTotalCover"></span>
+          </div>
+          <div class="pg-hist-frame" id="pgHistTotalFrame">
+            <svg id="pgHistTotalSvg" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
+            <div class="pg-hist-overlay" id="pgHistTotalOverlay"></div>
+            <div class="pg-hist-tip" id="pgHistTotalTip" hidden></div>
+          </div>
+          <div class="pg-hist-axis" id="pgHistTotalAxis"></div>
+          <div class="pg-hist-caption" id="pgHistTotalCaption"></div>
+        </div>
+        <div class="beat-stack" id="beat3Stack"></div>
+      </div>
+    </section>
+
+    <!-- THE GAME PATH — the margin minute by minute across the simulations,
+         three branches behind a selector, sentences written from the numbers -->
+    <section class="game-section" id="pathSection" style="display:none;">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">— 5 · THE GAME PATH</div>
+          <h2 class="game-section-title">How it <em>unfolds</em>.</h2>
+          <p class="game-section-deck">The margin, minute by minute, across every simulation.</p>
+        </div>
+      </header>
+      <div class="beat-stack">
+        <div class="game-card pg-path-block">
+          <div class="path-selector" id="pathSelector"></div>
+          <div class="pg-path-frame" id="pathFrame">
+            <svg id="pathSvg" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
+            <div class="pg-hist-overlay" id="pathOverlay"></div>
+            <div class="pg-hist-tip" id="pathTip" hidden></div>
+          </div>
+          <div class="pg-hist-caption">Gold line is the median game. The inner band holds half of all simulations, the outer band eight in ten.</div>
+          <div class="pg-path-desc" id="pathDesc"></div>
+        </div>
+      </div>
     </section>
 
     <!-- BEAT 4: THE RECEIPT -->
     <section class="game-section" id="receiptSection">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">— 4 · THE RECEIPT</div>
+          <div class="game-section-eyebrow">— 6 · THE RECEIPT</div>
           <h2 class="game-section-title">Show your <em>work</em>.</h2>
           <p class="game-section-deck">Form vs our projections, this pick's paper trail, and every signal's live record.</p>
         </div>
@@ -399,7 +464,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260907a"></script>
+<script src="/js/game.js?v=20260913i"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->

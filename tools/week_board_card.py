@@ -1,13 +1,22 @@
 # -*- coding: utf-8 -*-
-"""Weekly board card — every pick that RELEASED with a grade, release → now.
+"""Weekly board card — every pick that RELEASED with a grade, AS RELEASED.
 
-    py -X utf8 tools/week_board_card.py [out.png] [start] [end]
+    py -X utf8 tools/week_board_card.py [out.png] [start] [end] [week_lbl]
 
-One row per released-graded pick (release tier != No Edge). Unchanged
-grade → a single line showing the release. Changed grade → release badge
-→ current badge plus a one-line WHY built from what actually moved
-(line / side / price — the electorate conditions on the live number).
+One row per released-graded pick (release tier != No Edge): side, line,
+juice, and grade exactly as they hit the board — the record (Austin 9/7:
+"just show released"). The ONLY annotation is a rust INVALIDATED note on
+picks the market has since taken away: an ADVERSE move (mirroring
+allocator.html relMove/invalidatedAdversely verbatim — line toward our
+number, over-number up, ML lengthened or favorite flipped) AND the
+current grade is No Edge. Favorable moves never flag. Units = released
+sheet (released tiers + released prices), average one unit per pick.
 Data: public game breakdowns; defaults to the Week 1 window.
+
+PAGINATED (Austin 9/7: "that's so tall — break it up into a few cards"):
+rows flow across as many cards as needed (~4000px cap each); card 1
+carries the full header, later cards a slim continuation header, every
+card the footer. One page fits → the plain out name; else _NofM names.
 """
 import json
 import os
@@ -100,39 +109,31 @@ def fetch_rows(start, end):
                     matchup=f"{g['away_team']} @ {g['home_team']}",
                     kick=g["start_date"], market=p.get("market"),
                     rt=rt, rs=rel.get("side"), rl=rel.get("line"),
-                    rp=rel.get("price"),
+                    rp=rel.get("price"), rprob=rel.get("our_prob"),
                     ct=ct, cs=p.get("side_display"), cl=p.get("line"),
                     cprice=cur.get("price"), voters=p.get("voters"),
-                    vlabels=[v.get("label") for v in (p.get("voter_details") or [])
-                             if v.get("label")],
                     rbook=((rel.get("book") or {}).get("name")
                            if isinstance(rel.get("book"), dict)
                            else rel.get("book")),
                     rat=rel.get("at"),
                     hist_rate=_hist(proj, p.get("market"), "cover_rate"),
                     hist_n=(_hist(proj, p.get("market"), "sample_size")
-                            or _hist(proj, p.get("market"), "signal_count")),
-                    trans=h.get("transitions") or [])
-                # Sizing pool = everything the allocator stakes RIGHT NOW
-                # (currently graded), including picks that released No Edge
-                # — they share the pot even if this board doesn't show them.
-                if ct != "no_edge":
-                    pool.append(entry)
-                # Board = graded at EITHER end: released with a grade, or
-                # released No Edge and graded since (Austin, 2026-08-30:
-                # "show both... more transparent").
-                if rt != "no_edge" or ct != "no_edge":
+                            or _hist(proj, p.get("market"), "signal_count")))
+                # Board AND sizing pool = the RELEASE of record: every pick
+                # that released with a grade, nothing else. The pot is the
+                # released sheet (released tiers at released prices).
+                if rt != "no_edge":
                     rows.append(entry)
+                    pool.append(entry)
     rows.sort(key=lambda r: (r["kick"], r["matchup"], r["market"]))
     return rows, pool
 
 
 def sizing_prob_dec(r):
-    """(p, dec) the allocator PRICES this leg at — the grade-anchored
-    number, not the raw pooled record: tier anchor + shrunk bloc tilt for
-    spread/total (ladder_leg_probability), (1 + tier ROI-LB)/decimal for
-    ML. The raw bloc rate is per-rule fires pooled across ALL its games
-    and (for ML) all prices — context, never the staking number."""
+    """(p, dec) the RELEASED sheet prices this leg at — the release is the
+    record (Austin 9/7), so p comes from the RELEASED tier (the shipped
+    released our_prob when the payload carries it, else the tier anchor
+    via ladder_leg_probability) and dec from the RELEASED price."""
     import sys as _sys
     _here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     _bb = os.path.join(os.path.dirname(_here), "betbuddy-backend")
@@ -150,12 +151,14 @@ def sizing_prob_dec(r):
         return 1 + a / 100 if a > 0 else 1 + 100 / (-a)
 
     if (r["market"] or "").startswith("m"):
-        dec = am_to_dec(r.get("cl"))
+        dec = am_to_dec(r.get("rl"))          # ML: the released price
         return ((1.08 / dec) if dec else None), dec
-    dec = am_to_dec(r.get("cprice") or -110)
-    if (r.get("ct") or "no_edge") == "no_edge":
+    dec = am_to_dec(r.get("rp") or -110)      # released juice
+    if (r.get("rt") or "no_edge") == "no_edge":
         return None, dec
-    return ladder_leg_probability(r["ct"], voters=r.get("voters")), dec
+    if r.get("rprob"):
+        return float(r["rprob"]), dec
+    return ladder_leg_probability(r["rt"], voters=r.get("voters")), dec
 
 
 def allocator_units(pool, beta=0.5, gamma=0.5):
@@ -225,69 +228,67 @@ def allocator_units(pool, beta=0.5, gamma=0.5):
     return out, tickets
 
 
-def why_line(r):
-    """Factual reason the grade moved. Two real mechanisms:
-    (1) the market moved — the line/price crossed a rule's band (band
-        MEMBERSHIP decides, so a move 'against' the pick can still fire
-        rules — e.g. a total dropping to 52 enters the under-52 band);
-    (2) the PROJECTIONS moved against the same number — Sunday's data
-        update put Week 0 into the model chains, shifting every edge.
-    For upgrades, quote the rule(s) actually firing now."""
-    bits = []
-    rs, cs = r.get("rs") or "", r.get("cs") or ""
-    if rs and cs and rs.split()[0] != cs.split()[0]:
-        bits.append(f"pick flipped {rs} → {cs}")
-    rl, cl = r.get("rl"), r.get("cl")
+def _num(v):
+    try:
+        return float(str(v).replace("−", "-").replace("+", ""))
+    except (TypeError, ValueError):
+        return None
 
-    def _num(v):
-        try:
-            return float(str(v).replace("−", "-").replace("+", ""))
-        except (TypeError, ValueError):
-            return None
-    a, b = _num(rl), _num(cl)
-    # Numeric compare — "+24.5" vs "24.5" is the SAME number, and calling
-    # it a move buried the real reason (the model re-projection).
-    moved = (rl is not None and cl is not None
-             and ((a is None or b is None) and str(rl) != str(cl)
-                  or (a is not None and b is not None and abs(a - b) > 1e-9)))
+
+def _side_key(s):
+    """Team display name as-is; totals collapse to their over/under word."""
+    s = str(s or "").strip()
+    tok = s.split()[0].lower() if s.split() else ""
+    return tok if tok in ("over", "under") else s.lower()
+
+
+def rel_move(r):
+    """Mirror of allocator.html relMove — movement from the RELEASED
+    side's point of view. Adverse = the market took the number: picked-
+    side spread lower, under-number lower / over-number higher, ML price
+    lengthened, or the favorite flipped. Favorable is never adverse."""
+    same = (_side_key(r.get("rs")) == _side_key(r.get("cs"))
+            if (r.get("rs") and r.get("cs")) else True)
     is_ml = (r.get("market") or "").startswith("m")
-    if moved:
-        if (is_ml and a is not None and b is not None
-                and (a < 0) != (b < 0)):
-            # ML rules anchor to favorite/dog context — the price crossing
-            # even money means the MARKET flipped the favorite (the pick
-            # side never changed), and fav-conditioned rules (un)fired.
-            bits.append(f"the market flipped the favorite ({rl} → {cl}); "
-                        f"our side never changed — fav/dog-anchored rules "
-                        f"{'now fire' if TIER_ORDER(r['ct']) > TIER_ORDER(r['rt']) else 'unfired'}")
-        else:
-            word = "price" if is_ml else "line"
-            bits.append(f"{word} moved {rl} → {cl}")
-    else:
-        bits.append("same number — Week 0 stats landed and the "
-                    "opponent-adjusted (SoS) solve moved every input")
-    for t in reversed(r.get("trans") or []):
-        for k in ("anchor_note", "note"):
-            if t.get(k):
-                bits.append(str(t[k]))
-                break
-        else:
-            continue
-        break
-    up = TIER_ORDER(r["ct"]) > TIER_ORDER(r["rt"])
-    if up and r.get("vlabels"):
-        vl = r["vlabels"]
-        shown = vl[0] if len(vl[0]) < 70 else vl[0][:67] + "…"
-        extra = f" (+{len(vl) - 1} more)" if len(vl) > 1 else ""
-        bits.append(f"now firing: {shown}{extra}")
-    if not up:
-        bits.append("the released vote no longer clears")
-    verb = "regraded up" if up else "regraded down"
-    return f"{verb}: " + "; ".join(bits)
+
+    def dec(x):
+        return 1 + x / 100 if x > 0 else 1 + 100 / (-x)
+
+    if is_ml:
+        if not same:
+            return dict(moved=True, adverse=True, bare=True,
+                        txt="the market flipped the favorite")
+        a, b = _num(r.get("rl")), _num(r.get("cl"))
+        if a is None or b is None or a == b:
+            return dict(moved=False)
+        return dict(moved=True, adverse=dec(b) > dec(a),
+                    txt=f"{a:+g} → {b:+g}")
+    cur, rel = _num(r.get("cl")), _num(r.get("rl"))
+    if cur is None or rel is None:
+        return dict(moved=False)
+    if not same and r.get("market") == "spread":
+        cur = -cur                      # released side's own number
+    if cur == rel:
+        return dict(moved=False)
+    if r.get("market") == "total":
+        under = _side_key(r.get("rs")) == "under"
+        adverse = cur < rel if under else cur > rel
+        return dict(moved=True, adverse=adverse, txt=f"{rel:g} → {cur:g}")
+    return dict(moved=True, adverse=cur < rel, txt=f"{rel:+g} → {cur:+g}")
 
 
-def TIER_ORDER(t):
-    return {"no_edge": 0, "C": 1, "B": 2, "A": 3, "A+": 4}.get(t, 0)
+def invalidated(r):
+    """allocator.html invalidatedAdversely, verbatim: current grade is
+    No Edge AND the move was adverse. Returns the flag text, else None."""
+    if (r.get("ct") or "no_edge") != "no_edge":
+        return None
+    mv = rel_move(r)
+    if not (mv and mv.get("moved") and mv.get("adverse")):
+        return None
+    if mv.get("bare"):
+        return "INVALIDATED — the market flipped the favorite · now No Edge"
+    return (f"INVALIDATED — the market took the number: {mv['txt']} · "
+            "now No Edge")
 
 
 def badge(dr, x, base, tier):
@@ -323,178 +324,201 @@ def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "week_board.png"
     start = sys.argv[2] if len(sys.argv) > 2 else "2026-09-01"
     end = sys.argv[3] if len(sys.argv) > 3 else "2026-09-09"
+    week_lbl = sys.argv[4] if len(sys.argv) > 4 else "WEEK 1"
     rows, pool = fetch_rows(start, end)
-    stakes, tickets = allocator_units(pool)
-    changed = [r for r in rows if r["ct"] != r["rt"]]
-    same = [r for r in rows if r["ct"] == r["rt"]]
+    # Tickets stay in the pot (the released sheet stakes them) but are not
+    # rendered — their cross-book price is no real ticket, and the site's
+    # allocator is where the covering-book parlays live.
+    stakes, _tickets = allocator_units(pool)
+    n_inv = sum(1 for r in rows if invalidated(r))
+    # Biggest allocation first (Austin 9/7); unstaked rows sink, then kick.
+    rows.sort(key=lambda r: (-(stakes.get((r["gid"], r["market"])) or 0.0),
+                             r["kick"], r["matchup"], r["market"]))
 
-    img = Image.new("RGB", (W, 4200 * S), INK)
-    dr = ImageDraw.Draw(img)
-    y = 44 * S
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     lp = os.path.join(here, "pressbox-w2a-ink-cropped.png")
+    logo = None
     if os.path.exists(lp):
-        lg = Image.open(lp).convert("RGBA")
+        logo = Image.open(lp).convert("RGBA")
         h_ = 96 * S
-        lg = lg.resize((int(lg.width * h_ / lg.height), h_), Image.LANCZOS)
-        img.paste(lg, (PAD, y), lg)
-    dr.text((W - PAD, y + 70 * S), "COLLEGE FOOTBALL · 2026", font=f_sect,
-            fill=TEXT_LIGHT, anchor="rs")
-    y += 96 * S + 22 * S
+        logo = logo.resize((int(logo.width * h_ / logo.height), h_),
+                           Image.LANCZOS)
 
-    dr.text((PAD, y), "WEEK 1 · EVERY GRADED RELEASE, TRACKED", font=f_eyebrow,
-            fill=GOLD_LIGHT)
-    y += 30 * S
-    # Georgia Bold has no → glyph (tofu) — compose the arrow from Segoe.
-    t1, t2 = "Release ", " Now"
-    f_arrow = font("seguisb.ttf", 52)
-    x = PAD
-    dr.text((x, y), t1, font=f_title, fill=CREAM)
-    x += dr.textlength(t1, font=f_title)
-    dr.text((x, y + 14 * S), "→", font=f_arrow, fill=GOLD_LIGHT)
-    x += dr.textlength("→", font=f_arrow)
-    dr.text((x, y), t2, font=f_title, fill=CREAM)
-    y += 86 * S
-    gloss = (f"All {len(rows)} picks graded at either end — released with a "
-             "grade, or released No Edge and graded since. One line = held "
-             "as released. Two badges = the grade moved with the market, "
-             "and the line under it says exactly why. Units are the "
-             "allocator's CURRENT sheet (Moderate), scaled so the average "
-             "bet is one unit — tickets included. Grading always settles "
-             "on the release.")
-    words, line_, gy = gloss.split(), "", y
-    for w_ in words:
-        t_ = (line_ + " " + w_).strip()
-        if dr.textlength(t_, font=f_gloss) <= W - 2 * PAD:
-            line_ = t_
-        else:
-            dr.text((PAD, gy), line_, font=f_gloss, fill=TEXT_LIGHT)
-            gy += 23 * S
-            line_ = w_
-    dr.text((PAD, gy), line_, font=f_gloss, fill=TEXT_LIGHT)
-    y = gy + 32 * S
-    dr.rectangle([PAD, y, W - PAD, y + 4 * S], fill=GOLD)
-    y += 24 * S
+    meas = ImageDraw.Draw(Image.new("RGB", (8, 8)))
+
+    def wrap(text, fnt, maxw):
+        words, line_, lines = text.split(), "", []
+        for w_ in words:
+            t_ = (line_ + " " + w_).strip()
+            if meas.textlength(t_, font=fnt) <= maxw:
+                line_ = t_
+            else:
+                lines.append(line_)
+                line_ = w_
+        if line_:
+            lines.append(line_)
+        return lines
 
     def day_lbl(k):
         d = datetime.fromisoformat(k.replace("Z", "+00:00")).astimezone(ET)
         return d.strftime("%a %-m/%-d") if os.name != "nt" else d.strftime("%a %#m/%#d")
 
-    def draw_rows(rows_, with_why):
-        nonlocal y
-        for r in rows_:
-            base = y + 26 * S
-            rl = r["rl"]
-            if (r["market"] or "").startswith("m") and rl is not None:
-                try:
-                    if float(str(rl).replace("−", "-")) > 0:
-                        rl = f"+{rl}"
-                except (TypeError, ValueError):
-                    pass
-            bet = f"{r['rs']} {rl}" if rl is not None else f"{r['rs']}"
-            px = f" ({r['rp']})" if r.get("rp") else ""
-            dr.text((PAD, base), bet + px, font=f_row, fill=CREAM, anchor="ls")
-            bw = dr.textlength(bet + px, font=f_row)
-            dr.text((PAD + bw + 12 * S, base), MKT.get(r["market"], ""),
-                    font=f_mkt, fill=GOLD_LIGHT, anchor="ls")
-            dr.text((PAD, base + 20 * S),
-                    f"{r['matchup']} · {day_lbl(r['kick'])}",
-                    font=f_rowsub, fill=TEXT_LIGHT, anchor="ls")
-            st = stakes.get((r["gid"], r["market"]))
-            st_txt = f"{st:.1f}u" if st else "—"
-            dr.text((W - PAD, base), st_txt, font=f_row,
-                    fill=GOLD_LIGHT if st else DIM, anchor="rs")
-            bx = W - PAD - 260 * S
-            bwidth = badge(dr, bx, base, r["rt"])
-            if with_why:
-                ax = bx + bwidth + 10 * S
-                dr.text((ax, base), "→", font=f_row, fill=TEXT_LIGHT, anchor="ls")
-                badge(dr, ax + dr.textlength("→", font=f_row) + 10 * S,
-                      base, r["ct"])
-                # WRAP the why — a long reason sailed off the right edge
-                # when drawn as one line (Austin, 2026-08-30).
-                wy = base + 42 * S
-                words, line_ = why_line(r).split(), ""
-                lines = []
-                for w_ in words:
-                    t_ = (line_ + " " + w_).strip()
-                    if dr.textlength(t_, font=f_why) <= W - 2 * PAD - 28 * S:
-                        line_ = t_
-                    else:
-                        lines.append(line_)
-                        line_ = w_
-                if line_:
-                    lines.append(line_)
-                for ln in lines[:3]:
-                    dr.text((PAD + 14 * S, wy), ln, font=f_why,
-                            fill=GOLD_LIGHT, anchor="ls")
-                    wy += 20 * S
-                y += 64 * S + 20 * S * min(len(lines), 3)
-            else:
-                y += 62 * S
-            dr.line([PAD, y, W - PAD, y], fill=DIVIDER, width=1 * S)
-            y += 6 * S
+    inv_bit = (
+        f"{n_inv} {'carries' if n_inv == 1 else 'carry'} an INVALIDATED "
+        "flag — the market has since taken the number, moving far enough "
+        "toward our side that the grade no longer holds today."
+        if n_inv else
+        "None have been invalidated — a flag appears only when the market "
+        "takes the number out from under a grade.")
+    gloss = (f"All {len(rows)} picks that released with a grade — side, "
+             "line, juice, and grade exactly as they hit the board. The "
+             f"release is the record, and grading settles there. {inv_bit} "
+             "A favorable move never invalidates: the grade stands at a "
+             "better entry. Units are the released sheet, scaled so the "
+             "average bet is one unit.")
+    gloss_lines = wrap(gloss, f_gloss, W - 2 * PAD)
 
-    if changed:
-        dr.text((PAD, y + 12 * S), f"GRADE MOVED ({len(changed)})",
-                font=f_sect, fill=GOLD_LIGHT, anchor="ls")
-        y += 26 * S
-        draw_rows(changed, with_why=True)
-        y += 16 * S
-    dr.text((PAD, y + 12 * S),
-            f"HOLDING AS RELEASED ({len(same)})", font=f_sect,
-            fill=GOLD_LIGHT, anchor="ls")
-    y += 26 * S
-    draw_rows(same, with_why=False)
+    HEAD_FULL = (278 + len(gloss_lines) * 23 + 9 + 32) * S
+    HEAD_SLIM = 224 * S
+    FOOT = 98 * S
+    CAP = 2050 * S          # ~4100px per card (Austin 9/7: not so tall)
 
-    if tickets:
-        y += 18 * S
-        dr.text((PAD, y + 12 * S), "THE PARLAYS ON THE SHEET",
-                font=f_sect, fill=GOLD_LIGHT, anchor="ls")
-        y += 30 * S
-        for t in tickets:
-            base = y + 26 * S
-            dr.text((PAD, base), t["name"], font=f_row, fill=CREAM,
-                    anchor="ls")
-            nw = dr.textlength(t["name"], font=f_row)
-            dr.text((PAD + nw + 12 * S, base),
-                    f"+{(t['dec'] - 1) * 100:.0f}", font=f_row,
-                    fill=GOLD, anchor="ls")
+    # ---- measured item list ----
+    items = []
 
-            def leg_txt(r):
-                cl = r["cl"]
-                is_total = (r.get("cs") or "").split(" ")[0] in ("Over", "Under")
-                if cl is not None and not is_total:
-                    try:
-                        if float(str(cl).replace("−", "-")) > 0:
-                            cl = f"+{cl}"
-                    except (TypeError, ValueError):
-                        pass
-                bet = f"{r['cs']} {cl}" if cl is not None else f"{r['cs']}"
-                if is_total:
-                    home = r["matchup"].split(" @ ")[-1]
-                    return f"{bet} ({home})"
-                return bet
-            dr.text((PAD, base + 20 * S),
-                    "  ·  ".join(leg_txt(r) for r in t["legs"]),
-                    font=f_rowsub, fill=TEXT_LIGHT, anchor="ls")
-            st = t.get("stake") or 0.0
-            dr.text((W - PAD, base), f"{st:.1f}u" if st else "—",
-                    font=f_row, fill=GOLD_LIGHT if st else DIM, anchor="rs")
+    def add_sect(lbl):
+        items.append(dict(kind="sect", lbl=lbl, h=44 * S))
+
+    def add_picks(rs):
+        for r in rs:
+            note = invalidated(r)
+            why = (wrap(note, f_why, W - 2 * PAD - 28 * S)[:3]
+                   if note else None)
+            h = (70 * S + 20 * S * len(why)) if why else 68 * S
+            items.append(dict(kind="pick", r=r, why=why, h=h))
+
+    add_sect(f"EVERY GRADED RELEASE ({len(rows)})"
+             + (f" · {n_inv} INVALIDATED" if n_inv else ""))
+    add_picks(rows)
+
+    # ---- paginate: never break right after a section label ----
+    pages, cur, sect_lbl = [], [], None
+    rem = CAP - HEAD_FULL - FOOT
+    i = 0
+    while i < len(items):
+        it = items[i]
+        need = it["h"]
+        if it["kind"] == "sect" and i + 1 < len(items):
+            need += items[i + 1]["h"]
+        # Widow rule: a one-or-two-row tail is not a card. If everything
+        # left fits with a little slack, stretch this page instead.
+        tail = sum(x["h"] for x in items[i:])
+        if need > rem and cur and tail > rem + 150 * S:
+            pages.append(cur)
+            cur = []
+            rem = CAP - HEAD_SLIM - FOOT
+            if sect_lbl and it["kind"] != "sect":
+                cont = dict(kind="sect", lbl=f"{sect_lbl} · CONT.", h=44 * S)
+                cur.append(cont)
+                rem -= cont["h"]
+        if it["kind"] == "sect":
+            sect_lbl = it["lbl"]
+        cur.append(it)
+        rem -= it["h"]
+        i += 1
+    if cur:
+        pages.append(cur)
+    N = len(pages)
+
+    # ---- draw helpers ----
+    def draw_pick(dr, it, y):
+        r = it["r"]
+        base = y + 26 * S
+        rl = r["rl"]
+        if (r["market"] or "").startswith("m") and rl is not None:
+            try:
+                if float(str(rl).replace("−", "-")) > 0:
+                    rl = f"+{rl}"
+            except (TypeError, ValueError):
+                pass
+        bet = f"{r['rs']} {rl}" if rl is not None else f"{r['rs']}"
+        px = f" ({r['rp']})" if r.get("rp") else ""
+        dr.text((PAD, base), bet + px, font=f_row, fill=CREAM, anchor="ls")
+        bw = dr.textlength(bet + px, font=f_row)
+        dr.text((PAD + bw + 12 * S, base), MKT.get(r["market"], ""),
+                font=f_mkt, fill=GOLD_LIGHT, anchor="ls")
+        dr.text((PAD, base + 20 * S),
+                f"{r['matchup']} · {day_lbl(r['kick'])}",
+                font=f_rowsub, fill=TEXT_LIGHT, anchor="ls")
+        st = stakes.get((r["gid"], r["market"]))
+        st_txt = f"{st:.1f}u" if st else "—"
+        dr.text((W - PAD, base), st_txt, font=f_row,
+                fill=GOLD_LIGHT if st else DIM, anchor="rs")
+        badge(dr, W - PAD - 260 * S, base, r["rt"])
+        if it["why"] is not None:
+            wy = base + 42 * S
+            for ln in it["why"]:
+                dr.text((PAD + 14 * S, wy), ln, font=f_why,
+                        fill=RUST, anchor="ls")
+                wy += 20 * S
+            y += 64 * S + 20 * S * len(it["why"])
+        else:
             y += 62 * S
-            dr.line([PAD, y, W - PAD, y], fill=DIVIDER, width=1 * S)
-            y += 6 * S
+        dr.line([PAD, y, W - PAD, y], fill=DIVIDER, width=1 * S)
+        y += 6 * S
+        return y
 
-    y += 20 * S
-    dr.rectangle([0, y, W, y + 4 * S], fill=GOLD)
-    fy = y + 26 * S
-    dr.text((PAD, fy + 24 * S), "pressboxanalytics.com", font=f_footurl,
-            fill=GOLD_LIGHT, anchor="ls")
-    dr.text((W - PAD, fy + 22 * S),
-            "GRADED ON THE RELEASED LINE · REGRADES ON THE RECORD",
-            font=f_footnote, fill=TEXT_LIGHT, anchor="rs")
-    img.crop((0, 0, W, fy + 52 * S)).save(out, "PNG")
-    print(f"wrote {out} | rows {len(rows)} | changed {len(changed)}")
+    # ---- render pages ----
+    stem = out[:-4] if out.lower().endswith(".png") else out
+    outs = []
+    for pi, page in enumerate(pages, 1):
+        content_h = sum(it["h"] for it in page)
+        head = HEAD_FULL if pi == 1 else HEAD_SLIM
+        img = Image.new("RGB", (W, head + content_h + FOOT + 60 * S), INK)
+        dr = ImageDraw.Draw(img)
+        y = 44 * S
+        if logo:
+            img.paste(logo, (PAD, y), logo)
+        dr.text((W - PAD, y + 70 * S), "COLLEGE FOOTBALL · 2026",
+                font=f_sect, fill=TEXT_LIGHT, anchor="rs")
+        y += 96 * S + 22 * S
+        eyebrow = f"{week_lbl} · THE BOARD, AS RELEASED"
+        if N > 1:
+            eyebrow += f" · {pi} OF {N}"
+        dr.text((PAD, y), eyebrow, font=f_eyebrow, fill=GOLD_LIGHT)
+        y += 30 * S
+        if pi == 1:
+            dr.text((PAD, y), "The released board.", font=f_title,
+                    fill=CREAM)
+            y += 86 * S
+            for ln in gloss_lines:
+                dr.text((PAD, y), ln, font=f_gloss, fill=TEXT_LIGHT)
+                y += 23 * S
+            y += 9 * S
+        dr.rectangle([PAD, y, W - PAD, y + 4 * S], fill=GOLD)
+        y += 28 * S
+
+        for it in page:
+            if it["kind"] == "sect":
+                dr.text((PAD, y + 28 * S), it["lbl"], font=f_sect,
+                        fill=GOLD_LIGHT, anchor="ls")
+                y += it["h"]
+            else:
+                y = draw_pick(dr, it, y)
+
+        y += 20 * S
+        dr.rectangle([0, y, W, y + 4 * S], fill=GOLD)
+        fy = y + 26 * S
+        dr.text((PAD, fy + 24 * S), "pressboxanalytics.com", font=f_footurl,
+                fill=GOLD_LIGHT, anchor="ls")
+        dr.text((W - PAD, fy + 22 * S),
+                "GRADED ON THE RELEASED LINE · ADVERSE MOVES FLAGGED",
+                font=f_footnote, fill=TEXT_LIGHT, anchor="rs")
+        name = out if N == 1 else f"{stem}_{pi}of{N}.png"
+        img.crop((0, 0, W, fy + 52 * S)).save(name, "PNG")
+        outs.append(name)
+    print(f"wrote {' + '.join(outs)} | released {len(rows)} | "
+          f"invalidated {n_inv} | pages {N}")
 
 
 if __name__ == "__main__":
