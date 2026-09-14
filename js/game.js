@@ -3110,39 +3110,11 @@
 
   // Tier badge mapping — copied verbatim from live-lines.js so the
   // markup matches exactly. CSS classes come from live-lines.css.
-  const LL_BADGE_MAP = {
-    'A+':          { label: 'A+', aria: 'A+ tier — corroborated top pick', key: 'aplus' },
-    'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
-    'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
-    'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },
-    'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
-    'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
-    'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
-    'ml_pickem':   { label: 'ML', aria: 'A+ moneyline expression — near-pickem price', key: 'aplus' },
-    'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
-  };
 
-  // The Chain's marker (2026 trial signal; handoff/CHAIN_PREREG_2026.md §4):
-  // the chain-link glyph in the bolt's chip geometry. Solo -> top-right;
-  // with the bolt -> bolt top-right, chain top-left. Only on graded picks
-  // whose side the Chain agrees with -- the caller decides that.
-  const CHAIN_GLYPH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">' +
-    '<path d="M10.5 13.5a4.2 4.2 0 0 0 6 0l2.6-2.6a4.24 4.24 0 0 0-6-6l-1.4 1.4"/>' +
-    '<path d="M13.5 10.5a4.2 4.2 0 0 0-6 0l-2.6 2.6a4.24 4.24 0 0 0 6 6l1.4-1.4"/></svg>';
-  function llBadge(tier, bolt, chain) {
-    const m = LL_BADGE_MAP[tier] || { label: escape(tier), aria: escape(tier), key: 'no_edge' };
-    const markKey = ({ aplus: 'aplus', A: 'A', B: 'B', C: 'C' })[m.key];
-    const boltHtml = (bolt && markKey)
-      ? `<span class="ll-bolt ll-bolt--${markKey}" aria-hidden="true">` +
-        `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
-      : '';
-    const chainHtml = (chain && markKey)
-      ? `<span class="ll-chain ll-chain--${markKey}${bolt ? ' left' : ''}" aria-hidden="true">${CHAIN_GLYPH}</span>`
-      : '';
-    const notes = [bolt ? 'streak-aligned' : '', chain ? 'the Chain agrees' : ''].filter(Boolean);
-    const aria = notes.length ? `${m.aria} — ${notes.join(', ')}` : m.aria;
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}${chainHtml}</span>`;
-  }
+  // Badge + markers come from /js/badge.js (one source for every page);
+  // these wrappers keep this file's call sites unchanged.
+  const CHAIN_GLYPH = PBBadge.CHAIN_GLYPH;   // the Chain card's tag reuses it
+  function llBadge(tier, bolt, chain) { return PBBadge.render(tier, { bolt, chain }); }
 
   function llTierLabel(tier) {
     if (!tier) return '—';

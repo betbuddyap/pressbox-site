@@ -754,57 +754,12 @@
     `;
   }
 
-  // The Chain's marker (2026 trial signal, handoff/CHAIN_PREREG_2026.md §4):
-  // chain-link glyph in the bolt's chip geometry, ONLY on a graded spread
-  // pick whose side the Chain's locked fire is on. Solo -> top-right; with
-  // the bolt -> bolt top-right, chain top-left. Fires load from
-  // /chain/fires beside the board (loadChain) and never block it.
-  const CHAIN_GLYPH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">' +
-    '<path d="M10.5 13.5a4.2 4.2 0 0 0 6 0l2.6-2.6a4.24 4.24 0 0 0-6-6l-1.4 1.4"/>' +
-    '<path d="M13.5 10.5a4.2 4.2 0 0 0-6 0l-2.6 2.6a4.24 4.24 0 0 0 6 6l1.4-1.4"/></svg>';
-  function chainAgrees(p) {
-    const f = state.chain && state.chain[p.game_id];
-    return !!(f && p.market === 'spread' && p.tier && p.tier !== 'no_edge'
-              && p.side && f.team && String(p.side).toLowerCase() === String(f.team).toLowerCase());
-  }
-  async function loadChain() {
-    try {
-      const r = await fetch(`${API_BASE}/chain/fires?season=${SEASON}`);
-      const j = await r.json();
-      const map = {};
-      (j.fires || []).forEach(f => { map[f.game_id] = f; });
-      state.chain = map;
-    } catch (e) { /* the marker is a nicety; the board never waits on it */ }
-  }
+  // Badge + markers come from /js/badge.js (one source for every page);
+  // these wrappers keep this file's call sites unchanged.
+  function chainAgrees(p) { return PBBadge.chainAgrees(state.chain, p); }
+  async function loadChain() { state.chain = await PBBadge.loadChain(API_BASE, SEASON); }
 
-  function renderBadge(tier, bolt, chain) {
-    // Map tier value to (label, ariaLabel, cssKey). CSS class names are
-    // case-sensitive, so we use a sanitized key that matches the CSS.
-    const map = {
-      'A+':          { label: 'A+', aria: 'A+ tier — corroborated top pick', key: 'aplus' },
-      'A':           { label: 'A',  aria: 'A tier — gold',    key: 'A' },
-      'B':           { label: 'B',  aria: 'B tier — silver',  key: 'B' },
-      'C':           { label: 'C',  aria: 'C tier — bronze',  key: 'C' },
-      'smart_money': { label: 'SM', aria: 'Smart Money tier', key: 'smart_money' },
-      'goldilocks':  { label: 'GL', aria: 'Goldilocks tier',  key: 'goldilocks' },
-      'lottery':     { label: 'LT', aria: 'Lottery tier',     key: 'lottery' },
-      'ml_pickem':   { label: 'ML', aria: 'A+ moneyline expression — near-pickem price', key: 'aplus' },
-      'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
-    };
-    const m = map[tier] || { label: esc(tier), aria: esc(tier), key: 'no_edge' };
-    // Bolt = streak-alignment marker (corner chip; chip wears the tier color).
-    const boltKey = ({ aplus: 'aplus', A: 'A', B: 'B', C: 'C' })[m.key];
-    const boltHtml = (bolt && boltKey)
-      ? `<span class="ll-bolt ll-bolt--${boltKey}" aria-hidden="true">` +
-        `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
-      : '';
-    const chainHtml = (chain && boltKey)
-      ? `<span class="ll-chain ll-chain--${boltKey}${bolt ? ' left' : ''}" aria-hidden="true">${CHAIN_GLYPH}</span>`
-      : '';
-    const notes = [bolt ? 'streak-aligned' : '', chain ? 'the Chain agrees' : ''].filter(Boolean);
-    const aria = notes.length ? `${m.aria} — ${notes.join(', ')}` : m.aria;
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}${chainHtml}</span>`;
-  }
+  function renderBadge(tier, bolt, chain) { return PBBadge.render(tier, { bolt, chain }); }
 
   // Did the market come toward the side we picked, or drift away from it?
   //
