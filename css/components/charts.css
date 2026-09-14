@@ -1,0 +1,190 @@
+/* ── charts.css — the game page's chart language, shared with the
+   marketing pages so their mocks ARE the real thing. Loaded by
+   game.html, index.html, how-it-works.html. Tokens only. ── */
+
+/* Live probabilities — translucent panels ON the dark hero (a smidge
+   darker than the team-color halves behind them), cream/gold type
+   matching the hero's own furniture. Editorial frames: hairline border,
+   quiet side-color washes off the 50/50 line, thin gold line, quarter
+   dividers, one gold now-dot. */
+.pg-wp-section { margin-top: 18px; }
+.pg-wp-inner { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.pg-wp-block { background: rgba(15,14,10,0.28); border: 1px solid rgba(248,245,238,0.16); border-radius: 6px; padding: 12px 14px 14px; text-align: left; }
+.pg-wp-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.pg-wp-title { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(248,245,238,0.75); }
+.pg-wp-now { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--gold-light); }
+.pg-wp-frame { position: relative; }
+.pg-wp-frame svg { width: 100%; height: 200px; display: block; border-radius: 4px; border: 1px solid rgba(248,245,238,0.14); }
+.pg-wp-teamlbl {
+  position: absolute; left: 10px; z-index: 2;
+  font-family: var(--sans); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase;
+  color: rgba(248,245,238,0.7);
+  pointer-events: none;
+}
+.pg-wp-teamlbl.top { top: 7px; }
+.pg-wp-teamlbl.bot { bottom: 7px; }
+/* Quarter markers along the top edge; the gold dot rides the line's live
+   end at the right edge — the frame's lone accent. */
+.pg-wp-q {
+  position: absolute; top: 5px; transform: translateX(-50%);
+  font-family: var(--sans); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.03em; color: rgba(248,245,238,0.4);
+  pointer-events: none;
+}
+.pg-wp-dot {
+  position: absolute; right: -4px; width: 9px; height: 9px;
+  border-radius: 50%; background: var(--gold-light);
+  border: 2px solid rgba(15,14,10,0.55);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+/* Faint depth under the line — insurance for gold-heavy team halves
+   (GT, maize) where gold-on-darkened-gold runs thin. Not an outline. */
+.pg-wp-line { filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45)); }
+
+/* ── Engine histograms — body-surface cards. Bars in ink, key numbers gold,
+   the pick side a gold wash; every label is an HTML overlay positioned in
+   % so the stretched SVG can't warp type. The TOTAL is the same chart
+   turned vertical (.pg-hist-vertical): low scoring at the bottom. ── */
+.pg-hist-block { padding: 20px 22px 16px; }
+.pg-hist-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 12px; }
+.pg-hist-title {
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid);
+}
+.pg-hist-cover { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--gold-deep); text-align: right; }
+.pg-hist-frame { position: relative; }
+.pg-hist-frame svg {
+  width: 100%; height: 220px; display: block;
+  border-radius: 4px; border: 1px solid var(--border); background: var(--cream);
+}
+.pg-hist-vertical .pg-hist-frame svg { height: 320px; }
+.pg-hist-overlay { position: absolute; inset: 0; pointer-events: none; }
+/* Model ticks: a hairline from the edge with the model's name beside it.
+   Horizontal charts hang them from the top (two rows so neighbours never
+   collide); the vertical chart hangs them from the right edge. */
+.pg-hist-mk {
+  position: absolute; top: 0; transform: translateX(-50%);
+  font-family: var(--sans); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--text-mid); white-space: nowrap; padding-top: 14px;
+}
+.pg-hist-mk::before {
+  content: ""; position: absolute; left: 50%; top: 0;
+  width: 1px; height: 11px; background: var(--text-mid);
+}
+.pg-hist-mk.row2 { padding-top: 26px; }
+.pg-hist-mk.row2::before { height: 23px; }
+.pg-hist-mk.row3 { padding-top: 38px; }
+.pg-hist-mk.row3::before { height: 35px; }
+.pg-hist-mk.engine { color: var(--gold-deep); }
+.pg-hist-mk.engine::before { background: var(--gold); width: 2px; }
+.pg-hist-vertical .pg-hist-mk {
+  top: auto; right: 0; left: auto; transform: translateY(-50%);
+  padding-top: 0; padding-right: 16px;
+}
+.pg-hist-vertical .pg-hist-mk::before {
+  left: auto; right: 0; top: 50%; transform: translateY(-50%);
+  width: 12px; height: 1px;
+}
+.pg-hist-vertical .pg-hist-mk.row2 { padding-right: 30px; }
+.pg-hist-vertical .pg-hist-mk.row2::before { width: 26px; }
+.pg-hist-vertical .pg-hist-mk.row3 { padding-right: 44px; }
+.pg-hist-vertical .pg-hist-mk.row3::before { width: 40px; }
+/* A tick that could not be labelled without overprinting: hairline only;
+   its name is listed in the caption instead. */
+.pg-hist-mk.bare { font-size: 0; padding: 0; }
+.pg-hist-mk.bare::before { height: 11px; }
+.pg-hist-vertical .pg-hist-mk.bare::before { width: 12px; height: 1px; }
+/* Vertical: the value axis is a fixed 34px column OUTSIDE the drawing, so
+   two-digit totals never fight the bars for room at any width. The market
+   chip starts past that column. */
+.pg-hist-vertical .pg-hist-frame { padding-left: 34px; }
+.pg-hist-vertical .pg-hist-vaxis { width: 28px; text-align: right; padding-left: 0; }
+.pg-hist-vertical .pg-hist-mkt { left: 40px; }
+/* The market's number: a chip at the bottom edge (left edge when vertical);
+   the dashed line is drawn in the SVG. */
+.pg-hist-mkt {
+  position: absolute; bottom: 4px; transform: translateX(-50%);
+  font-family: var(--sans); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--cream); white-space: nowrap;
+  background: var(--ink); padding: 2px 6px; border-radius: 3px;
+}
+.pg-hist-vertical .pg-hist-mkt { bottom: auto; left: 6px; transform: translateY(-50%); }
+/* Our side, named IN the chart: the spread pick's chip rides the wash, the
+   moneyline pick's chip sits on the zero line (who wins). */
+.pg-hist-chip {
+  position: absolute; transform: translateX(-50%);
+  font-family: var(--sans); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap;
+  color: var(--ink); background: var(--gold-light);
+  padding: 3px 8px; border-radius: 3px; box-shadow: 0 1px 3px rgba(15,14,10,0.18);
+}
+.pg-hist-chip.ml { background: var(--cream); border: 1px solid var(--ink); }
+.pg-hist-chip .tier { margin-left: 6px; padding-left: 6px; border-left: 1px solid rgba(15,14,10,0.35); }
+.pg-hist-vertical .pg-hist-chip { transform: translateY(-50%); }
+.pg-hist-axis {
+  position: relative; height: 28px; margin-top: 2px;
+  font-family: var(--sans); font-size: 10px; color: var(--text-light);
+}
+.pg-hist-axis span { position: absolute; top: 2px; transform: translateX(-50%); }
+.pg-hist-axis .dir {
+  transform: none; top: 14px; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid);
+}
+.pg-hist-axis .dir.left { left: 0; }
+.pg-hist-axis .dir.right { right: 0; text-align: right; }
+/* Vertical: the value axis runs up the left INSIDE the frame; the axis row
+   below carries only the two direction words. */
+.pg-hist-vertical .pg-hist-vaxis {
+  position: absolute; left: 0; transform: translateY(-50%);
+  font-family: var(--sans); font-size: 10px; color: var(--text-light);
+  padding-left: 6px;
+}
+.pg-hist-caption {
+  font-family: var(--sans); font-size: 12px; line-height: 1.5;
+  color: var(--text-mid); margin-top: 8px;
+}
+.pg-hist-caption b { color: var(--ink); font-weight: 600; }
+.pg-hist-tip {
+  position: absolute; top: 8px; transform: translateX(-50%);
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+  color: var(--cream); background: var(--ink);
+  padding: 4px 8px; border-radius: 4px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(15,14,10,0.25); pointer-events: none; z-index: 3;
+}
+.pg-hist-vertical .pg-hist-tip { top: auto; left: 40%; transform: translateY(-50%); }
+@media (max-width: 760px) {
+  .pg-hist-chip { font-size: 9px; padding: 2px 6px; }
+  .pg-hist-chip .tier { margin-left: 4px; padding-left: 4px; }
+}
+@media (max-width: 600px) {
+  .pg-hist-block { padding: 14px 14px 12px; }
+  .pg-hist-frame svg { height: 160px; }
+  .pg-hist-vertical .pg-hist-frame svg { height: 260px; }
+  .pg-hist-mk { font-size: 8px; }
+}
+
+/* A dark stage for the live-probability mock on cream pages: the game
+   page draws these panels over the team-colour hero. */
+.pg-wp-stage { background: var(--ink); border-radius: 6px; padding: 14px; }
+
+/* The engine's line under a mocked vote tally on the marketing pages —
+   the same shape as .tally-engine on the game page. */
+.tally-mock {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+  font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--text-mid);
+  text-align: left;
+}
+.tally-mock b { color: var(--ink); font-weight: 700; }
+.tally-mock-tag {
+  flex: none; display: inline-flex; align-items: center; gap: 5px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--ink); background: var(--cream);
+  border: 1px solid var(--ink); border-radius: 10px; padding: 2px 7px;
+  position: relative; top: -1px;
+}
+.tally-mock-tag::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--gold); }

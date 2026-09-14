@@ -1886,8 +1886,7 @@
       const t = eng.total || {};
       if (t.mean == null) return '';
       const mk = t.market_x != null ? ` against a line of <b>${n1(t.market_x)}</b>` : '';
-      return row('none', `The engine plays this game to <b>${n1(t.mean)}</b> points${mk}. ` +
-        `It does not grade totals — its total only helps decide whether it weighs in on the spread.`);
+      return row('none', `The engine plays this game to <b>${n1(t.mean)}</b> points${mk}. It does not grade totals.`);
     }
     if (p.market !== 'spread') return '';
     const m = eng.margin || {}, v = eng.verdict || {};
@@ -1916,19 +1915,21 @@
       else eff = 'none';
     }
     const pre = p.tier_pre_engine ? (TIER_DISPLAY[p.tier_pre_engine] || p.tier_pre_engine) : null;
+    // Present tense throughout: the page grades live, so this is the state
+    // of the bet right now, not the story of how it got here (Austin, 9/14).
     if (eff === 'confirms') {
-      return row('confirms', `${has} It lands on the same side as the signals${at}, so this bet grades <b>A+</b>` +
-        `${pre ? ` — the signals alone made it ${escape(pre)}` : ''}.`);
+      return row('confirms', `${has} It is on the same side as the signals${at}, which lifts this bet to <b>A+</b>` +
+        `${pre ? ` from the ${escape(pre)} the signals alone earn` : ''}.`);
     }
     if (eff === 'opposes') {
-      return row('opposes', `${has} It takes the other side${at}, so this bet comes <b>off the board</b>` +
-        `${pre ? ` — the signals alone would have graded it ${escape(pre)}` : ''}.`);
+      return row('opposes', `${has} It is on the other side${at}, which takes this bet <b>off the board</b>` +
+        `${pre ? ` — the signals alone grade it ${escape(pre)}` : ''}.`);
     }
     if (eff === 'alone') {
-      return row('alone', `${has} No signal fired here; the engine’s read on its own grades this a <b>C</b>.`);
+      return row('alone', `${has} No signal is firing here; the engine’s read on its own grades this a <b>C</b>.`);
     }
-    return row('none', `${has} Not far enough from the market${moved ? ' as it opened' : ''}, on the spread and the total together, ` +
-      `for the engine to weigh in — the signals grade this one on their own.`);
+    return row('none', `${has} It is not far enough from the market${moved ? ' as it opened' : ''} to weigh in, ` +
+      `so the signals grade this one on their own.`);
   }
 
   // ────── LIVE MARKER ON THE CHARTS ──────
