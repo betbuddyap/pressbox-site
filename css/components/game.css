@@ -2256,6 +2256,11 @@ footer {
 .tally-engine--opposes .tally-engine-tag { border-style: dashed; color: var(--text-mid); }
 .tally-engine--opposes .tally-engine-tag::before { opacity: 0.4; }
 .tally-engine--none .tally-engine-tag::before { background: transparent; box-shadow: inset 0 0 0 1px var(--text-light); }
+/* The Chain's card reuses the engine line's shape; its tag carries the
+   chain-link glyph instead of the square. */
+.chain-card .chain-row { margin-top: 0; padding-top: 0; border-top: 0; }
+.chain-tag::before { display: none; }
+.chain-tag svg { width: 11px; height: 11px; display: block; }
 /* Mobile: keep the tally HORIZONTAL — net block left, all chips flowing
    right (a full vertical stack tripled the card height). */
 @media (max-width: 720px) {

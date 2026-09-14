@@ -1867,6 +1867,57 @@
     return wrap;
   }
 
+  // THE CHAIN'S CARD (2026 trial signal, registered in
+  // handoff/CHAIN_PREREG_2026.md): a fifth model built from this season's
+  // margins and opponents alone, spreads only, evaluated ONCE per game at
+  // its first snapshot with a board line, locked at fire, graded on the
+  // fire line. Non-voting -- it never touches a grade; its own fires and
+  // record are published here, agree or disagree.
+  function buildChainCard(data) {
+    const ch = data.chain, g = data.game || {};
+    if (!ch || !ch.available) return null;
+    const home = g.home?.name || 'Home', away = g.away?.name || 'Away';
+    const n1 = (x) => { const r = Math.round(x * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); };
+    const by = (m) => Math.abs(m) < 0.05 ? 'a pick’em' : `${m > 0 ? home : away} by ${n1(Math.abs(m))}`;
+    const sgnLine = (v) => (v > 0 ? '+' : '') + n1(v);
+    const rec = ch.record || {};
+    const recTxt = (rec.n > 0)
+      ? ` This season the Chain is <b>${rec.win}–${rec.loss}${rec.push ? `–${rec.push}` : ''}</b> on its fires.`
+      : '';
+    let kind = 'none', text;
+    if (ch.fire) {
+      const f = ch.fire;
+      const team = f.side === 'home' ? home : away;
+      // fire_line is home-spread convention; show the picked side's own number
+      const own = f.side === 'home' ? Number(f.fire_line) : -Number(f.fire_line);
+      const price = f.fire_price != null ? ` (${f.fire_price > 0 ? '+' : ''}${f.fire_price})` : '';
+      const when = f.fired_at ? new Date(f.fired_at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+      const stance = ch.agrees === true ? ' It lands on the same side as the board’s pick, so the pick wears its marker.'
+                   : ch.agrees === false ? ' It lands on the other side of the board’s pick. The pick stands; the Chain is graded on its own.'
+                   : ' The board has no graded spread pick here; the Chain is graded on its own.';
+      const result = f.outcome ? ` <b>${f.outcome === 'win' ? 'Won' : f.outcome === 'loss' ? 'Lost' : 'Push'}.</b>` : '';
+      kind = f.outcome ? f.outcome : 'fire';
+      text = `The Chain has <b>${by(ch.chain_margin)}</b> against a median line of ${by(-Number(f.line_median))}. ` +
+             `It fired on <b>${escape(team)} ${sgnLine(own)}</b> at ${escape(f.fire_book || 'the best book')}${price}${when ? `, locked ${when}` : ''}.` +
+             stance + result + recTxt;
+    } else if (ch.evaluation) {
+      const ev = ch.evaluation;
+      text = `The Chain has <b>${by(ch.chain_margin)}</b>; the board’s median line was ${by(-Number(ev.line_median))} when it looked. ` +
+             `That gap sits outside its ${ch.window[0]}-to-${ch.window[1]}-point window, so it did not fire. It looks once per game.` + recTxt;
+    } else if (!ch.eligible) {
+      const need = ch.min_games || 3;
+      text = `The Chain, a fifth model on trial this season, speaks only once both teams have ${need} completed games. ` +
+             `${escape(home)} has ${ch.home_games}, ${escape(away)} has ${ch.away_games}. Spreads only, and it never votes.` + recTxt;
+    } else {
+      text = `The Chain has <b>${by(ch.chain_margin)}</b>. It will speak at the first snapshot with a board line, once, and its word is locked from then on.` + recTxt;
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'game-card tally-card chain-card';
+    wrap.innerHTML = `<div class="tally-engine tally-engine--${kind === 'fire' ? 'confirms' : kind === 'loss' ? 'opposes' : 'none'} chain-row">` +
+      `<span class="tally-engine-tag chain-tag">${CHAIN_GLYPH}Chain</span><span>${text}</span></div>`;
+    return wrap;
+  }
+
   // THE ENGINE'S LINE under the vote tally (Austin, 9/14: "where the cells
   // fire, we also need to show a reference to the engine"). The simulation
   // votes on the SPREAD only -- agree: A+, oppose: off the board, alone: C --
@@ -2016,8 +2067,17 @@
     }
     if (els.beat2Stack) {
       els.beat2Stack.innerHTML = '';
+      // The Chain's marker rides the spread badge only when its locked
+      // fire is on the same side as a graded pick (display contract §4).
+      const ch = data.chain;
+      if (byMkt.spread && ch && ch.available && ch.fire && ch.agrees
+          && byMkt.spread._effTier && byMkt.spread._effTier !== 'no_edge') {
+        byMkt.spread._chain = true;
+      }
       if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread, data.game));
       if (byMkt.spread) { const t = buildTally(byMkt.spread, data.game, data.engine); if (t) els.beat2Stack.appendChild(t); }
+      const c = buildChainCard(data);
+      if (c) els.beat2Stack.appendChild(c);
     }
     if (els.beat3Stack) {
       els.beat3Stack.innerHTML = '';
@@ -3035,15 +3095,26 @@
     'no_edge':     { label: 'NE', aria: 'No edge — model aggregate without an actionable edge', key: 'no_edge' },
   };
 
-  function llBadge(tier, bolt) {
+  // The Chain's marker (2026 trial signal; handoff/CHAIN_PREREG_2026.md §4):
+  // the chain-link glyph in the bolt's chip geometry. Solo -> top-right;
+  // with the bolt -> bolt top-right, chain top-left. Only on graded picks
+  // whose side the Chain agrees with -- the caller decides that.
+  const CHAIN_GLYPH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">' +
+    '<path d="M10.5 13.5a4.2 4.2 0 0 0 6 0l2.6-2.6a4.24 4.24 0 0 0-6-6l-1.4 1.4"/>' +
+    '<path d="M13.5 10.5a4.2 4.2 0 0 0-6 0l-2.6 2.6a4.24 4.24 0 0 0 6 6l1.4-1.4"/></svg>';
+  function llBadge(tier, bolt, chain) {
     const m = LL_BADGE_MAP[tier] || { label: escape(tier), aria: escape(tier), key: 'no_edge' };
-    const boltKey = ({ aplus: 'aplus', A: 'A', B: 'B', C: 'C' })[m.key];
-    const boltHtml = (bolt && boltKey)
-      ? `<span class="ll-bolt ll-bolt--${boltKey}" aria-hidden="true">` +
+    const markKey = ({ aplus: 'aplus', A: 'A', B: 'B', C: 'C' })[m.key];
+    const boltHtml = (bolt && markKey)
+      ? `<span class="ll-bolt ll-bolt--${markKey}" aria-hidden="true">` +
         `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
       : '';
-    const aria = bolt ? `${m.aria} — streak-aligned` : m.aria;
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}</span>`;
+    const chainHtml = (chain && markKey)
+      ? `<span class="ll-chain ll-chain--${markKey}${bolt ? ' left' : ''}" aria-hidden="true">${CHAIN_GLYPH}</span>`
+      : '';
+    const notes = [bolt ? 'streak-aligned' : '', chain ? 'the Chain agrees' : ''].filter(Boolean);
+    const aria = notes.length ? `${m.aria} — ${notes.join(', ')}` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}${chainHtml}</span>`;
   }
 
   function llTierLabel(tier) {
@@ -3187,7 +3258,7 @@
         <button class="ll-row-header" data-action="toggle"
                 aria-controls="ll-acc-${escape(String(p.pick_id || 'ne-' + p.market))}"
                 aria-expanded="false">
-          ${llBadge(headerTier, p.bolt)}
+          ${llBadge(headerTier, p.bolt, p._chain)}
           <div class="ll-row-content">
             <div class="ll-row-matchup">${matchupLabel}</div>
             <div class="ll-row-pick">${pickLineHtml}</div>

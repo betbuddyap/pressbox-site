@@ -484,6 +484,28 @@
 .ll-bolt--C     { background: var(--bronze); color: var(--cream); }
 .ll-bolt--aplus { background: var(--ink);    color: var(--gold-light); border-color: var(--gold); }
 
+/* The Chain's marker — the bolt's sibling (same 19px chip, tier colours,
+   ink keyline, cream outline), chain-link glyph. Solo: top-right. With the
+   bolt: bolt keeps top-right, the chain takes top-left (.left). Design pick
+   2026-09-05, chain-mock.html Option A; contract in CHAIN_PREREG_2026 §4. */
+.ll-chain {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  border: 1px solid var(--ink);
+  outline: 2px solid var(--cream);
+  display: flex; align-items: center; justify-content: center;
+}
+.ll-chain.left { right: auto; left: -8px; }
+.ll-chain svg { width: 13px; height: 13px; display: block; }
+.ll-chain--A     { background: var(--gold);   color: var(--cream); }
+.ll-chain--B     { background: var(--silver); color: var(--ink); }
+.ll-chain--C     { background: var(--bronze); color: var(--cream); }
+.ll-chain--aplus { background: var(--ink);    color: var(--gold-light); border-color: var(--gold); }
+
 /* (fade-tag retired with the red ring — 2026 ladder cutover) */
 
 
