@@ -1908,18 +1908,33 @@
       else eff = 'none';
     }
     const pre = p.tier_pre_engine ? (TIER_DISPLAY[p.tier_pre_engine] || p.tier_pre_engine) : null;
+    // The engine's own record this season (engine_fires: locked at each
+    // game's release, graded at the final, never re-evaluated). Shown once
+    // there is a graded fire in the matching bucket.
+    const rec = eng.record && eng.record.available ? eng.record : null;
+    const wl = (key) => {
+      const r = rec && rec[key];
+      if (!r || !(r.win + r.loss + r.push)) return null;
+      return `<b>${r.win}–${r.loss}${r.push ? `–${r.push}` : ''}</b>`;
+    };
     // Present tense throughout: the page grades live, so this is the state
     // of the bet right now, not the story of how it got here (Austin, 9/14).
     if (eff === 'confirms') {
+      const r = wl('confirms');
       return row('confirms', `${has} It is on the same side as the signals${at}, which lifts this bet to <b>A+</b>` +
-        `${pre ? ` from the ${escape(pre)} the signals alone earn` : ''}.`);
+        `${pre ? ` from the ${escape(pre)} the signals alone earn` : ''}.` +
+        (r ? ` This season the engine is ${r} when it agrees with the signals.` : ''));
     }
     if (eff === 'opposes') {
+      const r = wl('opposes');
       return row('opposes', `${has} It is on the other side${at}, which takes this bet <b>off the board</b>` +
-        `${pre ? ` — the signals alone grade it ${escape(pre)}` : ''}.`);
+        `${pre ? ` — the signals alone grade it ${escape(pre)}` : ''}.` +
+        (r ? ` When it has opposed the signals this season, its side is ${r}.` : ''));
     }
     if (eff === 'alone') {
-      return row('alone', `${has} No signal is firing here; the engine’s read on its own grades this a <b>C</b>.`);
+      const r = wl('alone');
+      return row('alone', `${has} No signal is firing here; the engine’s read on its own grades this a <b>C</b>.` +
+        (r ? ` On its own this season it is ${r}.` : ''));
     }
     return row('none', `${has} It is not far enough from the market to weigh in, ` +
       `so the signals grade this one on their own.`);
