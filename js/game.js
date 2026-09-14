@@ -1892,8 +1892,22 @@
     if (p.market !== 'spread') return '';
     const m = eng.margin || {}, v = eng.verdict || {};
     if (m.mean == null) return '';
-    const has = `The engine has <b>${by(m.mean)}</b>` +
-      (m.market_x != null ? `; the market has ${by(m.market_x)}` : '') + '.';
+    // The engine is judged against the OPENING line (never the close), while
+    // market_x is where the line sits now. Recover the opening number from
+    // the verdict (edge = |engine − open|, side says which way) and name
+    // both when they differ — LSU @ Ole Miss opened Ole Miss −2 and sat at
+    // LSU −3.5 by Sunday; "LSU by 3.9 vs LSU by 3.5" read like nothing
+    // while the engine had actually been 5.9 points off the open.
+    const cur = m.market_x;
+    const open = (v.sp_edge != null && v.side)
+      ? (v.side === 'home' ? m.mean - v.sp_edge : m.mean + v.sp_edge)
+      : cur;
+    const moved = open != null && cur != null && Math.abs(open - cur) >= 0.5;
+    let has;
+    if (open == null && cur == null) has = `The engine has <b>${by(m.mean)}</b>.`;
+    else if (!moved) has = `The engine has <b>${by(m.mean)}</b> against a line of ${by(cur != null ? cur : open)}.`;
+    else has = `The engine has <b>${by(m.mean)}</b>. The line opened at ${by(open)} and now sits at ${by(cur)}.`;
+    const at = moved ? ' at the opening number' : '';
     let eff = p.engine_effect;
     if (!eff) {
       const pickHome = p.side_display === home;
@@ -1903,17 +1917,17 @@
     }
     const pre = p.tier_pre_engine ? (TIER_DISPLAY[p.tier_pre_engine] || p.tier_pre_engine) : null;
     if (eff === 'confirms') {
-      return row('confirms', `${has} It lands on the same side as the signals, so this bet grades <b>A+</b>` +
+      return row('confirms', `${has} It lands on the same side as the signals${at}, so this bet grades <b>A+</b>` +
         `${pre ? ` — the signals alone made it ${escape(pre)}` : ''}.`);
     }
     if (eff === 'opposes') {
-      return row('opposes', `${has} It takes the other side, so this bet comes <b>off the board</b>` +
+      return row('opposes', `${has} It takes the other side${at}, so this bet comes <b>off the board</b>` +
         `${pre ? ` — the signals alone would have graded it ${escape(pre)}` : ''}.`);
     }
     if (eff === 'alone') {
       return row('alone', `${has} No signal fired here; the engine’s read on its own grades this a <b>C</b>.`);
     }
-    return row('none', `${has} Not far enough from the market, on the spread and the total together, ` +
+    return row('none', `${has} Not far enough from the market${moved ? ' as it opened' : ''}, on the spread and the total together, ` +
       `for the engine to weigh in — the signals grade this one on their own.`);
   }
 
