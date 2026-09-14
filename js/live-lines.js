@@ -726,7 +726,7 @@
   function renderPickRow(p) {
     const isNoEdge = p.tier === 'no_edge';
     const isExpanded = state.expandedPickId === p.pick_id;
-    const badge = renderBadge(p.tier, p.bolt);
+    const badge = renderBadge(p.tier, p.bolt, chainAgrees(p));
     const pickLine = renderPickLine(p);
 
     return `
@@ -754,7 +754,30 @@
     `;
   }
 
-  function renderBadge(tier, bolt) {
+  // The Chain's marker (2026 trial signal, handoff/CHAIN_PREREG_2026.md §4):
+  // chain-link glyph in the bolt's chip geometry, ONLY on a graded spread
+  // pick whose side the Chain's locked fire is on. Solo -> top-right; with
+  // the bolt -> bolt top-right, chain top-left. Fires load from
+  // /chain/fires beside the board (loadChain) and never block it.
+  const CHAIN_GLYPH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">' +
+    '<path d="M10.5 13.5a4.2 4.2 0 0 0 6 0l2.6-2.6a4.24 4.24 0 0 0-6-6l-1.4 1.4"/>' +
+    '<path d="M13.5 10.5a4.2 4.2 0 0 0-6 0l-2.6 2.6a4.24 4.24 0 0 0 6 6l1.4-1.4"/></svg>';
+  function chainAgrees(p) {
+    const f = state.chain && state.chain[p.game_id];
+    return !!(f && p.market === 'spread' && p.tier && p.tier !== 'no_edge'
+              && p.side && f.team && String(p.side).toLowerCase() === String(f.team).toLowerCase());
+  }
+  async function loadChain() {
+    try {
+      const r = await fetch(`${API_BASE}/chain/fires?season=${SEASON}`);
+      const j = await r.json();
+      const map = {};
+      (j.fires || []).forEach(f => { map[f.game_id] = f; });
+      state.chain = map;
+    } catch (e) { /* the marker is a nicety; the board never waits on it */ }
+  }
+
+  function renderBadge(tier, bolt, chain) {
     // Map tier value to (label, ariaLabel, cssKey). CSS class names are
     // case-sensitive, so we use a sanitized key that matches the CSS.
     const map = {
@@ -775,8 +798,12 @@
       ? `<span class="ll-bolt ll-bolt--${boltKey}" aria-hidden="true">` +
         `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
       : '';
-    const aria = bolt ? `${m.aria} — streak-aligned` : m.aria;
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}</span>`;
+    const chainHtml = (chain && boltKey)
+      ? `<span class="ll-chain ll-chain--${boltKey}${bolt ? ' left' : ''}" aria-hidden="true">${CHAIN_GLYPH}</span>`
+      : '';
+    const notes = [bolt ? 'streak-aligned' : '', chain ? 'the Chain agrees' : ''].filter(Boolean);
+    const aria = notes.length ? `${m.aria} — ${notes.join(', ')}` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}${chainHtml}</span>`;
   }
 
   // Did the market come toward the side we picked, or drift away from it?
@@ -1292,6 +1319,7 @@
     state.lastFetchedAt = new Date().toISOString();
     state.historyCache = {};   // invalidate so dropdown re-fetches
     render();
+    loadChain().then(() => render()).catch(() => {});
     // Clearing the cache above sends an OPEN accordion back to its skeleton.
     // Nothing re-fetched it, because toggleRow only runs on a click — so a
     // poll left an expanded row shimmering forever. Re-fetch it here.
@@ -1376,6 +1404,9 @@
       state.lastFetchedAt = new Date().toISOString();
       render();
       startPolling();
+      // The Chain's fires load beside the board and re-render once; the
+      // board never waits on them.
+      loadChain().then(() => render()).catch(() => {});
       // Grade changes load after the board — the board is the product, and
       // this must never delay it or break it if the endpoint is unavailable.
       loadChanges().then(() => { render(); maybeShowChangesPopup(); })
