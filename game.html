@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Game Breakdown — PressBox Analytics</title>
-<meta name="description" content="The math behind every pick. Five-model projections, side-by-side stat comparisons, and our editorial read on this matchup.">
+<meta name="description" content="The math behind every pick. The engine's range of outcomes, four models against the market, the signals behind the grade, and our editorial read on this matchup.">
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +14,7 @@
 <!-- Tokens FIRST, then components -->
 <link rel="stylesheet" href="/css/tokens.css?v=20260831a">
 <link rel="stylesheet" href="/css/components/live-lines.css?v=20260813b">
-<link rel="stylesheet" href="/css/components/game.css?v=20260913f">
+<link rel="stylesheet" href="/css/components/game.css?v=20260914a">
 
 <style>
   /* ── Site nav (kept in sync across pages) ── */
@@ -170,7 +170,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <div class="game-paywall-inner">
     <div class="game-paywall-eyebrow">— THE BREAKDOWN</div>
     <h1 class="game-paywall-title">Subscribe to see the <em>full game breakdown</em>.</h1>
-    <p class="game-paywall-sub">Five-model projections, side-by-side stat comparisons, and our editorial take — for every FBS game with line capture.</p>
+    <p class="game-paywall-sub">The engine's range of outcomes, every model against the market, the signals behind each grade, and our editorial take — for every FBS game with line capture.</p>
     <a href="/subscribe.html" class="game-paywall-btn">Subscribe</a>
     <div class="game-paywall-foot">Already a subscriber? <a href="/login.html">Sign in</a></div>
   </div>
@@ -395,7 +395,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
             <div class="pg-hist-tip" id="pathTip" hidden></div>
           </div>
           <div class="pg-hist-caption">Gold line is the median game. The inner band holds half of all simulations, the outer band eight in ten.</div>
-          <div class="pg-path-desc" id="pathDesc"></div>
+          <div class="pg-path-desc storyline-text" id="pathDesc"></div>
         </div>
       </div>
     </section>
@@ -464,7 +464,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260913i"></script>
+<script src="/js/game.js?v=20260914a"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->

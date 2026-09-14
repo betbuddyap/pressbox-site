@@ -883,11 +883,7 @@
    Q3/Q4 markers along the top edge (they did at every width). */
 .pg-path-pole.top { top: -16px; }
 .pg-path-pole.bot { bottom: -16px; }
-.pg-path-desc { margin-top: 12px; }
-.pg-path-desc p {
-  font-family: var(--sans); font-size: var(--text-md); line-height: 1.55;
-  color: var(--ink-soft); margin: 0 0 8px;
-}
+.pg-path-desc { margin-top: 12px; }   /* type comes from .storyline-text, the page's prose class */
 @media (max-width: 600px) {
   .pg-path-frame svg { height: 200px; }
   .pg-path-block { padding: 14px 14px 12px; }
@@ -2391,6 +2387,26 @@ footer {
 .tally-net { text-align: center; }
 .tally-net .n { font-family: var(--serif); font-weight: var(--weight-bold); font-size: 22px; }
 .tally-net .k { font-size: 9px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-mid); }
+/* The engine's line under the tally (9/14): full width, hairline above. The
+   tag speaks the chip language — gold square when it votes with the pick,
+   dashed and muted when it pulls the other way, hollow when it stays out. */
+.tally-engine {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+  font-family: var(--sans); font-size: 12px; line-height: 1.5; color: var(--text-mid);
+}
+.tally-engine b { color: var(--ink); font-weight: 700; }
+.tally-engine-tag {
+  flex: none; display: inline-flex; align-items: center; gap: 5px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--ink); background: var(--cream);
+  border: 1px solid var(--ink); border-radius: 10px; padding: 2px 7px;
+  position: relative; top: -1px;
+}
+.tally-engine-tag::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: var(--gold); }
+.tally-engine--opposes .tally-engine-tag { border-style: dashed; color: var(--text-mid); }
+.tally-engine--opposes .tally-engine-tag::before { opacity: 0.4; }
+.tally-engine--none .tally-engine-tag::before { background: transparent; box-shadow: inset 0 0 0 1px var(--text-light); }
 /* Mobile: keep the tally HORIZONTAL — net block left, all chips flowing
    right (a full vertical stack tripled the card height). */
 @media (max-width: 720px) {

@@ -50,19 +50,23 @@ When something looks off, diff it against Live Lines.
 
 ## Copy / product truth
 
-- The ensemble that drives picks is **4 models: SP+, PPA, Advanced, Pace+**. **Elo is
-  display-only** — shown on the game page, excluded from the picks ensemble and totals.
-  Marketing copy intentionally says "five models" because the customer *sees* five
-  projections side by side — keep that framing, but never write copy implying Elo
-  *generates* a pick.
+- The ensemble that drives picks is **4 models: SP+, PPA, Advanced, Pace+**, plus **the
+  engine** — the play-by-play Monte Carlo simulation (`betbuddy-backend/engine/`) that
+  projects every game and has a vote on the SPREAD only (2026-09-13): agrees with the
+  signals → **A+**; opposes → **off the board (No Edge)**; fires where no signal did → **C**.
+  Copy says "four models and the engine" — **never "five models"** (that framing died
+  2026-09-13 when Elo left the game page; Elo appears nowhere the customer sees now).
+  Never write copy implying the engine grades totals or moneylines.
 - Reflect the real product lineup in copy: **Live Lines, Upcoming, Parlay, Allocator,
   Rankings, Results.** Parlay / Allocator / Upcoming postdate the original site copy —
   the homepage, How It Works, and About still need them written in.
 - **"No Edge" everywhere — never "Lean."** No Edge is a grade, not a bucket.
   Grades come from the net count of agreeing rules in the electorate.
   `pipeline/ladder.py` is the authority — check it before trusting this section.
-  - **Spread/Total** — net 1 = **C** (bronze) · 2 = **B** (silver) · 3 = **A** (gold) ·
-    4+ = **A+** (ink, gold border) · tie or none = **No Edge**.
+  - **Spread/Total** (`ladder.py`, 2026-08-20 cuts) — net ≤1 = **No Edge** · 2 = **C**
+    (bronze) · 3–4 = **B** (silver) · 5–7 = **A** (gold) · 8+ = **A+** (ink, gold border).
+    Then the engine's word on the spread (above). A 2–0 tally shown as No Edge means
+    the engine opposed it — the game page's tally card says so in its engine line.
   - **Moneyline** — its own electorate (the ML Book), tiered **A/B/C** by net votes,
     emitted only when the price sits inside **−300..+300**.
   - **A+ is live and current.** Do not "correct" it out of the UI or the copy.

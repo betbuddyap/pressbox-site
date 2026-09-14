@@ -455,7 +455,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <div class="section-num">01 — The grades</div>
     <h2 class="section-title">What each grade <em>means.</em></h2>
     <div class="section-body">
-      <p>Every grade is a count of <em>independent agreement</em> — how many of our proven signals fired on the same side of the same bet, minus any that fired against it. Two signals is a C. Eight or more is an A+. A lone signal with nothing backing it doesn't clear the bar and grades No Edge. The signals were found and tested across 2023–25; the grades they earn now are settled in public, game by game, on <a href="/results.html">Results</a>. Every grade is a published verdict, including the ones that say "pass."</p>
+      <p>Every grade is a count of <em>independent agreement</em> — how many of our proven signals fired on the same side of the same bet, minus any that fired against it. Two signals is a C. Eight or more is an A+. A lone signal with nothing backing it doesn't clear the bar and grades No Edge. On the spread, one more voice speaks after the count: <strong>the engine</strong>, our play-by-play simulation. When it lands on the same side as the signals, the bet grades A+ whatever the count. When it lands on the other side, the bet comes off the board. The signals were found and tested across 2023–25; the grades they earn now are settled in public, game by game, on <a href="/results.html">Results</a>. Every grade is a published verdict, including the ones that say "pass."</p>
     </div>
 
     <div class="tier-group-label">Spread &amp; Total</div>
@@ -478,6 +478,8 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       </div>
     </div>
     <p class="tier-note"><span class="tier-chip tier-chip-noedge">No Edge</span> Everything else grades <strong>No Edge</strong> — including a game where exactly one signal fires and nothing corroborates it. One voice on its own didn't beat the vig across three seasons of testing, so we don't put your money behind it. We publish that verdict too, right on the board, next to the games we did bet.</p>
+
+    <p class="tier-note"><strong>The engine.</strong> Underneath the signals sits a play-by-play simulation that plays every game thousands of times from the same team numbers. On the spread it gets the last word — but only when its number sits far enough from the market, on the spread and the total together, to count as a real opinion. Agree with the signals: the bet is <strong>A+</strong>. Disagree: the bet comes <strong>off the board</strong>, and the game page says so under the vote. Fire where no signal did: a <strong>C</strong> on its own. Totals and moneylines it leaves to the signals.</p>
 
     <div class="tier-group-label">Moneyline</div>
     <div class="section-body">
@@ -645,7 +647,8 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 
     <ul class="gp-list">
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">A written breakdown</div><div class="gp-d">A plain-English read on the matchup — what the models see and why the bet landed where it did.</div></div></li>
-      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Every model's read</div><div class="gp-d">All five models on one axis against the market line, for each market. More on this just below.</div></div></li>
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">The range of outcomes</div><div class="gp-d">Every final margin the engine played out, stacked into one chart — with the market line on it, each model's number marked, and our side shaded gold. The total gets the same chart, drawn tall. More on this just below.</div></div></li>
+      <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">The game path</div><div class="gp-d">Where the margin sits minute by minute across those simulated games: the median game as a gold line, the bands where most of them run, and a switch to see how the games go when either team scores first.</div></div></li>
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Team &amp; advanced stats</div><div class="gp-d">The numbers behind the call — efficiency, tempo, and the advanced splits the box score misses.</div></div></li>
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">Head-to-head history</div><div class="gp-d">How these two have met before.</div></div></li>
       <li class="gp-item"><span class="gp-dot"></span><div><div class="gp-t">The history check</div><div class="gp-d">Under each chart, the real record of the signals behind the pick — how many back it, and how the side they pointed to actually did across the games they fired on. The same evidence that prices the pick, in one sentence.</div></div></li>
@@ -654,60 +657,23 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     </ul>
 
     <div class="section-body" style="margin-top:30px;">
-      <p>The model reads are the heart of it. Each model puts its number on one axis against the Vegas line. A pick exists because <strong>proven signals fired on that side</strong> — usually several at once — and the grade is their net agreement; the panel under the chart names each one and shows the vote. When nothing proven fires, the market grades No Edge and the chart shows a single <strong>gold dot</strong> instead — the blend of all four models — published all the same.</p>
-      <p>Behind the dots, a shaded curve shows where games like this one actually landed — and it's split at the Vegas line: the <strong>gold side is where this pick cashes</strong>, the blue side is where it doesn't. Under every chart, the history check states the evidence in one sentence: how many signals back the pick, and how the side they pointed to actually did.</p>
+      <p>The range of outcomes is the heart of it. The engine plays the game thousands of times and stacks every final margin into one chart — tall bars where the game most often lands, thin tails where it rarely does. The market line sits on that chart, each of the four models puts its number on the same axis, and <strong>the side we're on is shaded gold</strong>. A pick exists because <strong>proven signals fired on that side</strong> — usually several at once — and the grade is their net agreement; the panel under the pick names each one, shows the vote, and states the engine's read in a sentence: with the signals, against them, or too close to the market to weigh in. When nothing proven fires, the market grades No Edge — published all the same.</p>
+      <p>Then the game path: the margin minute by minute across every simulated game, the median game as a gold line, the bands where half and eight in ten of them run. Switch it to the games where either team scored first and read how the rest of those games tend to go — who leads at the half, how often the half-time leader holds on, when the winning lead usually gets taken.</p>
     </div>
 
     <div class="dp-stage">
       <div class="dp-head">
-        <div class="dp-label">Spread</div>
-        <div class="dp-vegas-head">Vegas: <strong>Mich −3</strong></div>
+        <div class="dp-label">Spread — the range of outcomes</div>
+        <div class="dp-vegas-head">4,000 simulated games</div>
       </div>
-      <div class="strip-labels strip-labels-above">
-        <div class="strip-label" style="left:36.67%;"><span class="strip-label-name">Elo</span><span class="strip-label-value">−3.5</span></div>
-        <div class="strip-label" style="left:50%;"><span class="strip-label-name">SP+</span><span class="strip-label-value">−1.5</span></div>
-      </div>
-      <div class="strip-axis-wrap">
-        <div class="strip-axis">
-          <svg class="strip-hist-curve" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="hiw-strip-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="0">
-                <stop offset="0" stop-color="rgba(76,124,168,0.18)"/>
-                <stop offset="0.40" stop-color="rgba(76,124,168,0.18)"/>
-                <stop offset="0.40" stop-color="rgba(184,146,42,0.30)"/>
-                <stop offset="1" stop-color="rgba(184,146,42,0.30)"/>
-              </linearGradient>
-            </defs>
-            <path d="M60,50 C220,46 380,26 560,20 C720,15 880,38 950,48 L950,52 C880,62 720,85 560,80 C380,74 220,54 60,50 Z"
-                  fill="url(#hiw-strip-grad)" stroke="rgba(107,100,85,0.35)" stroke-width="1"/>
-          </svg>
-          <div class="strip-zero" style="left:60%;"></div>
-          <div class="strip-vegas" style="left:40%;"></div>
-          <div class="strip-dot" style="left:36.67%;"></div>
-          <div class="strip-dot" style="left:46.67%;"></div>
-          <div class="strip-dot" style="left:50%;"></div>
-          <div class="strip-dot" style="left:56.67%;"></div>
-          <div class="strip-dot" style="left:63.33%;"></div>
-        </div>
-      </div>
-      <div class="strip-labels strip-labels-below">
-        <div class="strip-label" style="left:46.67%;"><span class="strip-label-name">PPA</span><span class="strip-label-value">−2</span></div>
-        <div class="strip-label" style="left:63.33%;"><span class="strip-label-name">Pace+</span><span class="strip-label-value">+0.5</span></div>
-        <div class="strip-label strip-label-far" style="left:56.67%;"><span class="strip-label-name">Adv</span><span class="strip-label-value">−0.5</span></div>
-      </div>
-      <div class="strip-ticks">
-        <div class="strip-tick" style="left:0%;"></div><div class="strip-tick-label" style="left:0%;">−9</div>
-        <div class="strip-tick" style="left:20%;"></div><div class="strip-tick-label" style="left:20%;">−6</div>
-        <div class="strip-tick" style="left:40%;"></div><div class="strip-tick-label strip-tick-label-vegas" style="left:40%;">Vegas −3</div>
-        <div class="strip-tick" style="left:60%;"></div><div class="strip-tick-label" style="left:60%;">0</div>
-        <div class="strip-tick" style="left:80%;"></div><div class="strip-tick-label" style="left:80%;">+3</div>
-        <div class="strip-tick" style="left:100%;"></div><div class="strip-tick-label" style="left:100%;">+6</div>
-      </div>
-      <div class="dp-hist-line">History check: <b>4 signals</b> back this pick — the side they pointed to covered <b>61.4%</b> of their games in 2023–25.</div>
+      <svg viewBox="0 0 1000 230" width="100%" style="display:block;font-family:var(--sans);" role="img" aria-label="Range of outcomes mock: stacked margins from thousands of simulated games, market line at Michigan −3, Oklahoma +3 shaded gold"><rect x="457.1" y="10" width="542.9" height="190" fill="var(--gold)" fill-opacity="0.10"/><rect x="1.5" y="190.1" width="25.6" height="9.9" fill="var(--ink)" fill-opacity="0.12"/><rect x="30.1" y="186.7" width="25.6" height="13.3" fill="var(--ink)" fill-opacity="0.12"/><rect x="58.6" y="182.3" width="25.6" height="17.7" fill="var(--ink)" fill-opacity="0.12"/><rect x="87.2" y="176.9" width="25.6" height="23.1" fill="var(--ink)" fill-opacity="0.12"/><rect x="115.8" y="170.3" width="25.6" height="29.7" fill="var(--ink)" fill-opacity="0.12"/><rect x="144.4" y="162.6" width="25.6" height="37.4" fill="var(--ink)" fill-opacity="0.12"/><rect x="172.9" y="153.7" width="25.6" height="46.3" fill="var(--ink)" fill-opacity="0.12"/><rect x="201.5" y="143.7" width="25.6" height="56.3" fill="var(--ink)" fill-opacity="0.12"/><rect x="230.1" y="132.8" width="25.6" height="67.2" fill="var(--ink)" fill-opacity="0.12"/><rect x="258.6" y="121.1" width="25.6" height="78.9" fill="var(--ink)" fill-opacity="0.12"/><rect x="287.2" y="109.0" width="25.6" height="91.0" fill="var(--ink)" fill-opacity="0.12"/><rect x="315.8" y="97.0" width="25.6" height="103.0" fill="var(--ink)" fill-opacity="0.12"/><rect x="344.4" y="85.4" width="25.6" height="114.6" fill="var(--ink)" fill-opacity="0.12"/><rect x="372.9" y="74.7" width="25.6" height="125.3" fill="var(--ink)" fill-opacity="0.12"/><rect x="401.5" y="65.5" width="25.6" height="134.5" fill="var(--ink)" fill-opacity="0.12"/><rect x="430.1" y="58.1" width="25.6" height="141.9" fill="var(--ink)" fill-opacity="0.12"/><rect x="458.6" y="53.0" width="25.6" height="147.0" fill="var(--gold)" fill-opacity="0.42"/><rect x="487.2" y="50.3" width="25.6" height="149.7" fill="var(--gold)" fill-opacity="0.42"/><rect x="515.8" y="50.3" width="25.6" height="149.7" fill="var(--gold)" fill-opacity="0.42"/><rect x="544.4" y="53.0" width="25.6" height="147.0" fill="var(--gold)" fill-opacity="0.42"/><rect x="572.9" y="58.1" width="25.6" height="141.9" fill="var(--gold)" fill-opacity="0.42"/><rect x="601.5" y="65.5" width="25.6" height="134.5" fill="var(--gold)" fill-opacity="0.42"/><rect x="630.1" y="74.7" width="25.6" height="125.3" fill="var(--gold)" fill-opacity="0.42"/><rect x="658.6" y="85.4" width="25.6" height="114.6" fill="var(--gold)" fill-opacity="0.42"/><rect x="687.2" y="97.0" width="25.6" height="103.0" fill="var(--gold)" fill-opacity="0.42"/><rect x="715.8" y="109.0" width="25.6" height="91.0" fill="var(--gold)" fill-opacity="0.42"/><rect x="744.4" y="121.1" width="25.6" height="78.9" fill="var(--gold)" fill-opacity="0.42"/><rect x="772.9" y="132.8" width="25.6" height="67.2" fill="var(--gold)" fill-opacity="0.42"/><rect x="801.5" y="143.7" width="25.6" height="56.3" fill="var(--gold)" fill-opacity="0.42"/><rect x="830.1" y="153.7" width="25.6" height="46.3" fill="var(--gold)" fill-opacity="0.42"/><rect x="858.6" y="162.6" width="25.6" height="37.4" fill="var(--gold)" fill-opacity="0.42"/><rect x="887.2" y="170.3" width="25.6" height="29.7" fill="var(--gold)" fill-opacity="0.42"/><rect x="915.8" y="176.9" width="25.6" height="23.1" fill="var(--gold)" fill-opacity="0.42"/><rect x="944.4" y="182.3" width="25.6" height="17.7" fill="var(--gold)" fill-opacity="0.42"/><rect x="972.9" y="186.7" width="25.6" height="13.3" fill="var(--gold)" fill-opacity="0.42"/><line x1="500.0" y1="10" x2="500.0" y2="200" stroke="var(--ink)" stroke-opacity="0.18" stroke-width="1"/><line x1="471.4" y1="26" x2="471.4" y2="200" stroke="var(--ink)" stroke-opacity="0.35" stroke-width="1"/><text x="471.4" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text-mid)">PPA −2</text><line x1="492.9" y1="40" x2="492.9" y2="200" stroke="var(--ink)" stroke-opacity="0.35" stroke-width="1"/><text x="492.9" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text-mid)">Adv −0.5</text><line x1="478.6" y1="54" x2="478.6" y2="200" stroke="var(--ink)" stroke-opacity="0.35" stroke-width="1"/><text x="478.6" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text-mid)">SP+ −1.5</text><line x1="507.1" y1="26" x2="507.1" y2="200" stroke="var(--ink)" stroke-opacity="0.35" stroke-width="1"/><text x="507.1" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="var(--text-mid)">Pace+ +0.5</text><line x1="457.1" y1="10" x2="457.1" y2="204" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 4"/><line x1="514.3" y1="60" x2="514.3" y2="200" stroke="var(--gold)" stroke-width="2.5"/><text x="521.3" y="68" font-size="11" font-weight="700" fill="var(--gold)">Engine · Okla by 1</text><line x1="0" y1="200.5" x2="1000" y2="200.5" stroke="var(--border)" stroke-width="1"/><text x="400.0" y="212" text-anchor="middle" font-size="10" font-weight="700" fill="var(--gold)">-7</text><text x="457.1" y="212" text-anchor="middle" font-size="10" font-weight="700" fill="var(--gold)">-3</text><text x="542.9" y="212" text-anchor="middle" font-size="10" font-weight="700" fill="var(--gold)">+3</text><text x="600.0" y="212" text-anchor="middle" font-size="10" font-weight="700" fill="var(--gold)">+7</text><text x="100.0" y="222" text-anchor="middle" font-size="11" fill="var(--text-light)">Mich by 28</text><text x="300.0" y="222" text-anchor="middle" font-size="11" fill="var(--text-light)">by 14</text><text x="500.0" y="222" text-anchor="middle" font-size="11" fill="var(--text-light)">0</text><text x="700.0" y="222" text-anchor="middle" font-size="11" fill="var(--text-light)">by 14</text><text x="900.0" y="222" text-anchor="middle" font-size="11" fill="var(--text-light)">Okla by 28</text></svg>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;"><span style="font-family:var(--sans);font-size:11px;color:var(--text-mid);">Vegas: <b style="color:var(--ink);">Michigan −3</b> · dashed line</span><span style="font-family:var(--sans);font-size:11px;font-weight:700;color:var(--cream);background:var(--ink);border-radius:999px;padding:3px 10px;">Oklahoma +3 · A+ · covers 58% of the games</span></div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-family:var(--sans);font-size:11px;line-height:1.5;color:var(--text-mid);"><span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;color:var(--ink);border:1px solid var(--ink);border-radius:10px;padding:1px 7px;margin-right:8px;">Engine</span>The engine has <b style="color:var(--ink);">Oklahoma by 1</b>; the market has Michigan by 3. It lands on the same side as the signals, so this bet grades <b style="color:var(--ink);">A+</b> — the signals alone made it A.</div>
       <div class="dp-legend">
         <div class="dp-legend-item"><span class="dp-key-veg"></span> Vegas line</div>
-        <div class="dp-legend-item"><span class="dp-key" style="background:var(--text-mid);"></span> Each model's read</div>
-        <div class="dp-legend-item"><span class="dp-key-lobe"></span> Where these games land — gold side, the pick cashes</div>
+        <div class="dp-legend-item"><span class="dp-key" style="background:var(--text-mid);"></span> Each model's number</div>
+        <div class="dp-legend-item"><span class="dp-key" style="background:var(--gold);"></span> The engine's most likely margin</div>
+        <div class="dp-legend-item"><span class="dp-key-lobe"></span> Gold — where this pick cashes</div>
       </div>
     </div>
   </div>
@@ -751,7 +717,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     <h2 class="section-title">The record, and the map.</h2>
     <div class="section-body">
       <p><a href="/results.html">Results</a> is Live Lines for games that are over. When a game kicks off its picks leave the board; when it goes final they land there — the <strong>released</strong> grade on the badge, the pick at the number it was graded on, a ✓, ✕, or – next to each, and the final score up top. Every card links back to the game page's final state. Graded no-edge verdicts appear too, dimmed — published, but never counted in the record, because they were never bets.</p>
-      <p><a href="/rankings.html">Rankings</a> is the same engine pointed at the season: every FBS team, ranked by the models that grade the bets — the "who's actually good" view behind every number on the board.</p>
+      <p><a href="/rankings.html">Rankings</a> is the engine pointed at the season: every FBS team, ranked by the margin the simulation expects against an average team over thousands of played-out games — the "who's actually good" view behind every number on the board.</p>
     </div>
   </div>
 
