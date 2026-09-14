@@ -1273,6 +1273,18 @@
       }
     }
     ov.innerHTML = html;
+    // Chips are centred on their value; a long team name ("Florida
+    // International +3.5 · A+") can run past the frame on a phone. Measure
+    // after render and slide any chip back inside, 4px from the edge --
+    // the value it points at is still the wash it sits on.
+    const frameRect = ov.getBoundingClientRect();
+    ov.querySelectorAll('.pg-hist-chip').forEach(chip => {
+      const r = chip.getBoundingClientRect();
+      let dx = 0;
+      if (r.left < frameRect.left + 4) dx = frameRect.left + 4 - r.left;
+      else if (r.right > frameRect.right - 4) dx = frameRect.right - 4 - r.right;
+      if (dx) chip.style.transform = `${chip.style.transform || (V ? 'translateY(-50%)' : 'translateX(-50%)')} translateX(${dx.toFixed(1)}px)`;
+    });
 
     // Axis row: horizontal charts carry the ticks; both carry the two direction words.
     let axh = '';
