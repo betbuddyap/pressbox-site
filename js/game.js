@@ -1891,22 +1891,15 @@
     if (p.market !== 'spread') return '';
     const m = eng.margin || {}, v = eng.verdict || {};
     if (m.mean == null) return '';
-    // The engine is judged against the OPENING line (never the close), while
-    // market_x is where the line sits now. Recover the opening number from
-    // the verdict (edge = |engine − open|, side says which way) and name
-    // both when they differ — LSU @ Ole Miss opened Ole Miss −2 and sat at
-    // LSU −3.5 by Sunday; "LSU by 3.9 vs LSU by 3.5" read like nothing
-    // while the engine had actually been 5.9 points off the open.
-    const cur = m.market_x;
-    const open = (v.sp_edge != null && v.side)
-      ? (v.side === 'home' ? m.mean - v.sp_edge : m.mean + v.sp_edge)
-      : cur;
-    const moved = open != null && cur != null && Math.abs(open - cur) >= 0.5;
-    let has;
-    if (open == null && cur == null) has = `The engine has <b>${by(m.mean)}</b>.`;
-    else if (!moved) has = `The engine has <b>${by(m.mean)}</b> against a line of ${by(cur != null ? cur : open)}.`;
-    else has = `The engine has <b>${by(m.mean)}</b>. The line opened at ${by(open)} and now sits at ${by(cur)}.`;
-    const at = moved ? ' at the opening number' : '';
+    // The engine is judged against the SAME line the electorate conditions
+    // on -- the live best line, opener fallback -- and the verdict carries
+    // that number (market_spread) so this sentence can never quote a line
+    // the verdict didn't use. Older payloads fall back to the chart's line.
+    const line = v.market_spread != null ? v.market_spread : m.market_x;
+    const has = line != null
+      ? `The engine has <b>${by(m.mean)}</b> against a line of ${by(line)}.`
+      : `The engine has <b>${by(m.mean)}</b>.`;
+    const at = '';
     let eff = p.engine_effect;
     if (!eff) {
       const pickHome = p.side_display === home;
@@ -1928,7 +1921,7 @@
     if (eff === 'alone') {
       return row('alone', `${has} No signal is firing here; the engine’s read on its own grades this a <b>C</b>.`);
     }
-    return row('none', `${has} It is not far enough from the market${moved ? ' as it opened' : ''} to weigh in, ` +
+    return row('none', `${has} It is not far enough from the market to weigh in, ` +
       `so the signals grade this one on their own.`);
   }
 

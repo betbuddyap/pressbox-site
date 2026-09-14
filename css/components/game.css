@@ -732,13 +732,17 @@
    Q3/Q4 markers along the top edge (they did at every width). */
 .pg-path-pole.top { top: -16px; }
 .pg-path-pole.bot { bottom: -16px; }
-/* The sentences under the path chart wear the chart caption's type
-   (.pg-hist-caption, 12px text-mid) — the same voice as the caption above
-   them. A 15px prose block read as a different face in a card of 9–13px
-   text (Austin, 9/14: "completely different font"). */
-.pg-path-desc { margin-top: 12px; }
-.pg-path-desc p { margin: 0 0 6px; }
-.pg-path-desc p:last-child { margin-bottom: 0; }
+/* The sentences written from the branch's numbers: their own card under the
+   chart card (the pick → tally pattern), in the page's small card voice. A
+   15px prose block floating in the chart card read as a different face
+   (Austin, 9/14: "completely different font" / "in its own box"). */
+.pg-path-notes { padding: 14px 18px; }
+.pg-path-notes p {
+  font-family: var(--sans); font-size: var(--text-base); line-height: 1.6;
+  color: var(--text-mid); margin: 0 0 8px;
+}
+.pg-path-notes p:last-child { margin-bottom: 0; }
+.pg-path-notes b { color: var(--ink); font-weight: 600; }
 @media (max-width: 600px) {
   .pg-path-frame svg { height: 200px; }
   .pg-path-block { padding: 14px 14px 12px; }

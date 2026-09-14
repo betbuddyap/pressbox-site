@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="/css/tokens.css?v=20260831a">
 <link rel="stylesheet" href="/css/components/live-lines.css?v=20260813b">
 <link rel="stylesheet" href="/css/components/charts.css?v=20260914a">
-<link rel="stylesheet" href="/css/components/game.css?v=20260914b">
+<link rel="stylesheet" href="/css/components/game.css?v=20260914c">
 
 <style>
   /* ── Site nav (kept in sync across pages) ── */
@@ -396,8 +396,10 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
             <div class="pg-hist-tip" id="pathTip" hidden></div>
           </div>
           <div class="pg-hist-caption">Gold line is the median game. The inner band holds half of all simulations, the outer band eight in ten.</div>
-          <div class="pg-path-desc pg-hist-caption" id="pathDesc"></div>
         </div>
+        <!-- The sentences written from the branch's numbers get their own card,
+             like the tally under a pick (Austin, 9/14: "in its own box"). -->
+        <div class="game-card pg-path-notes" id="pathDesc"></div>
       </div>
     </section>
 
@@ -465,7 +467,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260914c"></script>
+<script src="/js/game.js?v=20260914d"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
