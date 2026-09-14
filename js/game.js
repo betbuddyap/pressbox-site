@@ -1969,7 +1969,13 @@
       quietWhy = ` It needs 3 points of daylight on both the spread and the total to weigh in, so the signals grade this one on their own.`;
     }
     const at = '';
+    // The live verdict wins over the pick's stored note: the note is
+    // written at release/regrade and can trail the market by a cycle
+    // (LSU @ Ole Miss read "takes this bet off the board" beside "1.2
+    // points apart" once the line moved and the C came back). A quiet
+    // engine is quiet whatever the note says; a firing one keeps the note.
     let eff = p.engine_effect;
+    if (v.fires === false) eff = 'none';
     if (!eff) {
       const pickHome = p.side_display === home;
       if (v.fires && !nVoters && p.tier && p.tier !== 'no_edge') eff = 'alone';
