@@ -730,69 +730,123 @@
    (GT, maize) where gold-on-darkened-gold runs thin. Not an outline. */
 .pg-wp-line { filter: drop-shadow(0 1px 1px rgba(0,0,0,0.45)); }
 
-/* ── Engine histograms — same block language as the live charts. Bars are
-   cream, key numbers gold, the pick side a gold wash; every label is an
-   HTML overlay positioned in % so the stretched SVG can't warp type. ── */
-.pg-hist-section { margin-top: 18px; }
-.pg-hist-block { padding-bottom: 10px; }
+/* ── Engine histograms — body-surface cards. Bars in ink, key numbers gold,
+   the pick side a gold wash; every label is an HTML overlay positioned in
+   % so the stretched SVG can't warp type. The TOTAL is the same chart
+   turned vertical (.pg-hist-vertical): low scoring at the bottom. ── */
+.pg-hist-block { padding: 20px 22px 16px; }
+.pg-hist-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; gap: 12px; }
+.pg-hist-title {
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid);
+}
+.pg-hist-cover { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--gold-deep); text-align: right; }
 .pg-hist-frame { position: relative; }
 .pg-hist-frame svg {
-  width: 100%; height: 200px; display: block;
-  border-radius: 4px; border: 1px solid rgba(248,245,238,0.14);
+  width: 100%; height: 220px; display: block;
+  border-radius: 4px; border: 1px solid var(--border); background: var(--cream);
 }
+.pg-hist-vertical .pg-hist-frame svg { height: 420px; }
 .pg-hist-overlay { position: absolute; inset: 0; pointer-events: none; }
-/* Model ticks: a hairline down from the top edge with its name beside it.
-   Two label rows so neighbours never collide. */
+/* Model ticks: a hairline from the edge with the model's name beside it.
+   Horizontal charts hang them from the top (two rows so neighbours never
+   collide); the vertical chart hangs them from the right edge. */
 .pg-hist-mk {
   position: absolute; top: 0; transform: translateX(-50%);
   font-family: var(--sans); font-size: 9px; font-weight: 700;
   letter-spacing: 0.03em; text-transform: uppercase;
-  color: rgba(248,245,238,0.72); white-space: nowrap;
-  padding-top: 14px;
+  color: var(--text-mid); white-space: nowrap; padding-top: 14px;
 }
 .pg-hist-mk::before {
   content: ""; position: absolute; left: 50%; top: 0;
-  width: 1px; height: 11px; background: rgba(248,245,238,0.7);
+  width: 1px; height: 11px; background: var(--text-mid);
 }
 .pg-hist-mk.row2 { padding-top: 26px; }
 .pg-hist-mk.row2::before { height: 23px; }
-.pg-hist-mk.engine { color: var(--gold-light); }
-.pg-hist-mk.engine::before { background: var(--gold-light); width: 2px; }
-/* The market's number: label sits at the bottom edge, the dashed line is
-   drawn in the SVG. */
+.pg-hist-mk.row3 { padding-top: 38px; }
+.pg-hist-mk.row3::before { height: 35px; }
+.pg-hist-mk.engine { color: var(--gold-deep); }
+.pg-hist-mk.engine::before { background: var(--gold); width: 2px; }
+.pg-hist-vertical .pg-hist-mk {
+  top: auto; right: 0; left: auto; transform: translateY(-50%);
+  padding-top: 0; padding-right: 16px;
+}
+.pg-hist-vertical .pg-hist-mk::before {
+  left: auto; right: 0; top: 50%; transform: translateY(-50%);
+  width: 12px; height: 1px;
+}
+.pg-hist-vertical .pg-hist-mk.row2 { padding-right: 30px; }
+.pg-hist-vertical .pg-hist-mk.row2::before { width: 26px; }
+.pg-hist-vertical .pg-hist-mk.row3 { padding-right: 44px; }
+.pg-hist-vertical .pg-hist-mk.row3::before { width: 40px; }
+/* A tick that could not be labelled without overprinting: hairline only;
+   its name is listed in the caption instead. */
+.pg-hist-mk.bare { font-size: 0; padding: 0; }
+.pg-hist-mk.bare::before { height: 11px; }
+.pg-hist-vertical .pg-hist-mk.bare::before { width: 12px; height: 1px; }
+/* Vertical: the value axis is a fixed 34px column OUTSIDE the drawing, so
+   two-digit totals never fight the bars for room at any width. The market
+   chip starts past that column. */
+.pg-hist-vertical .pg-hist-frame { padding-left: 34px; }
+.pg-hist-vertical .pg-hist-vaxis { width: 28px; text-align: right; padding-left: 0; }
+.pg-hist-vertical .pg-hist-mkt { left: 40px; }
+/* The market's number: a chip at the bottom edge (left edge when vertical);
+   the dashed line is drawn in the SVG. */
 .pg-hist-mkt {
   position: absolute; bottom: 4px; transform: translateX(-50%);
   font-family: var(--sans); font-size: 9px; font-weight: 700;
   letter-spacing: 0.03em; text-transform: uppercase;
-  color: rgba(248,245,238,0.85); white-space: nowrap;
-  background: rgba(15,14,10,0.55); padding: 1px 5px; border-radius: 3px;
+  color: var(--cream); white-space: nowrap;
+  background: var(--ink); padding: 2px 6px; border-radius: 3px;
 }
+.pg-hist-vertical .pg-hist-mkt { bottom: auto; left: 6px; transform: translateY(-50%); }
+/* Our side, named IN the chart: the spread pick's chip rides the wash, the
+   moneyline pick's chip sits on the zero line (who wins). */
+.pg-hist-chip {
+  position: absolute; transform: translateX(-50%);
+  font-family: var(--sans); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap;
+  color: var(--ink); background: var(--gold-light);
+  padding: 3px 8px; border-radius: 3px; box-shadow: 0 1px 3px rgba(15,14,10,0.18);
+}
+.pg-hist-chip.ml { background: var(--cream); border: 1px solid var(--ink); }
+.pg-hist-chip .tier { margin-left: 6px; padding-left: 6px; border-left: 1px solid rgba(15,14,10,0.35); }
+.pg-hist-vertical .pg-hist-chip { transform: translateY(-50%); }
 .pg-hist-axis {
-  position: relative; height: 26px; margin-top: 2px;
-  font-family: var(--sans); font-size: 10px; color: rgba(248,245,238,0.5);
+  position: relative; height: 28px; margin-top: 2px;
+  font-family: var(--sans); font-size: 10px; color: var(--text-light);
 }
 .pg-hist-axis span { position: absolute; top: 2px; transform: translateX(-50%); }
 .pg-hist-axis .dir {
-  transform: none; top: 12px; font-size: 10px; font-weight: 700;
-  letter-spacing: 0.03em; text-transform: uppercase; color: rgba(248,245,238,0.7);
+  transform: none; top: 14px; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase; color: var(--text-mid);
 }
 .pg-hist-axis .dir.left { left: 0; }
 .pg-hist-axis .dir.right { right: 0; text-align: right; }
-.pg-hist-caption {
-  font-family: var(--sans); font-size: 11px; line-height: 1.45;
-  color: rgba(248,245,238,0.6); margin-top: 6px;
+/* Vertical: the value axis runs up the left INSIDE the frame; the axis row
+   below carries only the two direction words. */
+.pg-hist-vertical .pg-hist-vaxis {
+  position: absolute; left: 0; transform: translateY(-50%);
+  font-family: var(--sans); font-size: 10px; color: var(--text-light);
+  padding-left: 6px;
 }
-.pg-hist-caption b { color: rgba(248,245,238,0.85); font-weight: 600; }
+.pg-hist-caption {
+  font-family: var(--sans); font-size: 12px; line-height: 1.5;
+  color: var(--text-mid); margin-top: 8px;
+}
+.pg-hist-caption b { color: var(--ink); font-weight: 600; }
 .pg-hist-tip {
   position: absolute; top: 8px; transform: translateX(-50%);
   font-family: var(--sans); font-size: 11px; font-weight: 600;
-  color: var(--ink); background: var(--cream);
+  color: var(--cream); background: var(--ink);
   padding: 4px 8px; border-radius: 4px; white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.35); pointer-events: none; z-index: 3;
+  box-shadow: 0 2px 8px rgba(15,14,10,0.25); pointer-events: none; z-index: 3;
 }
+.pg-hist-vertical .pg-hist-tip { top: auto; left: 40%; transform: translateY(-50%); }
 @media (max-width: 600px) {
-  .pg-hist-section { margin-top: 14px; }
-  .pg-hist-frame svg { height: 150px; }
+  .pg-hist-block { padding: 14px 14px 12px; }
+  .pg-hist-frame svg { height: 160px; }
+  .pg-hist-vertical .pg-hist-frame svg { height: 340px; }
   .pg-hist-mk { font-size: 8px; }
 }
 .pg-wp-bets { display: flex; flex-direction: column; gap: 10px; }
