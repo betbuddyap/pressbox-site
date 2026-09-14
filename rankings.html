@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="PressBox Analytics">
 <meta property="og:url" content="https://pressboxanalytics.com/rankings.html">
 <meta property="og:title" content="Power Rankings — PressBox Analytics">
-<meta property="og:description" content="Every FBS team, ranked by a four-model blend. Filter by conference; see the signals behind each number.">
+<meta property="og:description" content="Every FBS team, ranked by the engine. Filter by conference; see the numbers behind each rank.">
 <meta property="og:image" content="https://pressboxanalytics.com/og-image-2026.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -22,11 +22,11 @@
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Power Rankings — PressBox Analytics">
-<meta name="twitter:description" content="Every FBS team, ranked by a four-model blend. Filter by conference; see the signals behind each number.">
+<meta name="twitter:description" content="Every FBS team, ranked by the engine. Filter by conference; see the numbers behind each rank.">
 <meta name="twitter:image" content="https://pressboxanalytics.com/og-image-2026.png">
 
 <meta name="theme-color" content="#0F0E0A">
-<meta name="description" content="Every FBS team, ranked by a four-model blend (SP+, PPA, Advanced, Pace+). Filter by conference; see the signals behind each number.">
+<meta name="description" content="Every FBS team, ranked by the engine: the margin it expects against an average FBS team from thousands of simulated games. Filter by conference; see the numbers behind each rank.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -126,6 +126,8 @@
   .rk-panel-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; }
   @media (max-width: 720px) { .rk-panel-grid { grid-template-columns: 1fr; gap: 20px; } }
   .rk-panel-h { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .rk-panel-h.rk-panel-h--sub { margin-top: 18px; color: var(--text-light); }
+  .rk-model-unit { font-size: 10px; font-weight: 500; color: var(--text-light); margin-left: 3px; }
   .rk-panel-link { display: inline-block; margin-top: 16px; font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--gold-deep); text-decoration: none; }
   .rk-panel-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -271,7 +273,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
   <div class="page-header-inner">
     <div class="page-eyebrow" id="rkEyebrow">FBS · 2026</div>
     <h1 class="page-title">Power <em>Rankings</em></h1>
-    <p class="page-sub" id="rkSub">Every FBS team, ranked by a four-model blend. Each number is four independent signals, where they agree and where they don't.</p>
+    <p class="page-sub" id="rkSub">Every FBS team, ranked by the engine. Each rating is the margin the engine expects against an average FBS team on a neutral field, from thousands of simulated games. Strength of schedule and the projected record come off that same number.</p>
   </div>
 </div>
 
@@ -319,12 +321,26 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <script>
 const API = 'https://betbuddy-backend.onrender.com';
 const SEASON = 2026;
+// The board runs on the Monte-Carlo engine: GET /rankings/engine returns every
+// FBS team's engine power rating (mean margin vs a league-average opponent on a
+// neutral field) with strength of schedule and the projected record derived
+// from it. All three tabs read this one payload. The four-model blend still
+// lives at /rankings/teams for the other surfaces; this page no longer reads it.
+const SRC = `${API}/rankings/engine?season=${SEASON}`;
 
-const MODEL_ORDER = [
-  { key: 'sp',   label: 'SP+' },
-  { key: 'ppa',  label: 'PPA' },
-  { key: 'adv',  label: 'Advanced' },
-  { key: 'pace', label: 'Pace+' },
+// Points rows in the panel: offence and defence vs the league average, and the
+// rating they add up to (the "blend" row, styled gold).
+const PTS_ROWS = [
+  { key: 'off_pts', label: 'Offense' },
+  { key: 'def_pts', label: 'Defense' },
+];
+// Per-play rows: the engine's actual inputs, yards per play vs the league cell
+// mean. Positive is good on every row (a positive defence allows LESS).
+const YPP_ROWS = [
+  { key: 'off_rush', label: 'Rush off.' },
+  { key: 'off_pass', label: 'Pass off.' },
+  { key: 'def_rush', label: 'Rush def.' },
+  { key: 'def_pass', label: 'Pass def.' },
 ];
 
 const VIEWS = {
@@ -376,9 +392,20 @@ function spotChips(reasons) {
 }
 
 // ── Load ────────────────────────────────────────────────────────────
-fetch(`${API}/rankings/teams?season=${SEASON}&offseason=1`)
+fetch(SRC)
   .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
   .then(payload => {
+    if (payload && payload.available === false) {
+      // The engine's weekly run hasn't published a board yet (or the table
+      // isn't there). Say so instead of showing an empty list.
+      els.body.innerHTML = `
+        <div class="rk-state">
+          <div class="rk-state-title">The engine hasn't published this week's board yet</div>
+          <div class="rk-state-sub">Team ratings land after the weekly engine run. Check back shortly.</div>
+        </div>`;
+      els.provenance.innerHTML = `<b>Engine board</b><span class="rk-dot">·</span>waiting on the weekly run`;
+      return;
+    }
     state.payload = payload;
     buildConfOptions(payload);
     buildProvenance(payload);
@@ -407,22 +434,20 @@ function buildConfOptions(payload) {
 }
 
 function buildProvenance(payload) {
-  const phase = payload.rollover && payload.rollover.phase;
-  const phaseLabel = phase === 'preseason' ? 'Preseason projection' : (phase ? phase[0].toUpperCase() + phase.slice(1) : 'In-season');
-  const roster = payload.roster_adjustment || {};
-  const coaching = payload.coaching || {};
+  const eng = payload.engine || {};
+  const wk = eng.as_of_week != null ? eng.as_of_week : payload.week;
   const bits = [];
-  bits.push(`<b>${escapeHtml(phaseLabel)}</b>`);
-  bits.push(`Four-model blend — SP+, PPA, Advanced, Pace+ <span style="opacity:.7">(Elo excluded)</span>`);
-  if (roster.applied) bits.push(`Roster-adjusted <span style="opacity:.7">(${roster.teams_with_data || 0} teams)</span>`);
-  if (coaching.applied && coaching.new_hc_count) bits.push(`Coaching-adjusted <span style="opacity:.7">(${coaching.new_hc_count} new HCs)</span>`);
+  bits.push(`<b>Engine board</b>`);
+  if (wk != null) bits.push(`Ratings as of Week ${escapeHtml(wk)}`);
+  if (eng.sims_per_team) bits.push(`${Number(eng.sims_per_team).toLocaleString()} simulated games per team`);
+  bits.push(`Rating = expected margin vs an average FBS team, neutral field`);
+  if (eng.computed_at) {
+    const d = new Date(eng.computed_at);
+    if (!isNaN(d)) bits.push(`<span style="opacity:.7">Updated ${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>`);
+  }
   bits.push(`${payload.total || 0} teams`);
   els.provenance.innerHTML = bits.join('<span class="rk-dot">·</span>');
-
-  if (phase === 'preseason') {
-    els.eyebrow.textContent = `FBS · ${SEASON} · Preseason`;
-    els.sub.textContent = 'Preseason projection — every FBS team ranked by a four-model blend, adjusted for the transfer portal and new coaching staffs. Each number is four independent signals, where they agree and where they don\u2019t.';
-  }
+  if (wk != null) els.eyebrow.textContent = `FBS · ${SEASON} · Week ${wk}`;
 }
 
 // ── Render ──────────────────────────────────────────────────────────
@@ -440,19 +465,23 @@ function render() {
     .sort((a, b) => b.sos - a.sos)
     .forEach((t, i) => { state.sosRank[t.team] = i + 1; });
 
-  // Fixed bar scale across the ENTIRE board so bar length is comparable between
-  // teams and between signals — a +30.7 must look longer than a +17. Computed
-  // over every team's four signals + blend, independent of the conference filter,
-  // so switching conferences never rescales the bars. Floor of 10 guards an empty
-  // / early-season board from dividing by something tiny.
-  let _barMax = 10;
+  // Fixed bar scales across the ENTIRE board so bar length is comparable between
+  // teams — a +30.7 must look longer than a +17. Points rows (offence, defence,
+  // rating) share one scale; the per-play yardage rows share another. Both are
+  // computed over every team, independent of the conference filter, so switching
+  // conferences never rescales the bars. Floors guard an empty board.
+  let _ptsMax = 10, _yppMax = 0.5;
   (payload.teams || []).forEach(t => {
-    const m = t.models || {};
-    ['sp', 'ppa', 'adv', 'pace', 'blend'].forEach(k => {
-      if (m[k] != null && !isNaN(m[k])) _barMax = Math.max(_barMax, Math.abs(Number(m[k])));
+    const e = t.engine || {};
+    ['rating', 'off_pts', 'def_pts'].forEach(k => {
+      if (e[k] != null && !isNaN(e[k])) _ptsMax = Math.max(_ptsMax, Math.abs(Number(e[k])));
+    });
+    YPP_ROWS.forEach(r => {
+      if (e[r.key] != null && !isNaN(e[r.key])) _yppMax = Math.max(_yppMax, Math.abs(Number(e[r.key])));
     });
   });
-  state.barScale = _barMax;
+  state.barScale = _ptsMax;
+  state.yppScale = _yppMax;
 
   let teams = (payload.teams || []).slice();
   if (state.conf !== 'All FBS') teams = teams.filter(t => t.conference === state.conf);
@@ -539,21 +568,20 @@ function render() {
 }
 
 function buildPanel(t) {
-  const models = t.models || {};
+  const eng = t.engine || {};
   // On the Projected Record view, the dropdown shows the team's projected season —
   // each game's complexion and the danger spots, read off its own win probabilities.
   if (state.view === 'record') return buildSeasonPanel(t);
   // On the Strength of Schedule view, the dropdown shows the opponents and their
   // blended ratings — the numbers that average into SOS — not the team's own blend.
   if (state.view === 'sos') return buildSosPanel(t);
-  // Scale model bars on a symmetric ±M range so the zero line is meaningful.
-  const modelVals = MODEL_ORDER.map(m => models[m.key]).filter(v => v != null);
-  // Use the fixed board-wide scale (set in render) so bars are comparable across
-  // teams; fall back to the per-team max only if the global scale is missing.
-  const maxAbs = state.barScale
-    || Math.max(10, ...modelVals.map(v => Math.abs(v)), Math.abs(models.blend || 0));
+  // Bars sit on a symmetric ±M range so the zero line (league average) is
+  // meaningful. Board-wide scales come from render(); the fallbacks only matter
+  // if a panel is built before the first render.
+  const ptsMax = state.barScale || 10;
+  const yppMax = state.yppScale || 0.5;
 
-  function modelRow(name, val, isBlend) {
+  function modelRow(name, val, isBlend, maxAbs, dp, unit) {
     const v = (val == null) ? null : Number(val);
     let fill = '';
     if (v != null) {
@@ -565,17 +593,20 @@ function buildPanel(t) {
       <div class="rk-model${isBlend ? ' is-blend' : ''}">
         <span class="rk-model-name">${escapeHtml(name)}</span>
         <span class="rk-model-track"><span class="rk-model-zero" style="left:50%;"></span>${fill}</span>
-        <span class="rk-model-val">${v == null ? '—' : fmtSigned(v)}</span>
+        <span class="rk-model-val">${v == null ? '—' : fmtSigned(v, dp)}${unit ? `<span class="rk-model-unit">${unit}</span>` : ''}</span>
       </div>`;
   }
 
-  const modelRows = MODEL_ORDER.map(m => modelRow(m.label, models[m.key], false)).join('')
-    + modelRow('Blend', models.blend, true);
+  // Points vs the league average: offence + defence = the rating.
+  const ptsRows = PTS_ROWS.map(r => modelRow(r.label, eng[r.key], false, ptsMax, 1, '')).join('')
+    + modelRow('Rating', eng.rating != null ? eng.rating : t.rating, true, ptsMax, 1, '');
+  // The engine's inputs: yards per play vs the league cell mean.
+  const yppRows = YPP_ROWS.map(r => modelRow(r.label, eng[r.key], false, yppMax, 2, 'yd')).join('');
 
-  // Rating variance = how far apart the four signals sit (max − min). The spread
-  // is the product's whole point, so it gets its own row.
-  const variance = modelVals.length >= 2
-    ? (Math.max(...modelVals) - Math.min(...modelVals)) : null;
+  // Projected score against an average team, and how much one game can swing.
+  const projScore = (eng.pts_for != null && eng.pts_against != null)
+    ? `${Math.round(Number(eng.pts_for))}–${Math.round(Number(eng.pts_against))}` : null;
+  const swing = eng.margin_sd != null ? `±${Number(eng.margin_sd).toFixed(1)} pts` : null;
 
   // Strength of schedule as a national rank (1 = toughest). The raw rating reads
   // like an adjustment and isn't meaningful on its own, so we show the rank.
@@ -584,7 +615,8 @@ function buildPanel(t) {
   const wrDetail = winRange95(t);
 
   const ctx = `
-    <div class="rk-kv"><span class="rk-kv-k">Rating variance</span><span class="rk-kv-v">${variance == null ? '—' : variance.toFixed(1) + ' pts'}</span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Score vs an average team</span><span class="rk-kv-v">${projScore || '—'}</span></div>
+    <div class="rk-kv"><span class="rk-kv-k">Game-to-game swing</span><span class="rk-kv-v">${swing || '—'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">W/L Favored</span><span class="rk-kv-v">${escapeHtml(t.proj_record || '—')}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">W/L Probability</span><span class="rk-kv-v">${winProbRecord(t) || '—'}</span></div>
     <div class="rk-kv"><span class="rk-kv-k">95% win range</span><span class="rk-kv-v">${wrDetail ? wrDetail.lo + '–' + wrDetail.hi + ' <span style="color:var(--text-light);font-weight:500;">wins</span>' : '—'}</span></div>
@@ -594,15 +626,17 @@ function buildPanel(t) {
     <div class="rk-panel">
       <div class="rk-panel-grid">
         <div>
-          <div class="rk-panel-h">The four signals</div>
-          ${modelRows}
+          <div class="rk-panel-h">Inside the engine <span style="color:var(--text-light);letter-spacing:0;text-transform:none;font-weight:500;">— points vs average</span></div>
+          ${ptsRows}
+          <div class="rk-panel-h rk-panel-h--sub">Per play <span style="letter-spacing:0;text-transform:none;font-weight:500;">— yards vs average</span></div>
+          ${yppRows}
         </div>
         <div>
           <div class="rk-panel-h">Rating &amp; schedule</div>
           ${ctx}
         </div>
       </div>
-      <a class="rk-panel-link" href="/team.html?team=${encodeURIComponent(t.team)}">${escapeHtml(t.team)} team page — schedule, win probabilities, the four signals →</a>
+      <a class="rk-panel-link" href="/team.html?team=${encodeURIComponent(t.team)}">${escapeHtml(t.team)} team page — schedule, win probabilities, the numbers →</a>
     </div>`;
 }
 
