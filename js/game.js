@@ -1912,8 +1912,9 @@
       text = `The Chain has <b>${by(ch.chain_margin)}</b>. It will speak at the first snapshot with a board line, once, and its word is locked from then on.` + recTxt;
     }
     const wrap = document.createElement('div');
-    wrap.className = 'game-card tally-card chain-card';
-    wrap.innerHTML = `<div class="tally-engine tally-engine--${kind === 'fire' ? 'confirms' : kind === 'loss' ? 'opposes' : 'none'} chain-row">` +
+    wrap.className = 'game-card chain-card';
+    wrap.innerHTML = `<div class="receipt-eyebrow">The Chain — a trial signal, marked on the badge only when it agrees</div>` +
+      `<div class="tally-engine tally-engine--${kind === 'fire' ? 'confirms' : kind === 'loss' ? 'opposes' : 'none'} chain-row">` +
       `<span class="tally-engine-tag chain-tag">${CHAIN_GLYPH}Chain</span><span>${text}</span></div>`;
     return wrap;
   }
@@ -1947,9 +1948,26 @@
     // that number (market_spread) so this sentence can never quote a line
     // the verdict didn't use. Older payloads fall back to the chart's line.
     const line = v.market_spread != null ? v.market_spread : m.market_x;
-    const has = line != null
-      ? `The engine has <b>${by(m.mean)}</b> against a line of ${by(line)}.`
+    // Both gates, in numbers. The engine weighs in only when its spread AND
+    // its total each sit 3+ points from the market -- so "11 points off but
+    // quiet" (total too close) and "5 off and firing" both have to explain
+    // themselves (Austin, 9/14: "the totals making the difference, but it's
+    // confusing").
+    const spE = v.sp_edge, ttE = v.tt_edge;
+    const t = eng.total || {};
+    const mktT = v.market_total != null ? v.market_total : t.market_x;
+    let has = line != null
+      ? `The engine has <b>${by(m.mean)}</b> against a line of ${by(line)}${spE != null ? `, ${n1(spE)} points apart` : ''}.`
       : `The engine has <b>${by(m.mean)}</b>.`;
+    const gateOpen = (v.fires && spE != null && ttE != null)
+      ? ` Its total is ${n1(ttE)} from the market’s too, so it weighs in.`
+      : '';
+    let quietWhy;
+    if (spE != null && ttE != null && spE >= 3 && ttE < 3 && t.mean != null && mktT != null) {
+      quietWhy = ` But its total of ${n1(t.mean)} sits only ${n1(ttE)} from the market’s ${n1(mktT)}, and it needs 3 points of daylight on both the spread and the total to weigh in. The signals grade this one on their own.`;
+    } else {
+      quietWhy = ` It needs 3 points of daylight on both the spread and the total to weigh in, so the signals grade this one on their own.`;
+    }
     const at = '';
     let eff = p.engine_effect;
     if (!eff) {
@@ -1972,23 +1990,22 @@
     // of the bet right now, not the story of how it got here (Austin, 9/14).
     if (eff === 'confirms') {
       const r = wl('confirms');
-      return row('confirms', `${has} It is on the same side as the signals${at}, which lifts this bet to <b>A+</b>` +
+      return row('confirms', `${has}${gateOpen} It is on the same side as the signals${at}, which lifts this bet to <b>A+</b>` +
         `${pre ? ` from the ${escape(pre)} the signals alone earn` : ''}.` +
         (r ? ` This season the engine is ${r} when it agrees with the signals.` : ''));
     }
     if (eff === 'opposes') {
       const r = wl('opposes');
-      return row('opposes', `${has} It is on the other side${at}, which takes this bet <b>off the board</b>` +
+      return row('opposes', `${has}${gateOpen} It is on the other side${at}, which takes this bet <b>off the board</b>` +
         `${pre ? ` — the signals alone grade it ${escape(pre)}` : ''}.` +
         (r ? ` When it has opposed the signals this season, its side is ${r}.` : ''));
     }
     if (eff === 'alone') {
       const r = wl('alone');
-      return row('alone', `${has} No signal is firing here; the engine’s read on its own grades this a <b>C</b>.` +
+      return row('alone', `${has}${gateOpen} No signal is firing here; the engine’s read on its own grades this a <b>C</b>.` +
         (r ? ` On its own this season it is ${r}.` : ''));
     }
-    return row('none', `${has} It is not far enough from the market to weigh in, ` +
-      `so the signals grade this one on their own.`);
+    return row('none', `${has}${quietWhy}`);
   }
 
   // ────── LIVE MARKER ON THE CHARTS ──────
@@ -2076,8 +2093,8 @@
       }
       if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread, data.game));
       if (byMkt.spread) { const t = buildTally(byMkt.spread, data.game, data.engine); if (t) els.beat2Stack.appendChild(t); }
-      const c = buildChainCard(data);
-      if (c) els.beat2Stack.appendChild(c);
+      // (The Chain's own card lives in THE RECEIPT with the streak marker's
+      // tracking -- Austin, 9/14: "it's just a marker.")
     }
     if (els.beat3Stack) {
       els.beat3Stack.innerHTML = '';
@@ -2156,6 +2173,10 @@
         `${opiBox(away, data.opi.away, opiNote('away', data.opi.away))}</div>`;
       el.appendChild(box);
     }
+    // The Chain's tracking sits here with the streak marker's — the two
+    // markers that ride a badge without ever touching its grade.
+    const chainCard = buildChainCard(data);
+    if (chainCard) el.appendChild(chainCard);
     // One row PER BET, not per rule (Austin's spec): a signal that fires on
     // both the spread and the moneyline is two separately-graded bets — the
     // Market column distinguishes them and each row carries ITS market's
