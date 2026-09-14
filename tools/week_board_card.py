@@ -364,9 +364,9 @@ def main():
         return d.strftime("%a %-m/%-d") if os.name != "nt" else d.strftime("%a %#m/%#d")
 
     inv_bit = (
-        f"{n_inv} carry an INVALIDATED flag — the market has since taken "
-        "the number, moving far enough toward our side that the grade no "
-        "longer holds today."
+        f"{n_inv} {'carries' if n_inv == 1 else 'carry'} an INVALIDATED "
+        "flag — the market has since taken the number, moving far enough "
+        "toward our side that the grade no longer holds today."
         if n_inv else
         "None have been invalidated — a flag appears only when the market "
         "takes the number out from under a grade.")
@@ -410,7 +410,10 @@ def main():
         need = it["h"]
         if it["kind"] == "sect" and i + 1 < len(items):
             need += items[i + 1]["h"]
-        if need > rem and cur:
+        # Widow rule: a one-or-two-row tail is not a card. If everything
+        # left fits with a little slack, stretch this page instead.
+        tail = sum(x["h"] for x in items[i:])
+        if need > rem and cur and tail > rem + 150 * S:
             pages.append(cur)
             cur = []
             rem = CAP - HEAD_SLIM - FOOT
