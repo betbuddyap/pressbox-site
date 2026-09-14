@@ -315,8 +315,8 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <div class="page-header">
   <div class="page-header-inner">
     <div class="page-eyebrow">The story</div>
-    <h1 class="page-title">Built by someone who wants to help you <em>look before you jump.</em></h1>
-    <p class="page-sub">I spent years building and breaking models so you don't have to. There's nothing I enjoy more than putting that work in someone else's hands.</p>
+    <h1 class="page-title">A pursuit of accuracy, <em>above all else.</em></h1>
+    <p class="page-sub">Every layer of PressBox exists because the layer before it was not accurate enough. This is the whole climb — from one question, to the signals that vote, to a model that plays the game itself.</p>
   </div>
 </div>
 
@@ -339,84 +339,39 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
     </div>
   </div>
 
-  <!-- Why -->
+  <!-- 1 · Why it started -->
   <div class="section">
-    <div class="section-label">The origin</div>
-    <h2 class="section-title">It started with one question: <em>what's the most consistent predictor of winners and spreads in college football?</em></h2>
+    <div class="section-label">Why I started</div>
+    <h2 class="section-title">It started with one question: <em>what actually predicts winners and spreads in college football?</em></h2>
     <div class="section-body">
       <p>I spent two years working through it. I bounced through every stat you can think of — efficiency, success rate, drive quality, third-down conversion, every flavor of pace and tempo. I landed somewhere I didn't expect: time of possession.</p>
-      <p>Not just time of possession itself — but how elastic each team's TOP is against different opponents. Some teams hold the ball no matter who they play. Some teams' possession gets pushed around. That elasticity, weighted by opponent strength, became the basis of what's now Pace+.</p>
-      <p>For a full year I bet a dollar on every spread, total, and moneyline I could get to. Real money, real markets, every game. Pace+ was strong. It was also incomplete — there were specific kinds of matchups where it had blind spots.</p>
-      <p>That's what made me build the rest of the system. The question wasn't whether Pace+ could replace the public models. It was whether putting five reads on every game — SP+, Elo, PPA, advanced efficiency, and Pace+ — could fill the holes Pace+ alone couldn't.</p>
-      <p>The answer turned out to be yes. But not in the way I expected.</p>
+      <p>Not time of possession itself, but how <strong>elastic</strong> each team's possession is against different opponents. Some teams hold the ball no matter who they play. Some teams' possession gets pushed around. That elasticity, weighted by opponent strength, became Pace+.</p>
+      <p>Then I did the only honest test there is. For a full year I bet a dollar on every spread, total, and moneyline I could get to. Real money, real markets, every game. Pace+ was strong. It was also incomplete — there were specific kinds of matchups where it had blind spots — so I put the public efficiency models next to it and asked whether several reads on every game could fill the holes one read couldn't.</p>
+      <p>The answer was yes. But not in the way I expected, and the rest of this page is about why.</p>
     </div>
   </div>
 
-  <!-- The discipline -->
+  <!-- 2 · How we got to the voters -->
   <div class="section">
-    <div class="section-label">The discipline</div>
+    <div class="section-label">How we got to the voters</div>
     <h2 class="section-title">The first full backtest looked <em>too good.</em></h2>
     <div class="section-body">
-      <p>The top-tier picks hit 75%. The moneylines were near-perfect. The featured plays cleared 90%. I'm a statistician. I knew immediately the numbers were contaminated. Anyone whose backtest looks that good has a bug, not a thesis.</p>
-      <p>What was broken was look-ahead bias. The system was using full-season ratings to "predict" games whose outcomes the ratings already knew. We rebuilt the rating pipeline so every Week N projection uses only data from Week N−1 and earlier. The numbers came in lower, and they were real.</p>
-      <p>Then we caught another version of the same bug in different parts of the model. Rebuilt again. Numbers came in lower again.</p>
-      <p>Then we caught data corruption in the rating refresh — duplicate rows polluting the inputs. Fixed it. Rebuilt the backtest a third time.</p>
-      <p>Then we added a stability filter. Every signal in the locked system has to hold up year-over-year — not just hit a single-season win rate, but produce comparable results in 2024 and 2025. Signals that didn't pass got cut.</p>
-      <p>What remains is the locked spec: only the signals that held up year over year, under three audit passes and two full rebuilds. The numbers that survived are smaller than the ones we threw away — which is exactly why we trust them enough to test in public.</p>
-      <p><strong>Most operations would have shipped the first model. We didn't, and that's the point.</strong></p>
+      <p>The top-tier picks hit 75%. The moneylines were near-perfect. I'm a statistician; I knew immediately the numbers were contaminated. Anyone whose backtest looks that good has a bug, not a thesis.</p>
+      <p>The bug was look-ahead bias — ratings that already knew how the season ended were "predicting" games inside it. We rebuilt the pipeline so every Week N projection uses only data from Week N−1 and earlier. The numbers came in lower, and they were real. Then we found the same bias in another corner of the model and rebuilt again. Then duplicate rows polluting the rating refresh. Fixed, rebuilt a third time. Lower each time, and truer each time.</p>
+      <p>That is when the question changed. We stopped asking the models for a better number and started asking <strong>when a model's number is actually worth betting.</strong> Three seasons of history, every variable we could measure — kickoff window, day, conference, week, line size, how far each model sat from the market — crossed with the situational spots bettors argue about. For spreads and totals that made 31,000 candidate signals. For the moneyline, where who <em>wins</em> is a different question than who covers, the search ran past a million patterns. Every one was graded point-in-time, at the line as it stood, then tested against random chance, then required to hold up year over year.</p>
+      <p>Almost everything died. <strong>253 spread-and-total signals and 151 moneyline patterns survived.</strong> Those are the voters. A grade is how many of them agree on a bet once the ones pointing the other way are subtracted out — two is a C, eight or more is an A+, and one voice alone is No Edge, because one voice alone never beat the vig. The numbers that survived are smaller than the ones we threw away, which is exactly why we trust them.</p>
     </div>
   </div>
 
-  <!-- What PressBox is not -->
+  <!-- 3 · Why we built the engine -->
   <div class="section">
-    <div class="section-label">Transparency</div>
-    <h2 class="section-title">What PressBox is <em>not.</em></h2>
+    <div class="section-label">Why we built the engine</div>
+    <h2 class="section-title">Then we built <em>the game itself.</em></h2>
     <div class="section-body">
-      <p>There are a lot of people selling picks on the internet. Most of them cherry-pick their wins, hide their losses, and charge a monthly fee for the privilege. PressBox is built on a different premise entirely.</p>
-    </div>
-    <div class="commitment-list">
-      <div class="commitment">
-        <div class="commitment-icon">✕</div>
-        <div class="commitment-text"><strong>Not a tout service.</strong> Every game gets graded. Every grade is published. Every change in every grade is journaled and public the moment the season starts — A+ down to No Edge, wins down to losses, all of it on the record from Week 0 forward.</div>
-      </div>
-      <div class="commitment">
-        <div class="commitment-icon">✕</div>
-        <div class="commitment-text"><strong>Not a gambling addiction enabler.</strong> We publish a curated set of picks every week across seven tiers — the games where the model has real edge, nothing more. We're not trying to get you to bet every game every week.</div>
-      </div>
-      <div class="commitment">
-        <div class="commitment-icon">✕</div>
-        <div class="commitment-text"><strong>Not a black box.</strong> The How It Works page explains the methodology in plain English. You'll understand what we're measuring and why — just not the exact weights and thresholds.</div>
-      </div>
-      <div class="commitment">
-        <div class="commitment-icon">✕</div>
-        <div class="commitment-text"><strong>Not infallible.</strong> We lose weeks. We lose games. The model is wrong sometimes. What it isn't is consistently wrong — and that difference, compounded across a full season, is the entire bet this product makes.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- The record -->
-  <div class="section">
-    <div class="section-label">The record</div>
-    <h2 class="section-title">We're not going to tout a backtest. <em>Watch the real one land.</em></h2>
-    <div class="section-body">
-      <p>Everything in the system was found and tested against three seasons of history — point-in-time, opening lines, no look-ahead, audited until only the durable signals survived. But a number you earn on the seasons you searched is a claim, not a record. We know the difference, and we're not going to blur it.</p>
-      <p>So here's the deal instead: <strong>2026 is the test, and you get to watch it graded live.</strong> Every pick locks at kickoff, settles at the number we published, and lands on <a href="/results.html">Results</a> — wins, losses, and pushes, next to the games we passed on. If the system is what we believe it is, the record will say so in public, week by week, where nobody can retouch it.</p>
-    </div>
-  </div>
-
-  <!-- What's coming -->
-  <div class="section">
-    <div class="section-label">What's next</div>
-    <h2 class="section-title">PressBox on day one <em>isn't PressBox on day 365.</em></h2>
-    <div class="section-body">
-      <p>Live today: the full Board on a 30-minute regrade cycle, the Upcoming slate with live scores, a game-page breakdown for every matchup, the Parlay builder pricing every leg against the market, the Allocator splitting your stake across the board — at the best line, or entirely at your one sportsbook — Rankings, and Results, where every graded pick lands in public. Every grade change is journaled. Every line move is on the record.</p>
-      <p>New for 2026: the moneyline runs on its own signal set, searched from scratch for patterns that predict who <em>wins</em> rather than who covers — because those turned out to be different questions with different answers.</p>
-      <p><strong>What's coming after launch:</strong></p>
-      <ul style="margin:0 0 1.2em;padding-left:1.2em;line-height:1.6;">
-        <li>A user picks ledger — log your own bets alongside ours, with running profit/loss</li>
-        <li>Other sports — NFL is the natural next step</li>
-      </ul>
-      <p>The 2026 college football season is the first season under the locked spec. Release pricing — $3.99/wk, $11.99/mo, $34.99 Season Pass — locks for the life of your subscription: subscribe at the release price and it's yours for as long as you stay.</p>
+      <p>The voters tell you when a number sits in a spot that has paid. They still don't tell you how a game plays — how many possessions there will be, what a two-score lead does to a coach's fourth-down call, how often a three-point favorite actually wins by three. If accuracy is the whole point, the only honest way to know those things is to play the game.</p>
+      <p>So we did. The engine is a play-by-play simulation: every snap, drive, kick, penalty, and clock decision drawn from what teams like these actually do, played out thousands of times per matchup. Each layer of it was measured before it went in, and the whole thing was measured across the same three seasons before it was allowed anywhere near a grade.</p>
+      <p>It earned a vote on the spread. Where the engine lands on the same side as the signals, the bet grades <strong>A+</strong>. Where it lands on the other side, the bet comes <strong>off the board</strong>. Where it holds an opinion and no signal fires, it grades a <strong>C</strong> on its own. Every game page shows its work — the full range of outcomes, and the path the margin takes minute by minute — and the line under every vote says, in plain words, where the engine has it.</p>
+      <p>Accuracy above all else has one more consequence: the record has to be public. Every pick locks at kickoff, settles at the number we published, and lands on <a href="/results.html">Results</a> — wins, losses, and pushes, next to the games we passed on. A number earned on the seasons we searched is a claim. 2026 is the test, and you get to watch it graded live, where nobody can retouch it.</p>
     </div>
   </div>
 

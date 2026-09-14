@@ -387,7 +387,7 @@
         <div class="ll-empty-ctas">
           <a class="ll-empty-cta" href="/about">
             <div class="ll-empty-cta-label">How it works</div>
-            <div class="ll-empty-cta-body">Methodology + five-model breakdown</div>
+            <div class="ll-empty-cta-body">Methodology + the full game breakdown</div>
           </a>
         </div>
 

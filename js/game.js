@@ -1799,9 +1799,10 @@
                                 ends: [`${away} wins`, `${home} wins`] } });
   }
 
-  function buildTally(p, g) {
+  function buildTally(p, g, eng) {
     const det = p.voter_details || [];
-    if (!det.length) return null;
+    const engRow = buildEngineRow(p, g, eng, det.length);
+    if (!det.length && !engRow) return null;
     // Locked games label the tally with the RELEASED tier — the backend
     // serves the released electorate once a game kicks, so the chips, the
     // net, and the letter all describe the same (graded) board.
@@ -1843,7 +1844,10 @@
       }
       return counter;
     };
-    const chips = det.map(v => chip(v, '', chipTip(v))).join('');
+    // An engine-alone pick has no chips: say so, instead of an empty column.
+    const chips = det.length
+      ? det.map(v => chip(v, '', chipTip(v))).join('')
+      : `<span class="vopp">no signals fired</span>`;
     // Opposing signals get NAMED, muted chips — they explain the net math
     // (4 for, 1 against = net 3 = B) and they're graded in the ledger like
     // every other fire. Legacy payloads without ids fall back to the count.
@@ -1859,8 +1863,66 @@
       `<div class="tally-net"><div class="n">${det.length}–${against}</div>` +
       `<div class="k">net ${net} · ${escape(tierLabel)}</div></div>` +
       `<div class="vchips vchips--right">${oppChips}</div>` +
-      `</div>`;
+      `</div>` + engRow;
     return wrap;
+  }
+
+  // THE ENGINE'S LINE under the vote tally (Austin, 9/14: "where the cells
+  // fire, we also need to show a reference to the engine"). The simulation
+  // votes on the SPREAD only -- agree: A+, oppose: off the board, alone: C --
+  // so a 2-0 tally can read "No Edge" and the reason has to be on the card.
+  // The effect of record comes from the backend (engine_effect, parsed from
+  // the pick's own cell_desc); a payload that predates it falls back to the
+  // live verdict. The numbers are the engine block's. Totals get a one-line
+  // note so nobody wonders where the engine went.
+  function buildEngineRow(p, g, eng, nVoters) {
+    if (!eng || !eng.available) return '';
+    const home = g?.home?.name || 'Home', away = g?.away?.name || 'Away';
+    const n1 = (x) => { const r = Math.round(x * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); };
+    const by = (m) => Math.abs(m) < 0.05 ? 'a pick’em' : `${m > 0 ? home : away} by ${n1(Math.abs(m))}`;
+    const row = (kind, html) =>
+      `<div class="tally-engine tally-engine--${kind}"><span class="tally-engine-tag">Engine</span><span>${html}</span></div>`;
+    if (p.market === 'total') {
+      const t = eng.total || {};
+      if (t.mean == null) return '';
+      const mk = t.market_x != null ? ` against a line of <b>${n1(t.market_x)}</b>` : '';
+      return row('none', `The engine plays this game to <b>${n1(t.mean)}</b> points${mk}. It does not grade totals.`);
+    }
+    if (p.market !== 'spread') return '';
+    const m = eng.margin || {}, v = eng.verdict || {};
+    if (m.mean == null) return '';
+    // The engine is judged against the SAME line the electorate conditions
+    // on -- the live best line, opener fallback -- and the verdict carries
+    // that number (market_spread) so this sentence can never quote a line
+    // the verdict didn't use. Older payloads fall back to the chart's line.
+    const line = v.market_spread != null ? v.market_spread : m.market_x;
+    const has = line != null
+      ? `The engine has <b>${by(m.mean)}</b> against a line of ${by(line)}.`
+      : `The engine has <b>${by(m.mean)}</b>.`;
+    const at = '';
+    let eff = p.engine_effect;
+    if (!eff) {
+      const pickHome = p.side_display === home;
+      if (v.fires && !nVoters && p.tier && p.tier !== 'no_edge') eff = 'alone';
+      else if (v.fires) eff = ((v.side === 'home') === pickHome) ? 'confirms' : 'opposes';
+      else eff = 'none';
+    }
+    const pre = p.tier_pre_engine ? (TIER_DISPLAY[p.tier_pre_engine] || p.tier_pre_engine) : null;
+    // Present tense throughout: the page grades live, so this is the state
+    // of the bet right now, not the story of how it got here (Austin, 9/14).
+    if (eff === 'confirms') {
+      return row('confirms', `${has} It is on the same side as the signals${at}, which lifts this bet to <b>A+</b>` +
+        `${pre ? ` from the ${escape(pre)} the signals alone earn` : ''}.`);
+    }
+    if (eff === 'opposes') {
+      return row('opposes', `${has} It is on the other side${at}, which takes this bet <b>off the board</b>` +
+        `${pre ? ` — the signals alone grade it ${escape(pre)}` : ''}.`);
+    }
+    if (eff === 'alone') {
+      return row('alone', `${has} No signal is firing here; the engine’s read on its own grades this a <b>C</b>.`);
+    }
+    return row('none', `${has} It is not far enough from the market to weigh in, ` +
+      `so the signals grade this one on their own.`);
   }
 
   // ────── LIVE MARKER ON THE CHARTS ──────
@@ -1935,17 +1997,17 @@
       // model's number and our side; the moneyline pick sits on its zero line.
       // ML expressions ride the A+ spread's voters — show the tally here too
       // so a banded ML pick names the signals behind it.
-      if (byMkt.moneyline) { const t = buildTally(byMkt.moneyline, data.game); if (t) els.beat1Stack.appendChild(t); }
+      if (byMkt.moneyline) { const t = buildTally(byMkt.moneyline, data.game, data.engine); if (t) els.beat1Stack.appendChild(t); }
     }
     if (els.beat2Stack) {
       els.beat2Stack.innerHTML = '';
       if (byMkt.spread) els.beat2Stack.appendChild(buildPickArticle(byMkt.spread, data.game));
-      if (byMkt.spread) { const t = buildTally(byMkt.spread, data.game); if (t) els.beat2Stack.appendChild(t); }
+      if (byMkt.spread) { const t = buildTally(byMkt.spread, data.game, data.engine); if (t) els.beat2Stack.appendChild(t); }
     }
     if (els.beat3Stack) {
       els.beat3Stack.innerHTML = '';
       if (byMkt.total) els.beat3Stack.appendChild(buildPickArticle(byMkt.total, data.game));
-      if (byMkt.total) { const t = buildTally(byMkt.total, data.game); if (t) els.beat3Stack.appendChild(t); }
+      if (byMkt.total) { const t = buildTally(byMkt.total, data.game, data.engine); if (t) els.beat3Stack.appendChild(t); }
     }
 
     // Live/final game marker on every chart just built
@@ -3359,13 +3421,13 @@
         dnaHeadDone = true;
         const gh = document.createElement('div');
         gh.className = 'numbers-grouphead';
-        gh.textContent = 'Matchup DNA — the numbers behind the strip';
+        gh.textContent = 'What the models run on';
         els.numbersStack.appendChild(gh);
       } else if (!cat.dna && !restHeadDone) {
         restHeadDone = true;
         const gh = document.createElement('div');
         gh.className = 'numbers-grouphead';
-        gh.textContent = 'Beyond the DNA — full profile';
+        gh.textContent = 'The full profile';
         els.numbersStack.appendChild(gh);
       }
 
@@ -3397,7 +3459,7 @@
       }
 
       const dnaTag = cat.dna && DNA_TAG[cat.dna]
-        ? `<div class="numbers-dna-tag">DNA · ${escape(DNA_TAG[cat.dna])}</div>`
+        ? `<div class="numbers-dna-tag">${escape(DNA_TAG[cat.dna])}</div>`
         : '';
       card.innerHTML = `
         <div class="numbers-card-head">
