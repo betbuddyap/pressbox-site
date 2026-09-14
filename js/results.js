@@ -39,8 +39,29 @@
   }
   function weekLabel(w) { return w === 0 ? 'Week 0' : `Week ${w}`; }
 
+  // The Chain's marker (CHAIN_PREREG_2026 §4): chain-link chip in the bolt's
+  // geometry, only on a graded SPREAD pick whose side the Chain's locked fire
+  // was on. Fires load from /chain/fires beside the record and never block it.
+  const CHAIN_GLYPH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M10.5 13.5a4.2 4.2 0 0 0 6 0l2.6-2.6a4.24 4.24 0 0 0-6-6l-1.4 1.4"/><path d="M13.5 10.5a4.2 4.2 0 0 0-6 0l-2.6 2.6a4.24 4.24 0 0 0 6 6l1.4-1.4"/></svg>';
+  let chainByGame = {};
+  function chainAgrees(p) {
+    const f = p && chainByGame[p.game_id];
+    return !!(f && p.market === 'spread' && p.tier && p.tier !== 'no_edge'
+              && p.side && f.team && String(p.side).toLowerCase() === String(f.team).toLowerCase());
+  }
+  async function loadChain(onDone) {
+    try {
+      const r = await fetch(`${API_BASE}/chain/fires?season=${SEASON}`);
+      const j = await r.json();
+      const map = {};
+      (j.fires || []).forEach(f => { map[f.game_id] = f; });
+      chainByGame = map;
+      if (Object.keys(map).length && typeof onDone === 'function') onDone();
+    } catch (e) { /* the marker is a nicety */ }
+  }
+
   // Tier badge — same map as live-lines/allocator/parlay, bolt included.
-  function renderBadge(tier, bolt) {
+  function renderBadge(tier, bolt, chain) {
     const map = {
       'A+':      { label: 'A+', aria: 'A+ tier', key: 'aplus' },
       'A':       { label: 'A',  aria: 'A tier',  key: 'A' },
@@ -53,8 +74,12 @@
     const boltHtml = (bolt && boltKey)
       ? `<span class="ll-bolt ll-bolt--${boltKey}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 1 5.5 14.5h6L9.5 23l9.5-13.5h-6z"/></svg></span>`
       : '';
-    const aria = bolt ? `${m.aria} — streak-aligned` : m.aria;
-    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}</span>`;
+    const chainHtml = (chain && boltKey)
+      ? `<span class="ll-chain ll-chain--${boltKey}${bolt ? ' left' : ''}" aria-hidden="true">${CHAIN_GLYPH}</span>`
+      : '';
+    const notes = [bolt ? 'streak-aligned' : '', chain ? 'the Chain agrees' : ''].filter(Boolean);
+    const aria = notes.length ? `${m.aria} — ${notes.join(', ')}` : m.aria;
+    return `<span class="ll-badge ll-badge--${m.key}" aria-label="${aria}">${m.label}${boltHtml}${chainHtml}</span>`;
   }
 
   // Bare glyphs, never chips (site convention): ✓ win, ✕ loss, – push.
@@ -77,7 +102,7 @@
     const ne = p.tier === 'no_edge';
     return `
       <div class="rs-pick${ne ? ' rs-pick--ne' : ''}">
-        ${renderBadge(p.tier, p.bolt)}
+        ${renderBadge(p.tier, p.bolt, chainAgrees(p))}
         <span class="rs-pick-mkt">${esc(marketLabel(p.market))}</span>
         <span class="ll-row-pick"><span class="ll-row-pick-num">${esc(p.side || '')} ${esc(p.line || '')}</span>${px}${esc(book)}</span>
         ${markHTML(p.result)}
@@ -348,6 +373,8 @@
       }
       state.loading = false;
       render();
+      // The Chain's fires (the badge marker) load beside the record; never awaited.
+      loadChain(() => render());
     } catch (e) {
       console.error('Results fetch failed:', e);
       state.loading = false; state.error = true; render();
