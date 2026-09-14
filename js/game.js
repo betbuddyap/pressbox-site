@@ -1126,6 +1126,7 @@
       }
       drawHist({
         ids: 'pgHistTotal', hist: t.hist, shift: t.shift || 0, flip: 1, vertical: true,
+        trim: 0.015,                                   // central 97%: the tails are height we don't need
         keys: t.keys || [], markers: dropElo(t.markers),
         marketX: t.market_x, meanX: t.mean,
         marketLabel: t.market_x != null ? `total ${t.market_x}` : null,
@@ -1149,12 +1150,15 @@
       .filter(b => b.n > 0).sort((a, b) => a.d - b.d);
     if (!bins.length) return;
     const N = bins.reduce((s, b) => s + b.n, 0);
-    // Domain: the central 99% of the mass, widened to hold every marker.
+    // Domain: the central mass, widened to hold every marker. The margin
+    // chart keeps 99%; the vertical total trims to 97% -- Austin: "we don't
+    // need to show the extreme tails", and every trimmed point is height.
+    const trim = c.trim != null ? c.trim : 0.005;
     let acc = 0, lo = bins[0].d, hi = bins[bins.length - 1].d;
     for (const b of bins) {
       acc += b.n;
-      if (acc <= 0.005 * N) lo = b.d;
-      if (acc <= 0.995 * N) hi = b.d;
+      if (acc <= trim * N) lo = b.d;
+      if (acc <= (1 - trim) * N) hi = b.d;
     }
     const marks = Object.values(c.markers).map(v => c.flip * v);
     if (c.marketX != null) marks.push(c.flip * c.marketX);
@@ -1215,76 +1219,104 @@
     const pos = (d) => V ? `top:${PCT(d).toFixed(1)}%` : `left:${PCT(d).toFixed(1)}%`;
     const items = Object.entries(c.markers)
       .map(([name, v]) => ({ name, d: c.flip * v })).sort((a, b) => a.d - b.d);
-    // Stagger in PIXELS, not percent: a label is ~6.5px per character at
-    // this size, so five ticks bunched within 15% of a 340px phone frame
-    // overprint no matter how many rows a percent rule hands out. Each
-    // label takes the lowest of three rows where it overlaps nothing; if
-    // none fits, the tick still draws (bare) and the name goes to a
-    // left-to-right list under the chart instead of onto another label.
-    const rect = svg.getBoundingClientRect();
-    const fw = rect.width || 800, fh = rect.height || (V ? 420 : 220);
-    const px = (p) => (p / 100) * (V ? fh : fw);
-    const extent = (name) => V ? 14 : (name.length * 6.5 + 8);
-    const placed = [];                                 // [{at, half, row}]
-    const rowFor = (at, half) => {
-      for (let r = 0; r < 3; r++) {
-        if (!placed.some(q => q.row === r && Math.abs(q.at - at) < q.half + half + 4)) return r;
-      }
-      return -1;
-    };
-    const ROW_CLASS = ['', ' row2', ' row3'];
-    let html = '';
     const labelled = items.map(it => ({ ...it, cls: '' }));
     if (c.meanX != null) labelled.push({ name: 'engine', d: c.flip * c.meanX, cls: ' engine' });
     labelled.sort((a, b) => a.d - b.d);
-    const unlabelled = [];
-    for (const it of labelled) {
-      const at = px(PCT(it.d)), half = extent(it.name) / 2;
-      const r = rowFor(at, half);
-      if (r < 0) {
-        unlabelled.push(it.name);
-        html += `<span class="pg-hist-mk bare${it.cls}" style="${pos(it.d)}"></span>`;
-        continue;
+    const ROW_CLASS = ['', ' row2', ' row3'];
+    const staticHtml = () => {
+      let h = '';
+      if (c.marketX != null && c.marketLabel) h += `<span class="pg-hist-mkt" style="${pos(c.flip * c.marketX)}">${escape(c.marketLabel)}</span>`;
+      // The pick's chip rides the wash, a third of the way into it.
+      if (c.pick && c.pick.chip) {
+        const up = (c.flip > 0) === !!c.pick.above;
+        const edge = c.flip * c.pick.x;
+        const mid = up ? edge + (hi - edge) / 3 : edge - (edge - lo) / 3;
+        const tier = c.pick.tier ? `<span class="tier">${escape(c.pick.tier)}</span>` : '';
+        h += `<span class="pg-hist-chip" style="${pos(mid)};${V ? 'left:45%' : 'top:44%'}">${escape(c.pick.chip)}${tier}</span>`;
       }
-      placed.push({ at, half, row: r });
-      html += `<span class="pg-hist-mk${ROW_CLASS[r]}${it.cls}" style="${pos(it.d)}">${escape(it.name)}</span>`;
-    }
-    if (c.marketX != null && c.marketLabel) html += `<span class="pg-hist-mkt" style="${pos(c.flip * c.marketX)}">${escape(c.marketLabel)}</span>`;
-    // The pick's chip rides the wash, a third of the way into it.
-    if (c.pick && c.pick.chip) {
-      const up = (c.flip > 0) === !!c.pick.above;
-      const edge = c.flip * c.pick.x;
-      const mid = up ? edge + (hi - edge) / 3 : edge - (edge - lo) / 3;
-      const tier = c.pick.tier ? `<span class="tier">${escape(c.pick.tier)}</span>` : '';
-      html += `<span class="pg-hist-chip" style="${pos(mid)};${V ? 'left:45%' : 'top:44%'}">${escape(c.pick.chip)}${tier}</span>`;
-    }
-    if (c.zero && c.zero.chip) {
-      const tier = c.zero.tier ? `<span class="tier">${escape(c.zero.tier)}</span>` : '';
-      const sub = c.zero.sub ? ` · ${escape(c.zero.sub)}` : '';
-      html += `<span class="pg-hist-chip ml" style="${pos(c.flip * c.zero.x)};${V ? 'left:45%' : 'top:62%'}">${escape(c.zero.chip)}${sub}${tier}</span>`;
-    }
-    if (V) {
-      // value axis up the left, inside the frame
-      const step = c.tickStep || 7;
-      for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
-        const p = PCT(v);
-        if (p < 3 || p > 97) continue;
-        html += `<span class="pg-hist-vaxis" style="top:${p.toFixed(1)}%">${v}</span>`;
+      if (c.zero && c.zero.chip) {
+        const tier = c.zero.tier ? `<span class="tier">${escape(c.zero.tier)}</span>` : '';
+        const sub = c.zero.sub ? ` · ${escape(c.zero.sub)}` : '';
+        h += `<span class="pg-hist-chip ml" style="${pos(c.flip * c.zero.x)};${V ? 'left:45%' : 'top:62%'}">${escape(c.zero.chip)}${sub}${tier}</span>`;
       }
-    }
-    ov.innerHTML = html;
-    // Chips are centred on their value; a long team name ("Florida
-    // International +3.5 · A+") can run past the frame on a phone. Measure
-    // after render and slide any chip back inside, 4px from the edge --
-    // the value it points at is still the wash it sits on.
-    const frameRect = ov.getBoundingClientRect();
-    ov.querySelectorAll('.pg-hist-chip').forEach(chip => {
-      const r = chip.getBoundingClientRect();
-      let dx = 0;
-      if (r.left < frameRect.left + 4) dx = frameRect.left + 4 - r.left;
-      else if (r.right > frameRect.right - 4) dx = frameRect.right - 4 - r.right;
-      if (dx) chip.style.transform = `${chip.style.transform || (V ? 'translateY(-50%)' : 'translateX(-50%)')} translateX(${dx.toFixed(1)}px)`;
-    });
+      if (V) {
+        const step = c.tickStep || 7;                  // value axis, in the frame's left column
+        for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
+          const p = PCT(v);
+          if (p < 3 || p > 97) continue;
+          h += `<span class="pg-hist-vaxis" style="top:${p.toFixed(1)}%">${v}</span>`;
+        }
+      }
+      return h;
+    };
+    // LAYOUT PASS. Everything here needs the frame's real pixel size, and
+    // at draw time #gameContent is still display:none -- the frame reads
+    // 0px, the 800px fallback kicks in, and a phone gets a desktop layout
+    // (the "pretty crowded" chart, 2026-09-13). So the pass runs after
+    // paint and again on resize.
+    //   * ticks stagger in PIXELS: a label is ~6.5px per character, so
+    //     five ticks within 15% of a 340px frame overprint no matter how
+    //     many rows a percent rule hands out; each takes the lowest of
+    //     three rows where it overlaps nothing, else it draws bare and its
+    //     name goes to a left-to-right list under the chart
+    //   * under ~720px every model tick is bare (Austin: the labels and the
+    //     pick boxes crowd each other)
+    //   * chips are centred on their value; a long team name can run past
+    //     the frame on a phone -- slide any chip back inside, 4px in
+    const layout = () => {
+      const rect = svg.getBoundingClientRect();
+      if (!rect.width) return false;                   // still hidden; try again later
+      const fw = rect.width, fh = rect.height;
+      const px = (p) => (p / 100) * (V ? fh : fw);
+      const extent = (name) => V ? 14 : (name.length * 6.5 + 8);
+      const labelsAllowed = V || fw >= 720;
+      const placed = [];
+      const rowFor = (at, half) => {
+        if (!labelsAllowed) return -1;
+        for (let r = 0; r < 3; r++) {
+          if (!placed.some(q => q.row === r && Math.abs(q.at - at) < q.half + half + 4)) return r;
+        }
+        return -1;
+      };
+      let html = '';
+      const unlabelled = [];
+      for (const it of labelled) {
+        const at = px(PCT(it.d)), half = extent(it.name) / 2;
+        const r = rowFor(at, half);
+        if (r < 0) {
+          unlabelled.push(it.name);
+          html += `<span class="pg-hist-mk bare${it.cls}" style="${pos(it.d)}"></span>`;
+          continue;
+        }
+        placed.push({ at, half, row: r });
+        html += `<span class="pg-hist-mk${ROW_CLASS[r]}${it.cls}" style="${pos(it.d)}">${escape(it.name)}</span>`;
+      }
+      ov.innerHTML = html + staticHtml();
+      const frameRect = ov.getBoundingClientRect();
+      ov.querySelectorAll('.pg-hist-chip').forEach(chip => {
+        const r = chip.getBoundingClientRect();
+        let dx = 0;
+        if (r.left < frameRect.left + 4) dx = frameRect.left + 4 - r.left;
+        else if (r.right > frameRect.right - 4) dx = frameRect.right - 4 - r.right;
+        if (dx) chip.style.transform = `${V ? 'translateY(-50%)' : 'translateX(-50%)'} translateX(${dx.toFixed(1)}px)`;
+      });
+      cap.innerHTML = captionFor(unlabelled, labelsAllowed);
+      return true;
+    };
+    ov.innerHTML = staticHtml();                       // chips + axis at once; ticks after paint
+    // #gameContent is revealed only after every section has rendered, which
+    // can be well past one frame -- a single 250ms retry left the ticks
+    // unrendered on first load. Poll until the frame has a width, up to ~3s.
+    // A timer, not requestAnimationFrame: rAF is paused in a background
+    // tab (and in the preview pane), which left the ticks unrendered until
+    // a resize; timers still fire, just throttled.
+    let tries = 0;
+    const attempt = () => { if (!layout() && tries++ < 20) setTimeout(attempt, 150); };
+    setTimeout(attempt, 0);
+    if (svg._relayout) window.removeEventListener('resize', svg._relayout);
+    let _t = null;
+    svg._relayout = () => { clearTimeout(_t); _t = setTimeout(layout, 120); };
+    window.addEventListener('resize', svg._relayout);
 
     // Axis row: horizontal charts carry the ticks; both carry the two direction words.
     let axh = '';
@@ -1302,14 +1334,19 @@
 
     cov.textContent = (c.pick && c.pick.covers != null)
       ? `${c.pick.label} covers ${Math.round(c.pick.covers * 100)}%` : '';
-    cap.innerHTML = `<b>${N.toLocaleString()}</b> simulated games. Gold bars are this ` +
-      `game's key numbers — outcomes carrying more weight than their neighbours.` +
-      (c.pick ? ` The wash is the side we're on.` : '') +
-      (c.zero ? ` The line at zero is who wins outright.` : '') +
-      ` Ticks: where each model lands.` +
-      (unlabelled.length
-        ? ` Unlabelled ticks, ${V ? 'bottom to top' : 'left to right'}: <b>${unlabelled.map(escape).join(' · ')}</b>.`
-        : '');
+    function captionFor(unlabelled, labelsAllowed) {
+      return `<b>${N.toLocaleString()}</b> simulated games. Gold bars are this ` +
+        `game's key numbers — outcomes carrying more weight than their neighbours.` +
+        (c.pick ? ` The wash is the side we're on.` : '') +
+        (c.zero ? ` The line at zero is who wins outright.` : '') +
+        ` Ticks: where each model lands.` +
+        (unlabelled.length
+          ? (labelsAllowed
+              ? ` Unlabelled ticks, ${V ? 'bottom to top' : 'left to right'}: <b>${unlabelled.map(escape).join(' · ')}</b>.`
+              : ` Ticks, left to right: <b>${unlabelled.map(escape).join(' · ')}</b>.`)
+          : '');
+    }
+    cap.innerHTML = captionFor([], true);
 
     // Hover: nearest bar, one tooltip.
     const frame = svg.parentElement;
@@ -1325,6 +1362,116 @@
       tip.hidden = false;
     };
     frame.onpointerleave = () => { tip.hidden = true; };
+  }
+
+  // ── The game path ─────────────────────────────────────────────────
+  // Minute by minute: where the margin sits across the simulations. Gold
+  // line is the median game; the inner band holds half of all simulations,
+  // the outer band eight in ten. Home leads read UP, the way the live
+  // win-probability chart reads (congruent poles). Three branches -- every
+  // game, home scored first, away scored first -- behind a selector; the
+  // sentences under the chart are written from the branch's own numbers
+  // (engine_week._path_block), never hard-coded.
+  let _pathBranch = 'all';
+  function renderGamePath(data) {
+    const sec = document.getElementById('pathSection');
+    if (!sec) return;
+    const e = data.engine, g = data.game || {};
+    const P = e && e.available && e.path;
+    if (!P || !P.all) { sec.style.display = 'none'; return; }
+    sec.style.display = '';
+    const home = (g.home && g.home.name) || 'Home', away = (g.away && g.away.name) || 'Away';
+    const sel = document.getElementById('pathSelector');
+    const opts = [
+      ['all', 'All games', P.all, null],
+      ['away_first', `${away} scores first`, P.away_first, P.p_away_first],
+      ['home_first', `${home} scores first`, P.home_first, P.p_home_first],
+    ].filter(o => o[2]);
+    if (!opts.some(o => o[0] === _pathBranch)) _pathBranch = 'all';
+    sel.innerHTML = opts.map(([k, label, , share]) =>
+      `<button type="button" class="path-pill${k === _pathBranch ? ' on' : ''}" data-k="${k}">` +
+      `${escape(label)}${share != null ? ` <span>${Math.round(share * 100)}%</span>` : ''}</button>`).join('');
+    sel.querySelectorAll('.path-pill').forEach(b => {
+      b.onclick = () => { _pathBranch = b.dataset.k; renderGamePath(data); };
+    });
+    const br = P[_pathBranch] || P.all;
+    drawPath(br, home, away);
+    document.getElementById('pathDesc').innerHTML = describePath(P, _pathBranch, br, home, away);
+  }
+
+  function drawPath(br, home, away) {
+    const svg = document.getElementById('pathSvg'), ov = document.getElementById('pathOverlay'),
+          tip = document.getElementById('pathTip');
+    if (!svg || !br || !br.ribbon) return;
+    const R = br.ribbon, M = 60;
+    const lo = Math.min(0, ...R['10']) - 3, hi = Math.max(0, ...R['90']) + 3;
+    const W = 1000, H = 300;
+    const X = (m) => (m / M) * W;
+    const Y = (v) => ((hi - v) / (hi - lo)) * H;          // home leads UP
+    const poly = (top, bot) => {
+      const up = top.map((v, m) => `${X(m).toFixed(1)},${Y(v).toFixed(1)}`);
+      const dn = bot.map((v, m) => `${X(m).toFixed(1)},${Y(v).toFixed(1)}`).reverse();
+      return `<polygon points="${up.concat(dn).join(' ')}"`;
+    };
+    let s = '';
+    s += `${poly(R['90'], R['10'])} fill="#B8922A" fill-opacity="0.14"/>`;
+    s += `${poly(R['75'], R['25'])} fill="#B8922A" fill-opacity="0.26"/>`;
+    for (const q of [15, 30, 45]) {
+      s += `<line x1="${X(q).toFixed(1)}" y1="0" x2="${X(q).toFixed(1)}" y2="${H}" stroke="#0F0E0A" stroke-opacity="0.12" stroke-width="1" vector-effect="non-scaling-stroke"/>`;
+    }
+    s += `<line x1="0" y1="${Y(0).toFixed(1)}" x2="${W}" y2="${Y(0).toFixed(1)}" stroke="#0F0E0A" stroke-opacity="0.55" stroke-width="1" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/>`;
+    s += `<path d="${R['50'].map((v, m) => `${m ? 'L' : 'M'}${X(m).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="#B8922A" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`;
+    svg.innerHTML = s;
+    let html = '';
+    for (const [q, m] of [['Q1', 7.5], ['Q2', 22.5], ['Q3', 37.5], ['Q4', 52.5]]) {
+      html += `<span class="pg-path-q" style="left:${(m / M * 100).toFixed(1)}%">${q}</span>`;
+    }
+    const step = (hi - lo) > 42 ? 14 : 7;
+    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
+      const p = (hi - v) / (hi - lo) * 100;
+      if (p < 5 || p > 95) continue;
+      html += `<span class="pg-path-y" style="top:${p.toFixed(1)}%">${v > 0 ? '+' : ''}${v}</span>`;
+    }
+    html += `<span class="pg-path-pole top">${escape(home)} leads ▲</span>`;
+    html += `<span class="pg-path-pole bot">${escape(away)} leads ▼</span>`;
+    ov.innerHTML = html;
+    const frame = svg.parentElement;
+    frame.onpointermove = (ev) => {
+      const r = frame.getBoundingClientRect();
+      const m = Math.max(0, Math.min(M, Math.round((ev.clientX - r.left) / r.width * M)));
+      const med = R['50'][m], a = R['25'][m], b = R['75'][m];
+      const who = (v) => v > 0 ? `${home} by ${v}` : v < 0 ? `${away} by ${-v}` : 'tied';
+      tip.textContent = `${m}′ · median ${who(med)} · half the sims between ${who(a)} and ${who(b)}`;
+      tip.style.left = `${(m / M * 100).toFixed(1)}%`;
+      tip.hidden = false;
+    };
+    frame.onpointerleave = () => { tip.hidden = true; };
+  }
+
+  function describePath(P, k, br, home, away) {
+    const pct = (x) => x == null ? '—' : `${Math.round(x * 100)}%`;
+    const min = (x) => x == null ? '—' : `minute ${Math.round(x)}`;
+    const out = [];
+    if (k === 'all') {
+      out.push(`Across ${Number(P.nsim).toLocaleString()} simulations, ${home} scores first ${pct(P.p_home_first)} of the time and ${away} ${pct(P.p_away_first)}.`);
+    } else {
+      const team = k === 'home_first' ? home : away;
+      out.push(`${team} scores first in ${pct(br.share)} of simulations.`);
+    }
+    const homeFav = (br.p_home_win || 0) >= (br.p_away_win || 0);
+    const W = homeFav ? home : away, L = homeFav ? away : home;
+    const pw = homeFav ? br.p_home_win : br.p_away_win;
+    const lead = homeFav ? br.p_home_lead_half : br.p_away_lead_half;
+    out.push(`${W} wins ${pct(pw)} of these games and leads at the half ${pct(lead)}; ${pct(br.p_tied_half)} are tied at the break and ${pct(br.p_within_7_half)} are within a touchdown.`);
+    if (br.p_half_leader_wins != null) out.push(`Whoever leads at the half goes on to win ${pct(br.p_half_leader_wins)}.`);
+    const side = homeFav ? 'home' : 'away', other = homeFav ? 'away' : 'home';
+    if (br[`${side}_lasting_lead_minute`] != null) {
+      out.push(`When ${W} wins, the lead that holds is taken at a median ${min(br[`${side}_lasting_lead_minute`])}, ${pct(br[`${side}_never_trailed_given_win`])} of those wins never trail, and the biggest lead runs to about ${Math.round(br[`${side}_biggest_lead_median`])} points.`);
+    }
+    if (br[`${other}_lasting_lead_minute`] != null && (br[`p_${other}_win`] || 0) >= 0.1) {
+      out.push(`${L}'s wins come with the decisive lead taken at a median ${min(br[`${other}_lasting_lead_minute`])}.`);
+    }
+    return out.map(t => `<p>${t}</p>`).join('');
   }
 
   function renderStoryline(data) {
@@ -3532,6 +3679,7 @@
     try {
       renderHero(data);
       renderEngineHist(data);
+      renderGamePath(data);
       // Matchup DNA retired 2026-09-13 (Austin): the ranked engine-input
       // grid in The Numbers carries what it was reaching for.
       renderBeats(data);

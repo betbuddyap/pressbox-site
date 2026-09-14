@@ -14,7 +14,7 @@
 <!-- Tokens FIRST, then components -->
 <link rel="stylesheet" href="/css/tokens.css?v=20260831a">
 <link rel="stylesheet" href="/css/components/live-lines.css?v=20260813b">
-<link rel="stylesheet" href="/css/components/game.css?v=20260913c">
+<link rel="stylesheet" href="/css/components/game.css?v=20260913e">
 
 <style>
   /* ── Site nav (kept in sync across pages) ── */
@@ -376,11 +376,35 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
       </div>
     </section>
 
+    <!-- THE GAME PATH — the margin minute by minute across the simulations,
+         three branches behind a selector, sentences written from the numbers -->
+    <section class="game-section" id="pathSection" style="display:none;">
+      <header class="game-section-head">
+        <div>
+          <div class="game-section-eyebrow">— 5 · THE GAME PATH</div>
+          <h2 class="game-section-title">How it <em>unfolds</em>.</h2>
+          <p class="game-section-deck">The margin, minute by minute, across every simulation.</p>
+        </div>
+      </header>
+      <div class="beat-stack">
+        <div class="game-card pg-path-block">
+          <div class="path-selector" id="pathSelector"></div>
+          <div class="pg-path-frame" id="pathFrame">
+            <svg id="pathSvg" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
+            <div class="pg-hist-overlay" id="pathOverlay"></div>
+            <div class="pg-hist-tip" id="pathTip" hidden></div>
+          </div>
+          <div class="pg-hist-caption">Gold line is the median game. The inner band holds half of all simulations, the outer band eight in ten.</div>
+          <div class="pg-path-desc" id="pathDesc"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- BEAT 4: THE RECEIPT -->
     <section class="game-section" id="receiptSection">
       <header class="game-section-head">
         <div>
-          <div class="game-section-eyebrow">— 4 · THE RECEIPT</div>
+          <div class="game-section-eyebrow">— 6 · THE RECEIPT</div>
           <h2 class="game-section-title">Show your <em>work</em>.</h2>
           <p class="game-section-deck">Form vs our projections, this pick's paper trail, and every signal's live record.</p>
         </div>
@@ -440,7 +464,7 @@ function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('
 <!-- Supabase JS (auth for paywall + nav) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-nav.js" defer></script>
-<script src="/js/game.js?v=20260913e"></script>
+<script src="/js/game.js?v=20260913i"></script>
 
 
 <!-- Shared site chrome (nav + footer + auth + disclaimer) — single source: /js/site-chrome.js -->
