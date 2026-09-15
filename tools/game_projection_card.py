@@ -180,6 +180,146 @@ def track(dr, xy, text, fnt, fill, size, anchor="l", em=0.03):
     return total
 
 
+def _mix(a, b, t):
+    return tuple(int(round(x + (y - x) * t)) for x, y in zip(a, b))
+
+
+def _keys(h, w=4, thr=1.22, cap=12, q=0.20):
+    """This game's key numbers, MEASURED: bins carrying at least 1.22x the
+    mass of their +/-4 neighbourhood, inside the central 60% of the
+    distribution, capped at twelve so gold still means something."""
+    tot = sum(h.values())
+    c, klo, khi = 0, min(h), max(h)
+    for m in sorted(h):
+        c += h[m]
+        if c >= q * tot and klo == min(h):
+            klo = m
+        if c <= (1 - q) * tot:
+            khi = m
+    out = []
+    for m, cnt in h.items():
+        if not (klo <= m <= khi):
+            continue
+        nb = [h.get(k, 0) for k in range(m - w, m + w + 1) if k != m]
+        if not nb:
+            continue
+        base = sum(nb) / len(nb)
+        if base > 0 and cnt >= thr * base:
+            out.append((cnt, m))
+    out.sort(reverse=True)
+    return {m for _, m in out[:cap]}
+
+
+def wrap_text(dr, y, text, fnt=None, fill=None, lead=22):
+    fnt = fnt or f_note
+    fill = fill or MUTED
+    words, lines, cur = text.split(), [], ""
+    for w_ in words:
+        t = (cur + " " + w_).strip()
+        if fnt.getlength(t) > W - 2 * PAD and cur:
+            lines.append(cur)
+            cur = w_
+        else:
+            cur = t
+    if cur:
+        lines.append(cur)
+    for ln in lines:
+        dr.text((PAD, y), ln, font=fnt, fill=fill)
+        y += lead * S
+    return y
+
+
+def page_hist(dr, y, title, hist, keys, markers, mean_x, market_x,
+              market_label, dir_left, dir_right, signed=True, ch=170 * S,
+              tick_step=7):
+    """THE GAME PAGE'S ENGINE HISTOGRAM (charts.css .pg-hist-*), in PIL, and
+    nothing the page shows about our pick: ink bars at 55%, key numbers
+    gold, each model a hairline tick from the top with its name in one of
+    three staggered rows, the engine's mean the same tick in gold, the
+    market a dashed ink line with an ink chip at the foot, a value axis
+    every `tick_step`, and the two direction words. Values arrive in
+    DISPLAY coordinates (already flipped so the market favourite is
+    negative). Returns (y, names of ticks that had no room for a label)."""
+    track(dr, (PAD, y), title, f_sect, TEXT, 15)
+    y += 30 * S
+    n = sum(hist.values())
+    acc, lo, hi = 0, min(hist), max(hist)
+    for m in sorted(hist):                        # central 99% of the mass
+        acc += hist[m]
+        if acc <= 0.005 * n:
+            lo = m
+        if acc <= 0.995 * n:
+            hi = m
+    marks = list(markers.values())
+    if mean_x is not None:
+        marks.append(mean_x)
+    if market_x is not None:
+        marks.append(market_x)
+    lo, hi = min([lo] + marks) - 2, max([hi] + marks) + 2
+    span = float(hi - lo)
+    x0, x1 = PAD, W - PAD
+
+    def X(v):
+        return x0 + (v - lo) / span * (x1 - x0)
+
+    top, base = y, y + ch
+    head = 50 * S                                 # three tick rows live here
+    slot = (x1 - x0) / span
+    bw = max(slot * 0.78, 2 * S)
+    mx = max(hist.values())
+    bar_col, key_col = _mix(BG, TEXT_SOFT, 0.55), _mix(BG, ACCENT, 0.95)
+    for m, c in hist.items():
+        if m < lo or m > hi:
+            continue
+        bh = (base - 2 * S - (top + head)) * (c / mx)
+        xm = X(m)
+        dr.rectangle([xm - bw / 2, base - 2 * S - bh, xm + bw / 2, base - 2 * S],
+                     fill=key_col if m in keys else bar_col)
+    dr.rectangle([x0, top, x1, base], outline=RULE, width=1 * S)
+    if market_x is not None:
+        xm = X(market_x)
+        for yy in range(int(top), int(base), 10 * S):
+            dr.rectangle([xm - 1 * S, yy, xm + 1 * S, min(yy + 5 * S, base)], fill=TEXT)
+        if market_label:
+            lab = market_label.upper()
+            tw = f_axis.getlength(lab) + 14 * S
+            cx = min(max(xm, x0 + tw / 2 + 4 * S), x1 - tw / 2 - 4 * S)
+            dr.rounded_rectangle([cx - tw / 2, base - 26 * S, cx + tw / 2, base - 6 * S],
+                                 radius=3 * S, fill=TEXT)
+            dr.text((cx, base - 16 * S), lab, font=f_axis, fill=BG, anchor="mm")
+    items = sorted([(v, name.upper(), False) for name, v in markers.items()]
+                   + ([(mean_x, "ENGINE", True)] if mean_x is not None else []),
+                   key=lambda t: t[0])
+    placed, bare = [], []
+    for v, name, is_eng in items:
+        at = X(v)
+        half = f_axis.getlength(name) / 2 + 5 * S
+        row = next((r for r in range(3)
+                    if not any(q[2] == r and abs(q[0] - at) < q[1] + half for q in placed)), -1)
+        tick = (11 + 12 * max(row, 0)) * S
+        hw = 1 * S if is_eng else 0.5 * S
+        dr.rectangle([at - hw, top, at + hw, top + tick], fill=ACCENT if is_eng else TEXT_SOFT)
+        if row < 0:
+            shown = "the engine" if is_eng else name.title().replace("Sp+", "SP+").replace("Ppa", "PPA")
+            bare.append(f"{shown} at {v:+.1f}" if signed else f"{shown} at {v:.1f}")
+            continue
+        placed.append((at, half, row))
+        tx = min(max(at, x0 + half), x1 - half)
+        dr.text((tx, top + tick + 3 * S), name, font=f_axis,
+                fill=ACCENT_TEXT if is_eng else TEXT_SOFT, anchor="ma")
+    ay = base + 8 * S
+    first = -(-int(lo) // tick_step) * tick_step
+    for v in range(first, int(hi) + 1, tick_step):
+        p = (v - lo) / span
+        if p < 0.03 or p > 0.97:
+            continue
+        lab = ((f"{v:+d}" if v else "0") if signed else f"{v}").replace("-", "−")
+        dr.text((X(v), ay), lab, font=f_axis, fill=MUTED, anchor="ma")
+    dr.text((x0, ay + 22 * S), dir_left.upper(), font=f_lbl, fill=TEXT_SOFT)
+    dr.text((x1, ay + 22 * S), dir_right.upper(), font=f_lbl, fill=TEXT_SOFT, anchor="ra")
+    return base + 60 * S, bare
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     out = args[0] if args else (
@@ -359,51 +499,9 @@ def main():
     # +12.0. Collapsing the two into one number is what made the tile
     # read backwards.
     if m_fav is not None:
-        # OUR PICK SIDE, and the two probabilities that belong to it.
-        # ats_team is the side our number takes AGAINST THE LINE, and
-        # the cover probability is that side's -- home covers when the
-        # margin beats the line, away when it falls short of it.
-        ats_home = a_mar > mk
-        ats_team = home if ats_home else away
-        ats_num = -mk if ats_home else mk
-        # RAW home-minus-away space; `hist` above is flipped for the
-        # chart and would invert both of these.
-        _raw = {int(k): v for k, v in D["mar_hist"].items()}
-        _N = sum(_raw.values())
-        _mu = sum(m * c for m, c in _raw.items()) / _N
-
-        # THE ENGINE UNDERSTATES ITS OWN UNCERTAINTY BY 8.4%.
-        #
-        # Measured over 2,991 simulated games against their results: the
-        # engine's own margin sd averages 14.94 while the actual RMSE of
-        # (result - our mean) is 16.19 -- a ratio of 1.084. Ratings ARE
-        # drawn from their posterior in sim_engine2's draw(), so rating
-        # uncertainty is already propagated, and it is STILL 8% short of
-        # our true predictive error. Every probability read off the raw
-        # histogram therefore divides by too small a spread and reads
-        # over-confident.
-        #
-        # Rather than re-bin a widened histogram -- which would smear
-        # the key-number lumpiness the distribution is calibrated on --
-        # query the SAME histogram at a pulled-in threshold: widening by
-        # f and asking P(x > L) is exactly asking P(x > mu + (L-mu)/f)
-        # of the original. Empirical shape preserved, arithmetic exact.
-        SD_INFLATE = 1.084
-
-        def _tail(L, above):
-            t = _mu + (L - _mu) / SD_INFLATE
-            hit = sum(c for m, c in _raw.items()
-                      if (m > t if above else m < t))
-            push = sum(c for m, c in _raw.items() if abs(m - t) < 1e-9)
-            return hit / (_N - push) if _N > push else 0.5
-
-        # BOTH probabilities belong to OUR PICK SIDE, so the position
-        # line reads as one team's case. On Tennessee at Georgia Tech
-        # our pick is GEORGIA TECH +12, and they win outright 30% of
-        # the time -- quoting Tennessee's 70% beside a Georgia Tech
-        # number was two teams in one sentence.
-        win_p = _tail(0.0, ats_team == home)
-        cov_p = _tail(mk, ats_home)
+        # NO PICK BOXES (Austin, 9/15): the position line with its win and
+        # cover probabilities is gone. The chart names the market and the
+        # models; the board names our side.
         dr.text((PAD, y),
                 f"That is our margin, not the market's: we project "
                 f"{s_team} to win by {abs(a_mar):.1f}, while the market "
@@ -417,154 +515,42 @@ def main():
                  "like the market's.")
                 + f" The two differ by {abs(a_mar - mk):.1f} points.",
                 font=f_note, fill=TEXT_SOFT)
-        y += 62 * S
-        # track() draws from the TOP of the glyph box and f_meta sits
-        # on a baseline, so the two were on different vertical rules and
-        # the label rode low enough to clip.
-        dr.rectangle([PAD, y, PAD + 4 * S, y + 30 * S], fill=ACCENT)
-        track(dr, (PAD + 18 * S, y + 6 * S), "THE POSITION", f_lbl,
-              ACCENT_TEXT, 11)
-        lab = f"{ats_team} {ats_num:+.1f}".replace("-", "−")
-        x2 = PAD + 180 * S
-        dr.text((x2, y), lab, font=f_meta, fill=TEXT)
-        x3 = x2 + f_meta.getlength(lab) + 22 * S
-        wp = f"wins {win_p:.0%}"
-        dr.text((x3, y), wp, font=f_meta, fill=TEXT_SOFT)
-        x3 += f_meta.getlength(wp) + 20 * S
-        cv = f"covers {cov_p:.0%}"
-        dr.text((x3, y), cv, font=f_meta,
-                fill=ACCENT_TEXT if cov_p >= 0.5 else MUTED)
-        dr.text((x3 + f_meta.getlength(cv) + 20 * S, y + 4 * S),
-                ("— we make it wider than the market does."
-                 if ats_team == fav else
-                 "— we make it closer than the market does."),
-                font=f_note, fill=MUTED)
-        y += 54 * S
+        y += 66 * S
 
-    # ---- margin distribution ----------------------------------------
-    track(dr, (PAD, y), "MARGIN DISTRIBUTION", f_sect, TEXT, 15)
-    y += 76 * S
-    # bounds from the distribution, not hard-coded: a hard-coded window
-    # is right for one game and clips the tail of the next.
-    _cum, _lo, _hi = 0, None, None
-    for m in sorted(hist):
-        _cum += hist[m]
-        if _lo is None and _cum >= 0.004 * n:
-            _lo = m
-        if _cum <= 0.996 * n:
-            _hi = m
-    lo, hi = int(_lo // 6 * 6), int(-(-_hi // 6) * 6)
-    CH = 170 * S
-    bw = (W - 2 * PAD) / (hi - lo + 1)
-    mx = max(hist.get(m, 0) for m in range(lo, hi + 1))
-    base = y + CH
-    # KEY NUMBERS ARE MEASURED ON THIS GAME, NOT ASSERTED.
-    #
-    # This was a hardcoded {3, 7, 10, 14, 17, 21}. Those really are the
-    # classic key numbers and the set was never WRONG, but it is an
-    # assumption, and on a big spread it misses most of the pile-ups:
-    # in Iowa State at Iowa it caught 7 of the 12 biggest bars, and in
-    # Arizona State at Texas A&M only 6 -- +24 and +28 are among the
-    # largest bars on the card and were painted as ordinary.
-    #
-    # A key number is EXCESS mass over its own neighbourhood, so measure
-    # that: compare each margin to the mean of the surrounding +/-4
-    # bins, keep the ones at least 1.22x their local baseline, and cap
-    # at the 20 biggest so gold still means something. That recovers
-    # every classic AND the 24/28/31/35 family a lopsided game creates.
-    # Confined to the CENTRE of the distribution -- the middle 60% by
-    # mass -- so the tails stay grey. Detecting peaks across the whole
-    # range painted gold all the way out to +45 and the chart read as
-    # mostly gold; the window keeps the density the hardcoded set had
-    # while still finding each game's own numbers.
-    def _keys(h, w=4, thr=1.22, cap=12, q=0.20):
-        tot = sum(h.values())
-        c, klo, khi = 0, min(h), max(h)
-        for m in sorted(h):
-            c += h[m]
-            if c >= q * tot and klo == min(h):
-                klo = m
-            if c <= (1 - q) * tot:
-                khi = m
-        out = []
-        for m, cnt in h.items():
-            if not (klo <= m <= khi):
-                continue
-            nb = [h.get(k, 0) for k in range(m - w, m + w + 1) if k != m]
-            if not nb:
-                continue
-            base = sum(nb) / len(nb)
-            if base > 0 and cnt >= thr * base:
-                out.append((cnt, m))
-        out.sort(reverse=True)
-        return {m for _, m in out[:cap]}
+    # ---- margin distribution: the game page's chart, no pick boxes ----
+    # KEY NUMBERS ARE MEASURED ON THIS GAME, NOT ASSERTED (see _keys).
+    # NO MODE MARKER: the mode is +/-3 on 71% of simulated games and
+    # unstable; mean and market are the honest pair, and the models are
+    # the page's furniture.
     KEYS = _keys(hist)
-    for m in range(lo, hi + 1):
-        c = hist.get(m, 0)
-        bh = CH * (c / mx)
-        x0 = PAD + (m - lo) * bw
-        col = ACCENT if m in KEYS else BAR
-        dr.rectangle([x0 + 1 * S, base - bh, x0 + bw - 1 * S, base],
-                     fill=col)
-    dr.rectangle([PAD, base, W - PAD, base + 1 * S], fill=TEXT_SOFT)
-    for m in range(lo, hi + 1, 6):
-        x0 = PAD + (m - lo) * bw + bw / 2
-        dr.text((x0, base + 8 * S), f"{m:+d}" if m else "0", font=f_axis,
-                fill=MUTED, anchor="ma")
-    # mean and mode can sit a couple of points apart, so the labels get
-    # their own rows rather than overprinting each other, and are kept
-    # inside the plot at the edges.
-    # NO MODE MARKER. The mode is +/-3 on 71% of 2,991 simulated games
-    # -- including 17-point favourites -- and in HALF of them the
-    # runner-up bin is within 10% of it, so it is both uninformative
-    # and unstable. Printing "mode -3" beside "mean -17.2" invited the
-    # reader to treat 3 as a likely outcome when it holds 4% of the
-    # mass. Mean and market are the honest pair.
-    marks = [(h_mar, "mean", TEXT, False)]
-    if h_mk is not None and lo <= h_mk <= hi:
-        # dashed, so it reads as someone else's opinion rather than
-        # another of our own outputs
-        marks.append((h_mk, "market", MUTED, True))
-    for i, (val, lab, col, dash) in enumerate(marks):
-        x0 = PAD + (val - lo) * bw + bw / 2
-        if dash:
-            for yy in range(int(y - 8 * S), int(base), 10 * S):
-                dr.rectangle([x0 - 1 * S, yy, x0 + 1 * S,
-                              min(yy + 5 * S, base)], fill=col)
-        else:
-            dr.rectangle([x0 - 1 * S, y - 8 * S, x0 + 1 * S, base], fill=col)
-        txt = f"{lab} {val:+.1f}".replace(".0", "")
-        half = f_lbl.getlength(txt) / 2
-        dr.text((min(max(x0, PAD + half), W - PAD - half),
-                 y - (12 + 24 * i) * S), txt, font=f_lbl, fill=col,
-                anchor="ms")
-    # name which end is which, so the axis cannot be misread
-    dr.text((PAD, base + 30 * S), f"◄  {x_fav} wins", font=f_lbl,
-            fill=TEXT_SOFT)
-    dr.text((W - PAD, base + 30 * S), f"{x_dog} wins  ►", font=f_lbl,
-            fill=TEXT_SOFT, anchor="ra")
-    y = base + 58 * S
-    cap = ("Share of simulations finishing on each exact margin. Gold "
-           "bars are this game's key numbers — the margins carrying more "
-           "mass than the ones around them.")
-    if D.get("market_margin") is not None:
-        cap += "  Dashed line: the market."
-    # Wrap to the content width: with the market clause the single line
-    # ran past the right edge ("Dashed l…") on every 2026 card.
-    words, lines, cur = cap.split(), [], ""
-    for w_ in words:
-        t = (cur + " " + w_).strip()
-        if f_note.getlength(t) > W - 2 * PAD and cur:
-            lines.append(cur)
-            cur = w_
-        else:
-            cur = t
-    if cur:
-        lines.append(cur)
-    for ln in lines:
-        dr.text((PAD, y), ln, font=f_note, fill=MUTED)
-        y += 22 * S
-    y += 16 * S
+    mk_margin = {nm: FLIP * v for nm, v in (D.get("models_margin") or {}).items()}
+    y, bare_m = page_hist(
+        dr, y, "MARGIN DISTRIBUTION", hist, KEYS, mk_margin, h_mar, h_mk,
+        (f"{x_fav} −{abs(_mk):g}" if _mk is not None else None),
+        f"◄  {x_fav} wins by more", f"{x_dog} covers  ►", signed=True)
+    cap = ("Share of simulations finishing on each exact margin. Ticks mark "
+           "where each of the four models lands and where the engine's mean "
+           "sits; gold bars are this game's key numbers"
+           + ("; the dashed line is the market." if _mk is not None else "."))
+    if bare_m:
+        cap += "  Unlabelled ticks: " + ", ".join(bare_m) + "."
+    y = wrap_text(dr, y, cap) + 18 * S
+
+    # ---- total distribution, same grammar (Austin, 9/15) -----------------
+    thist = {int(k): v for k, v in D["tot_hist"].items()}
+    mt = D.get("market_total")
+    mt = None if mt is None else float(mt)
+    y, bare_t = page_hist(
+        dr, y, "TOTAL DISTRIBUTION", thist, _keys(thist),
+        dict(D.get("models_total") or {}), D["total_mean"], mt,
+        (f"total {mt:g}" if mt is not None else None),
+        "◄  lower scoring", "higher scoring  ►", signed=False, ch=130 * S)
+    cap2 = ("Points scored by both sides. The engine's total sits at "
+            f"{D['total_mean']:.1f}"
+            + (f" against a market of {mt:g}." if mt is not None else "."))
+    if bare_t:
+        cap2 += "  Unlabelled ticks: " + ", ".join(bare_t) + "."
+    y = wrap_text(dr, y, cap2) + 16 * S
 
     # ---- team comparison ---------------------------------------------
     track(dr, (PAD, y), "PROJECTED BOX SCORE", f_sect, TEXT, 15)

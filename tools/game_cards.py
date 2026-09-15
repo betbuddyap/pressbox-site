@@ -208,7 +208,14 @@ for gid, slug, tz in GAMES:
            "keynum": {str(k): kn[k] / NSIM for k in (1, 3, 4, 6, 7, 10, 14, 17)},
            "dist": {t: {str(p): pct(v, p) for p in (10, 25, 50, 75, 90)} for t, v in ((home, hs), (away, as_), ("total", tot))},
            "ratings": {t: R[t] for t in (home, away)},
-           "market_margin": mk, "model_version": rows[0]['model_version'], "box": []}
+           "market_margin": mk, "model_version": rows[0]['model_version'],
+           # the page's histogram furniture: where the four models land and the market total
+           "models_margin": {m_['name']: float(m_['home_margin']) for m_ in (((b.get('projections') or {}).get('spread') or {}).get('models') or [])
+                             if m_.get('name') != 'Elo' and m_.get('home_margin') is not None},
+           "models_total": {m_['name']: float(m_['total']) for m_ in (((b.get('projections') or {}).get('total') or {}).get('models') or [])
+                            if m_.get('name') != 'Elo' and m_.get('total') is not None},
+           "market_total": ((b.get('engine') or {}).get('total') or {}).get('market_x'),
+           "box": []}
     for key, lab, dp in STATS:
         hv, av = box[home].get(key), box[away].get(key)
         if not hv or not av:
