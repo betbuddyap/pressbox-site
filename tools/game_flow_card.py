@@ -423,15 +423,25 @@ def main():
     # game". Everything below is derived per game and states what it
     # finds, including when it finds nothing.
     BOXD = {r["stat"]: r for r in K["box"]}
+    # DIRECTION. "Belongs to" used to mean "has the bigger number", which
+    # handed Ole Miss an edge for punting MORE (Austin, 9/15: "ole miss
+    # will punt more and lsu will have better passing and somehow those
+    # two things keep the game close?"). Fewer is better on these.
+    LOWER_BETTER = {"punts", "sacks allowed", "interceptions",
+                    "fumbles lost"}
 
     def gap(stat):
-        """Signed (favourite - other) gap, and it in pooled sd units."""
+        """(favourite - other) gap, its size in pooled sd units, the two
+        means, and the ADVANTAGE sign: positive when the gap favours the
+        favourite once the stat's direction is taken into account."""
         r = BOXD[stat]
         fa, fb = (r["home"], r["away"]) if fav_home else (r["away"],
                                                           r["home"])
         sd = ((fa["sd"] ** 2 + fb["sd"] ** 2) / 2) ** 0.5
         d = fa["mean"] - fb["mean"]
-        return d, (d / sd if sd else 0.0), fa["mean"], fb["mean"]
+        z = d / sd if sd else 0.0
+        adv = -z if stat in LOWER_BETTER else z
+        return d, z, fa["mean"], fb["mean"], adv
 
     # YARDS PER PLAY IS DELIBERATELY NOT IN HERE. It is a BLEND of the
     # two phases, so it has the tightest sd and won the ranking in 4 of
@@ -443,14 +453,16 @@ def main():
     scored = []
     for st, phrase, kind in EDGES:
         if st in BOXD:
-            d, z, fv, ov = gap(st)
-            scored.append((abs(z), z, d, fv, ov, st, phrase, kind))
+            d, z, fv, ov, adv = gap(st)
+            scored.append((abs(z), adv, d, fv, ov, st, phrase, kind))
     scored.sort(reverse=True)
-    _, z1, d1, fv1, ov1, st1, ph1, kind1 = scored[0]
+    _, adv1, d1, fv1, ov1, st1, ph1, kind1 = scored[0]
     st2, z2 = (scored[1][5], scored[1][1]) if len(scored) > 1 else (None, 0)
     dp1 = 1 if "per" in st1 else 0
-    owner, other = (fav, dog) if z1 > 0 else (dog, fav)
-    hi1, lo1 = (fv1, ov1) if z1 > 0 else (ov1, fv1)
+    # the OWNER is the team the edge favours; its number is printed first
+    owner, other = (fav, dog) if adv1 > 0 else (dog, fav)
+    hi1, lo1 = (fv1, ov1) if owner == fav else (ov1, fv1)
+    z1 = adv1
 
     def swing(t):
         c = D["calls"][t]
@@ -491,7 +503,7 @@ def main():
     for st, phrase, dp in SECOND:
         if st == used or st not in BOXD:
             continue
-        d, z, fv, ov = gap(st)
+        d, z, fv, ov, adv = gap(st)
         r = REF.get(st)
         # Only UNUSUALLY LARGE counts. Scoring the absolute deviation
         # rewarded being unusually LEVEL too, and picked takeaways at
@@ -501,18 +513,18 @@ def main():
         # leading the paragraph.
         score = ((abs(z) - r["mean"]) / r["sd"]) if r else abs(z)
         if abs(z) >= 0.30 and score > 0:
-            sec.append((score, z, d, fv, ov, st, phrase, dp))
+            sec.append((score, adv, d, fv, ov, st, phrase, dp))
     sec.sort(reverse=True)
     if not sec:                      # nothing stands out: take the widest
         for st, phrase, dp in SECOND:
             if st == used or st not in BOXD:
                 continue
-            d, z, fv, ov = gap(st)
-            sec.append((abs(z), z, d, fv, ov, st, phrase, dp))
+            d, z, fv, ov, adv = gap(st)
+            sec.append((abs(z), adv, d, fv, ov, st, phrase, dp))
         sec.sort(reverse=True)
     s_az, s_z, s_d, s_fv, s_ov, s_st, s_ph, s_dp = sec[0]
     s_owner, s_other = (fav, dog) if s_z > 0 else (dog, fav)
-    s_hi, s_lo = (s_fv, s_ov) if s_z > 0 else (s_ov, s_fv)
+    s_hi, s_lo = (s_fv, s_ov) if s_owner == fav else (s_ov, s_fv)
     if s_st == "time of possession":
         s_hi, s_lo = s_hi / 60.0, s_lo / 60.0
         s_dp = 1
@@ -548,11 +560,23 @@ def main():
         h1_head = "Nobody runs away with this one."
     else:
         h1_head = "The lead arrives early and then just sits there."
+    # THE FAVOURITE'S lead statistics, whichever slot it is in. Dumps
+    # written before 9/15 carry the away team's only (Missouri was the
+    # away favourite); those fall back to the legacy keys and NAME the
+    # away team, so the sentence can never describe the wrong side.
+    SS = (D.get("side_stats") or {}).get(fav)
+    if SS:
+        who = fav
+        lead50 = (SS.get("lead_taken_sec") or {}).get("50", 0)
+        never_p = SS["p_never_trailed_given_win"]
+    else:
+        who = away
+        never_p = D["p_never_trailed_given_win"]
     paras = [
         (h1_head,
-         f"{away} take their first lead at a median {int(lead50 // 60)}:"
+         f"{who} take their first lead at a median {int(lead50 // 60)}:"
          f"{int(lead50 % 60):02d} of game clock, and in "
-         f"{D['p_never_trailed_given_win']:.0%} of the games they win "
+         f"{never_p:.0%} of the games they win "
          f"they never trail at any point. The median game is "
          + ("level at the first quarter" if mpath[0] < 0.5 else
             f"{fav} by {mpath[0]:.0f} at the first quarter")
@@ -578,9 +602,13 @@ def main():
          + f" for {s_other}, {abs(s_z):.2f} pooled standard deviations "
            f"apart"
          + (f", and it belongs to the favourite too — the two "
-            f"edges stack." if s_owner == fav and z1 > 0 else
+            f"edges stack." if s_owner == fav and owner == fav else
+            f", and it belongs to the favourite, pulling the other way "
+            f"from the first." if s_owner == fav else
             f", and unlike the first it belongs to {s_owner}, which is "
-            f"what keeps this closer than one number suggests.")
+            f"what keeps this closer than one number suggests."
+            if owner == fav else
+            f", and it belongs to the underdog as well.")
          + (f" Play-calling then follows the scoreboard rather than "
             f"driving it: from trailing by nine to leading by nine "
             f"{fav}'s rush share swings {sw_f:+.0%} and {dog}'s "

@@ -87,10 +87,15 @@ def run(home, away, ch, ca, n, delta, seed, trace=False):
     box = defaultdict(lambda: defaultdict(list))
     fl = None
     if trace:
+        # Lead statistics for BOTH teams. The Missouri-era dump kept them for
+        # the away team only, and the card's narrative read them as the
+        # favourite's -- "Florida State take their first lead at..." on a
+        # game Florida State wins a third of the time (Austin, 9/15).
         fl = dict(ribbon=np.zeros((n, 61), dtype=np.int16), lead=np.zeros((n, 61), dtype=np.int8),
                   calls={t: {s: [0, 0] for s in STATES} for t in (home, away)},
                   half={t: {1: [0, 0], 2: [0, 0]} for t in (home, away)},
-                  lead_taken=[], never_trailed=0, biggest=[], script=0)
+                  lead_taken={home: [], away: []}, never_trailed={home: 0, away: 0},
+                  biggest={home: [], away: []}, script={home: 0, away: 0}, wins={home: 0, away: 0})
         E.TRACE = []
     for i in range(n):
         if trace:
@@ -115,22 +120,31 @@ def run(home, away, ch, ca, n, delta, seed, trace=False):
                     j += 1
                 fl['ribbon'][i, bn] = cur
                 fl['lead'][i, bn] = 1 if cur < 0 else (-1 if cur > 0 else 0)   # 1 = AWAY leads
-            away_first = None
+            first = {home: None, away: None}
             for per, clk, off, is_pass, diff in tr:
                 team = home if off == 0 else away
                 d = diff if off == 0 else -diff
                 fl['calls'][team][state_of(d)][1 if is_pass else 0] += 1
                 fl['half'][team][1 if per <= 2 else 2][1 if is_pass else 0] += 1
-                if away_first is None and diff < 0:
-                    away_first = (per - 1) * 900 + (900 - clk)
-            if m < 0:                                     # away won
-                if away_first is not None:
-                    fl['lead_taken'].append(away_first)
-                if fl['ribbon'][i].max() <= 0:
-                    fl['never_trailed'] += 1
-            fl['biggest'].append(int(-fl['ribbon'][i].min()))
-            if b and fl['ribbon'][i, 30] < 0 and m < 0 and b[1].get("rush_yds", 0) > b[0].get("rush_yds", 0):
-                fl['script'] += 1
+                el = (per - 1) * 900 + (900 - clk)
+                if first[home] is None and diff > 0:
+                    first[home] = el
+                if first[away] is None and diff < 0:
+                    first[away] = el
+            rib = fl['ribbon'][i]
+            fl['biggest'][home].append(int(rib.max()))
+            fl['biggest'][away].append(int(-rib.min()))
+            winner = home if m > 0 else away if m < 0 else None
+            if winner:
+                fl['wins'][winner] += 1
+                if first[winner] is not None:
+                    fl['lead_taken'][winner].append(first[winner])
+                if (winner == home and rib.min() >= 0) or (winner == away and rib.max() <= 0):
+                    fl['never_trailed'][winner] += 1
+                half_ahead = rib[30] > 0 if winner == home else rib[30] < 0
+                wi, li = (0, 1) if winner == home else (1, 0)
+                if b and half_ahead and b[wi].get("rush_yds", 0) > b[li].get("rush_yds", 0):
+                    fl['script'][winner] += 1
     if trace:
         E.TRACE = None
     E.DIAG["ypp"].clear(); E.DIAG["third"].clear()
@@ -232,10 +246,18 @@ for gid, slug, tz in GAMES:
             "calls": {t: {s: {"rush": fl['calls'][t][s][0], "pass": fl['calls'][t][s][1],
                               "rush_share": fl['calls'][t][s][0] / max(1, sum(fl['calls'][t][s]))} for s in STATES} for t in (home, away)},
             "half": {t: {h: {"rush_share": fl['half'][t][h][0] / max(1, sum(fl['half'][t][h]))} for h in (1, 2)} for t in (home, away)},
-            "lead_taken_sec": ({str(p): float(np.percentile(fl['lead_taken'], p)) for p in (25, 50, 75)} if fl['lead_taken'] else {}),
-            "p_never_trailed_given_win": fl['never_trailed'] / max(1, sum(1 for m in mar if m < 0)),
-            "biggest_miz_lead": {str(p): float(np.percentile(fl['biggest'], p)) for p in (25, 50, 75, 90)},
-            "p_script": fl['script'] / NSIM, "p_miz_win": sum(1 for m in mar if m < 0) / NSIM}
+            # legacy keys = the AWAY team's, as the Missouri dump had them
+            "lead_taken_sec": ({str(p): float(np.percentile(fl['lead_taken'][away], p)) for p in (25, 50, 75)} if fl['lead_taken'][away] else {}),
+            "p_never_trailed_given_win": fl['never_trailed'][away] / max(1, fl['wins'][away]),
+            "biggest_miz_lead": {str(p): float(np.percentile(fl['biggest'][away], p)) for p in (25, 50, 75, 90)},
+            "p_script": fl['script'][away] / NSIM, "p_miz_win": fl['wins'][away] / NSIM,
+            # per side, so the card can speak about whichever team it projects to win
+            "side_stats": {t: {
+                "p_win": fl['wins'][t] / NSIM,
+                "lead_taken_sec": ({str(p): float(np.percentile(fl['lead_taken'][t], p)) for p in (25, 50, 75)} if fl['lead_taken'][t] else {}),
+                "p_never_trailed_given_win": fl['never_trailed'][t] / max(1, fl['wins'][t]),
+                "biggest_lead": {str(p): float(np.percentile(fl['biggest'][t], p)) for p in (25, 50, 75, 90)},
+                "p_script": fl['script'][t] / NSIM} for t in (home, away)}}
     json.dump(flow, open(os.path.join(SP, f"{slug}_flow.json"), "w", encoding="utf-8"), indent=1)
     for script, args in (("game_projection_card.py", [f"{slug}_projection.png", f"{slug}_box.json"]),
                          ("game_flow_card.py", [f"{slug}_flow.png", f"{slug}_flow.json", f"{slug}_box.json"])):
