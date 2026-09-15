@@ -1643,6 +1643,15 @@
   padding: 10px 2px 0;
 }
 .numbers-grouphead:not(:first-child) { margin-top: var(--space-3); }
+/* Sample note under a group header: plain sentence case, not the header's caps. */
+.numbers-grouphead-note {
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-mid);
+  padding: 2px 2px 0;
+  max-width: 62ch;
+}
 
 /* Small tag tying a stat card back to its Matchup DNA strip bar. */
 .numbers-dna-tag {
@@ -1720,6 +1729,7 @@
 .numbers-cell.home { flex-direction: row-reverse; }
 .numbers-cell-val { font-variant-numeric: tabular-nums; }
 .numbers-cell-rank { font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; opacity: 0.85; }
+.numbers-cell-sd { font-size: 10px; font-weight: 500; opacity: 0.7; margin-left: 4px; font-variant-numeric: tabular-nums; }
 .numbers-cell.unranked { background: var(--cream-dark); color: var(--text-mid); }
 .numbers-cell.missing { background: transparent; color: var(--text-light); font-weight: 400; justify-content: center; }
 /* the moneyline card still draws bars in a five-column row */

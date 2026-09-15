@@ -3513,6 +3513,20 @@
         gh.className = 'numbers-grouphead';
         gh.textContent = 'The team stats, ranked against FBS';
         els.numbersStack.appendChild(gh);
+        // The sample behind the ranks. Two games in, a rank moves thirty
+        // places on one short-yardage stop; the reader should know that
+        // before reading LSU as 104th in power success (Austin, 9/14).
+        const gp = data.stats?.games_played || {};
+        const na = gp.away, nh = gp.home;
+        let sample = '';
+        if (!data.stats?.fallback_used && na != null && nh != null) {
+          const g = (n) => `${n} game${n === 1 ? '' : 's'}`;
+          sample = na === nh ? `${g(na)} each` : `${g(na)} for ${awayName}, ${g(nh)} for ${homeName}`;
+        }
+        const gn = document.createElement('div');
+        gn.className = 'numbers-grouphead-note';
+        gn.textContent = `Season to date${sample ? `, ${sample}` : ''}. Raw rates, not adjusted for who they played, so early ranks swing on a handful of snaps.`;
+        els.numbersStack.appendChild(gn);
       }
 
       const card = document.createElement('div');
@@ -3597,13 +3611,17 @@
     return `background:rgb(${rgb.join(',')});color:${fg};`;
   }
   const _ord = (r) => { const s = ['th', 'st', 'nd', 'rd'], v = r % 100; return r + (s[(v - 20) % 10] || s[v] || s[0]); };
-  function rankCell(side, value, display, rank, n) {
+  function rankCell(side, value, display, rank, n, sd) {
     if (value == null) return `<div class="numbers-cell ${side} missing">—</div>`;
     const style = rankCellStyle(rank, n);
     const rk = (rank != null && n) ? `<span class="numbers-cell-rank">${_ord(rank)}</span>` : '';
+    // Engine unit ratings carry the uncertainty the sim draws from.
+    const sdHtml = (sd != null)
+      ? `<span class="numbers-cell-sd" title="the uncertainty the engine draws from on every snap">±${Number(sd).toFixed(2)}</span>`
+      : '';
     return `<div class="numbers-cell ${side}${style ? '' : ' unranked'}" style="${style}" ` +
            `title="${rank != null && n ? `${_ord(rank)} of ${n} FBS teams` : 'no league rank for this stat'}">` +
-           `<span class="numbers-cell-val">${escape(display)}</span>${rk}</div>`;
+           `<span class="numbers-cell-val">${escape(display)}${sdHtml}</span>${rk}</div>`;
   }
 
   function renderStatRow(row) {
@@ -3613,9 +3631,9 @@
     const n = row.rank_n || null;
     return `
       <div class="numbers-row">
-        ${rankCell('away', a, aDisplay, row.away_rank, n)}
+        ${rankCell('away', a, aDisplay, row.away_rank, n, row.away_sd)}
         <div class="numbers-row-label">${escape(row.label)}</div>
-        ${rankCell('home', h, hDisplay, row.home_rank, n)}
+        ${rankCell('home', h, hDisplay, row.home_rank, n, row.home_sd)}
       </div>
     `;
   }
