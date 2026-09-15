@@ -3060,7 +3060,7 @@
           : 'numbers-row-label';
 
       return `
-        <div class="numbers-row">
+        <div class="numbers-row numbers-row--bars">
           <div class="numbers-row-val away ${aLead ? 'lead' : ''} ${r.awayProb == null ? 'missing' : ''}">${escape(aDisplay)}</div>
           <div class="numbers-row-track away">
             <div class="numbers-row-fill away ${aBar.qual}" style="width:${aBar.width}%;"></div>
@@ -3493,26 +3493,25 @@
       els.numbersStack.appendChild(note);
     }
 
-    // Two page-level groups: cards that break down a DNA strip bar, then
-    // everything else. One group header each (Austin: "efficiency, scoring,
-    // discipline aren't in the DNA — separate that out").
+    // Two page-level groups (Austin, 9/13): the engine's own inputs on top,
+    // then the team stats -- every cell ranked against FBS.
     const DNA_TAG = { talent: 'Talent', trench: 'Trenches',
                       explosiveness: 'Explosiveness', efficiency: 'Efficiency',
                       pace: 'Pace' };
-    let dnaHeadDone = false, restHeadDone = false;
+    let engineHeadDone = false, restHeadDone = false;
 
     cats.forEach(cat => {
-      if (cat.dna && !dnaHeadDone) {
-        dnaHeadDone = true;
+      if (cat.engine && !engineHeadDone) {
+        engineHeadDone = true;
         const gh = document.createElement('div');
         gh.className = 'numbers-grouphead';
-        gh.textContent = 'What the models run on';
+        gh.textContent = 'What the engine runs on';
         els.numbersStack.appendChild(gh);
-      } else if (!cat.dna && !restHeadDone) {
+      } else if (!cat.engine && !restHeadDone) {
         restHeadDone = true;
         const gh = document.createElement('div');
         gh.className = 'numbers-grouphead';
-        gh.textContent = 'The full profile';
+        gh.textContent = 'The team stats, ranked against FBS';
         els.numbersStack.appendChild(gh);
       }
 
@@ -3543,13 +3542,17 @@
         bodyHtml = rows.map(r => renderStatRow(r)).join('');
       }
 
-      const dnaTag = cat.dna && DNA_TAG[cat.dna]
-        ? `<div class="numbers-dna-tag">${escape(DNA_TAG[cat.dna])}</div>`
-        : '';
+      const dnaTag = cat.engine
+        ? `<div class="numbers-dna-tag">Engine</div>`
+        : (cat.dna && DNA_TAG[cat.dna]
+            ? `<div class="numbers-dna-tag">${escape(DNA_TAG[cat.dna])}</div>`
+            : '');
+      const note = cat.note ? `<p class="numbers-card-note">${escape(cat.note)}</p>` : '';
       card.innerHTML = `
         <div class="numbers-card-head">
           ${dnaTag}
           <h3 class="numbers-card-title">${escape(cat.name)}</h3>
+          ${note}
         </div>
         <div class="numbers-teamhead">
           <div class="numbers-teamhead-away">${escape(awayName)}</div>
@@ -3562,41 +3565,57 @@
     });
   }
 
-  /**
-   * Render a single stat row with value-anchored bars.
-   *
-   * Bar width = RAW position in league range (bigger number = longer bar).
-   * Bar color = QUALITY (lower_better-aware).
-   *
-   * So a defense allowing 39.5 pts/g (league worst) gets a long bar in a
-   * BAD color. A defense allowing 9.3 pts/g (league best) gets a short
-   * bar in a GOOD color. Width and color carry separate signals.
-   */
+  // ── Rank cells (phase 3, Austin 9/13: "instead of bars, cells with the
+  // team's rank. the better they are the golder the cell is. middle is
+  // cream. worst is rust.") ─────────────────────────────────────────────
+  // The backend ranks each side against every FBS team (1 = best,
+  // lower_better already folded in) as away_rank / home_rank / rank_n.
+  // The cell's colour walks gold -> cream -> rust by rank position, mixed
+  // from the site's own tokens at runtime so it can never drift from them.
+  const _tok = (name) => (getComputedStyle(document.documentElement).getPropertyValue(name) || '').trim();
+  const _hex = (s) => { const m = /^#?([0-9a-f]{6})$/i.exec(s || ''); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  let _RANK_PAL = null;
+  function rankPalette() {
+    if (_RANK_PAL) return _RANK_PAL;
+    _RANK_PAL = { best: _hex(_tok('--gold')) || [184, 146, 42], mid: _hex(_tok('--cream')) || [248, 245, 238],
+                  worst: _hex(_tok('--rust')) || [184, 90, 42], ink: _tok('--ink') || '#0F0E0A', cream: _tok('--cream') || '#F8F5EE' };
+    return _RANK_PAL;
+  }
+  const _mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  function rankCellStyle(rank, n) {
+    if (rank == null || !n || n < 2) return '';
+    const P = rankPalette();
+    const p = (rank - 1) / (n - 1);                         // 0 = best, 1 = worst
+    const rgb = p <= 0.5 ? _mix(P.best, P.mid, p / 0.5) : _mix(P.mid, P.worst, (p - 0.5) / 0.5);
+    // Ink text everywhere it reads (gold: 6.6:1); cream only on the deep
+    // rust end, where ink and cream tie (~4.2:1) and cream matches the
+    // site's rust badges. Relative luminance, not the quick perceptual one,
+    // which put cream on gold at 2.7:1.
+    const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+    const L = 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+    const fg = L < 0.2 ? P.cream : P.ink;
+    return `background:rgb(${rgb.join(',')});color:${fg};`;
+  }
+  const _ord = (r) => { const s = ['th', 'st', 'nd', 'rd'], v = r % 100; return r + (s[(v - 20) % 10] || s[v] || s[0]); };
+  function rankCell(side, value, display, rank, n) {
+    if (value == null) return `<div class="numbers-cell ${side} missing">—</div>`;
+    const style = rankCellStyle(rank, n);
+    const rk = (rank != null && n) ? `<span class="numbers-cell-rank">${_ord(rank)}</span>` : '';
+    return `<div class="numbers-cell ${side}${style ? '' : ' unranked'}" style="${style}" ` +
+           `title="${rank != null && n ? `${_ord(rank)} of ${n} FBS teams` : 'no league rank for this stat'}">` +
+           `<span class="numbers-cell-val">${escape(display)}</span>${rk}</div>`;
+  }
+
   function renderStatRow(row) {
-    const a = row.away;
-    const h = row.home;
+    const a = row.away, h = row.home;
     const aDisplay = row.away_display ?? (a != null ? String(a) : '—');
     const hDisplay = row.home_display ?? (h != null ? String(h) : '—');
-    const lead = row.lead; // "away" | "home" | "tie" | null
-
-    const aLead = lead === 'away';
-    const hLead = lead === 'home';
-
-    // Compute value-anchored bar width + quality color per side.
-    const aBar = computeBar(a, row);
-    const hBar = computeBar(h, row);
-
+    const n = row.rank_n || null;
     return `
       <div class="numbers-row">
-        <div class="numbers-row-val away ${aLead ? 'lead' : ''} ${a == null ? 'missing' : ''}">${escape(aDisplay)}</div>
-        <div class="numbers-row-track away">
-          <div class="numbers-row-fill away ${aBar.qual}" style="width:${aBar.width}%;"></div>
-        </div>
+        ${rankCell('away', a, aDisplay, row.away_rank, n)}
         <div class="numbers-row-label">${escape(row.label)}</div>
-        <div class="numbers-row-track home">
-          <div class="numbers-row-fill home ${hBar.qual}" style="width:${hBar.width}%;"></div>
-        </div>
-        <div class="numbers-row-val home ${hLead ? 'lead' : ''} ${h == null ? 'missing' : ''}">${escape(hDisplay)}</div>
+        ${rankCell('home', h, hDisplay, row.home_rank, n)}
       </div>
     `;
   }

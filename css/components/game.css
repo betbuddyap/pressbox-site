@@ -1654,6 +1654,16 @@
   color: var(--gold);
   margin-bottom: 2px;
 }
+/* One-paragraph explainer under a card title (the engine card says what
+   its unit ratings are). Same caption type as the path notes. */
+.numbers-card-note {
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-mid);
+  margin: 6px 0 0;
+  max-width: 62ch;
+}
 
 .numbers-subhead {
   font-family: var(--sans);
@@ -1687,16 +1697,33 @@
   padding: 4px 24px 10px;
 }
 
-/* Stat row layout: away value | track | label | track | home value */
+/* Stat row layout (phase 3, 9/14): away cell | label | home cell. Each
+   cell carries the value and the team's FBS rank; its colour walks
+   gold (best) -> cream (middle) -> rust (worst), mixed at runtime from the
+   tokens (rankCellStyle in game.js). The old bar rows below stay for the
+   moneyline card. */
 .numbers-row {
   display: grid;
-  grid-template-columns: 60px 1fr 140px 1fr 60px;
-  align-items: center;
+  grid-template-columns: 1fr 140px 1fr;
+  align-items: stretch;
   gap: 10px;
   padding: 3px 0;
   border-bottom: 1px solid var(--cream-mid);
 }
 .numbers-row:last-child { border-bottom: 0; }
+.numbers-cell {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  padding: 4px 10px; border-radius: 3px; line-height: 1.3;
+  background: var(--cream-dark); color: var(--ink);
+  font-family: var(--sans); font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+}
+.numbers-cell.home { flex-direction: row-reverse; }
+.numbers-cell-val { font-variant-numeric: tabular-nums; }
+.numbers-cell-rank { font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; opacity: 0.85; }
+.numbers-cell.unranked { background: var(--cream-dark); color: var(--text-mid); }
+.numbers-cell.missing { background: transparent; color: var(--text-light); font-weight: 400; justify-content: center; }
+/* the moneyline card still draws bars in a five-column row */
+.numbers-row.numbers-row--bars { grid-template-columns: 60px 1fr 140px 1fr 60px; align-items: center; }
 
 /* Same small-number language as the rest of the page (chart labels, pick
    rows): 12px, ink, tokens only — these were 14px/600 in off-token hexes
@@ -1816,12 +1843,15 @@
      Values sit at the far edges so they align with the team-name
      headers at the top. Bars grow inward toward the centered label. */
   .numbers-row {
-    grid-template-columns: 44px 1fr 70px 1fr 44px;
+    grid-template-columns: 1fr 70px 1fr;
     grid-template-rows: auto;
     gap: 6px;
     padding: 5px 0;
-    align-items: center;
+    align-items: stretch;
   }
+  .numbers-row.numbers-row--bars { grid-template-columns: 44px 1fr 70px 1fr 44px; align-items: center; }
+  .numbers-cell { padding: 4px 7px; font-size: 11px; gap: 5px; }
+  .numbers-cell-rank { font-size: 9px; }
   .numbers-row-label {
     grid-column: 3;
     grid-row: 1;
