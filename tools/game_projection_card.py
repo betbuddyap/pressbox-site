@@ -549,8 +549,22 @@ def main():
            "mass than the ones around them.")
     if D.get("market_margin") is not None:
         cap += "  Dashed line: the market."
-    dr.text((PAD, y), cap, font=f_note, fill=MUTED)
-    y += 38 * S
+    # Wrap to the content width: with the market clause the single line
+    # ran past the right edge ("Dashed l…") on every 2026 card.
+    words, lines, cur = cap.split(), [], ""
+    for w_ in words:
+        t = (cur + " " + w_).strip()
+        if f_note.getlength(t) > W - 2 * PAD and cur:
+            lines.append(cur)
+            cur = w_
+        else:
+            cur = t
+    if cur:
+        lines.append(cur)
+    for ln in lines:
+        dr.text((PAD, y), ln, font=f_note, fill=MUTED)
+        y += 22 * S
+    y += 16 * S
 
     # ---- team comparison ---------------------------------------------
     track(dr, (PAD, y), "PROJECTED BOX SCORE", f_sect, TEXT, 15)
