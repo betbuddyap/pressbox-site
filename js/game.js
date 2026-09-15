@@ -3611,19 +3611,18 @@
     return `background:rgb(${rgb.join(',')});color:${fg};`;
   }
   const _ord = (r) => { const s = ['th', 'st', 'nd', 'rd'], v = r % 100; return r + (s[(v - 20) % 10] || s[v] || s[0]); };
-  function rankCell(side, value, display, rank, n, sd) {
+  function rankCell(side, value, display, rank, n) {
     if (value == null) return `<div class="numbers-cell ${side} missing">—</div>`;
     const style = rankCellStyle(rank, n);
     const rk = (rank != null && n) ? `<span class="numbers-cell-rank">${_ord(rank)}</span>` : '';
-    // Engine unit ratings carry the uncertainty the sim draws from.
-    const sdHtml = (sd != null)
-      ? `<span class="numbers-cell-sd" title="the uncertainty the engine draws from on every snap">±${Number(sd).toFixed(2)}</span>`
-      : '';
     return `<div class="numbers-cell ${side}${style ? '' : ' unranked'}" style="${style}" ` +
            `title="${rank != null && n ? `${_ord(rank)} of ${n} FBS teams` : 'no league rank for this stat'}">` +
-           `<span class="numbers-cell-val">${escape(display)}${sdHtml}</span>${rk}</div>`;
+           `<span class="numbers-cell-val">${escape(display)}</span>${rk}</div>`;
   }
 
+  // The engine rows also carry away_sd / home_sd (the prior's uncertainty);
+  // it is one number per unit for the whole league, so the card's note
+  // states it once instead of repeating it in every cell.
   function renderStatRow(row) {
     const a = row.away, h = row.home;
     const aDisplay = row.away_display ?? (a != null ? String(a) : '—');
@@ -3631,9 +3630,9 @@
     const n = row.rank_n || null;
     return `
       <div class="numbers-row">
-        ${rankCell('away', a, aDisplay, row.away_rank, n, row.away_sd)}
+        ${rankCell('away', a, aDisplay, row.away_rank, n)}
         <div class="numbers-row-label">${escape(row.label)}</div>
-        ${rankCell('home', h, hDisplay, row.home_rank, n, row.home_sd)}
+        ${rankCell('home', h, hDisplay, row.home_rank, n)}
       </div>
     `;
   }
