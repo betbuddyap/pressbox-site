@@ -1976,12 +1976,26 @@
     // engine is quiet whatever the note says; a firing one keeps the note.
     let eff = p.engine_effect;
     if (v.fires === false) eff = 'none';
+    // A NO-EDGE SPREAD IS NOT A PICK, AND ITS SIDE IS NOT A VOTE.
+    // When the signals do not reach a grade the page still shows a side:
+    // the blend LEAN, the four models' consensus (ladder.py section E).
+    // Comparing the engine against that lean and announcing it takes the
+    // bet "off the board" is wrong twice -- there is no bet, and the lean
+    // is not what the electorate voted. Houston at Texas Tech, 2026-09-17:
+    // the one rule that fired was a counter-signal pointing at HOUSTON, the
+    // engine was on Houston too, and the page reported the engine as
+    // cancelling a Texas Tech pick that never existed.
+    const gradedPick = !!(p.tier && p.tier !== 'no_edge');
     if (!eff) {
       const pickHome = p.side_display === home;
-      if (v.fires && !nVoters && p.tier && p.tier !== 'no_edge') eff = 'alone';
+      if (v.fires && !gradedPick) eff = 'nopick';
+      else if (v.fires && !nVoters) eff = 'alone';
       else if (v.fires) eff = ((v.side === 'home') === pickHome) ? 'confirms' : 'opposes';
       else eff = 'none';
     }
+    // The same guard for a STORED note: engine_effect is written at
+    // release and the market can move a graded pick to No Edge under it.
+    if (!gradedPick && (eff === 'confirms' || eff === 'opposes')) eff = 'nopick';
     const pre = p.tier_pre_engine ? (TIER_DISPLAY[p.tier_pre_engine] || p.tier_pre_engine) : null;
     // The engine's own record this season (engine_fires: locked at each
     // game's release, graded at the final, never re-evaluated). Shown once
@@ -2008,8 +2022,13 @@
     }
     if (eff === 'alone') {
       const r = wl('alone');
-      return row('alone', `${has}${gateOpen} No signal is firing here; the engine’s read on its own grades this a <b>C</b>.` +
+      return row('alone', `${has}${gateOpen} The signals did not reach a grade here, so the engine’s read on its own grades this a <b>C</b>.` +
         (r ? ` On its own this season it is ${r}.` : ''));
+    }
+    if (eff === 'nopick') {
+      const side = v.side === 'home' ? home : away;
+      return row('none', `${has}${gateOpen} The signals did not reach a grade on this game, so there is no bet here for it to ` +
+        `confirm or oppose — it is simply on <b>${escape(side)}</b>.`);
     }
     return row('none', `${has}${quietWhy}`);
   }
