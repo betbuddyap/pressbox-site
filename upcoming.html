@@ -1454,14 +1454,24 @@ async function init() {
   // it lands. Colors are different: fast (24h server-side cache) and the thing
   // that makes the cards look right, so they ride with the board below — that
   // way the first paint is already colored instead of flashing dark.
-  // Same board as the Rankings page — the 2026 blend with the SP+ offseason
-  // delta (?offseason=1) — so the rank chips here can never disagree with it.
-  // Rank is derived by rating order, same as the rankings page's default tab.
+  // Same board as the Rankings page — the ENGINE power rating, so the rank
+  // chips here can never disagree with it. Rank is derived by rating order,
+  // the same as the rankings page's default tab.
+  //
+  // This used to read /rankings/teams?offseason=1. That variant exists FOR the
+  // rankings page (team_rankings.py: "offseason=1 is the rankings page"), but
+  // that page moved to /rankings/engine on 2026-09-14 and this one was left
+  // behind — so the two surfaces showed different ranks for the same team, off
+  // a preseason SP+ delta that no longer had a consumer (Austin spotted it
+  // 2026-09-20). Both read the engine now.
+  //
+  // The row shape is identical between the two endpoints (rating / sos /
+  // expected_wins / proj_record / ...), so only the URL changes.
   loadMyBets().then((any) => {
     if (any && boardRendered) { try { renderWeek(currentWeek); } catch (e) {} }
   }).catch(() => {});
 
-  fetch(`${API}/rankings/teams?season=2026&offseason=1`)
+  fetch(`${API}/rankings/engine?season=${SEASON}`)
     .then(r => r.json()).catch(() => null)
     .then((rankRes) => {
       if (rankRes && rankRes.teams) {
