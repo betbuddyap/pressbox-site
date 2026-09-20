@@ -352,9 +352,21 @@
   // cannot verify, say only what is true whenever this renders.
   //
   // It IS true every time: a week's board fills once the prior week's
-  // stats are fully ingested and books have posted at least three lines
-  // per game. Both are normal mid-week conditions, not faults, so the
-  // copy explains the wait instead of apologising for it.
+  // stats are fully ingested (_prior_week_stats_complete: every prior-week
+  // final needs its ppa_games / team_stats / advanced_stats_weekly rows).
+  // That is the real gate and it is not a fault, so the copy explains the
+  // wait instead of apologising for it.
+  //
+  // DO NOT say "midweek" here (2026-09-20). The old copy claimed the board
+  // "usually lands midweek" and blamed books for the wait. Both are false:
+  // books post week-N lines the day after week N-1 finishes — measured, 7-9
+  // books per game on the Sunday. The wait is OUR stat ingestion, not the
+  // market's. Austin had said so twice before the copy was written, and it
+  // also breaks the house rule against day-of-week cadence in copy.
+  //
+  // `state.week` is null when the payload carries no weeks at all, which is
+  // exactly this empty case — so never render weekLabel(state.week ?? 0).
+  // That printed a literal "Week 0" to customers on 2026-09-20.
   function renderEmpty() {
     const w = state.week ?? 0;
     if (state._countdownInterval) {
@@ -373,15 +385,15 @@
 
       <div class="ll-empty">
         <div class="ll-empty-card">
-          <div class="ll-empty-label">${esc(weekLabel(w))}</div>
+          ${state.week !== null ? `<div class="ll-empty-label">${esc(weekLabel(w))}</div>` : ''}
           <div class="ll-empty-status">Board not posted yet</div>
           <div class="ll-empty-date">Refreshing every 30 seconds</div>
         </div>
 
         <p class="ll-empty-message">
-          <strong>${esc(weekLabel(w))}</strong> fills in once last week's
-          results are fully in and the books have posted enough lines to
-          price a side. That usually lands midweek.
+          ${state.week !== null ? `<strong>${esc(weekLabel(w))}</strong> fills in` : 'The board fills in'}
+          once every game from last week has its full results and stats in
+          our database. We release the moment that lands.
         </p>
 
         <div class="ll-empty-ctas">
