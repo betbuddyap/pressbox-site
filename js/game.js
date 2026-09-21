@@ -2027,6 +2027,29 @@
     }
     if (eff === 'nopick') {
       const side = v.side === 'home' ? home : away;
+      // TWO DIFFERENT REASONS, AND THEY READ NOTHING ALIKE (2026-09-21).
+      // "No graded pick + the engine fires" happens two ways, and the old
+      // copy described only the first:
+      //
+      //   (a) nothing fired at all — the engine simply has no bet to
+      //       confirm or oppose, and it is on a side by itself;
+      //   (b) a signal fired the OTHER way. That is not silence: it is the
+      //       exact reason the engine was held. ladder.py D2 leaves a game
+      //       alone when any cell contradicts the engine, even an ungraded
+      //       one (Austin's rule, 2026-09-17).
+      //
+      // Saying "the signals did not reach a grade, so there is nothing to
+      // confirm or oppose" in case (b) tells the customer the opposite of
+      // what happened — Oklahoma at Georgia, 2026-09-21: one signal on
+      // Oklahoma, the engine on Georgia, and the card claimed there was no
+      // signal to disagree with.
+      const contradicts = nVoters > 0 && ((v.side === 'home') !== (p.side_display === home));
+      if (contradicts) {
+        return row('none', `${has}${gateOpen} It is on <b>${escape(side)}</b>, but ` +
+          `${nVoters === 1 ? 'a signal points' : `${nVoters} signals point`} the other way, at ` +
+          `<b>${escape(p.side_display)}</b>. A signal against the engine holds it back from grading ` +
+          `on its own, so this game has no bet.`);
+      }
       return row('none', `${has}${gateOpen} The signals did not reach a grade on this game, so there is no bet here for it to ` +
         `confirm or oppose — it is simply on <b>${escape(side)}</b>.`);
     }
