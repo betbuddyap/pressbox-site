@@ -200,6 +200,15 @@
     const gradePicks = {};
     (data.picks || []).forEach(p => { if (!gradePicks[p.market]) gradePicks[p.market] = p; });
     const stripLocked = g.status === 'in_progress' || g.status === 'final';
+    // The Chain rides the SPREAD badge only (display contract §4). renderBeats
+    // stamps `_chain` on the pick object, but it runs AFTER renderHero — so
+    // reading p._chain here would always be undefined and the ribbon wore the
+    // bolt while the pick row below it wore bolt + chain, on the same pick.
+    // Derive the same condition from data.chain instead. No tier test needed:
+    // PBBadge only draws markers on the graded ladder (MARK_KEYS), so a
+    // No Edge spread renders bare on its own.
+    const _ch = data.chain;
+    const chainOn = !!(_ch && _ch.available && _ch.fire && _ch.agrees);
     const gradesHtml = ['moneyline', 'spread', 'total']
       .filter(mk => gradePicks[mk])
       .map(mk => {
@@ -207,7 +216,8 @@
         const rel = stripLocked ? (p.history?.released || null) : null;
         return `<div class="ctx-grade">` +
                `<span class="ctx-grade-mkt">${escape(MARKET_DISPLAY[mk] || mk)}</span>` +
-               llBadge((rel && rel.tier) || p.tier, p.bolt) + `</div>`;
+               llBadge((rel && rel.tier) || p.tier, p.bolt,
+                       mk === 'spread' && chainOn) + `</div>`;
       }).join('');
     els.ribbon.outerHTML = gradesHtml
       ? `<div class="ctx-grades" id="ctxRibbon">${gradesHtml}</div>`
