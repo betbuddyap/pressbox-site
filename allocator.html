@@ -609,7 +609,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? mlPayMove(r.price_american, cur.price_american)
       : relMove({ market: raw.market, side_raw: r.side_raw,
                   line_raw: cur.line_raw, released: r });
-    return { ...cur, tier: r.tier, bolt: false,
+    // The bolt AS RELEASED, beside the released tier. This was hardcoded
+    // false because /parlay/board's released block shipped no bolt, so the
+    // Released view silently dropped the marker on every leg while Current
+    // kept it — the same pick wore its bolt on Upcoming and the game page
+    // and never here (Austin, 2026-09-27). Safe before the API ships the
+    // field: undefined -> false, which is exactly today's behaviour.
+    return { ...cur, tier: r.tier, bolt: !!r.bolt,
              our_prob: r.our_prob, edge: null,
              line_move: null, _relMove: mv };
   }
