@@ -1369,8 +1369,16 @@ const CHAIN_GLYPH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 let chainFiresByGame = {};
 function applyChainMarks() {
   Object.keys(picksByGameId || {}).forEach(gid => {
-    const slots = picksByGameId[gid] || {};
-    const sp = slots.spread;
+    // The market picks are nested ONE LEVEL DOWN: picksByGameId[gid] is the
+    // entry (tier_full, pick_text, best_line ... for the featured pick) and
+    // the per-market slots live on entry.slots — the same path renderSlateCard
+    // takes via effSlots(g, pick.slots). Reading entry.spread here meant `sp`
+    // was ALWAYS undefined, so this bailed on every game and the Chain marker
+    // never rendered on Upcoming at all. Found 2026-09-27 against Central
+    // Michigan's live fire (game 401866430): the fire was perfect, the rule
+    // returned true when fed the slot by hand, and the page still drew nothing.
+    const entry = picksByGameId[gid] || {};
+    const sp = (entry.slots || {}).spread;
     if (!sp) return;
     // ONE rule for every surface — /js/badge.js. This page's slots carry
     // tier_full and no market/game_id, so the field names are adapted here
